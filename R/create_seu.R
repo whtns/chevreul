@@ -94,7 +94,7 @@ seu_from_tibbles <- function(txi, colData, census_counts=NULL){
 
   colData <- colData[colnames(txi$counts),]
 
-  seu <- CreateSeuratObject(counts = txi$counts, project = expid, assay = "RNA", meta.data = colData)
+  seu <- Seurat::CreateSeuratObject(counts = txi$counts, project = expid, assay = "RNA", meta.data = colData)
 
   # add default batch if missing
   seu$batch <- seu@project.name
@@ -123,6 +123,9 @@ filter_low_rc_cells <- function(seu, read_thresh = 1e5){
 
 	keep_cells <- counts[counts > read_thresh]
 
+	removed_cells <- counts[counts <= read_thresh]
+	print(removed_cells)
+
 	seu <- subset(seu, cells = names(keep_cells))
 }
 
@@ -143,7 +146,7 @@ save_seurat <- function(seu, feature){
 
   seu_path <- fs::path(sce_dir, paste0(feature, "_seu.rds"))
 
-  saveRDS(feature_seu, seu_path)
+  saveRDS(seu, seu_path)
 }
 
 
