@@ -25,7 +25,7 @@ set_colnames_txi <- function(txi, colnames){
 #' @export
 #'
 #' @examples
-load_counts_from_stringtie <- function(stringtie_paths, txOut){
+load_counts_from_stringtie <- function(proj_dir, txOut){
   stringtie_paths <- with_handlers(
     error = ~ abort("Can't find input stringtie files (stringtie output with extension t._ctab)", parent  = .),
     stringtie_files <- fs::path(proj_dir, "output", "stringtie") %>%
