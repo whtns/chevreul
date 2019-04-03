@@ -15,7 +15,8 @@ Imports:
     Seurat,
     tximport,
     fs,
-    rprojroot
+    rprojroot,
+    rlang
 Suggests: 
     dplyr,
     tidyr,
