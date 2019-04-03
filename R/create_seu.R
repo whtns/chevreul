@@ -26,7 +26,7 @@ set_colnames_txi <- function(txi, colnames){
 #'
 #' @examples
 load_counts_from_stringtie <- function(proj_dir, txOut){
-  stringtie_paths <- with_handlers(
+  stringtie_paths <- rlang::with_handlers(
     error = ~ abort("Can't find input stringtie files (stringtie output with extension t._ctab)", parent  = .),
     stringtie_files <- fs::path(proj_dir, "output", "stringtie") %>%
       dir_ls(recursive = T) %>%
@@ -37,7 +37,7 @@ load_counts_from_stringtie <- function(proj_dir, txOut){
   tmp <- read_tsv(stringtie_paths[1])
   tx2gene <- tmp[, c("t_name", "gene_name")]
 
-  txi <- tximport(stringtie_files, type = "stringtie", tx2gene = tx2gene, txOut = txOut, countsFromAbundance = "scaledTPM")
+  txi <- tximport::tximport(stringtie_files, type = "stringtie", tx2gene = tx2gene, txOut = txOut, countsFromAbundance = "scaledTPM")
 
   sample_names <- path_file(path_dir(stringtie_paths))
 
@@ -53,7 +53,7 @@ load_counts_from_stringtie <- function(proj_dir, txOut){
 #' @export
 #'
 #' @examples
-load_meta <- function(meta_path){
+load_meta <- function(proj_dir){
   # load metadata
   meta_file <- gsub("_proj", "_metadata.csv", path_file(proj_dir))
   meta_file <- fs::path(proj_dir, "data", meta_file)
