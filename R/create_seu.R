@@ -142,16 +142,42 @@ filter_low_rc_cells <- function(seu, read_thresh = 1e5){
 save_seurat <- function(seu, feature, suffix = ""){
 
   if(suffix != ""){
-    suffix = paste0("_", suffix, "_")
+    suffix = paste0("_", suffix)
   }
 
   sce_dir <- fs::path(proj_dir, "output", "sce")
 
   dir_create(sce_dir)
 
-  seu_path <- fs::path(sce_dir, paste0(feature, suffix, "_seu.rds"))
+  seu_path <- fs::path(sce_dir, paste0(feature, "_seu", suffix, ".rds"))
 
   saveRDS(seu, seu_path)
+  seu
+}
+
+#' Add a 'read_count' column to a seurat object
+#'
+#' Add a read count column factor to indicate 'low read count' cells below a given threshold
+#'
+#' @param seu
+#' @param threshold
+#'
+#' @return
+#' @export
+#'
+#' @examples
+add_read_count_col <- function(seu, threshold){
+  colsums <- colSums(as.matrix(seu@assays$RNA@counts)) %>%
+    enframe("Sample_ID", "count") %>%
+    mutate(read_count = ifelse(count < threshold, "low_read_count", "keep")) %>%
+    select(Sample_ID, read_count) %>%
+    deframe()
+
+  seu <- AddMetaData(seu,
+                     metadata = colsums,
+                     col.name = "read_count")
+  return(seu)
+
 }
 
 

@@ -4,7 +4,7 @@
 \alias{pull_gene_trx_seus}
 \title{Read in Gene and Transcript Seurat Objects}
 \usage{
-pull_gene_trx_seus(proj_dir)
+pull_gene_trx_seus(proj_dir, suffix = "")
 }
 \arguments{
 \item{proj_dir}{}

@@ -12,11 +12,11 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 6.1.1
 Imports: 
     Seurat,
-    tximport,
     fs,
     rprojroot,
     rlang,
-    magrittr
+    magrittr,
+    tximport (>= 1.10.1)
 Suggests: 
     dplyr,
     tidyr,

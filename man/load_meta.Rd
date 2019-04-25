@@ -4,7 +4,7 @@
 \alias{load_meta}
 \title{Load Project Sample Data}
 \usage{
-load_meta(meta_path)
+load_meta(proj_dir)
 }
 \arguments{
 \item{meta_path}{}

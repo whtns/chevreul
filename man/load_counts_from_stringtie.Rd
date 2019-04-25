@@ -4,7 +4,7 @@
 \alias{load_counts_from_stringtie}
 \title{Load Counts from Stringtie Files}
 \usage{
-load_counts_from_stringtie(stringtie_paths, txOut)
+load_counts_from_stringtie(proj_dir, txOut)
 }
 \arguments{
 \item{txOut}{}
