@@ -1,6 +1,6 @@
 Package: seuratTools
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Tools for Managing Seurat Objects
 Version: 0.1.0
 Author: Kevin Stachelek
 Maintainer: Kevin Stachelek <kevin.stachelek@gmail.com>
@@ -16,7 +16,9 @@ Imports:
     rprojroot,
     rlang,
     magrittr,
-    tximport (>= 1.10.1)
+    tximport (>= 1.10.1),
+    furrr,
+    velocyto.R
 Suggests: 
     dplyr,
     tidyr,

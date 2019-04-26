@@ -155,29 +155,3 @@ save_seurat <- function(seu, feature, suffix = ""){
   seu
 }
 
-#' Add a 'read_count' column to a seurat object
-#'
-#' Add a read count column factor to indicate 'low read count' cells below a given threshold
-#'
-#' @param seu
-#' @param threshold
-#'
-#' @return
-#' @export
-#'
-#' @examples
-add_read_count_col <- function(seu, threshold){
-  colsums <- colSums(as.matrix(seu@assays$RNA@counts)) %>%
-    enframe("Sample_ID", "count") %>%
-    mutate(read_count = ifelse(count < threshold, "low_read_count", "keep")) %>%
-    select(Sample_ID, read_count) %>%
-    deframe()
-
-  seu <- AddMetaData(seu,
-                     metadata = colsums,
-                     col.name = "read_count")
-  return(seu)
-
-}
-
-

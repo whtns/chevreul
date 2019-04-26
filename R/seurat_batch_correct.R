@@ -123,12 +123,12 @@ pull_gene_trx_seus <- function(proj_dir, suffix = ""){
 #'
 #' @examples
 load_seurat_from_rds <- function(proj_dirs){
-  seu_files <- map(proj_dirs, seuratTools::pull_gene_trx_seus)
+  seu_files <- furrr::future_map(proj_dirs, seuratTools::pull_gene_trx_seus)
   names(seu_files) <- gsub("_proj", "", basename(proj_dirs))
 
   seu_files <- purrr::transpose(seu_files)
 
-  seu_files <- purrr::map(seu_files, ~map(.x, readRDS))
+  seu_files <- furrr::future_map(seu_files, ~furrr::future_map(.x, readRDS))
 }
 
 #' Run Seurat Integration
@@ -146,14 +146,14 @@ load_seurat_from_rds <- function(proj_dirs){
 #'
 #' @examples
 seurat_integration_pipeline <- function(seus, res_low = 0.2, res_hi = 2.0, suffix = '') {
-  corrected_seus <- purrr::map(seus, seuratTools::seurat_batch_correct)
+  corrected_seus <- furrr::future_map(seus, seuratTools::seurat_batch_correct)
 
   # cluster merged seurat objects
-  corrected_seus <- map(corrected_seus, seuratTools::seurat_cluster, resolution = seq(res_low, res_hi, by = 0.2))
+  corrected_seus <- furrr::future_map(corrected_seus, seuratTools::seurat_cluster, resolution = seq(res_low, res_hi, by = 0.2))
 
-  corrected_seus <- map(corrected_seus, find_all_markers)
+  corrected_seus <- furrr::future_map(corrected_seus, find_all_markers)
 
-  corrected_seus <- purrr::imap(corrected_seus, save_seurat, suffix = suffix)
+  corrected_seus <- furrr::future_imap(corrected_seus, save_seurat, suffix = suffix)
 }
 
 #' Run Seurat Pipeline
@@ -229,14 +229,14 @@ filter_merged_seus <- function(seus, filter_var, filter_val, tag = "") {
     tag = paste0(tag, "_")
   }
 
-  seus <- map(seus, ~.x[, .x[[filter_var]] == filter_val])
+  seus <- furrr::future_map(seus, ~.x[, .x[[filter_var]] == filter_val])
 
   new_names <- paste0(tag, c("gene", "transcript"))
 
-  seus <- map2(seus, new_names, rename_seurat) %>%
+  seus <- furrr::future_map2(seus, new_names, rename_seurat) %>%
     set_names(new_names)
 
-  seus <- map(seus, SetDefaultAssay, "RNA")
+  seus <- furrr::future_map(seus, SetDefaultAssay, "RNA")
 
 }
 
@@ -253,66 +253,10 @@ filter_merged_seus <- function(seus, filter_var, filter_val, tag = "") {
 #'
 #' @examples
 reintegrate_seus <- function(seus, suffix = "", ...){
-  seus <- map(seus, SplitObject, split.by = "batch")
+  seus <- furrr::future_map(seus, SplitObject, split.by = "batch")
 
   seus <- seurat_integration_pipeline(seus, suffix = suffix)
 
 
 }
-
-#' Add Read Count Category
-#'
-#'  Add a Read Count Categorical Variable to Seurat Object (based on nCount_RNA)
-#'
-#' @param seu
-#' @param thresh
-#'
-#' @return
-#' @export
-#'
-#' @examples
-add_rc_cat_meta_to_seu <- function(seu, thresh = 1e5){
-  rc <- as_tibble(seu[["nCount_RNA"]], rownames = "Sample_ID") %>%
-    mutate(read_count = ifelse(nCount_RNA > thresh, "keep", "low_read_count")) %>%
-    select(-nCount_RNA) %>%
-    tibble::deframe()
-
-  seu <- AddMetaData(
-    object = seu,
-    metadata = rc,
-    col.name = "read_count"
-  )
-}
-
-#' Annotate Exclusion Criteria
-#'
-#' @param seu
-#' @param excluded_cells a named list of cells to be excluded of the form list(set1 = c(cell1, celll2), set2 = c(cell3, cell4))
-#' all other cells will be marked "keep" in a column titled "excluded_because"
-#'
-#' @return
-#' @export
-#'
-#' @examples
-annotate_excluded <- function(seu, excluded_cells){
-
-  excluded_cells <- map2(excluded_cells, names(excluded_cells), ~rep(.y, length(.x))) %>%
-    unlist() %>%
-    set_names(unlist(excluded_cells))
-
-  excluded_because <- as_tibble(seu[["nCount_RNA"]], rownames = "Sample_ID") %>%
-    mutate(excluded_because = ifelse(Sample_ID %in% names(excluded_cells), excluded_cells, "keep")) %>%
-    select(-nCount_RNA) %>%
-    tibble::deframe()
-
-  seu <- AddMetaData(
-    object = seu,
-    metadata = excluded_because,
-    col.name = "excluded_because"
-  )
-
-  return(seu)
-
-}
-
 
