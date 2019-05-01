@@ -11,9 +11,9 @@
 #' @examples
 seurat_batch_correct <- function(seu_list) {
   #browser()
-  # To construct a reference, we will identify ‘anchors’ between the individual datasets. First, we split the combined object into a list, with each dataset as an element.
+  # To construct a reference we will identify ‘anchors’ between the individual datasets. First, we split the combined object into a list, with each dataset as an element.
 
-# Prior to finding anchors, we perform standard preprocessing (log-normalization), and identify variable features individually for each. Note that Seurat v3 implements an improved method for variable feature selection based on a variance stabilizing transformation ("vst")
+  # Prior to finding anchors, we perform standard preprocessing (log-normalization), and identify variable features individually for each. Note that Seurat v3 implements an improved method for variable feature selection based on a variance stabilizing transformation ("vst")
 
   for (i in 1:length(x = seu_list)) {
   	seu_list[[i]] <- seurat_preprocess(seu_list[[i]], scale = F)
@@ -40,10 +40,7 @@ seurat_batch_correct <- function(seu_list) {
 
   # Run the standard workflow for visualization and clustering
   seu_list.integrated <- ScaleData(object = seu_list.integrated, verbose = FALSE)
-  seu_list.integrated <- RunPCA(object = seu_list.integrated, npcs = 30, verbose = FALSE)
-  seu_list.integrated <- RunUMAP(object = seu_list.integrated, reduction = "pca",
-  																dims = 1:30)
-  seu_list.integrated <- RunTSNE(object = seu_list.integrated, reduction = "pca", dims = 1:30)
+  seu_list.integrated <- seurat_reduce_dimensions(seu_list.integrated)
 
   return(seu_list.integrated)
 }
@@ -123,12 +120,12 @@ pull_gene_trx_seus <- function(proj_dir, suffix = ""){
 #'
 #' @examples
 load_seurat_from_rds <- function(proj_dirs){
-  seu_files <- furrr::future_map(proj_dirs, seuratTools::pull_gene_trx_seus)
+  seu_files <- purrr::map(proj_dirs, seuratTools::pull_gene_trx_seus)
   names(seu_files) <- gsub("_proj", "", basename(proj_dirs))
 
   seu_files <- purrr::transpose(seu_files)
 
-  seu_files <- furrr::future_map(seu_files, ~furrr::future_map(.x, readRDS))
+  seu_files <- purrr::map(seu_files, ~purrr::map(.x, readRDS))
 }
 
 #' Run Seurat Integration
@@ -146,14 +143,33 @@ load_seurat_from_rds <- function(proj_dirs){
 #'
 #' @examples
 seurat_integration_pipeline <- function(seus, res_low = 0.2, res_hi = 2.0, suffix = '') {
-  corrected_seus <- furrr::future_map(seus, seuratTools::seurat_batch_correct)
+
+  corrected_seus <- purrr::map(seus, seurat_batch_correct)
 
   # cluster merged seurat objects
-  corrected_seus <- furrr::future_map(corrected_seus, seuratTools::seurat_cluster, resolution = seq(res_low, res_hi, by = 0.2))
+  corrected_seus <- purrr::map(corrected_seus, seuratTools::seurat_cluster, resolution = seq(res_low, res_hi, by = 0.2))
 
-  corrected_seus <- furrr::future_map(corrected_seus, find_all_markers)
+  corrected_seus <- purrr::map(corrected_seus, find_all_markers)
 
-  corrected_seus <- furrr::future_imap(corrected_seus, save_seurat, suffix = suffix)
+  corrected_seus <- purrr::imap(corrected_seus, save_seurat, suffix = suffix)
+}
+
+#' Dimensional Reduction
+#'
+#' Run PCA, TSNE and UMAP on a seurat object
+#'
+#' @param seu
+#'
+#' @return
+#' @export
+#'
+#' @examples
+seurat_reduce_dimensions <- function(seu) {
+
+  seu <- RunPCA(object = seu, features = VariableFeatures(object = seu), do.print = FALSE)
+  seu <- RunTSNE(object = seu, reduction = "pca", dims = 1:30)
+  seu <- RunUMAP(object = seu, reduction = "pca", dims = 1:30)
+
 }
 
 #' Run Seurat Pipeline
@@ -172,10 +188,9 @@ seurat_pipeline <- function(seu, resolution=0.6){
   seu <- seurat_preprocess(seu, scale = T)
 
   # PCA
-  seu <- RunPCA(object = seu, features = VariableFeatures(object = seu), do.print = FALSE)
+  seu <- seurat_reduce_dimensions(seu)
+
   seu <- seurat_cluster(seu, resolution = resolution)
-  seu <- RunTSNE(object = seu, reduction = "pca", dims = 1:30)
-  seu <- RunUMAP(object = seu, reduction = "pca", dims = 1:30)
 
   return(seu)
 }
@@ -222,21 +237,16 @@ SetDefaultAssay <- function(seu, new_assay){
 #' @export
 #'
 #' @examples
-filter_merged_seus <- function(seus, filter_var, filter_val, tag = "") {
+filter_merged_seus <- function(seus, filter_var, filter_val) {
   # browser()
-
-  if(tag != ""){
-    tag = paste0(tag, "_")
+  if(is.na(filter_val)){
+    seus <- purrr::map(seus, ~.x[, is.na(.x[[filter_var]])])
+  } else {
+    seus <- purrr::map(seus, ~.x[, .x[[filter_var]] == filter_val])
   }
 
-  seus <- furrr::future_map(seus, ~.x[, .x[[filter_var]] == filter_val])
 
-  new_names <- paste0(tag, c("gene", "transcript"))
-
-  seus <- furrr::future_map2(seus, new_names, rename_seurat) %>%
-    set_names(new_names)
-
-  seus <- furrr::future_map(seus, SetDefaultAssay, "RNA")
+  seus <- purrr::map(seus, SetDefaultAssay, "RNA")
 
 }
 
@@ -253,7 +263,7 @@ filter_merged_seus <- function(seus, filter_var, filter_val, tag = "") {
 #'
 #' @examples
 reintegrate_seus <- function(seus, suffix = "", ...){
-  seus <- furrr::future_map(seus, SplitObject, split.by = "batch")
+  seus <- purrr::map(seus, SplitObject, split.by = "batch")
 
   seus <- seurat_integration_pipeline(seus, suffix = suffix)
 

@@ -18,7 +18,8 @@ Imports:
     magrittr,
     tximport (>= 1.10.1),
     furrr,
-    velocyto.R
+    velocyto.R,
+    future
 Suggests: 
     dplyr,
     tidyr,

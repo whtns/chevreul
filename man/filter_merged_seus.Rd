@@ -4,7 +4,7 @@
 \alias{filter_merged_seus}
 \title{Filter Seurat Objects}
 \usage{
-filter_merged_seus(seus, filter_var, filter_val, tag = "")
+filter_merged_seus(seus, filter_var, filter_val)
 }
 \arguments{
 \item{tag}{}

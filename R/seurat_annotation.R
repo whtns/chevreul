@@ -30,9 +30,9 @@ annotate_cell_cycle <- function(seu_list){
   )
 
   # setdefaultassay to "RNA"
-  seu_list <- furrr::future_map(seu_list, SetDefaultAssay, "RNA")
+  seu_list <- purrr::map(seu_list, SetDefaultAssay, "RNA")
 
-  seu_list <- furrr::future_map2(seu_list, cc.features, ~CellCycleScoring(.x, s.features = .y$s, g2m.features = .y$g2m, set.ident = FALSE))
+  seu_list <- purrr::map2(seu_list, cc.features, ~CellCycleScoring(.x, s.features = .y$s, g2m.features = .y$g2m, set.ident = FALSE))
 
 }
 
@@ -67,7 +67,7 @@ genes_to_transcripts <- function(genes) {
 #' @examples
 add_read_count_col <- function(seu, thresh = 1e5){
   rc <- as_tibble(seu[["nCount_RNA"]], rownames = "Sample_ID") %>%
-    mutate(read_count = ifelse(nCount_RNA > thresh, "keep", "low_read_count")) %>%
+    mutate(read_count = ifelse(nCount_RNA > thresh, NA, "low_read_count")) %>%
     select(-nCount_RNA) %>%
     tibble::deframe()
 
@@ -91,12 +91,12 @@ add_read_count_col <- function(seu, thresh = 1e5){
 #' @examples
 annotate_excluded <- function(seu, excluded_cells){
 
-  excluded_cells <- furrr::future_map2(excluded_cells, names(excluded_cells), ~rep(.y, length(.x))) %>%
+  excluded_cells <- purrr::map2(excluded_cells, names(excluded_cells), ~rep(.y, length(.x))) %>%
     unlist() %>%
     set_names(unlist(excluded_cells))
 
   excluded_because <- as_tibble(seu[["nCount_RNA"]], rownames = "Sample_ID") %>%
-    mutate(excluded_because = ifelse(Sample_ID %in% names(excluded_cells), excluded_cells, "keep")) %>%
+    mutate(excluded_because = ifelse(Sample_ID %in% names(excluded_cells), excluded_cells, NA)) %>%
     select(-nCount_RNA) %>%
     tibble::deframe()
 

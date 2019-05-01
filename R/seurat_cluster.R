@@ -37,7 +37,7 @@ find_all_markers <- function(seu){
   clusters <- paste0("clusters_", seq(0.2, 2.0, by = 0.2)) %>%
     set_names(.)
 
-  marker_features <- furrr::future_map(clusters, stash_marker_features, seu)
+  marker_features <- purrr::map(clusters, stash_marker_features, seu)
 
   seu@misc$markers <- marker_features
   return(seu)
