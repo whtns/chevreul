@@ -1,3 +1,7 @@
+<!-- badges: start -->
+[![Travis build status](https://travis-ci.org/whtns/seuratTools.svg?branch=master)](https://travis-ci.org/whtns/seuratTools)
+<!-- badges: end -->
+
 # seuratTools
 
 This is a set of convenience functions for interacting with [Seurat](https://github.com/satijalab/seurat) objects. There are functions for:
@@ -15,10 +19,6 @@ You can install the released version of seuratTools from [our github](https://gi
 ``` r
 devtools::install_package("whtns/seuratTools")
 ```
-
-<!-- badges: start -->
-[![Travis build status](https://travis-ci.org/whtns/seuratTools.svg?branch=master)](https://travis-ci.org/whtns/seuratTools)
-<!-- badges: end -->
 
 ## Example
 
