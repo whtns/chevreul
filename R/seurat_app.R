@@ -1,11 +1,3 @@
-# load packages------------------------------
-
-
-library(shinydashboard)
-library(shinycssloaders)
-library(annotables)
-library(plotly)
-library(DT)
 
 #' Create a Shiny App to View Seurat Data
 #'
