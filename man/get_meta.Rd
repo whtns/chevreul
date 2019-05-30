@@ -2,7 +2,7 @@
 % Please edit documentation in R/update_child_exp_metadata.R
 \name{get_meta}
 \alias{get_meta}
-\title{Get Metadata}
+\title{Get Metadata for a project}
 \usage{
 get_meta(proj_path)
 }
@@ -10,5 +10,5 @@ get_meta(proj_path)
 \item{proj_path}{}
 }
 \description{
-Get Metadata
+Get Metadata for a project
 }

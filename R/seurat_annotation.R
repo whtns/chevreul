@@ -10,8 +10,6 @@
 #' @examples
 annotate_cell_cycle <- function(seu_list){
 
-
-
   # S phase genes
   s.genes <- cc.genes[1:43]
 
@@ -83,22 +81,36 @@ add_read_count_col <- function(seu, thresh = 1e5){
 #'
 #' @param seu
 #' @param excluded_cells a named list of cells to be excluded of the form list(set1 = c(cell1, celll2), set2 = c(cell3, cell4))
-#' all other cells will be marked "keep" in a column titled "excluded_because"
+#' all other cells will be marked NA in a column titled "excluded_because"
 #'
 #' @return
 #' @export
 #'
 #' @examples
-annotate_excluded <- function(seu, excluded_cells){
+annotate_excluded <- function(seu, ...){
+  # consider replacing
+  # mutate(coalesce_var = coalesce(!!! syms(vars_select(names(.), starts_with("my")))))
+
+  excluded_cells <- list(...)
 
   excluded_cells <- purrr::map2(excluded_cells, names(excluded_cells), ~rep(.y, length(.x))) %>%
     unlist() %>%
-    set_names(unlist(excluded_cells))
+    set_names(unlist(excluded_cells)) %>%
+    tibble::enframe("Sample_ID", "excluded_because")
 
   excluded_because <- as_tibble(seu[["nCount_RNA"]], rownames = "Sample_ID") %>%
-    mutate(excluded_because = ifelse(Sample_ID %in% names(excluded_cells), excluded_cells, NA)) %>%
-    select(-nCount_RNA) %>%
-    tibble::deframe()
+    dplyr::full_join(excluded_cells, by = "Sample_ID")
+
+  if ("excluded_because.x" %in% colnames(excluded_because)){
+    excluded_because <- dplyr::coalesce(excluded_because, excluded_because.x, excluded_because.y) %>%
+      select(-nCount_RNA) %>%
+      tibble::deframe() %>%
+      identity()
+  } else {
+    excluded_because <- select(excluded_because, -nCount_RNA) %>%
+      tibble::deframe() %>%
+      identity()
+  }
 
   seu <- AddMetaData(
     object = seu,

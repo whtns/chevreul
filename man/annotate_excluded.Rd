@@ -4,11 +4,11 @@
 \alias{annotate_excluded}
 \title{Annotate Exclusion Criteria}
 \usage{
-annotate_excluded(seu, excluded_cells)
+annotate_excluded(seu, ...)
 }
 \arguments{
 \item{excluded_cells}{a named list of cells to be excluded of the form list(set1 = c(cell1, celll2), set2 = c(cell3, cell4))
-all other cells will be marked "keep" in a column titled "excluded_because"}
+all other cells will be marked NA in a column titled "excluded_because"}
 }
 \description{
 Annotate Exclusion Criteria

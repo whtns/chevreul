@@ -2,12 +2,12 @@
 % Please edit documentation in R/seurat_batch_correct.R
 \name{filter_merged_seus}
 \alias{filter_merged_seus}
-\title{Filter Seurat Objects}
+\title{Filter a List of Seurat Objects}
 \usage{
-filter_merged_seus(seus, filter_var, filter_val)
+filter_merged_seus(seus, filter_var, filter_val, .drop = F)
 }
 \arguments{
-\item{tag}{}
+\item{.drop}{}
 }
 \description{
 Filter Seurat Objects by custom variable and reset assay to uncorrected "RNA"

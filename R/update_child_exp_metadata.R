@@ -3,7 +3,7 @@
 ## ------------------------------------------------------------------------
 # load metadata -----------------------------------------------------------
 
-#' Get Metadata
+#' Get Metadata for a project
 #'
 #' @param proj_path
 #'
@@ -12,10 +12,8 @@
 #'
 #' @examples
 get_meta <- function(proj_path){
-	meta_path <- fs::path(proj_path, "data", gsub("_proj", "_metadata.csv", path_file(proj_path)))
+	meta_path <- fs::path(proj_path, "data", gsub("_proj", "_metadata.csv", fs::path_file(proj_path)))
 }
-
-
 
 
 #' Update experiment Metadata

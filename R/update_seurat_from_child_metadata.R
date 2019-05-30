@@ -1,19 +1,26 @@
 
-#' Update Seurat Metadata
+#' Update Seurat Metadata from Project
 #'
-#' @param seu_meta
-#' @param merged_new_meta
+#' Given a project metadata file located in <proj_dir>/data/<meta_file>, update an existing seurat object with the project data
+#'
+#' @param seu
+#' @param proj_dir
 #' @param numcols
 #'
 #' @return
 #' @export
 #'
 #' @examples
-update_seu_meta <- function(seu_meta, merged_new_meta, numcols) {
+update_seu_meta <- function(seu, proj_dir, numcols) {
 	# browser()
-	common_cols <- intersect(colnames(seu_meta), colnames(merged_new_meta))
+
+  seu_meta <- as.data.frame(seu[[]])
+
+  project_meta <- readr::read_csv(get_meta(proj_dir))
+
+	common_cols <- intersect(colnames(seu_meta), colnames(project_meta))
   seu_meta <- mutate_at(seu_meta, .vars = vars(one_of(numcols)), .funs = funs(as.numeric))
-  updated_seu_meta <- dplyr::left_join(seu_meta, merged_new_meta, by = "Sample_ID")
+  updated_seu_meta <- dplyr::left_join(seu_meta, project_meta, by = "Sample_ID")
 
   left_side_common <- paste0(common_cols, ".y")
   right_side_common <- paste0(common_cols, ".x")

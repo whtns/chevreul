@@ -2,13 +2,13 @@
 % Please edit documentation in R/update_seurat_from_child_metadata.R
 \name{update_seu_meta}
 \alias{update_seu_meta}
-\title{Update Seurat Metadata}
+\title{Update Seurat Metadata from Project}
 \usage{
-update_seu_meta(seu_meta, merged_new_meta, numcols)
+update_seu_meta(seu, proj_dir, numcols)
 }
 \arguments{
 \item{numcols}{}
 }
 \description{
-Update Seurat Metadata
+Given a project metadata file located in <proj_dir>/data/<meta_file>, update an existing seurat object with the project data
 }

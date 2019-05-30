@@ -20,14 +20,15 @@ set_colnames_txi <- function(txi, colnames){
 #'
 #' @param stringtie_paths
 #' @param txOut
+#' @param countsFromAbundance
 #'
 #' @return
 #' @export
 #'
 #' @examples
-load_counts_from_stringtie <- function(proj_dir, txOut){
+load_counts_from_stringtie <- function(proj_dir, txOut, countsFromAbundance = "scaledTPM"){
   stringtie_paths <- rlang::with_handlers(
-    error = ~ abort("Can't find input stringtie files (stringtie output with extension t._ctab)", parent  = .),
+    error = ~ rlang::abort("Can't find input stringtie files (stringtie output with extension t._ctab)", parent  = .),
     stringtie_files <- fs::path(proj_dir, "output", "stringtie") %>%
       dir_ls(recursive = T) %>%
       path_filter("*t_data.ctab") %>%
@@ -37,7 +38,7 @@ load_counts_from_stringtie <- function(proj_dir, txOut){
   tmp <- read_tsv(stringtie_paths[1])
   tx2gene <- tmp[, c("t_name", "gene_name")]
 
-  txi <- tximport::tximport(stringtie_files, type = "stringtie", tx2gene = tx2gene, txOut = txOut, countsFromAbundance = "scaledTPM")
+  txi <- tximport::tximport(stringtie_files, type = "stringtie", tx2gene = tx2gene, txOut = txOut, countsFromAbundance = countsFromAbundance)
 
   sample_names <- path_file(path_dir(stringtie_paths))
 

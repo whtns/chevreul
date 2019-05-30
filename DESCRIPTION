@@ -19,7 +19,13 @@ Imports:
     tximport (>= 1.10.1),
     furrr,
     velocyto.R,
-    future
+    future,
+    DT,
+    plotly,
+    annotables,
+    shinycssloaders,
+    shinydashboard,
+    shiny
 Suggests: 
     dplyr,
     tidyr,

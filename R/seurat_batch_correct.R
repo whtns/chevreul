@@ -103,9 +103,9 @@ pull_gene_trx_seus <- function(proj_dir, suffix = ""){
   seu_path <- paste0("*", "_seu", suffix, ".rds")
 
   gene_trx_sces <- fs::path(proj_dir, "output", "sce") %>%
-    dir_ls() %>%
-    path_filter(seu_path) %>%
-    set_names(c("gene", "transcript")) %>%
+    fs::dir_ls() %>%
+    fs::path_filter(seu_path) %>%
+    purrr::set_names(c("gene", "transcript")) %>%
     identity()
   return(gene_trx_sces)
 }
@@ -120,7 +120,7 @@ pull_gene_trx_seus <- function(proj_dir, suffix = ""){
 #'
 #' @examples
 load_seurat_from_rds <- function(proj_dirs){
-  seu_files <- purrr::map(proj_dirs, seuratTools::pull_gene_trx_seus)
+  seu_files <- purrr::map(proj_dirs, pull_gene_trx_seus)
   names(seu_files) <- gsub("_proj", "", basename(proj_dirs))
 
   seu_files <- purrr::transpose(seu_files)
@@ -140,6 +140,7 @@ load_seurat_from_rds <- function(proj_dirs){
 #'
 #' @return
 #' @export
+#'
 #'
 #' @examples
 seurat_integration_pipeline <- function(seus, res_low = 0.2, res_hi = 2.0, suffix = '') {
@@ -164,10 +165,10 @@ seurat_integration_pipeline <- function(seus, res_low = 0.2, res_hi = 2.0, suffi
 #' @export
 #'
 #' @examples
-seurat_reduce_dimensions <- function(seu) {
+seurat_reduce_dimensions <- function(seu, ...) {
 
-  seu <- RunPCA(object = seu, features = VariableFeatures(object = seu), do.print = FALSE)
-  seu <- RunTSNE(object = seu, reduction = "pca", dims = 1:30)
+  seu <- RunPCA(object = seu, features = VariableFeatures(object = seu), do.print = FALSE, ...)
+  seu <- RunTSNE(object = seu, reduction = "pca", dims = 1:30, ...)
   seu <- RunUMAP(object = seu, reduction = "pca", dims = 1:30)
 
 }
@@ -183,12 +184,12 @@ seurat_reduce_dimensions <- function(seu) {
 #' @export
 #'
 #' @examples
-seurat_pipeline <- function(seu, resolution=0.6){
+seurat_pipeline <- function(seu, resolution=0.6, ...){
 
   seu <- seurat_preprocess(seu, scale = T)
 
   # PCA
-  seu <- seurat_reduce_dimensions(seu)
+  seu <- seurat_reduce_dimensions(seu, ...)
 
   seu <- seurat_cluster(seu, resolution = resolution)
 
@@ -224,31 +225,47 @@ SetDefaultAssay <- function(seu, new_assay){
 }
 
 
-#' Filter Seurat Objects
+
+#' Filter a List of Seurat Objects
 #'
 #' Filter Seurat Objects by custom variable and reset assay to uncorrected "RNA"
 #'
 #' @param seus
 #' @param filter_var
 #' @param filter_val
-#' @param tag
+#' @param .drop
 #'
 #' @return
 #' @export
 #'
 #' @examples
-filter_merged_seus <- function(seus, filter_var, filter_val) {
-  # browser()
-  if(is.na(filter_val)){
-    seus <- purrr::map(seus, ~.x[, is.na(.x[[filter_var]])])
-  } else {
-    seus <- purrr::map(seus, ~.x[, .x[[filter_var]] == filter_val])
-  }
-
-
-  seus <- purrr::map(seus, SetDefaultAssay, "RNA")
-
+filter_merged_seus <- function(seus, filter_var, filter_val, .drop = F) {
+  seus <- purrr::map(seus, ~filter_merged_seu(seu = .x, filter_var = filter_var, filter_val = filter_val, .drop = .drop))
 }
+
+
+#' Filter a Single Seurat Object
+#'
+#' @param seu
+#' @param filter_var
+#' @param filter_val
+#' @param .drop
+#'
+#' @return
+#' @export
+#'
+#' @examples
+filter_merged_seu <- function(seu, filter_var, filter_val, .drop = .drop) {
+  if(.drop){
+    mycells <- seu[[]][[filter_var]] == filter_val
+  } else {
+    mycells <- seu[[]][[filter_var]] == filter_val | is.na(seu[[]][[filter_var]])
+  }
+  mycells <- colnames(seu)[mycells]
+  seu <- seu[,mycells]
+  return(seu)
+}
+
 
 #' Reintegrate (filtered) seurat objects
 #'
@@ -263,10 +280,15 @@ filter_merged_seus <- function(seus, filter_var, filter_val) {
 #'
 #' @examples
 reintegrate_seus <- function(seus, suffix = "", ...){
+
+  seus <- purrr::map(seus, SetDefaultAssay, "RNA")
+
   seus <- purrr::map(seus, SplitObject, split.by = "batch")
 
   seus <- seurat_integration_pipeline(seus, suffix = suffix)
 
 
 }
+
+
 
