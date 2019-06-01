@@ -1,145 +1,198 @@
 
-#' Create a Shiny App to View Seurat Data
+#' Plot Metadata Variables
 #'
-#' @param proj_dir The base directory of the project ex. "~/single_cell_project/project/"
-#' @param plotTypes The variables to use for the Embedding plots, ex. c("batch", "treatment_group")
-#' @param filterTypes a named vector of file suffixes corresponding to filtered seurat objects in the project ex. c("Without Low Read Count" = "wo_lowrc")
-#' @param appTitle The Title of the App
+#' @param seu
+#' @param embedding
+#' @param group
 #'
 #' @return
 #' @export
 #'
 #' @examples
-seuratApp <- function(proj_dir, plotTypes, filterTypes, appTitle) {
+plot_var <- function(seu, embedding = "umap", group = "batch"){
+  #
+  metadata <- as_tibble(seu[[]][Cells(seu),], rownames = "sample_id")
+  cellid <- metadata[["sample_id"]]
+  key <- rownames(metadata)
+
+  d <- DimPlot(object = seu, reduction = embedding, group.by = group) +
+    aes(key = key, cellid = cellid)
+
+  ggplotly(d, tooltip = "cellid", height  = 750) %>%
+    layout(dragmode = "lasso")
+
+}
+
+#' Plot Features
+#'
+#' @param seu
+#' @param embedding
+#' @param features
+#'
+#' @return
+#' @export
+#'
+#' @examples
+plot_feature <- function(seu, embedding, features){
+
+  metadata <- as_tibble(seu[[]][Cells(seu),], rownames = "sample_id")
+
+  cellid <- metadata[["sample_id"]]
+  key <- rownames(metadata)
+
+  fp <- FeaturePlot(object = seu, reduction = embedding, features = features)	+
+    aes(key = key, cellid = cellid)
+
+  ggplotly(fp, tooltip = "cellid", height = 750) %>%
+    layout(dragmode = "lasso")
+
+}
+
+#' Plot Rides
+#'
+#' @param seu
+#' @param features
+#'
+#' @return
+#' @export
+#'
+#' @examples
+plot_ridge <- function(seu, features){
+
+  cc_genes_path <- "~/single_cell_projects/resources/regev_lab_cell_cycle_genes.txt"
+  cc.genes <- readLines(con = cc_genes_path)
+  s.genes <- cc.genes[1:43]
+  g2m.genes <- cc.genes[44:97]
+
+  seu <- CellCycleScoring(object = seu, s.genes, g2m.genes,
+                          set.ident = TRUE)
+
+  RidgePlot(object = seu, features = features)
+
+  # ggplotly(r, height = 750)
+  #
+}
+
+
+#' Run Seurat Differential Expression
+#'
+#' @param seu
+#' @param cluster1
+#' @param cluster2
+#' @param resolution
+#' @param diffex_scheme
+#'
+#' @return
+#' @export
+#'
+#' @examples
+run_seurat_de <- function(seu, cluster1, cluster2, resolution, diffex_scheme = "seurat") {
+
+  if (diffex_scheme == "seurat"){
+    Idents(seu) <- paste0("clusters_", resolution)
+    seu <- subset(seu, idents = c(cluster1, cluster2))
+  } else if (diffex_scheme == "custom"){
+    # subset by supplied cell ids
+    #
+    seu <- seu[,c(cluster1, cluster2)]
+
+    keep_cells <- c(cluster1, cluster2)
+    new_idents <- c(rep(1, length(cluster1)), rep(2, length(cluster2)))
+    names(new_idents) <- keep_cells
+    new_idents <- new_idents[colnames(seu)]
+    Idents(seu) <- new_idents
+    cluster1 = 1
+    cluster2 = 2
+
+  }
+
+  tests <- c("t", "wilcox", "bimod")
+  test_list <- vector("list", length(tests))
+
+  for (test in tests){
+    print(test)
+    de <- FindMarkers(seu,
+                      ident.1 = cluster1,
+                      ident.2 = cluster2,
+                      test.use = test)
+    test_list[[match(test, tests)]] = de
+
+  }
+  names(test_list) <- tests
+  return(test_list)
+}
+
+#' TPlot Cluster Marker Genes
+#'
+#' @param seu
+#' @param resolution
+#'
+#' @return
+#' @export
+#'
+#' @examples
+plot_markers <- function(seu, resolution){
+
+  resolution <- paste0("clusters_", resolution)
+  Idents(seu) <- resolution
+
+  markerplot <- DotPlot(seu, features = unique(seu@misc$markers[[resolution]])) +
+    theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+
+  ggplotly(markerplot, height = 800)
+
+}
+
+#' Plot Read Count
+#'
+#' @param seu
+#' @param plot_type
+#'
+#' @return
+#' @export
+#'
+#' @examples
+plot_readcount <- function(seu, plot_type){
+  #
+  rc_plot <- ggplot(data.frame(seu[[]]), aes(x=reorder(Sample_ID, -nCount_RNA), y = nCount_RNA, fill = !!as.symbol(plot_type))) +
+    # scale_y_continuous(breaks = seq(0, 8e7, by = 5e5)) +
+    scale_y_log10() +
+    geom_bar(position = "identity", stat = "identity") +
+    # geom_text(data=subset(agg_qc_wo_na, Sample %in% thresholded_cells & align_type == "paired_total"),
+    #   aes(Sample, count, label=Sample)) +
+    # geom_text(data=subset(agg_qc_wo_na, Sample %in% low_read_count_cells & align_type == "paired_aligned_one"),
+    #   aes(Sample, count, label=Sample)) +
+    theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
+    # scale_fill_manual(values = c( "low_read_count"="tomato", "keep"="gray" ), guide = FALSE ) +
+    labs(title = "Paired Aligned One Reads", x = "Sample") +
+    NULL
+
+  rc_plot <- ggplotly(rc_plot)
+}
+
+
+#' Create Seurat App
+#'
+#' @param proj_dir The project directory of the base dataset ex. "~/single_cell_projects/sc_cone_devel/proj"
+#' @param plot_types The types of plots to be shown as a named list containing two vectors: 1) category_vars and 2) continuous_vars
+#' @param filterTypes A named vector of file suffixes corresponding to subsets of the data, ex. filterTypes <- c("", "remove_lowrc") %>% set_names(c("Unfiltered", "low read count cells"))
+#' @param appTitle A title of the app
+#'
+#' @return
+#' @export
+#'
+#' @examples
+seuratApp <- function(proj_dir, plot_types, filterTypes, appTitle) {
 
   options(DT.options = list(pageLength = 2000, paging = FALSE, info = TRUE,
                             searching = TRUE, autoWidth = F,
                             ordering = TRUE, language = list(search = 'Filter:')))
 
-
-  # define functions------------------------------
-  plot_var <- function(seu, embedding = "umap", group = "batch"){
-    #
-    metadata <- as_tibble(seu[[]][Cells(seu),], rownames = "sample_id")
-    cellid <- metadata[["sample_id"]]
-    key <- rownames(metadata)
-
-    d <- DimPlot(object = seu, reduction = embedding, group.by = group) +
-      aes(key = key, cellid = cellid)
-
-    plotly::ggplotly(d, tooltip = "cellid", height  = 750) %>%
-      layout(dragmode = "lasso")
-
-  }
-
-  plot_feature <- function(seu, embedding, features){
-
-    metadata <- as_tibble(seu[[]][Cells(seu),], rownames = "sample_id")
-
-    cellid <- metadata[["sample_id"]]
-    key <- rownames(metadata)
-
-    fp <- FeaturePlot(object = seu, reduction = embedding, features = features)	+
-      aes(key = key, cellid = cellid)
-
-    plotly::ggplotly(fp, tooltip = "cellid", height = 750) %>%
-      layout(dragmode = "lasso")
-
-  }
-
-  plot_ridge <- function(seu, features){
-
-    cc_genes_path <- "~/single_cell_projects/resources/regev_lab_cell_cycle_genes.txt"
-    cc.genes <- readLines(con = cc_genes_path)
-    s.genes <- cc.genes[1:43]
-    g2m.genes <- cc.genes[44:97]
-
-    seu <- CellCycleScoring(object = seu, s.genes, g2m.genes,
-                            set.ident = TRUE)
-
-    RidgePlot(object = seu, features = features)
-
-    # ggplotly(r, height = 750)
-    #
-  }
-
-
-  run_seurat_de <- function(seu, cluster1, cluster2, resolution, diffex_scheme = "seurat") {
-
-    if (diffex_scheme == "seurat"){
-      Idents(seu) <- paste0("clusters_", resolution)
-      seu <- subset(seu, idents = c(cluster1, cluster2))
-    } else if (diffex_scheme == "custom"){
-      # subset by supplied cell ids
-      #
-      seu <- seu[,c(cluster1, cluster2)]
-
-      keep_cells <- c(cluster1, cluster2)
-      new_idents <- c(rep(1, length(cluster1)), rep(2, length(cluster2)))
-      names(new_idents) <- keep_cells
-      new_idents <- new_idents[colnames(seu)]
-      Idents(seu) <- new_idents
-      cluster1 = 1
-      cluster2 = 2
-
-    }
-
-    tests <- c("t", "wilcox", "bimod")
-    test_list <- vector("list", length(tests))
-
-    for (test in tests){
-      print(test)
-      de <- FindMarkers(seu,
-                        ident.1 = cluster1,
-                        ident.2 = cluster2,
-                        test.use = test)# ,
-      #                       logfc.threshold = -Inf,
-      #                       min.cells.gene = -Inf,
-      #                       min.pct = -Inf,)
-      test_list[[match(test, tests)]] = de
-      # write.table(de, file = sprintf('pbmc_seurat_de_%s.txt', test))
-      # print(head(de))
-    }
-    names(test_list) <- tests
-    return(test_list)
-  }
-
-  plot_markers <- function(seu, resolution){
-
-    resolution <- paste0("clusters_", resolution)
-    Idents(seu) <- resolution
-
-    markerplot <- DotPlot(seu, features = unique(seu@misc$markers[[resolution]])) +
-      theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
-
-    plotly::ggplotly(markerplot, height = 800)
-
-  }
-
-  plot_readcount <- function(seu, plot_type){
-    #
-    rc_plot <- ggplot(data.frame(seu[[]]), aes(x=reorder(Sample_ID, -nCount_RNA), y = nCount_RNA, fill = !!as.symbol(plot_type))) +
-      # scale_y_continuous(breaks = seq(0, 8e7, by = 5e5)) +
-      scale_y_log10() +
-      geom_bar(position = "identity", stat = "identity") +
-      # geom_text(data=subset(agg_qc_wo_na, Sample %in% thresholded_cells & align_type == "paired_total"),
-      #   aes(Sample, count, label=Sample)) +
-      # geom_text(data=subset(agg_qc_wo_na, Sample %in% low_read_count_cells & align_type == "paired_aligned_one"),
-      #   aes(Sample, count, label=Sample)) +
-      theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
-      # scale_fill_manual(values = c( "low_read_count"="tomato", "keep"="gray" ), guide = FALSE ) +
-      labs(title = "Paired Aligned One Reads", x = "Sample") +
-      NULL
-
-    rc_plot <- plotly::ggplotly(rc_plot)
-  }
-
   # header ------------------------------
-  header <- dashboardHeader(title = appTitle)
+  header <- shinydashboard::dashboardHeader(title = appTitle)
 
   loadDataui <- function(id, label = "Load Data", filterTypes){
     ns <- NS(id)
-
     tagList(
       radioButtons(ns("filterType"), "dataset to include", choices = filterTypes, selected = ""),
       actionButton(ns("loadButton"), "Load Full Dataset")
@@ -150,7 +203,7 @@ seuratApp <- function(proj_dir, plotTypes, filterTypes, appTitle) {
     ns <- session$ns
 
     seu <- reactiveValues()
-    # browser()
+
     observeEvent(input$loadButton, {
 
       showModal(modalDialog("Loading Data", footer=NULL))
@@ -160,7 +213,7 @@ seuratApp <- function(proj_dir, plotTypes, filterTypes, appTitle) {
       } else {
         filterType = input$filterType
       }
-
+      #
       seu_paths <- rprojroot::find_root_file("output/sce", criterion = ".Rhistory", path = proj_dir) %>%
         dir_ls() %>%
         path_filter(paste0("*_seu", filterType, ".rds")) %>%
@@ -179,12 +232,6 @@ seuratApp <- function(proj_dir, plotTypes, filterTypes, appTitle) {
       seu$active <- feature_seus[[feature_type]]
     })
     return(seu)
-
-
-    # vals <- reactiveValues()
-    # observe({vals$text1 <- input$text1})
-    # observe({vals$text2 <- input$text2})
-    # return(vals)
 
   }
 
@@ -213,17 +260,17 @@ seuratApp <- function(proj_dir, plotTypes, filterTypes, appTitle) {
 
 
   # sidebar------------------------------
-  sidebar <- dashboardSidebar(
+  sidebar <- shinydashboard::dashboardSidebar(
     loadDataui("loadDataui", filterTypes = filterTypes),
     radioButtons("feature_type", "cluster on genes or transcripts?", choices = c("gene", "transcript"), selected = "gene"),
-    sidebarMenu(
-      menuItem("Compare Plots", tabName = "comparePlots"),
-      menuItem("Compare Read Counts", tabName = "compareReadCount"),
-      menuItem("Differential Expression", tabName = "diffex"),
-      menuItem("Find Markers", tabName = "findMarkers"),
-      menuItem("Subset Seurat Input", icon = icon("th"), tabName = "subsetSeurat"),
-      menuItem("All Transcripts", tabName = "allTranscripts")
-      # menuItem("Cell Cycle Scoring", tabName = "cellCycle", icon = icon("th"))
+    shinydashboard::sidebarMenu(
+      shinydashboard::menuItem("Compare Plots", tabName = "comparePlots"),
+      shinydashboard::menuItem("Compare Read Counts", tabName = "compareReadCount"),
+      shinydashboard::menuItem("Differential Expression", tabName = "diffex"),
+      shinydashboard::menuItem("Find Markers", tabName = "findMarkers"),
+      shinydashboard::menuItem("Subset Seurat Input", icon = icon("th"), tabName = "subsetSeurat"),
+      shinydashboard::menuItem("All Transcripts", tabName = "allTranscripts")
+      # shinydashboard::menuItem("Cell Cycle Scoring", tabName = "cellCycle", icon = icon("th"))
     )
     # Copy in UI
     # diffexui("diffexui"),
@@ -232,21 +279,27 @@ seuratApp <- function(proj_dir, plotTypes, filterTypes, appTitle) {
 
   )
 
-  plotDimRedui <- function(id, plotTypes){
+  plotDimRedui <- function(id, plot_types){
     ns <- NS(id)
+
     tagList(
-      selectInput(ns("dplottype"), "Variable to Plot", choices = plotTypes, selected = "seurat"),
+      selectizeInput(ns("dplottype"), "Variable to Plot", choices = plot_types, selected = c("custom"), multiple = TRUE),
       radioButtons(ns("embedding"), "dimensional reduction method", choices = c("pca", "tsne", "umap"), selected = "umap"),
       uiOutput(ns('featuretext')),
       sliderInput(ns("resolution"), "Resolution of clustering algorithm (affects number of clusters)", min = 0.2, max = 2.0, step = 0.2, value = 0.6),
-      plotlyOutput(ns("dplot"), height = 750) %>%
+      plotly::plotlyOutput(ns("dplot"), height = 750) %>%
         shinycssloaders::withSpinner()
 
     )
   }
 
-  plotDimRed <- function(input, output, session, seu, plotTypes, feature_type){
+  plotDimRed <- function(input, output, session, seu, plot_types, feature_type){
     ns <- session$ns
+    #
+    continuous_vars <- plot_types$continuous_vars
+    category_vars <- plot_types$category_vars
+    plot_types <- purrr::flatten_chr(plot_types)
+
     prefill_feature <- reactive({
       if(feature_type() == "transcript"){
         'ENST00000488147'
@@ -256,23 +309,51 @@ seuratApp <- function(proj_dir, plotTypes, filterTypes, appTitle) {
     })
 
     output$featuretext <- renderUI({
-      textInput(ns("feature"), "gene or transcript on which to color the plot; eg. 'RXRG' or 'ENST00000488147'", value = prefill_feature())
+      # #
+      textInput(ns("customFeature"), "gene or transcript on which to color the plot; eg. 'RXRG' or 'ENST00000488147'", value = prefill_feature())
     })
+
 
     output$dplot <- renderPlotly({
       req(seu$active)
+      req(input$customFeature)
+      # event_register(dplot, 'plotly_')
 
-      if(input$dplottype == "custom"){
-        plot_feature(seu$active, embedding = input$embedding, features = input$feature)
-      } else if (input$dplottype %in% continuous_vars){
-        plot_feature(seu$active, embedding = input$embedding, features = input$dplottype)
-      } else if (input$dplottype == "seurat") {
+      if(length(input$dplottype) > 1){
+
+        mycols = input$dplottype
+
         prefix_resolution = paste0("clusters_", input$resolution)
-        plot_var(seu$active, embedding = input$embedding, group = prefix_resolution
+        mycols <- gsub("^seurat$", prefix_resolution, mycols)
+
+        newcolname = paste(mycols, collapse = "_")
+        newdata = as_tibble(seu$active[[mycols]], rownames = "Sample_ID") %>%
+          tidyr::unite(!!newcolname, mycols) %>%
+          deframe() %>%
+          identity()
+
+        seu$active <- AddMetaData(
+          seu$active,
+          metadata = newdata,
+          col.name = newcolname
         )
-      } else if (input$dplottype %in% plotTypes){
-        #
-        plot_var(seu$active, embedding = input$embedding, group = input$dplottype)
+
+        plot_var(seu$active, embedding = input$embedding, group = newcolname)
+
+      } else {
+
+        if(input$dplottype == "custom"){
+          plot_feature(seu$active, embedding = input$embedding, features = input$customFeature)
+        } else if (input$dplottype %in% continuous_vars){
+          plot_feature(seu$active, embedding = input$embedding, features = input$dplottype)
+        } else if (input$dplottype == "seurat") {
+          prefix_resolution = paste0("clusters_", input$resolution)
+          plot_var(seu$active, embedding = input$embedding, group = prefix_resolution
+          )
+        } else if (input$dplottype %in% plot_types){
+          #
+          plot_var(seu$active, embedding = input$embedding, group = input$dplottype)
+        }
       }
     })
   }
@@ -280,7 +361,7 @@ seuratApp <- function(proj_dir, plotTypes, filterTypes, appTitle) {
   tableSelectedui <- function(id){
     ns <- NS(id)
     tagList(
-      DT::DTOutput(ns("brushtable"))
+      DTOutput(ns("brushtable"))
 
     )
   }
@@ -311,43 +392,27 @@ seuratApp <- function(proj_dir, plotTypes, filterTypes, appTitle) {
                     ))
 
     })
-
-    # output$cc <- DT::renderDT({
-    #   req(brush())
-    #   #
-    #
-    #   selected_meta <- data.frame(seu$active[[]][brush(),])
-    #   DT::datatable(selected_meta,
-    #                 extensions = 'Buttons',
-    #                 options = list(
-    #                   dom = "Bft",
-    #                   buttons = c('copy', 'csv'),
-    #                   scrollX = "100px",
-    #                   scrollY = "400px"
-    #                 ))
-    #
-    # })
   }
 
   displaySubsetui <- function(id){
     ns <- NS(id)
     tagList(
       fluidRow(
-        box(DT::DTOutput(ns("seu_meta")), width = 6),
-        box(DT::DTOutput(ns("sub_seu_meta")), width = 6)
+        box(DTOutput(ns("seu_meta")), width = 6),
+        box(DTOutput(ns("sub_seu_meta")), width = 6)
       )
     )
   }
 
-  displaySubset <- function(input, output, session, seu, plotTypes){
+  displaySubset <- function(input, output, session, seu, plot_types){
     ns <- session$ns
-    plotTypes <- plotTypes[-which(plotTypes %in% c("seurat", "custom"))]
+    plot_types <- plot_types[-which(plot_types %in% c("seurat", "custom"))]
 
     output$seu_meta <- DT::renderDT({
       req(seu$active)
 
       seu_meta <- data.frame(seu$active[[]]) %>%
-        dplyr::select(Sample_ID, batch, one_of(plotTypes), everything())
+        dplyr::select(Sample_ID, batch, one_of(plot_types), everything())
 
       DT::datatable(seu_meta,
                     extensions = 'Buttons',
@@ -365,7 +430,7 @@ seuratApp <- function(proj_dir, plotTypes, filterTypes, appTitle) {
       req(input$seu_meta_rows_selected)
       #
       sub_seu_meta <- data.frame(seu$active[[]][input$seu_meta_rows_selected,]) %>%
-        dplyr::select(Sample_ID, batch, one_of(plotTypes), everything())
+        dplyr::select(Sample_ID, batch, one_of(plot_types), everything())
 
       brushtable <- DT::datatable(sub_seu_meta,
                                   extensions = 'Buttons',
@@ -445,12 +510,12 @@ seuratApp <- function(proj_dir, plotTypes, filterTypes, appTitle) {
 
       box(
         title = "Custom Cluster 1",
-        DT::DTOutput(ns("cc1")),
+        DTOutput(ns("cc1")),
         width = 12
       ),
       box(
         title = "Custom Cluster 2",
-        DT::DTOutput(ns("cc2")),
+        DTOutput(ns("cc2")),
         width = 12
       )
 
@@ -534,7 +599,7 @@ seuratApp <- function(proj_dir, plotTypes, filterTypes, appTitle) {
     ns <- NS(id)
     tagList(
       sliderInput(ns("resolution"), "Resolution of clustering algorithm (affects number of clusters)", min = 0.2, max = 2.0, step = 0.2, value = 0.6),
-      plotlyOutput(ns("markerplot"), height = 800)
+      plotly::plotlyOutput(ns("markerplot"), height = 800)
     )
   }
 
@@ -548,17 +613,17 @@ seuratApp <- function(proj_dir, plotTypes, filterTypes, appTitle) {
     })
   }
 
-  plotReadCountui <- function(id, plotTypes){
+  plotReadCountui <- function(id, plot_types){
     ns <- NS(id)
     tagList(
-      selectInput(ns("rcplottype"), "Variable to Plot", choices = plotTypes, selected = "seurat"),
+      selectInput(ns("rcplottype"), "Variable to Plot", choices = plot_types, selected = c("custom"), multiple = TRUE),
       sliderInput(ns("resolution"), "Resolution of clustering algorithm (affects number of clusters)", min = 0.2, max = 2.0, step = 0.2, value = 0.6),
-      plotlyOutput(ns("rcplot"), height = 750) %>%
+      plotly::plotlyOutput(ns("rcplot"), height = 750) %>%
         shinycssloaders::withSpinner()
     )
   }
 
-  plotReadCount <- function(input, output, session, seu, plotTypes){
+  plotReadCount <- function(input, output, session, seu, plot_types){
     ns <- session$ns
 
     output$rcplot <- renderPlotly({
@@ -569,7 +634,7 @@ seuratApp <- function(proj_dir, plotTypes, filterTypes, appTitle) {
       } else if (input$rcplottype == "seurat") {
         resolution = paste0("clusters_", input$resolution)
         plot_readcount(seu$active, resolution)
-      } else if (input$rcplottype %in% plotTypes){
+      } else if (input$rcplottype %in% plot_types){
         plot_readcount(seu$active, input$rcplottype)
       }
     })
@@ -647,7 +712,7 @@ seuratApp <- function(proj_dir, plotTypes, filterTypes, appTitle) {
 
       plot_output_list <- lapply(1:length(pList()), function(i) {
         plotname <- transcripts()[[i]]
-        plotlyOutput(ns(plotname), height = 750)
+        plotly::plotlyOutput(ns(plotname), height = 750)
 
         # myTabs = lapply(paste('Tab', 1: nTabs), tabPanel)
         # do.call(tabsetPanel, myTabs)
@@ -656,8 +721,6 @@ seuratApp <- function(proj_dir, plotTypes, filterTypes, appTitle) {
     })
 
     observe({
-      # req(input$plotTrx)
-
       for (i in 1:length(pList())) {
         my_i <- transcripts()[[i]]
         plotname <- my_i
@@ -687,75 +750,74 @@ seuratApp <- function(proj_dir, plotTypes, filterTypes, appTitle) {
     })
   }
 
-
   # body------------------------------
-  body <- dashboardBody(
-    tabItems(
-      tabItem(tabName = "comparePlots",
-              h2("Compare Plots"),
-              fluidRow(
-                box(plotDimRedui("hello", plotTypes)),
-                box(plotDimRedui("howdy", plotTypes))
-              ),
-              fluidRow(
-                box(
-                  title = "Selected Cells",
-                  tableSelectedui("hello"),
-                  width = 12
-                )
-              )
+  body <- shinydashboard::dashboardBody(
+    shinydashboard::tabItems(
+      shinydashboard::tabItem(tabName = "comparePlots",
+                              h2("Compare Plots"),
+                              fluidRow(
+                                box(plotDimRedui("hello", purrr::flatten_chr(plot_types))),
+                                box(plotDimRedui("howdy", purrr::flatten_chr(plot_types)))
+                              ),
+                              fluidRow(
+                                box(
+                                  title = "Selected Cells",
+                                  tableSelectedui("hello"),
+                                  width = 12
+                                )
+                              )
       ),
-      tabItem(tabName = "compareReadCount",
-              h2("Compare Read Counts"),
-              fluidRow(
-                box(plotReadCountui("hello", plotTypes)),
-                box(plotReadCountui("howdy", plotTypes))
-              )
+      shinydashboard::tabItem(tabName = "compareReadCount",
+                              h2("Compare Read Counts"),
+                              fluidRow(
+                                box(plotReadCountui("hello", purrr::flatten_chr(plot_types))),
+                                box(plotReadCountui("howdy", purrr::flatten_chr(plot_types)))
+                              )
       ),
-      tabItem(tabName = "subsetSeurat",
-              h2("Subset Seurat Input"),
-              actionButton("subsetAction", "subset seurat"),
-              displaySubsetui("hello")
+      shinydashboard::tabItem(tabName = "subsetSeurat",
+                              h2("Subset Seurat Input"),
+                              actionButton("subsetAction", "subset seurat"),
+                              displaySubsetui("hello")
       ),
-      tabItem(tabName = "findMarkers",
-              h2("Find Markers"),
-              fluidRow(
-                box(findMarkersui("hello"))
-              )
+      shinydashboard::tabItem(tabName = "findMarkers",
+                              h2("Find Markers"),
+                              fluidRow(
+                                box(findMarkersui("hello"))
+                              )
       ),
-      tabItem(tabName = "allTranscripts",
-              h2("All Transcripts"),
-              fluidRow(actionButton("plotTrx", "Plot all transcripts")),
-              fluidRow(
-                column(
-                  allTranscriptsui("hello"), width = 6
-                ),
-                column(
-                  allTranscriptsui("howdy"), width = 6
-                )
-              )
+      shinydashboard::tabItem(tabName = "allTranscripts",
+                              h2("All Transcripts"),
+                              fluidRow(actionButton("plotTrx", "Plot all transcripts")),
+                              fluidRow(
+                                column(
+                                  allTranscriptsui("hello"), width = 6
+                                ),
+                                column(
+                                  allTranscriptsui("howdy"), width = 6
+                                )
+                              )
 
       ),
-      tabItem(tabName = "diffex",
-              h2("Differential Expression"),
-              column(
-                diffexui("hello"),
-                width = 6
-              ),
-              column(
-                box(plotDimRedui("diffex", plotTypes), width = 12),
-                box(
-                  title = "Selected Cells",
-                  tableSelectedui("diffex"),
-                  width = 12
-                ),
-                width = 6
-              )
+      shinydashboard::tabItem(tabName = "diffex",
+                              h2("Differential Expression"),
+                              column(
+                                diffexui("hello"),
+                                width = 6
+                              ),
+                              column(
+                                box(plotDimRedui("diffex", purrr::flatten_chr(plot_types)), width = 12),
+                                box(
+                                  title = "Selected Cells",
+                                  tableSelectedui("diffex"),
+                                  width = 12
+                                ),
+                                width = 6
+                              )
       )
     )
   )
 
-  # 		tabItem(tabName = "cell-cycle",
+  # 		shinydashboard::tabItem(tabName = "cell-cycle",
   # 						h2("Cell Cycle Scoring"),
   # 						fluidRow(
   # 						  box(ccScoreui("ccScoreui"))
@@ -774,8 +836,9 @@ seuratApp <- function(proj_dir, plotTypes, filterTypes, appTitle) {
 
   # server ------------------------------
   server <- function(input, output, session) {
+    options(warn = -1)
 
-    seu <- callModule(loadData, "hello", proj_dir, input$feature_type)
+    seu <- callModule(loadData, "loadDataui", proj_dir, input$feature_type)
 
     observeEvent(input$feature_type, {
       seu$active <- seu[[input$feature_type]]
@@ -785,17 +848,17 @@ seuratApp <- function(proj_dir, plotTypes, filterTypes, appTitle) {
     feature_type <- reactive({input$feature_type})
 
     #body
-    callModule(plotDimRed, "hello", seu, plotTypes, feature_type)
-    callModule(plotDimRed, "howdy", seu, plotTypes, feature_type)
-    callModule(plotDimRed, "diffex", seu, plotTypes, feature_type)
+    callModule(plotDimRed, "hello", seu, plot_types, feature_type)
+    callModule(plotDimRed, "howdy", seu, plot_types, feature_type)
+    callModule(plotDimRed, "diffex", seu, plot_types, feature_type)
 
-    callModule(plotReadCount, "hello", seu, plotTypes)
-    callModule(plotReadCount, "howdy", seu, plotTypes)
+    callModule(plotReadCount, "hello", seu, purrr::flatten_chr(plot_types))
+    callModule(plotReadCount, "howdy", seu, purrr::flatten_chr(plot_types))
 
     callModule(tableSelected, "hello", seu)
     callModule(tableSelected, "diffex", seu)
 
-    selected_rows <- callModule(displaySubset, "hello", seu, plotTypes)
+    selected_rows <- callModule(displaySubset, "hello", seu, purrr::flatten_chr(plot_types))
 
     observeEvent(input$subsetAction, {
 
@@ -829,5 +892,8 @@ seuratApp <- function(proj_dir, plotTypes, filterTypes, appTitle) {
   # runApp ------------------------------
   shinyApp(ui, server)
 
-}
 
+
+  # seuratApp(proj_dir, plot_types, filterTypes, appTitle)
+
+}
