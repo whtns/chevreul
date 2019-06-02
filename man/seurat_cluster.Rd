@@ -4,7 +4,8 @@
 \alias{seurat_cluster}
 \title{Run Louvain Clustering at Multiple Resolutions}
 \usage{
-seurat_cluster(seu, resolution = 0.6, custom_clust = NULL)
+seurat_cluster(seu, resolution = 0.6, custom_clust = NULL,
+  algorithm = 1)
 }
 \arguments{
 \item{custom_clust}{}

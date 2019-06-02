@@ -5,7 +5,7 @@
 \title{Run Seurat Integration}
 \usage{
 seurat_integration_pipeline(seus, res_low = 0.2, res_hi = 2,
-  suffix = "")
+  suffix = "", ...)
 }
 \arguments{
 \item{suffix}{}

@@ -55,15 +55,15 @@ seurat_batch_correct <- function(seu_list) {
 #' @export
 #'
 #' @examples
-seurat_cluster <- function(seu, resolution = 0.6, custom_clust = NULL) {
+seurat_cluster <- function(seu, resolution = 0.6, custom_clust = NULL, algorithm = 1) {
   # browser()
   seu <- FindNeighbors(object = seu, dims = 1:10)
-  seu <- FindClusters(object = seu, resolution = resolution)
+  seu <- FindClusters(object = seu, resolution = resolution, algorithm = algorithm)
 
   if (length(resolution) > 1){
     for (i in resolution){
       # browser()
-      seu <- FindClusters(object = seu, resolution = i)
+      seu <- FindClusters(object = seu, resolution = i, algorithm = algorithm)
       seu <- StashIdent(object = seu, save.name = paste0("clusters_", i))
     }
   }
@@ -143,16 +143,17 @@ load_seurat_from_rds <- function(proj_dirs){
 #'
 #'
 #' @examples
-seurat_integration_pipeline <- function(seus, res_low = 0.2, res_hi = 2.0, suffix = '') {
+seurat_integration_pipeline <- function(seus, res_low = 0.2, res_hi = 2.0, suffix = '', ...) {
 
   corrected_seus <- purrr::map(seus, seurat_batch_correct)
 
   # cluster merged seurat objects
-  corrected_seus <- purrr::map(corrected_seus, seuratTools::seurat_cluster, resolution = seq(res_low, res_hi, by = 0.2))
+  corrected_seus <- purrr::map(corrected_seus, seuratTools::seurat_cluster, resolution = seq(res_low, res_hi, by = 0.2, ...))
 
   corrected_seus <- purrr::map(corrected_seus, find_all_markers)
 
-  corrected_seus <- purrr::imap(corrected_seus, save_seurat, suffix = suffix)
+  corrected_seus <- purrr::imap(corrected_seus, save_seurat, suffix = suffix, ...)
+
 }
 
 #' Dimensional Reduction
@@ -167,9 +168,9 @@ seurat_integration_pipeline <- function(seus, res_low = 0.2, res_hi = 2.0, suffi
 #' @examples
 seurat_reduce_dimensions <- function(seu, ...) {
 
-  seu <- RunPCA(object = seu, features = VariableFeatures(object = seu), do.print = FALSE, ...)
-  seu <- RunTSNE(object = seu, reduction = "pca", dims = 1:30, ...)
-  seu <- RunUMAP(object = seu, reduction = "pca", dims = 1:30)
+  seu <- Seurat::RunPCA(object = seu, features = Seurat::VariableFeatures(object = seu), do.print = FALSE, ...)
+  seu <- Seurat::RunTSNE(object = seu, reduction = "pca", dims = 1:30, ...)
+  seu <- Seurat::RunUMAP(object = seu, reduction = "pca", dims = 1:30)
 
 }
 
@@ -281,11 +282,11 @@ filter_merged_seu <- function(seu, filter_var, filter_val, .drop = .drop) {
 #' @examples
 reintegrate_seus <- function(seus, suffix = "", ...){
 
-  seus <- purrr::map(seus, SetDefaultAssay, "RNA")
+  seus <- purrr::map(seus, ~Seurat::`DefaultAssay<-`(.x, value = "RNA"))
 
-  seus <- purrr::map(seus, SplitObject, split.by = "batch")
+  seus <- purrr::map(seus, Seurat::SplitObject, split.by = "batch")
 
-  seus <- seurat_integration_pipeline(seus, suffix = suffix)
+  seus <- seurat_integration_pipeline(seus, suffix = suffix, ...)
 
 
 }

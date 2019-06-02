@@ -2,19 +2,19 @@
 % Please edit documentation in R/seurat_app.R
 \name{seuratApp}
 \alias{seuratApp}
-\title{Create a Shiny App to View Seurat Data}
+\title{Create Seurat App}
 \usage{
-seuratApp(proj_dir, plotTypes, filterTypes, appTitle)
+seuratApp(proj_dir, plot_types, filterTypes, appTitle, ...)
 }
 \arguments{
-\item{proj_dir}{The base directory of the project ex. "~/single_cell_project/project/"}
+\item{proj_dir}{The project directory of the base dataset ex. "~/single_cell_projects/sc_cone_devel/proj"}
 
-\item{plotTypes}{The variables to use for the Embedding plots, ex. c("batch", "treatment_group")}
+\item{plot_types}{The types of plots to be shown as a named list containing two vectors: 1) category_vars and 2) continuous_vars}
 
-\item{filterTypes}{a named vector of file suffixes corresponding to filtered seurat objects in the project ex. c("Without Low Read Count" = "wo_lowrc")}
+\item{filterTypes}{A named vector of file suffixes corresponding to subsets of the data, ex. filterTypes <- c("", "remove_lowrc") %>% set_names(c("Unfiltered", "low read count cells"))}
 
-\item{appTitle}{The Title of the App}
+\item{appTitle}{A title of the app}
 }
 \description{
-Create a Shiny App to View Seurat Data
+Create Seurat App
 }

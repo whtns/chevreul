@@ -140,7 +140,9 @@ filter_low_rc_cells <- function(seu, read_thresh = 1e5){
 #' @export
 #'
 #' @examples
-save_seurat <- function(seu, feature, suffix = ""){
+save_seurat <- function(seu, feature, suffix = "", temp = F){
+
+  if (temp == TRUE) return(seu)
 
   if(suffix != ""){
     suffix = paste0("_", suffix)

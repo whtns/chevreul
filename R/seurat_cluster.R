@@ -11,14 +11,14 @@
 #' @examplesse
 seurat_preprocess <- function(seu, scale=TRUE){
   # Normalize data
-  seu <- NormalizeData(object = seu, verbose = FALSE)
+  seu <- Seurat::NormalizeData(object = seu, verbose = FALSE)
 
   # Filter out only variable genes
-  seu <- FindVariableFeatures(object = seu, selection.method = "vst", nfeatures = 2000, verbose = FALSE)
+  seu <- Seurat::FindVariableFeatures(object = seu, selection.method = "vst", nfeatures = 2000, verbose = FALSE)
 
   # Regress out unwanted sources of variation
   if (scale){
-    seu <- ScaleData(object = seu, features = rownames(x = seu))
+    seu <- Seurat::ScaleData(object = seu, features = rownames(x = seu))
 
   }
 
