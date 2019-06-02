@@ -19,7 +19,7 @@ plot_var <- function(seu, embedding = "umap", group = "batch"){
     aes(key = key, cellid = cellid)
 
   plotly::ggplotly(d, tooltip = "cellid", height  = 750) %>%
-    # layout(dragmode = "lasso") %>%
+    plotly::layout(dragmode = "lasso") %>%
     identity()
 
 }
@@ -45,7 +45,7 @@ plot_feature <- function(seu, embedding, features){
     aes(key = key, cellid = cellid)
 
   plotly::ggplotly(fp, tooltip = "cellid", height = 750) %>%
-    # layout(dragmode = "lasso") %>%
+    plotly::layout(dragmode = "lasso") %>%
     identity()
 
 }
@@ -141,7 +141,8 @@ plot_markers <- function(seu, resolution){
   markerplot <- DotPlot(seu, features = unique(seu@misc$markers[[resolution]])) +
     theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
 
-  plotly::ggplotly(markerplot, height = 800)
+  plotly::ggplotly(markerplot, height = 800) %>%
+    plotly::layout(dragmode = "lasso")
 
 }
 
