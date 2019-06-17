@@ -4,7 +4,8 @@
 \alias{seuratApp}
 \title{Create Seurat App}
 \usage{
-seuratApp(proj_dir, plot_types, filterTypes, appTitle, ...)
+seuratApp(proj_dir, plot_types, filterTypes, appTitle, futureMb = 850,
+  ...)
 }
 \arguments{
 \item{proj_dir}{The project directory of the base dataset ex. "~/single_cell_projects/sc_cone_devel/proj"}
@@ -14,6 +15,8 @@ seuratApp(proj_dir, plot_types, filterTypes, appTitle, ...)
 \item{filterTypes}{A named vector of file suffixes corresponding to subsets of the data, ex. filterTypes <- c("", "remove_lowrc") %>% set_names(c("Unfiltered", "low read count cells"))}
 
 \item{appTitle}{A title of the app}
+
+\item{futureMb}{amount of Mb allocated to future package}
 }
 \description{
 Create Seurat App

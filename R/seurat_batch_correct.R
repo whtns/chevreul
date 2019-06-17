@@ -9,7 +9,7 @@
 #' @export
 #'
 #' @examples
-seurat_batch_correct <- function(seu_list) {
+seurat_batch_correct <- function(seu_list, ...) {
   #browser()
   # To construct a reference we will identify ‘anchors’ between the individual datasets. First, we split the combined object into a list, with each dataset as an element.
 
@@ -40,7 +40,7 @@ seurat_batch_correct <- function(seu_list) {
 
   # Run the standard workflow for visualization and clustering
   seu_list.integrated <- ScaleData(object = seu_list.integrated, verbose = FALSE)
-  seu_list.integrated <- seurat_reduce_dimensions(seu_list.integrated)
+  seu_list.integrated <- seurat_reduce_dimensions(seu_list.integrated, ...)
 
   return(seu_list.integrated)
 }
@@ -55,17 +55,18 @@ seurat_batch_correct <- function(seu_list) {
 #' @export
 #'
 #' @examples
-seurat_cluster <- function(seu, resolution = 0.6, custom_clust = NULL, algorithm = 1) {
+seurat_cluster <- function(seu, resolution = 0.6, cluster_prefix = "clusters_", custom_clust = NULL, reduction = "pca", ...) {
   # browser()
-  seu <- FindNeighbors(object = seu, dims = 1:10)
-  seu <- FindClusters(object = seu, resolution = resolution, algorithm = algorithm)
+  seu <- FindNeighbors(object = seu, dims = 1:10, reduction = reduction)
 
   if (length(resolution) > 1){
     for (i in resolution){
       # browser()
-      seu <- FindClusters(object = seu, resolution = i, algorithm = algorithm)
-      seu <- StashIdent(object = seu, save.name = paste0("clusters_", i))
+      seu <- FindClusters(object = seu, resolution = i, ...)
+      seu[[paste0(cluster_prefix, i)]] <- Idents(seu)
     }
+  } else if (length(resolution) == 1){
+    seu <- FindClusters(object = seu, resolution = resolution, ...)
   }
 
   if (!is.null(custom_clust)){
@@ -145,7 +146,7 @@ load_seurat_from_rds <- function(proj_dirs){
 #' @examples
 seurat_integration_pipeline <- function(seus, res_low = 0.2, res_hi = 2.0, suffix = '', ...) {
 
-  corrected_seus <- purrr::map(seus, seurat_batch_correct)
+  corrected_seus <- purrr::map(seus, seurat_batch_correct, ...)
 
   # cluster merged seurat objects
   corrected_seus <- purrr::map(corrected_seus, seuratTools::seurat_cluster, resolution = seq(res_low, res_hi, by = 0.2, ...))
@@ -166,11 +167,14 @@ seurat_integration_pipeline <- function(seus, res_low = 0.2, res_hi = 2.0, suffi
 #' @export
 #'
 #' @examples
-seurat_reduce_dimensions <- function(seu, ...) {
+seurat_reduce_dimensions <- function(seu, reduction = "pca", ...) {
 
   seu <- Seurat::RunPCA(object = seu, features = Seurat::VariableFeatures(object = seu), do.print = FALSE, ...)
-  seu <- Seurat::RunTSNE(object = seu, reduction = "pca", dims = 1:30, ...)
-  seu <- Seurat::RunUMAP(object = seu, reduction = "pca", dims = 1:30)
+  if (reduction == "harmony"){
+    seu <- harmony::RunHarmony(seu, "batch")
+  }
+  seu <- Seurat::RunTSNE(object = seu, reduction = reduction, dims = 1:30, ...)
+  seu <- Seurat::RunUMAP(object = seu, reduction = reduction, dims = 1:30)
 
 }
 
@@ -185,14 +189,16 @@ seurat_reduce_dimensions <- function(seu, ...) {
 #' @export
 #'
 #' @examples
-seurat_pipeline <- function(seu, resolution=0.6, ...){
+seurat_pipeline <- function(seu, resolution=0.6, reduction = "pca", ...){
 
   seu <- seurat_preprocess(seu, scale = T)
 
   # PCA
-  seu <- seurat_reduce_dimensions(seu, ...)
+  seu <- seurat_reduce_dimensions(seu, check_duplicates = FALSE, reduction = reduction, ...)
 
-  seu <- seurat_cluster(seu, resolution = resolution)
+  seu <- seurat_cluster(seu, resolution = resolution, reduction = reduction, ...)
+
+  seu <- find_all_markers(seu, resolution = resolution, reduction = reduction)
 
   return(seu)
 }
@@ -280,13 +286,13 @@ filter_merged_seu <- function(seu, filter_var, filter_val, .drop = .drop) {
 #' @export
 #'
 #' @examples
-reintegrate_seus <- function(seus, suffix = "", ...){
+reintegrate_seus <- function(seus, suffix = "", reduction = "pca", ...){
 
   seus <- purrr::map(seus, ~Seurat::`DefaultAssay<-`(.x, value = "RNA"))
 
   seus <- purrr::map(seus, Seurat::SplitObject, split.by = "batch")
 
-  seus <- seurat_integration_pipeline(seus, suffix = suffix, ...)
+  seus <- seurat_integration_pipeline(seus, suffix = suffix, reduction = reduction, ...)
 
 
 }

@@ -245,14 +245,17 @@ seuratApp <- function(proj_dir, plot_types, filterTypes, appTitle, futureMb = 85
 
   loadDataui <- function(id, label = "Load Data", filterTypes) {
     ns <- NS(id)
-    tagList(shinyWidgets::prettyRadioButtons(ns("filterType"),
-                                             "dataset to include", choices = filterTypes, selected = ""),
-            shinyWidgets::actionBttn(ns("loadButton"), "Load Full Dataset"))
+    tagList(
+      shinyWidgets::prettyRadioButtons(ns("filterType"), "dataset to include", choices = filterTypes, selected = ""),
+      shinyWidgets::actionBttn(ns("loadButton"), "Load Default Dataset")
+      # fileInput(ns("seuratUpload"), "Upload .rds file")
+    )
   }
 
   loadData <- function(input, output, session, proj_dir, feature_type) {
     ns <- session$ns
     seu <- reactiveValues()
+
     observeEvent(input$loadButton, {
       showModal(modalDialog("Loading Data", footer = NULL))
       if (!input$filterType == "") {
@@ -261,8 +264,7 @@ seuratApp <- function(proj_dir, plot_types, filterTypes, appTitle, futureMb = 85
       else {
         filterType = input$filterType
       }
-      seu_paths <- rprojroot::find_root_file("output/sce",
-                                             criterion = rprojroot::has_file_pattern("*.Rproj"),
+      seu_paths <- rprojroot::find_root_file("output/sce", criterion = rprojroot::has_file_pattern("*.Rproj"),
                                              path = proj_dir) %>% fs::dir_ls() %>% fs::path_filter(paste0("*_seu",
                                                                                                           filterType, ".rds")) %>% identity()
       feature_seus <- purrr::map(seu_paths, readRDS) %>%
@@ -274,8 +276,11 @@ seuratApp <- function(proj_dir, plot_types, filterTypes, appTitle, futureMb = 85
       seu$transcript <- feature_seus$transcript
       seu$active <- feature_seus[[feature_type]]
     })
+
     return(seu)
+
   }
+
   customFeatureui <- function(id) {
     ns <- NS(id)
     tagList(choice <- reactive({
@@ -303,7 +308,6 @@ seuratApp <- function(proj_dir, plot_types, filterTypes, appTitle, futureMb = 85
     negsamprate_vals <- prep_slider_values(5)
 
     tagList(
-      radioButtons(ns("embeddingBasis"), "Change Basis of Embedding", choices = c("pca", "harmony"), selected = "pca"),
       sliderInput(ns("minDist"), label = "Minimum Distance", min = minDist_vals$min, max = minDist_vals$max, value = minDist_vals$value, step = minDist_vals$step),
       sliderInput(ns("negativeSampleRate"), label = "NegativeSampleRate", min = negsamprate_vals$min, max = negsamprate_vals$max, value = negsamprate_vals$value, step = negsamprate_vals$step)
     )
@@ -319,8 +323,8 @@ seuratApp <- function(proj_dir, plot_types, filterTypes, appTitle, futureMb = 85
     #   )
     # })
 
-    seu$gene <- RunUMAP(seu$gene, dims = 1:30, reduction = input$embeddingBasis, min.dist = input$minDist, negative.sample.rate = input$negativeSampleRate)
-    seu$transcript <- RunUMAP(seu$transcript, dims = 1:30, reduction = input$embeddingBasis, min.dist = input$minDist, negative.sample.rate = input$negativeSampleRate)
+    seu$gene <- RunUMAP(seu$gene, dims = 1:30, reduction = "pca", min.dist = input$minDist, negative.sample.rate = input$negativeSampleRate)
+    seu$transcript <- RunUMAP(seu$transcript, dims = 1:30, reduction = "pca", min.dist = input$minDist, negative.sample.rate = input$negativeSampleRate)
     seu$active <- seu$gene
 
 
@@ -331,6 +335,9 @@ seuratApp <- function(proj_dir, plot_types, filterTypes, appTitle, futureMb = 85
   sidebar <- shinydashboard::dashboardSidebar(loadDataui("loadDataui", filterTypes = filterTypes),
                                               shinyWidgets::prettyRadioButtons("feature_type", "cluster on genes or transcripts?", choices = c("gene", "transcript"), selected = "gene"),
                                               shinyWidgets::prettyRadioButtons("organism_type", "What Organism was Sequenced?", choices = c("human", "mouse"), selected = "human"),
+                                              shinyFiles::shinyFilesButton("seuratUpload", "Load a Custom Dataset", "Please select a .rds file", multiple = FALSE),
+                                              shinyFiles::shinySaveButton("saveSeurat", "Save current Dataset", "Save file as...", filetype = list(rds = "rds")),
+                                              verbatimTextOutput("savefile"),
                                               actionButton("changeEmbedAction", label = "Change Embedding Parameters"),
                                               changeEmbedParamsui("changeembed"),
                                               shinydashboard::sidebarMenu(shinydashboard::menuItem("Compare Plots", tabName = "comparePlots"),
@@ -354,7 +361,7 @@ seuratApp <- function(proj_dir, plot_types, filterTypes, appTitle, futureMb = 85
             plotly::plotlyOutput(ns("dplot"), height = 750) %>%
               shinycssloaders::withSpinner())
   }
-  plotDimRed <- function(input, output, session, seu, plot_types, feature_type) {
+  plotDimRed <- function(input, output, session, seu, plot_types, feature_type, organism_type) {
     ns <- session$ns
     continuous_vars <- plot_types$continuous_vars
     category_vars <- plot_types$category_vars
@@ -523,10 +530,10 @@ seuratApp <- function(proj_dir, plot_types, filterTypes, appTitle, futureMb = 85
     ), conditionalPanel(
       ns = ns,
       condition = "input.diffex_scheme == 'custom'", shinyWidgets::actionBttn(
-        ns("save_clust1"),
+        ns("saveClust1"),
         "Save to Custom Cluster 1"
       ), shinyWidgets::actionBttn(
-        ns("save_clust2"),
+        ns("saveClust2"),
         "Save to Custom Cluster 2"
       )
     ), shinyWidgets::prettyRadioButtons(ns("diffex_method"),
@@ -563,11 +570,11 @@ seuratApp <- function(proj_dir, plot_types, filterTypes, appTitle, futureMb = 85
         selected_cells <- colnames(seu$active)[as.numeric(d$key)]
       }
     })
-    custom_cluster1 <- eventReactive(input$save_clust1,
+    custom_cluster1 <- eventReactive(input$saveClust1,
                                      {
                                        isolate(brush())
                                      })
-    custom_cluster2 <- eventReactive(input$save_clust2,
+    custom_cluster2 <- eventReactive(input$saveClust2,
                                      {
                                        isolate(brush())
                                      })
@@ -888,6 +895,7 @@ seuratApp <- function(proj_dir, plot_types, filterTypes, appTitle, futureMb = 85
 
   server <- function(input, output, session) {
     options(warn = -1)
+    # sidebar
     seu <- callModule(loadData, "loadDataui", proj_dir,
                       input$feature_type)
     observeEvent(input$feature_type, {
@@ -896,10 +904,98 @@ seuratApp <- function(proj_dir, plot_types, filterTypes, appTitle, futureMb = 85
     feature_type <- reactive({
       input$feature_type
     })
-    callModule(plotDimRed, "hello", seu, plot_types, feature_type)
-    callModule(plotDimRed, "howdy", seu, plot_types, feature_type)
-    callModule(plotDimRed, "diffex", seu, plot_types, feature_type)
-    callModule(plotDimRed, "subset", seu, plot_types, feature_type)
+
+    # list volumes
+    volumes <- c(Home = fs::path_home(), "R Installation" = R.home(), shinyFiles::getVolumes()())
+
+    # upload seurat object
+
+    shinyFiles::shinyFileChoose(input, "seuratUpload", roots = volumes, session = session)
+    uploadSeuratPath <- eventReactive(input$seuratUpload, {
+      file <- shinyFiles::parseFilePaths(volumes, input$seuratUpload)
+      file$datapath
+    })
+
+    observe({
+      req(uploadSeuratPath())
+
+      shiny::withProgress(
+        message = paste0("Uploading Data"),
+        value = 0,
+        {
+          # Sys.sleep(6)
+          # shiny::incProgress(2/10)
+          # Sys.sleep(12)
+          # shiny::incProgress(4/10)
+          # Sys.sleep(18)
+          # shiny::incProgress(6/10)
+          # Sys.sleep(24)
+          # shiny::incProgress(8/10)
+          # browser()
+          dataset <- readRDS(uploadSeuratPath())
+          seu$gene <- dataset$gene
+          seu$transcript <- dataset$transcript
+          seu$active <- dataset$gene
+        }
+      )
+
+    })
+
+    # save seurat object
+    shinyFiles::shinyFileSave(input, "saveSeurat", roots = volumes, session = session, restrictions = system.file(package = "base"))
+
+    subSeuratPath <- eventReactive(input$saveSeurat, {
+
+      req(seu$active)
+      savefile <- shinyFiles::parseSavePath(volumes, input$saveSeurat)
+
+      return(savefile$datapath)
+
+
+    })
+
+    observe({
+      req(seu$active)
+      req(subSeuratPath())
+      shiny::withProgress(
+        message = paste0("Saving Data"),
+        value = 0,
+        {
+          Sys.sleep(6)
+          shiny::incProgress(2/10)
+          Sys.sleep(12)
+          shiny::incProgress(4/10)
+          Sys.sleep(18)
+          shiny::incProgress(6/10)
+          Sys.sleep(24)
+          shiny::incProgress(8/10)
+          saveRDS(list(gene = seu$gene, transcript = seu$transcript), subSeuratPath())
+
+        }
+      )
+    })
+
+
+    # observeEvent(input$subSeuratPath, { print(parseSavePath(volumes, input$subSeuratPath)$datapath) })
+    #
+    # shiny::withProgress(
+    #   message = paste0("Downloading Data"),
+    #   value = 0,
+    #   {
+    #     shiny::incProgress(1/10)
+    #     Sys.sleep(1)
+    #     shiny::incProgress(5/10)
+    #     saveRDS(list(gene = seu$gene, transcript = seu$transcript), fileinfo$datapath)
+    #
+    #   }
+    # )
+
+
+    # body
+    callModule(plotDimRed, "hello", seu, plot_types, feature_type, organism_type = input$organism_type)
+    callModule(plotDimRed, "howdy", seu, plot_types, feature_type, organism_type = input$organism_type)
+    callModule(plotDimRed, "diffex", seu, plot_types, feature_type, organism_type = input$organism_type)
+    callModule(plotDimRed, "subset", seu, plot_types, feature_type, organism_type = input$organism_type)
     callModule(plotReadCount, "hello", seu, purrr::flatten_chr(plot_types))
     callModule(plotReadCount, "howdy", seu, purrr::flatten_chr(plot_types))
     callModule(tableSelected, "hello", seu)
@@ -973,5 +1069,4 @@ seuratApp <- function(proj_dir, plot_types, filterTypes, appTitle, futureMb = 85
 
   }
   shinyApp(ui, server)
-
 }

@@ -4,7 +4,7 @@
 \alias{seurat_batch_correct}
 \title{Batch Correct Multiple Seurat Objects}
 \usage{
-seurat_batch_correct(seu_list)
+seurat_batch_correct(seu_list, ...)
 }
 \arguments{
 \item{seu_list}{}

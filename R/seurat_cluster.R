@@ -33,11 +33,21 @@ seurat_preprocess <- function(seu, scale=TRUE){
 #' @export
 #'
 #' @examples
-find_all_markers <- function(seu){
-  clusters <- paste0("clusters_", seq(0.2, 2.0, by = 0.2)) %>%
+find_all_markers <- function(seu, resolution = 0.6, ...){
+  # browser()
+  clusters <- paste0("clusters_", resolution) %>%
     set_names(.)
 
-  marker_features <- purrr::map(clusters, stash_marker_features, seu)
+  clusters <- seu[[clusters]]
+
+  cluster_levels <- purrr::map_int(clusters, ~length(levels(.x)))
+  cluster_levels <- cluster_levels[cluster_levels > 1]
+
+  clusters <- dplyr::select(clusters, dplyr::one_of(names(cluster_levels)))
+
+  # marker_features <- purrr::map(clusters, mod_stash_marker_features, seu)
+  marker_features <- purrr::map(names(clusters), stash_marker_features, seu)
+  names(marker_features) <- names(clusters)
 
   seu@misc$markers <- marker_features
   return(seu)
@@ -57,15 +67,12 @@ find_all_markers <- function(seu){
 #' @examples
 stash_marker_features <- function(resolution, seu){
 
-  Idents(seu) <- resolution
-
-  markers <- Seurat::FindAllMarkers(object = seu, only.pos = TRUE, min.pct = 0.25, logfc.threshold = 0.25) %>%
-    dplyr::group_by(cluster) %>%
-    dplyr::top_n(n = 2, wt = avg_logFC) %>%
-    dplyr::pull(gene)
+  markers <- presto::wilcoxauc(seu, resolution) %>%
+    dplyr::group_by(group) %>%
+    dplyr::top_n(n = 5, wt = logFC) %>%
+    dplyr::pull(feature)
 
   return(markers)
 
 }
-
 

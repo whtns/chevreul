@@ -4,7 +4,7 @@
 \alias{reintegrate_seus}
 \title{Reintegrate (filtered) seurat objects}
 \usage{
-reintegrate_seus(seus, suffix = "", ...)
+reintegrate_seus(seus, suffix = "", reduction = "pca", ...)
 }
 \arguments{
 \item{seus}{}

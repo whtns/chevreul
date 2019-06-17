@@ -49,8 +49,6 @@ seurat_reference_integrate <- function(ref_seu_list, query_seu) {
 }
 
 
-
-
 ## ------------------------------------------------------------------------
 ## find markers for every cluster compared to all remaining cells, report only the positive ones
 #' Find Cell Type Markers in a Seurat Object
@@ -61,7 +59,7 @@ seurat_reference_integrate <- function(ref_seu_list, query_seu) {
 #' @export
 #'
 #' @examples
-seurat_find_markers <- function(seu){
+seurat_find_markers <- function(seu, num_features){
   markers <- FindAllMarkers(seu, only.pos = TRUE, min.pct = 0.25, logfc.threshold = 0.25)
   markers %>%
     group_by(cluster) %>%
@@ -69,7 +67,7 @@ seurat_find_markers <- function(seu){
 
   cluster_markers <- reference.markers$gene %>%
     group_by(cluster) %>%
-    top_n(n = 1, wt = avg_logFC) %>%
+    top_n(n = num_features, wt = avg_logFC) %>%
     pull(gene)
 
   DoHeatmap(reference_integrated[[1]], features = cluster_markers)

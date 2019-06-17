@@ -4,7 +4,7 @@
 \alias{find_all_markers}
 \title{Find All Markers at a range of resolutions}
 \usage{
-find_all_markers(seu)
+find_all_markers(seu, resolution = 0.6, ...)
 }
 \arguments{
 \item{seu}{}

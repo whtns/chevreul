@@ -44,10 +44,19 @@ annotate_cell_cycle <- function(seu_list){
 #' @export
 #'
 #' @examples
-genes_to_transcripts <- function(genes) {
+genes_to_transcripts <- function(genes, organism = "human") {
+
+  if(organism == "human"){
+    gene_table = annotables::grch38
+    transcript_table = annotables::grch38_tx2gene
+  } else if (organism == "mouse"){
+    gene_table = annotables::grcm38
+    transcript_table = annotables::grcm38_tx2gene
+  }
+
   tibble::tibble(symbol = genes) %>%
-    dplyr::left_join(annotables::grch38, by = "symbol") %>%
-    dplyr::left_join(annotables::grch38_tx2gene, by = "ensgene") %>%
+    dplyr::left_join(gene_table, by = "symbol") %>%
+    dplyr::left_join(transcript_table, by = "ensgene") %>%
     dplyr::pull("enstxp") %>%
     identity()
 }
@@ -64,12 +73,12 @@ genes_to_transcripts <- function(genes) {
 #'
 #' @examples
 add_read_count_col <- function(seu, thresh = 1e5){
-  rc <- as_tibble(seu[["nCount_RNA"]], rownames = "Sample_ID") %>%
-    mutate(read_count = ifelse(nCount_RNA > thresh, NA, "low_read_count")) %>%
-    select(-nCount_RNA) %>%
+  rc <- dplyr::as_tibble(seu[["nCount_RNA"]], rownames = "Sample_ID") %>%
+    dplyr::mutate(read_count = ifelse(nCount_RNA > thresh, NA, "low_read_count")) %>%
+    dplyr::select(-nCount_RNA) %>%
     tibble::deframe()
 
-  seu <- AddMetaData(
+  seu <- Seurat::AddMetaData(
     object = seu,
     metadata = rc,
     col.name = "read_count"
@@ -95,7 +104,7 @@ annotate_excluded <- function(seu, ...){
 
   excluded_cells <- purrr::map2(excluded_cells, names(excluded_cells), ~rep(.y, length(.x))) %>%
     unlist() %>%
-    set_names(unlist(excluded_cells)) %>%
+    purrr::set_names(unlist(excluded_cells)) %>%
     tibble::enframe("Sample_ID", "excluded_because")
 
   excluded_because <- as_tibble(seu[["nCount_RNA"]], rownames = "Sample_ID") %>%
@@ -103,7 +112,7 @@ annotate_excluded <- function(seu, ...){
 
   if ("excluded_because.x" %in% colnames(excluded_because)){
     excluded_because <- dplyr::coalesce(excluded_because, excluded_because.x, excluded_because.y) %>%
-      select(-nCount_RNA) %>%
+      dplyr::select(-nCount_RNA) %>%
       tibble::deframe() %>%
       identity()
   } else {
@@ -112,7 +121,7 @@ annotate_excluded <- function(seu, ...){
       identity()
   }
 
-  seu <- AddMetaData(
+  seu <- Seurat::AddMetaData(
     object = seu,
     metadata = excluded_because,
     col.name = "excluded_because"

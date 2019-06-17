@@ -25,7 +25,9 @@ Imports:
     annotables,
     shinycssloaders,
     shinydashboard,
-    shiny
+    shiny,
+    presto (>= 1.0.0),
+    shinyFiles
 Suggests: 
     dplyr,
     tidyr,
@@ -33,3 +35,7 @@ Suggests:
     testthat
 URL: https://github.com/cobriniklab/seuratTools
 BugReports: https://github.com/cobriniklab/seuratTools/issues
+Remotes: 
+    immunogenomics/presto
+Depends: 
+    Rcpp

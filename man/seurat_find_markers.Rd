@@ -4,7 +4,7 @@
 \alias{seurat_find_markers}
 \title{Find Cell Type Markers in a Seurat Object}
 \usage{
-seurat_find_markers(seu)
+seurat_find_markers(seu, num_features)
 }
 \arguments{
 \item{seu}{}
