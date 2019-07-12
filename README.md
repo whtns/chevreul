@@ -4,7 +4,7 @@
 
 # seuratTools
 
-This is a set of convenience functions for interacting with [Seurat](https://github.com/satijalab/seurat) objects. There are functions for:
+Howdy! this is a set of convenience functions for interacting with [Seurat](https://github.com/satijalab/seurat) objects. There are functions for:
 1. Creating Seurat objects from Stringtie files
 2. [Integration and Labe lTransfer](https://satijalab.org/seurat/v3.0/pancreas_integration_label_transfer.html)
 3. Louvain Clustering at a Range of Resolutions 
