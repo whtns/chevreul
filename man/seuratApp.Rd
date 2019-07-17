@@ -17,6 +17,8 @@ seuratApp(proj_dir, plot_types, filterTypes, appTitle, futureMb = 849,
 \item{appTitle}{A title of the App}
 
 \item{futureMb}{amount of Mb allocated to future package}
+
+\item{...}{}
 }
 \description{
 Creat a shiny app to view and manipulate a Seurat object

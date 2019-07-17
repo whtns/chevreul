@@ -288,6 +288,7 @@ prep_slider_values <- function(default_val){
 #' @param filterTypes A named vector of file suffixes corresponding to subsets of the data, ex. filterTypes <- c("", "remove_lowrc") %>% set_names(c("Unfiltered", "low read count cells"))
 #' @param appTitle A title of the App
 #' @param futureMb amount of Mb allocated to future package
+#' @param ...
 #'
 #' @return
 #' @export
