@@ -4,8 +4,7 @@
 \alias{seuratApp}
 \title{Create Seurat App}
 \usage{
-seuratApp(proj_dir, plot_types, filterTypes, appTitle, futureMb = 849,
-  ...)
+seuratApp(proj_dir, plot_types, filterTypes, appTitle, futureMb = 849)
 }
 \arguments{
 \item{proj_dir}{The project directory of the base dataset ex. "~/single_cell_projects/sc_cone_devel/proj"}
@@ -17,8 +16,6 @@ seuratApp(proj_dir, plot_types, filterTypes, appTitle, futureMb = 849,
 \item{appTitle}{A title of the App}
 
 \item{futureMb}{amount of Mb allocated to future package}
-
-\item{...}{}
 }
 \description{
 Creat a shiny app to view and manipulate a Seurat object
