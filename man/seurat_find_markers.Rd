@@ -7,7 +7,7 @@
 seurat_find_markers(seu, num_features)
 }
 \arguments{
-\item{seu}{}
+\item{seu}{A seurat object}
 }
 \description{
 Find Cell Type Markers in a Seurat Object

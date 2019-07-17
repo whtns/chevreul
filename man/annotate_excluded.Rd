@@ -7,6 +7,8 @@
 annotate_excluded(seu, ...)
 }
 \arguments{
+\item{seu}{A seurat object}
+
 \item{excluded_cells}{a named list of cells to be excluded of the form list(set1 = c(cell1, celll2), set2 = c(cell3, cell4))
 all other cells will be marked NA in a column titled "excluded_because"}
 }

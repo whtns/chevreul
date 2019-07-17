@@ -1,10 +1,10 @@
 
 #' Plot RNA velocity Computed by Velocyto.R
 #'
-#' @param vel
-#' @param emb
-#' @param cell.colors
-#' @param format
+#' @param vel velocity from velocyto.R
+#' @param emb embedding -- either tnse or umap
+#' @param cell.colors A vector of colors to use for the plot
+#' @param format either an arrow or grid format
 #'
 #' @return
 #' @export
@@ -155,7 +155,68 @@ run_seurat_de <- function(seu, cluster1, cluster2, resolution, diffex_scheme = "
   return(test_list)
 }
 
-#' TPlot Cluster Marker Genes
+
+#' Run Enrichment Browser on Differentially Expressed Genes
+#'
+#' @param seu
+#' @param cluster1_cells
+#' @param cluster2_cells
+#'
+#' @return
+#' @export
+#'
+#' @examples
+run_enrichmentbrowser <- function(seu, cluster1_cells, cluster2_cells){
+
+    # subset by supplied cell ids
+    #
+  seu <- seu[,c(cluster1_cells, cluster2_cells)]
+
+  keep_cells <- c(cluster1_cells, cluster2_cells)
+  new_idents <- c(rep(0, length(cluster1_cells)), rep(1, length(cluster2_cells)))
+  names(new_idents) <- keep_cells
+  new_idents <- new_idents[colnames(seu)]
+  Idents(seu) <- new_idents
+
+  counts <- GetAssayData(seu, slot = "counts")
+  counts <- as.matrix(counts)
+  mode(counts) <- "integer"
+
+  rowData <- data.frame(rownames(seu), row.names = rownames(seu))
+
+  colData <- as.data.frame(seu[[]])
+
+  se <- SummarizedExperiment::SummarizedExperiment(assays=list(counts=counts),
+                                                   rowData=rowData, colData=colData)
+
+  se$GROUP <- Idents(seu)
+
+  se <- EnrichmentBrowser::deAna(se, grp = group, de.method = "edgeR")
+  se <- EnrichmentBrowser::idMap(se, org = "hsa", from = "SYMBOL", to = "ENTREZID")
+
+  outdir <- fs::path("www", "enrichmentbrowser")
+  report.name = "mainpage.html"
+
+  hsa.grn <- EnrichmentBrowser::compileGRN(org="hsa", db="kegg")
+
+  # EnrichmentBrowser::ebrowser( meth=c("ora", "ggea"), perm=0, comb=TRUE,
+  #           exprs=se, gs=go.gs, grn=hsa.grn, org="hsa", nr.show=3,
+  #           out.dir=outdir, report.name=report.name, browse = FALSE)
+
+  sbea.res <- EnrichmentBrowser::sbea(method = "ora", se = se, gs = go.gs, perm = 0,
+                                      alpha = 0.1)
+
+  nbea.res <- EnrichmentBrowser::nbea(method="ggea", se=se, gs=go.gs, grn=hsa.grn)
+
+  res <- EnrichmentBrowser::combResults(list(sbea.res, nbea.res))
+
+  EnrichmentBrowser::eaBrowse(res, html.only = TRUE, out.dir = outdir, graph.view=hsa.grn,
+                              report.name = report.name)
+
+  return(fs::path("enrichmentbrowser", "mainpage.html"))
+}
+
+#' Plot Cluster Marker Genes
 #'
 #' @param seu
 #' @param resolution
@@ -220,17 +281,19 @@ prep_slider_values <- function(default_val){
 
 #' Create Seurat App
 #'
+#' Creat a shiny app to view and manipulate a Seurat object
+#'
 #' @param proj_dir The project directory of the base dataset ex. "~/single_cell_projects/sc_cone_devel/proj"
 #' @param plot_types The types of plots to be shown as a named list containing two vectors: 1) category_vars and 2) continuous_vars
 #' @param filterTypes A named vector of file suffixes corresponding to subsets of the data, ex. filterTypes <- c("", "remove_lowrc") %>% set_names(c("Unfiltered", "low read count cells"))
-#' @param appTitle A title of the app
+#' @param appTitle A title of the App
 #' @param futureMb amount of Mb allocated to future package
 #'
 #' @return
 #' @export
-#'
+#' @import shiny
 #' @examples
-seuratApp <- function(proj_dir, plot_types, filterTypes, appTitle, futureMb = 850, ...){
+seuratApp <- function(proj_dir, plot_types, filterTypes, appTitle, futureMb = 849, ...){
 
   futureMb = 850
   future::plan(strategy = "multicore", workers = 6)
@@ -241,96 +304,6 @@ seuratApp <- function(proj_dir, plot_types, filterTypes, appTitle, futureMb = 85
                             language = list(search = "Filter:")))
 
   header <- shinydashboard::dashboardHeader(title = appTitle)
-
-
-  loadDataui <- function(id, label = "Load Data", filterTypes) {
-    ns <- NS(id)
-    tagList(
-      shinyWidgets::prettyRadioButtons(ns("filterType"), "dataset to include", choices = filterTypes, selected = ""),
-      shinyWidgets::actionBttn(ns("loadButton"), "Load Default Dataset")
-      # fileInput(ns("seuratUpload"), "Upload .rds file")
-    )
-  }
-
-  loadData <- function(input, output, session, proj_dir, feature_type) {
-    ns <- session$ns
-    seu <- reactiveValues()
-
-    observeEvent(input$loadButton, {
-      showModal(modalDialog("Loading Data", footer = NULL))
-      if (!input$filterType == "") {
-        filterType = paste0("_", input$filterType)
-      }
-      else {
-        filterType = input$filterType
-      }
-      seu_paths <- rprojroot::find_root_file("output/sce", criterion = rprojroot::has_file_pattern("*.Rproj"),
-                                             path = proj_dir) %>% fs::dir_ls() %>% fs::path_filter(paste0("*_seu",
-                                                                                                          filterType, ".rds")) %>% identity()
-      feature_seus <- purrr::map(seu_paths, readRDS) %>%
-        purrr::set_names(c("gene", "transcript"))
-      Seurat::DefaultAssay(feature_seus$gene) <- "RNA"
-      Seurat::DefaultAssay(feature_seus$transcript) <- "RNA"
-      removeModal()
-      seu$gene <- feature_seus$gene
-      seu$transcript <- feature_seus$transcript
-      seu$active <- feature_seus[[feature_type]]
-    })
-
-    return(seu)
-
-  }
-
-  customFeatureui <- function(id) {
-    ns <- NS(id)
-    tagList(choice <- reactive({
-      if (input$feature_type == "transcript") {
-        def_text <- "ENST00000488147"
-      }
-      else if (input$feature_type == "gene") {
-        def_text <- "RXRG"
-      }
-    }))
-  }
-  customFeature <- function(input, output, session) {
-    ns <- session$ns
-    output$featuretext <- renderUI({
-      textInput("feature", "gene or transcript on which to color the plot; eg. 'RXRG' or 'ENST00000488147'",
-                value = choice())
-    })
-    uiOutput("featuretext")
-  }
-
-  changeEmbedParamsui <- function(id){
-    ns <- NS(id)
-
-    minDist_vals <- prep_slider_values(0.3)
-    negsamprate_vals <- prep_slider_values(5)
-
-    tagList(
-      sliderInput(ns("minDist"), label = "Minimum Distance", min = minDist_vals$min, max = minDist_vals$max, value = minDist_vals$value, step = minDist_vals$step),
-      sliderInput(ns("negativeSampleRate"), label = "NegativeSampleRate", min = negsamprate_vals$min, max = negsamprate_vals$max, value = negsamprate_vals$value, step = negsamprate_vals$step)
-    )
-  }
-
-  changeEmbedParams <- function(input, output, session, seu){
-    ns <- session$ns
-    #
-    # output$embedControls <- renderUI({
-    #   tagList(
-    #     sliderInput(ns("minDist"), label = "Minimum Distance", min = minDist_vals$min, max = minDist_vals$max, value = minDist_vals$value, step = minDist_vals$step),
-    #     sliderInput(ns("negativeSampleRate"), label = "NegativeSampleRate", min = minDist_vals$min, max = minDist_vals$max, value = minDist_vals$value, step = minDist_vals$step)
-    #   )
-    # })
-
-    seu$gene <- RunUMAP(seu$gene, dims = 1:30, reduction = "pca", min.dist = input$minDist, negative.sample.rate = input$negativeSampleRate)
-    seu$transcript <- RunUMAP(seu$transcript, dims = 1:30, reduction = "pca", min.dist = input$minDist, negative.sample.rate = input$negativeSampleRate)
-    seu$active <- seu$gene
-
-
-    return(seu)
-
-  }
 
   sidebar <- shinydashboard::dashboardSidebar(loadDataui("loadDataui", filterTypes = filterTypes),
                                               shinyWidgets::prettyRadioButtons("feature_type", "cluster on genes or transcripts?", choices = c("gene", "transcript"), selected = "gene"),
@@ -343,468 +316,16 @@ seuratApp <- function(proj_dir, plot_types, filterTypes, appTitle, futureMb = 85
                                               shinydashboard::sidebarMenu(shinydashboard::menuItem("Compare Plots", tabName = "comparePlots"),
                                                                           shinydashboard::menuItem("Compare Read Counts", tabName = "compareReadCount"),
                                                                           shinydashboard::menuItem("Differential Expression", tabName = "diffex"),
+                                                                          shinydashboard::menuItem("Gene Enrichment Analysis", tabName = "geneEnrichment"),
                                                                           shinydashboard::menuItem("Find Markers", tabName = "findMarkers"),
                                                                           shinydashboard::menuItem("Subset Seurat Input", tabName = "subsetSeurat"),
                                                                           shinydashboard::menuItem("All Transcripts", tabName = "allTranscripts"),
-                                                                          shinydashboard::menuItem("RNA Velocity", tabName = "rnaVelocity")),
+                                                                          shinydashboard::menuItem("RNA Velocity", tabName = "rnaVelocity"),
+                                                                          shinydashboard::menuItem("Regress Features", tabName = "regressFeatures")),
 
                                               width = 450)
 
-  plotDimRedui <- function(id, plot_types) {
-    ns <- NS(id)
-    tagList(selectizeInput(ns("dplottype"), "Variable to Plot",
-                           choices = plot_types, selected = c("custom"), multiple = TRUE),
-            shinyWidgets::prettyRadioButtons(ns("embedding"),
-                                             "dimensional reduction method", choices = c("pca", "harmony", "tsne", "umap"), selected = "umap", inline = TRUE),
-            uiOutput(ns("featuretext")),
-            sliderInput(ns("resolution"), "Resolution of clustering algorithm (affects number of clusters)", min = 0.2, max = 2, step = 0.2, value = 0.6),
-            plotly::plotlyOutput(ns("dplot"), height = 750) %>%
-              shinycssloaders::withSpinner())
-  }
-  plotDimRed <- function(input, output, session, seu, plot_types, feature_type, organism_type) {
-    ns <- session$ns
-    continuous_vars <- plot_types$continuous_vars
-    category_vars <- plot_types$category_vars
-    plot_types <- purrr::flatten_chr(plot_types)
-    prefill_feature <- reactive({
-      if (feature_type() == "transcript") {
-        "ENST00000488147"
-      }
-      else if (feature_type() == "gene") {
-        "RXRG"
-      }
-    })
-    output$featuretext <- renderUI({
-      textInput(ns("customFeature"), "gene or transcript on which to color the plot; eg. 'RXRG' or 'ENST00000488147'",
-                value = prefill_feature())
-    })
-    output$dplot <- plotly::renderPlotly({
-      req(seu$active)
-      req(input$customFeature)
-      if (length(input$dplottype) > 1) {
-        mycols = input$dplottype
-        louvain_resolution = paste0("clusters_", input$resolution)
-        leiden_resolution = paste0("leiden_clusters_", input$resolution)
-        mycols <- gsub("^seurat$", louvain_resolution,
-                       mycols)
-        newcolname = paste(mycols, collapse = "_")
-        newdata = as_tibble(seu$active[[mycols]], rownames = "Sample_ID") %>%
-          tidyr::unite(!!newcolname, mycols) %>% deframe() %>%
-          identity()
-        seu$active <- AddMetaData(seu$active, metadata = newdata,
-                                  col.name = newcolname)
-        plot_var(seu$active, embedding = input$embedding,
-                 group = newcolname)
-      }
-      else {
-        if (input$dplottype == "custom") {
-          plot_feature(seu$active, embedding = input$embedding,
-                       features = input$customFeature)
-        }
-        else if (input$dplottype %in% continuous_vars) {
-          plot_feature(seu$active, embedding = input$embedding,
-                       features = input$dplottype)
-        }
-        else if (input$dplottype == "seurat") {
-          louvain_resolution = paste0("clusters_", input$resolution)
-          plot_var(seu$active, embedding = input$embedding,
-                   group = louvain_resolution)
-        }
-        else if (input$dplottype == "leiden") {
-          leiden_resolution = paste0("leiden_clusters_", input$resolution)
-          plot_var(seu$active, embedding = input$embedding,
-                   group = leiden_resolution)
-        }
-        else if (input$dplottype %in% plot_types) {
-          plot_var(seu$active, embedding = input$embedding,
-                   group = input$dplottype)
-        }
-      }
-    })
-  }
-  tableSelectedui <- function(id) {
-    ns <- NS(id)
-    tagList(DT::DTOutput(ns("brushtable")))
-  }
-  tableSelected <- function(input, output, session, seu) {
-    ns <- session$ns
-    brush <- reactive({
-      req(seu$active)
-      d <- plotly::event_data("plotly_selected")
-      if (is.null(d)) {
-        msg <- "Click and drag events (i.e. select/lasso) appear here (double-click to clear)"
-        return(d)
-      }
-      else {
-        selected_cells <- colnames(seu$active)[as.numeric(d$key)]
-      }
-    })
-    output$brushtable <- DT::renderDT({
-      req(seu$active)
-      req(brush())
-      selected_meta <- data.frame(seu$active[[]][brush(),
-                                                 ])
-      DT::datatable(selected_meta, extensions = "Buttons",
-                    options = list(dom = "Bft", buttons = c("copy",
-                                                            "csv"), scrollX = "100px", scrollY = "400px"))
-    })
-    selected_cells <- brush
-    return(selected_cells)
-  }
-  displaySubsetui <- function(id) {
-    ns <- NS(id)
-    tagList(fluidRow(box(DT::DTOutput(ns("seu_meta")), width = 6),
-                     box(DT::DTOutput(ns("sub_seu_meta")), width = 6)))
-  }
-  displaySubset <- function(input, output, session, seu, plot_types) {
-    ns <- session$ns
-    plot_types <- plot_types[-which(plot_types %in% c("seurat",
-                                                      "custom"))]
-    output$seu_meta <- DT::renderDT({
-      req(seu$active)
-      seu_meta <- data.frame(seu$active[[]]) %>% dplyr::select(Sample_ID,
-                                                               batch, one_of(plot_types), everything())
-      DT::datatable(seu_meta, extensions = "Buttons",
-                    options = list(dom = "Bft", buttons = c("copy",
-                                                            "csv"), scrollX = "100px", scrollY = "1000px"))
-    }, server = TRUE)
-    output$sub_seu_meta <- DT::renderDT({
-      req(seu$active)
-      req(input$seu_meta_rows_selected)
-      sub_seu_meta <- data.frame(seu$active[[]][input$seu_meta_rows_selected,
-                                                ]) %>% dplyr::select(Sample_ID, batch, one_of(plot_types),
-                                                                     everything())
-      brushtable <- DT::datatable(sub_seu_meta, extensions = "Buttons",
-                                  options = list(dom = "Bft", buttons = c("copy",
-                                                                          "csv"), scrollX = "100px", scrollY = "1000px"))
-    }, server = TRUE)
-    selected_rows <- reactive({
-      input$seu_meta_rows_selected
-    })
-    return(selected_rows)
-  }
-  subsetSeuratui <- function(id) {
-    ns <- NS(id)
-    tagList()
-  }
 
-  subsetSeurat <- function(input, output, session, seu, selected_rows) {
-    ns <- session$ns
-    sub_seu <- reactive({
-      showModal(modalDialog(title = "Subsetting and Recalculating Embeddings",
-                            "This process may take a minute or two!"))
-      seu$gene <- seu$gene[, selected_rows()]
-      seu$gene <- seuratTools::seurat_pipeline(seu$gene,
-                                               resolution = seq(0.6, 2, by = 0.2))
-      seu$transcript <- seu$transcript[, selected_rows()]
-
-      seu$transcript <- seuratTools::seurat_pipeline(seu$transcript,
-                                                     resolution = seq(0.6, 2, by = 0.2))
-      seu$active <- seu$gene
-      removeModal()
-    })
-    return(sub_seu)
-  }
-
-
-  diffexui <- function(id) {
-    ns <- NS(id)
-    tagList(box(sliderInput(ns("resolution"), "Resolution of clustering algorithm (affects number of clusters)",
-                            min = 0.2, max = 2, step = 0.2, value = 0.6
-    ), shinyWidgets::prettyRadioButtons(ns("diffex_scheme"),
-                                        "Cells to Compare",
-                                        choiceNames = c(
-                                          "Seurat Cluster",
-                                          "Custom"
-                                        ), choiceValues = c("seurat", "custom"),
-                                        selected = "seurat"
-    ), conditionalPanel(
-      ns = ns,
-      condition = "input.diffex_scheme == 'seurat'", numericInput(ns("cluster1"),
-                                                                  "first cluster to compare",
-                                                                  value = 0
-      ), numericInput(ns("cluster2"),
-                      "second cluster to compare",
-                      value = 1
-      )
-    ), conditionalPanel(
-      ns = ns,
-      condition = "input.diffex_scheme == 'custom'", shinyWidgets::actionBttn(
-        ns("saveClust1"),
-        "Save to Custom Cluster 1"
-      ), shinyWidgets::actionBttn(
-        ns("saveClust2"),
-        "Save to Custom Cluster 2"
-      )
-    ), shinyWidgets::prettyRadioButtons(ns("diffex_method"),
-                                        "Method of Differential Expression",
-                                        choiceNames = c(
-                                          "t-test",
-                                          "wilcoxon rank-sum test", "Likelihood-ratio test (bimodal)"
-                                        ),
-                                        choiceValues = c("t", "wilcox", "bimod")
-    ), shinyWidgets::actionBttn(
-      ns("diffex"),
-      "Run Differential Expression"
-    ), DT::dataTableOutput(ns("DT1")),
-    downloadLink(ns("downloadData"), "Download Complete DE Results"),
-    width = 12
-    ), box(
-      title = "Custom Cluster 1", DT::DTOutput(ns("cc1")),
-      width = 12
-    ), box(
-      title = "Custom Cluster 2", DT::DTOutput(ns("cc2")),
-      width = 12
-    ))
-  }
-  diffex <- function(input, output, session, seu) {
-    ns <- session$ns
-    brush <- reactive({
-      req(seu$active)
-      d <- plotly::event_data("plotly_selected")
-      if (is.null(d)) {
-        msg <- "Click and drag events (i.e. select/lasso) appear here (double-click to clear)"
-        return(d)
-      }
-      else {
-        selected_cells <- colnames(seu$active)[as.numeric(d$key)]
-      }
-    })
-    custom_cluster1 <- eventReactive(input$saveClust1,
-                                     {
-                                       isolate(brush())
-                                     })
-    custom_cluster2 <- eventReactive(input$saveClust2,
-                                     {
-                                       isolate(brush())
-                                     })
-    output$cc1 <- DT::renderDT({
-      req(custom_cluster1())
-      selected_meta <- data.frame(seu$active[[]][custom_cluster1(),
-                                                 ])
-      DT::datatable(selected_meta, extensions = "Buttons",
-                    options = list(dom = "Bft", buttons = c("copy",
-                                                            "csv"), scrollX = "100px", scrollY = "400px"))
-    })
-    output$cc2 <- DT::renderDT({
-      req(custom_cluster2())
-      selected_meta <- data.frame(seu$active[[]][custom_cluster2(),
-                                                 ])
-      DT::datatable(selected_meta, extensions = "Buttons",
-                    options = list(dom = "Bft", buttons = c("copy",
-                                                            "csv"), scrollX = "100px", scrollY = "400px"))
-    })
-    de_results <- eventReactive(input$diffex, {
-      if (input$diffex_scheme == "seurat") {
-        run_seurat_de(seu$active, input$cluster1, input$cluster2,
-                      input$resolution, diffex_scheme = "seurat")
-      }
-      else if (input$diffex_scheme == "custom") {
-        cluster1 <- unlist(strsplit(custom_cluster1(),
-                                    " "))
-        cluster2 <- unlist(strsplit(custom_cluster2(),
-                                    " "))
-        run_seurat_de(seu$active, cluster1, cluster2,
-                      input$resolution, diffex_scheme = "custom")
-      }
-    })
-    output$DT1 <- DT::renderDT(de_results()[[input$diffex_method]],
-                               extensions = "Buttons", options = list(dom = "Bftpr",
-                                                                      buttons = c("copy", "csv")), class = "display")
-  }
-
-  findMarkersui <- function(id) {
-    ns <- NS(id)
-    tagList(
-      sliderInput(ns("resolution2"), label = "Resolution of clustering algorithm (affects number of clusters)", min = 0.2, max = 2, step = 0.2, value = 0.6),
-      plotly::plotlyOutput(ns("markerplot"), height = 800)
-    )
-  }
-
-  findMarkers <- function(input, output, session, seu) {
-    ns <- session$ns
-
-    resolution <- reactive({paste0("clusters_", input$resolution2)})
-
-    output$markerplot <- plotly::renderPlotly({
-      req(seu)
-      #
-      plot_markers(seu$active, resolution())
-    })
-  }
-
-  plotReadCountui <- function(id, plot_types) {
-    ns <- NS(id)
-    tagList(selectInput(ns("rcplottype"), "Variable to Plot",
-                        choices = plot_types, selected = c("custom"), multiple = TRUE),
-            sliderInput(ns("resolution"), "Resolution of clustering algorithm (affects number of clusters)",
-                        min = 0.2, max = 2, step = 0.2, value = 0.6),
-            plotly::plotlyOutput(ns("rcplot"), height = 750) %>%
-              shinycssloaders::withSpinner())
-  }
-
-  plotReadCount <- function(input, output, session, seu, plot_types) {
-    ns <- session$ns
-    output$rcplot <- plotly::renderPlotly({
-      req(seu$active)
-      if (input$rcplottype == "custom") {
-        plot_readcount(seu$active, input$rcplottype)
-      }
-      else if (input$rcplottype == "seurat") {
-        louvain_resolution = paste0("clusters_", input$resolution)
-        plot_readcount(seu$active, louvain_resolution)
-      }
-      else if (input$rcplottype %in% plot_types) {
-        plot_readcount(seu$active, input$rcplottype)
-      }
-    })
-  }
-  ccScoreui <- function(id) {
-    ns <- NS(id)
-    tagList()
-  }
-  ccScore <- function(input, output, session) {
-    ns <- session$ns
-    output$rplot1 <- renderPlot({
-      req(seu$active)
-      plot_ridge(seu$active, features = input$feature)
-    })
-    plotOutput("rplot1", height = 750)
-  }
-
-  allTranscriptsui <- function(id) {
-    ns <- NS(id)
-    tagList(fluidRow(box(shinyWidgets::prettyRadioButtons(ns("color_feature"), "cluster on genes or transcripts?", choices = c("gene", "transcript"), selected = "gene"),
-                         textInput(ns("feature"), "gene or transcript on which to color the plot; eg. 'RXRG' or 'ENST00000488147'"),
-                         uiOutput(ns("outfile")), uiOutput(ns("downloadPlot")),
-                         width = 12)), fluidRow(uiOutput(ns("plotlys"))))
-  }
-
-  allTranscripts <- function(input, output, session, seu,
-                             feature_type) {
-    ns <- session$ns
-    transcripts <- reactiveValues()
-    transcripts <- reactive({
-      req(feature_type())
-      req(input$feature)
-      req(seu)
-      if (feature_type() == "gene") {
-        transcripts <- dplyr::filter(annotables::grch38,
-                                     symbol == input$feature) %>% dplyr::inner_join(annotables::grch38_tx2gene,
-                                                                                    by = "ensgene") %>% dplyr::pull(enstxp)
-        transcripts <- transcripts[transcripts %in%
-                                     rownames(seu$transcript)]
-      }
-      else if (feature_type() == "transcript") {
-        transcripts <- input$feature
-        transcripts <- transcripts[transcripts %in%
-                                     rownames(seu$transcript)]
-      }
-    })
-
-    pList <- reactive({
-      req(seu$active)
-
-      if(input$color_feature == "gene"){
-        # browser()
-        transcript_cols <- as.data.frame(t(as.matrix(seu$transcript[["RNA"]][transcripts(),])))
-
-        cells <- rownames(transcript_cols)
-        transcript_cols <- as.list(transcript_cols) %>%
-          purrr::map(~purrr::set_names(.x, cells))
-
-        seu$gene[[transcripts()]] <- transcript_cols
-
-        pList <- purrr::map(transcripts(), ~plot_feature(seu$gene,
-                                                         embedding = input$embedding, features = .x))
-        names(pList) <- transcripts()
-
-      } else if (input$color_feature == "transcript"){
-        pList <- purrr::map(transcripts(), ~plot_feature(seu$transcript,
-                                                         embedding = input$embedding, features = .x))
-        names(pList) <- transcripts()
-      }
-      return(pList)
-    })
-
-    output$plotlys <- renderUI({
-
-      # result <- vector("list", n)
-
-      plot_output_list <- purrr::map(names(pList()), ~plotly::plotlyOutput(ns(.x), height = 750))
-
-
-      #   plot_output_list <- lapply(1:length(pList()), function(i) {
-      #     plotname <- transcripts()[[i]]
-      #     plotly::plotlyOutput(ns(plotname), height = 750)
-      #   })
-      do.call(tagList, plot_output_list)
-    })
-
-    observe({
-      # browser()
-      for (i in 1:length(pList())) {
-        local({
-          my_i <- i
-          plotname <- transcripts()[[my_i]]
-          output[[plotname]] <- plotly::renderPlotly({
-            pList()[[my_i]]
-          })
-        })
-      }
-
-    })
-
-    output$outfile <- renderUI({
-      req(pList())
-      textInput(ns("outfile"), "a descriptive name for the output file",
-                value = paste0(input$feature, "_transcripts", "_clustered_by_", input$color_feature, ".pdf"))
-    })
-
-    output$plots <- downloadHandler(filename = function() {
-      paste(input$outfile, ".pdf", sep = "")
-    }, content = function(file) {
-      pdf(file)
-      lapply(pList(), print)
-      dev.off()
-    })
-
-    output$downloadPlot <- renderUI({
-      req(pList())
-      downloadButton(ns("plots"), label = "Download plots")
-    })
-  }
-
-  rnaVelocityui <- function(id){
-    ns <- NS(id)
-    tagList(
-      shinyWidgets::prettyRadioButtons(ns("embedding"), "dimensional reduction method", choices = c("pca", "tsne", "umap"), selected = "umap", inline = TRUE),
-      sliderInput(ns("resolution"), "Resolution of clustering algorithm (affects number of clusters)", min = 0.2, max = 2, step = 0.2, value = 0.6),
-      plotOutput(ns("vel_plot"), height = "800px")
-    )
-  }
-
-  rnaVelocity <- function(input, output, session, seu, feature_type, format = "grid"){
-    ns <- session$ns
-    output$vel_plot <- renderPlot({
-      req(seu$active)
-
-      showModal(modalDialog("Loading Plots", footer=NULL))
-      vel <- seu$active@misc$vel
-      emb <- Embeddings(seu$active, reduction = input$embedding)
-
-      louvain_resolution = paste0("clusters_", input$resolution)
-
-      cell.colors <- as_tibble(seu$active[[louvain_resolution]], rownames = "cellid") %>%
-        tibble::deframe() %>%
-        as.factor()
-
-      levels(cell.colors) <- scales::hue_pal()(length(levels(cell.colors)))
-
-      plot_velocity(vel, emb, cell.colors, format = format)
-      removeModal()
-    })
-  }
 
   body <- shinydashboard::dashboardBody(shinydashboard::tabItems(
     shinydashboard::tabItem(
@@ -877,6 +398,11 @@ seuratApp <- function(proj_dir, plot_types, filterTypes, appTitle, futureMb = 85
       )
     ),
     shinydashboard::tabItem(
+      tabName = "geneEnrichment",
+      h2("Gene Enrichment"),
+      geneEnrichmentui("hello")
+    ),
+    shinydashboard::tabItem(
       tabName = "rnaVelocity",
       h2("RNA Velocity"),
       fluidRow(
@@ -885,11 +411,22 @@ seuratApp <- function(proj_dir, plot_types, filterTypes, appTitle, futureMb = 85
       fluidRow(
         box(rnaVelocityui("grid"),
             width = 12))
+    ),
+    shinydashboard::tabItem(
+      tabName = "regressFeatures",
+      h2("Regress Features"),
+      fluidRow(
+        actionButton("regressAction", "Regress Seurat Objects By Genes"),
+        box(
+          selectizeInput("geneSet", "List of genes", choices = NULL, multiple = TRUE),
+          textInput("geneSetName", "Name for Gene Set"),
+          width = 12))
     )
   ))
 
   ui <- dashboardPage(
-    header = header, sidebar = sidebar,
+    header = header,
+    sidebar = sidebar,
     body = body
   )
 
@@ -1053,7 +590,8 @@ seuratApp <- function(proj_dir, plot_types, filterTypes, appTitle, futureMb = 85
 
 
     callModule(findMarkers, "hello", seu)
-    callModule(diffex, "hello", seu)
+    diffex_results <- callModule(diffex, "hello", seu)
+    callModule(geneEnrichment, "hello", seu, diffex_results)
     observeEvent(input$plotTrx, {
       showModal(modalDialog(
         title = "Plotting Transcripts",
@@ -1066,6 +604,27 @@ seuratApp <- function(proj_dir, plot_types, filterTypes, appTitle, futureMb = 85
 
     callModule(rnaVelocity, "arrow", seu, feature_type, "arrow")
     callModule(rnaVelocity, "grid", seu, feature_type, "grid")
+
+    observe({
+      updateSelectizeInput(session,
+                           'geneSet',
+                           choices = annotables::grch38$symbol,
+                           server = TRUE)
+    })
+
+    observeEvent(input$regressAction,{
+      req(seu$active)
+      showModal(modalDialog(
+        title = "Regressing out provided list of features",
+        "This process may take a minute or two!"
+      ))
+      regressed_seu <- seuratTools::regress_by_gene_set(list(gene = seu$gene, transcript = seu$transcript), gene_set = list(input$geneSet), set_name = janitor::make_clean_names(input$geneSetName))
+      seu$gene <- regressed_seu$gene
+      seu$transcript <- regressed_seu$transcript
+      seu$active <- seu$gene
+      removeModal()
+    })
+
 
   }
   shinyApp(ui, server)

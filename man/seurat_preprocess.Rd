@@ -4,7 +4,7 @@
 \alias{seurat_preprocess}
 \title{Preprocess Seurat Object}
 \usage{
-seurat_preprocess(seu, scale = TRUE)
+seurat_preprocess(seu, scale = TRUE, ...)
 }
 \arguments{
 \item{scale}{}

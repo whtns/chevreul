@@ -24,7 +24,7 @@ seurat_reference_integrate <- function(ref_seu_list, query_seu) {
 
   ## Next, we identify anchors using the FindIntegrationAnchors function, which takes a list of Seurat objects as input.
 
-  seu_list.anchors <- FindIntegrationAnchors(object.list = seu_list, dims = 1:30, k.filter = 50)
+  seu_list.anchors <- Seurat::FindIntegrationAnchors(object.list = seu_list, dims = 1:30, k.filter = 50)
 
 
   ## We then pass these anchors to the IntegrateData function, which returns a Seurat object.
@@ -53,14 +53,14 @@ seurat_reference_integrate <- function(ref_seu_list, query_seu) {
 ## find markers for every cluster compared to all remaining cells, report only the positive ones
 #' Find Cell Type Markers in a Seurat Object
 #'
-#' @param seu
+#' @param seu A seurat object
 #'
 #' @return
 #' @export
 #'
 #' @examples
 seurat_find_markers <- function(seu, num_features){
-  markers <- FindAllMarkers(seu, only.pos = TRUE, min.pct = 0.25, logfc.threshold = 0.25)
+  markers <- Seurat::FindAllMarkers(seu, only.pos = TRUE, min.pct = 0.25, logfc.threshold = 0.25)
   markers %>%
     group_by(cluster) %>%
     top_n(n = 2, wt = avg_logFC)
@@ -68,7 +68,7 @@ seurat_find_markers <- function(seu, num_features){
   cluster_markers <- reference.markers$gene %>%
     group_by(cluster) %>%
     top_n(n = num_features, wt = avg_logFC) %>%
-    pull(gene)
+    dplyr::pull(gene)
 
   DoHeatmap(reference_integrated[[1]], features = cluster_markers)
   return(cluster_markers)

@@ -9,7 +9,7 @@
 #' @export
 #'
 #' @examplesse
-seurat_preprocess <- function(seu, scale=TRUE){
+seurat_preprocess <- function(seu, scale=TRUE, ...){
   # Normalize data
   seu <- Seurat::NormalizeData(object = seu, verbose = FALSE)
 
@@ -18,7 +18,7 @@ seurat_preprocess <- function(seu, scale=TRUE){
 
   # Regress out unwanted sources of variation
   if (scale){
-    seu <- Seurat::ScaleData(object = seu, features = rownames(x = seu))
+    seu <- Seurat::ScaleData(object = seu, features = rownames(x = seu), ...)
 
   }
 
@@ -36,7 +36,7 @@ seurat_preprocess <- function(seu, scale=TRUE){
 find_all_markers <- function(seu, resolution = 0.6, ...){
   # browser()
   clusters <- paste0("clusters_", resolution) %>%
-    set_names(.)
+    purrr::set_names(.)
 
   clusters <- seu[[clusters]]
 

@@ -2,7 +2,7 @@
 % Please edit documentation in R/seurat_app.R
 \name{plot_markers}
 \alias{plot_markers}
-\title{TPlot Cluster Marker Genes}
+\title{Plot Cluster Marker Genes}
 \usage{
 plot_markers(seu, resolution)
 }
@@ -10,5 +10,5 @@ plot_markers(seu, resolution)
 \item{resolution}{}
 }
 \description{
-TPlot Cluster Marker Genes
+Plot Cluster Marker Genes
 }

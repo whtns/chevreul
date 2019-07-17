@@ -109,7 +109,7 @@ seu_from_tibbles <- function(txi, colData, census_counts=NULL){
 
 #' Filter our Cells from Seurat below read count threshold
 #'
-#' @param seu
+#' @param seu A seurat object
 #' @param read_thresh
 #'
 #' @return
@@ -133,14 +133,17 @@ filter_low_rc_cells <- function(seu, read_thresh = 1e5){
 
 #' Save seurat object to <project>/output/sce/<feature>_seu.rds
 #'
-#' @param seu
+#' @param seu A seurat object
 #' @param feature
+#' @param suffix
+#' @param proj_dir
+#' @param temp
 #'
 #' @return
 #' @export
 #'
 #' @examples
-save_seurat <- function(seu, feature, suffix = "", temp = F){
+save_seurat <- function(seu, feature, suffix = "", proj_dir = proj_dir, temp = F){
 
   if (temp == TRUE) return(seu)
 

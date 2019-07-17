@@ -8,7 +8,9 @@ seurat_integration_pipeline(seus, res_low = 0.2, res_hi = 2,
   suffix = "", ...)
 }
 \arguments{
-\item{suffix}{}
+\item{suffix}{a suffix to be appended to a file save in output dir}
+
+\item{seu}{A seurat object}
 }
 \description{
 run batch correction, followed by:

@@ -7,7 +7,7 @@
 annotate_cell_cycle(seu_list)
 }
 \arguments{
-\item{seu_list}{}
+\item{seu_list}{A list of seurat objects}
 }
 \description{
 Annotate Cell Cycle for Gene and Transcript Seurat Objects

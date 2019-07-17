@@ -4,9 +4,11 @@
 \alias{save_seurat}
 \title{Save seurat object to <project>/output/sce/<feature>_seu.rds}
 \usage{
-save_seurat(seu, feature, suffix = "", temp = F)
+save_seurat(proj_dir = projdir, seu, feature, suffix = "", temp = F)
 }
 \arguments{
+\item{seu}{A seurat object}
+
 \item{feature}{}
 }
 \description{

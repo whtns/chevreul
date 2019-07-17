@@ -2,7 +2,7 @@
 #'
 #' Annotate Cell Cycle for Gene and Transcript Seurat Objects
 #'
-#' @param seu_list
+#' @param seu_list A list of seurat objects
 #'
 #' @return
 #' @export
@@ -65,7 +65,7 @@ genes_to_transcripts <- function(genes, organism = "human") {
 #'
 #'  Add a Read Count Categorical Variable to Seurat Object (based on nCount_RNA)
 #'
-#' @param seu
+#' @param seu A seurat object
 #' @param thresh
 #'
 #' @return
@@ -88,7 +88,7 @@ add_read_count_col <- function(seu, thresh = 1e5){
 
 #' Annotate Exclusion Criteria
 #'
-#' @param seu
+#' @param seu A seurat object
 #' @param excluded_cells a named list of cells to be excluded of the form list(set1 = c(cell1, celll2), set2 = c(cell3, cell4))
 #' all other cells will be marked NA in a column titled "excluded_because"
 #'
@@ -98,7 +98,7 @@ add_read_count_col <- function(seu, thresh = 1e5){
 #' @examples
 annotate_excluded <- function(seu, ...){
   # consider replacing
-  # mutate(coalesce_var = coalesce(!!! syms(vars_select(names(.), starts_with("my")))))
+  # mutate(coalesce_var = coalesce(!!! syms(vars_select(names(.), dplyr::starts_with("my")))))
 
   excluded_cells <- list(...)
 

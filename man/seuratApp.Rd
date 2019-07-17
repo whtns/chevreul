@@ -4,7 +4,7 @@
 \alias{seuratApp}
 \title{Create Seurat App}
 \usage{
-seuratApp(proj_dir, plot_types, filterTypes, appTitle, futureMb = 850,
+seuratApp(proj_dir, plot_types, filterTypes, appTitle, futureMb = 849,
   ...)
 }
 \arguments{
@@ -14,10 +14,10 @@ seuratApp(proj_dir, plot_types, filterTypes, appTitle, futureMb = 850,
 
 \item{filterTypes}{A named vector of file suffixes corresponding to subsets of the data, ex. filterTypes <- c("", "remove_lowrc") %>% set_names(c("Unfiltered", "low read count cells"))}
 
-\item{appTitle}{A title of the app}
+\item{appTitle}{A title of the App}
 
 \item{futureMb}{amount of Mb allocated to future package}
 }
 \description{
-Create Seurat App
+Creat a shiny app to view and manipulate a Seurat object
 }

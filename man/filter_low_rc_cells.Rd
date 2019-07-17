@@ -7,6 +7,8 @@
 filter_low_rc_cells(seu, read_thresh = 1e+05)
 }
 \arguments{
+\item{seu}{A seurat object}
+
 \item{read_thresh}{}
 }
 \description{

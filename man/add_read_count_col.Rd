@@ -7,6 +7,8 @@
 add_read_count_col(seu, thresh = 1e+05)
 }
 \arguments{
+\item{seu}{A seurat object}
+
 \item{thresh}{}
 }
 \description{

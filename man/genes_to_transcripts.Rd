@@ -4,7 +4,7 @@
 \alias{genes_to_transcripts}
 \title{Ensembl Genes to Transcripts}
 \usage{
-genes_to_transcripts(genes)
+genes_to_transcripts(genes, organism = "human")
 }
 \arguments{
 \item{genes}{}

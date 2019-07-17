@@ -11,7 +11,6 @@ LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 6.1.1
 Imports: 
-    Seurat,
     fs,
     rprojroot,
     rlang,
@@ -27,15 +26,23 @@ Imports:
     shinydashboard,
     shiny,
     presto (>= 1.0.0),
-    shinyFiles
+    shinyFiles,
+    EnrichmentBrowser,
+    janitor,
+    SeuratWrappers (>= 0.1.0)
 Suggests: 
     dplyr,
     tidyr,
     ggplot2,
-    testthat
+    testthat,
+    knitr,
+    rmarkdown
 URL: https://github.com/cobriniklab/seuratTools
 BugReports: https://github.com/cobriniklab/seuratTools/issues
 Remotes: 
-    immunogenomics/presto
+    immunogenomics/presto,
+    satijalab/seurat-wrappers
 Depends: 
-    Rcpp
+    Rcpp,
+    Seurat
+VignetteBuilder: knitr

@@ -16,19 +16,19 @@ seurat_batch_correct <- function(seu_list, ...) {
   # Prior to finding anchors, we perform standard preprocessing (log-normalization), and identify variable features individually for each. Note that Seurat v3 implements an improved method for variable feature selection based on a variance stabilizing transformation ("vst")
 
   for (i in 1:length(x = seu_list)) {
-  	seu_list[[i]] <- seurat_preprocess(seu_list[[i]], scale = F)
+  	seu_list[[i]] <- seurat_preprocess(seu_list[[i]], scale = TRUE, ...)
   }
 
   # Next, we identify anchors using the FindIntegrationAnchors function, which takes a list of Seurat objects as input.
 
-  seu_list.anchors <- FindIntegrationAnchors(object.list = seu_list, dims = 1:30, k.filter = 50)
+  seu_list.anchors <- Seurat::FindIntegrationAnchors(object.list = seu_list, dims = 1:30, k.filter = 50)
 
 
   # We then pass these anchors to the IntegrateData function, which returns a Seurat object.
 
   # The returned object will contain a new Assay, which holds an integrated (or ‘batch-corrected’) expression matrix for all cells, enabling them to be jointly analyzed.
 
-  seu_list.integrated <- IntegrateData(anchorset = seu_list.anchors, dims = 1:30)
+  seu_list.integrated <- Seurat::IntegrateData(anchorset = seu_list.anchors, dims = 1:30)
 
   # #stash batches
   # Idents(seu_list.integrated) <- "batch"
@@ -39,7 +39,7 @@ seurat_batch_correct <- function(seu_list, ...) {
   DefaultAssay(object = seu_list.integrated) <- "integrated"
 
   # Run the standard workflow for visualization and clustering
-  seu_list.integrated <- ScaleData(object = seu_list.integrated, verbose = FALSE)
+  seu_list.integrated <- Seurat::ScaleData(object = seu_list.integrated, verbose = FALSE)
   seu_list.integrated <- seurat_reduce_dimensions(seu_list.integrated, ...)
 
   return(seu_list.integrated)
@@ -62,19 +62,19 @@ seurat_cluster <- function(seu, resolution = 0.6, cluster_prefix = "clusters_", 
   if (length(resolution) > 1){
     for (i in resolution){
       # browser()
-      seu <- FindClusters(object = seu, resolution = i, ...)
+      seu <- Seurat::FindClusters(object = seu, resolution = i, ...)
       seu[[paste0(cluster_prefix, i)]] <- Idents(seu)
     }
   } else if (length(resolution) == 1){
-    seu <- FindClusters(object = seu, resolution = resolution, ...)
+    seu <- Seurat::FindClusters(object = seu, resolution = resolution, ...)
   }
 
   if (!is.null(custom_clust)){
-    seu <- StashIdent(object = seu, save.name = "old.ident")
-    clusters <- tibble("Sample_ID" = rownames(seu[[]])) %>%
-    rownames_to_column("order") %>%
+    seu <- Seurat::StashIdent(object = seu, save.name = "old.ident")
+    clusters <- tibble::tibble("Sample_ID" = rownames(seu[[]])) %>%
+    tibbl::rownames_to_column("order") %>%
     dplyr::inner_join(custom_clust, by = "Sample_ID") %>%
-    pull(cluster) %>%
+    dplyr::pull(cluster) %>%
     identity()
 
     Idents(object = seu) <- clusters
@@ -136,8 +136,8 @@ load_seurat_from_rds <- function(proj_dirs){
 #' 2) clustering with resolution 0.2 to 2.0 in increments of 0.2
 #' 3) saving to <proj_dir>/output/sce/<feature>_seu_<suffix>.rds
 #'
-#' @param seus
-#' @param suffix
+#' @param seu A seurat object
+#' @param suffix a suffix to be appended to a file save in output dir
 #'
 #' @return
 #' @export
@@ -146,14 +146,14 @@ load_seurat_from_rds <- function(proj_dirs){
 #' @examples
 seurat_integration_pipeline <- function(seus, res_low = 0.2, res_hi = 2.0, suffix = '', ...) {
 
-  corrected_seus <- purrr::map(seus, seurat_batch_correct, ...)
+  corrected_seu <- seurat_batch_correct(seus, ...)
 
   # cluster merged seurat objects
-  corrected_seus <- purrr::map(corrected_seus, seuratTools::seurat_cluster, resolution = seq(res_low, res_hi, by = 0.2, ...))
+  corrected_seu <- seurat_cluster(corrected_seu, resolution = seq(res_low, res_hi, by = 0.2), ...)
 
-  corrected_seus <- purrr::map(corrected_seus, find_all_markers)
+  corrected_seu <- find_all_markers(corrected_seu)
 
-  corrected_seus <- purrr::imap(corrected_seus, save_seurat, suffix = suffix, ...)
+  # corrected_seu <- save_seurat(corrected_seu, feature = feature, suffix = suffix, ...)
 
 }
 
@@ -280,19 +280,21 @@ filter_merged_seu <- function(seu, filter_var, filter_val, .drop = .drop) {
 #' 2) integrate
 #' 3) run integration pipeline and save
 #'
-#' @param seus
+#' @param seu
+#' @param suffix to be appended to file saved in output dir
+#' @param reduction to use default is pca
 #'
 #' @return
 #' @export
 #'
 #' @examples
-reintegrate_seus <- function(seus, suffix = "", reduction = "pca", ...){
+reintegrate_seu <- function(seu, feature, suffix = "", reduction = "pca", ...){
 
-  seus <- purrr::map(seus, ~Seurat::`DefaultAssay<-`(.x, value = "RNA"))
+  DefaultAssay(seu) <- "RNA"
 
-  seus <- purrr::map(seus, Seurat::SplitObject, split.by = "batch")
+  seus <- Seurat::SplitObject(seu, split.by = "batch")
 
-  seus <- seurat_integration_pipeline(seus, suffix = suffix, reduction = reduction, ...)
+  seu <- seurat_integration_pipeline(seus, suffix = suffix, ...)
 
 
 }

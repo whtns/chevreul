@@ -25,7 +25,7 @@ run_rna_velocity <- function(seu, loom_path) {
   ## grab cell colors ------------------------------------------------------------------------
 
   clusters_meta <- seu[[]] %>%
-    dplyr::select(starts_with("clusters_")) %>%
+    dplyr::select(dplyr::starts_with("clusters_")) %>%
     dplyr::select(paste0("clusters_", seq(0.2, 2.0, by = 0.2))) %>%
     identity()
 
@@ -36,7 +36,7 @@ run_rna_velocity <- function(seu, loom_path) {
 
   df_col_to_nm_vec <- function(df_col, colvec, df_names){
     myvec <- unlist(df_col) %>%
-      set_names(df_names) %>%
+      purrr::set_names(df_names) %>%
       forcats::lvls_revalue(colvec)
   }
 
@@ -71,4 +71,49 @@ run_rna_velocity <- function(seu, loom_path) {
 
   return(seu)
 
+}
+
+#' Run RNA Velocity2
+#'
+#' @param loom_path
+#'
+#' @return
+#' @export
+#'
+#' @examples
+run_rna_velocity2 <- function(loom_path) {
+  ldat <- ReadVelocity(file = loom_path)
+  bm <- SeuratWrappers::as.Seurat(x = ldat)
+  bm <- Seurat::SCTransform(object = bm, assay = "spliced")
+  bm <- Seurat::RunPCA(object = bm, verbose = FALSE)
+  bm <- Seurat::FindNeighbors(object = bm, dims = 1:20)
+  bm <- Seurat::FindClusters(object = bm)
+  bm <- Seurat::RunUMAP(object = bm, dims = 1:20)
+  bm <-
+    SeuratWrappers::RunVelocity(
+      object = bm,
+      deltaT = 1,
+      kCells = 25,
+      fit.quantile = 0.02
+    )
+  ident.colors <- (scales::hue_pal())(n = length(x = levels(x = bm)))
+  names(x = ident.colors) <- levels(x = bm)
+  cell.colors <- ident.colors[Idents(object = bm)]
+  names(x = cell.colors) <- colnames(x = bm)
+  velocyto.R::show.velocity.on.embedding.cor(
+    emb = Embeddings(object = bm, reduction = "umap"),
+    vel = Tool(object = bm,
+               slot = "RunVelocity"),
+    n = 200,
+    scale = "sqrt",
+    cell.colors = ac(x = cell.colors, alpha = 0.5),
+    cex = 0.8,
+    arrow.scale = 3,
+    show.grid.flow = TRUE,
+    min.grid.cell.mass = 0.5,
+    grid.n = 40,
+    arrow.lwd = 1,
+    do.par = FALSE,
+    cell.border.alpha = 0.1
+  )
 }
