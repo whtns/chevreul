@@ -7,16 +7,16 @@
 seuratApp(proj_dir, plot_types, filterTypes, appTitle, futureMb = 849)
 }
 \arguments{
-\item{proj_dir}{The project directory of the base dataset ex. "~/single_cell_projects/sc_cone_devel/proj"}
+\item{proj_dir}{The project directory of the base dataset}
 
 \item{plot_types}{The types of plots to be shown as a named list containing two vectors: 1) category_vars and 2) continuous_vars}
 
-\item{filterTypes}{A named vector of file suffixes corresponding to subsets of the data, ex. filterTypes <- c("", "remove_lowrc") %>% set_names(c("Unfiltered", "low read count cells"))}
+\item{filterTypes}{A named vector of file suffixes corresponding to subsets of the data}
 
 \item{appTitle}{A title of the App}
 
 \item{futureMb}{amount of Mb allocated to future package}
 }
 \description{
-Creat a shiny app to view and manipulate a Seurat object
+Create Seurat App
 }

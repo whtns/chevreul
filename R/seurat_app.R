@@ -279,19 +279,18 @@ prep_slider_values <- function(default_val){
   return(list(min = min, max = max, value = value, step = step))
 }
 
+
 #' Create Seurat App
 #'
-#' Creat a shiny app to view and manipulate a Seurat object
-#'
-#' @param proj_dir The project directory of the base dataset ex. "~/single_cell_projects/sc_cone_devel/proj"
+#' @param proj_dir The project directory of the base dataset
 #' @param plot_types The types of plots to be shown as a named list containing two vectors: 1) category_vars and 2) continuous_vars
-#' @param filterTypes A named vector of file suffixes corresponding to subsets of the data, ex. filterTypes <- c("", "remove_lowrc") %>% set_names(c("Unfiltered", "low read count cells"))
+#' @param filterTypes A named vector of file suffixes corresponding to subsets of the data
 #' @param appTitle A title of the App
 #' @param futureMb amount of Mb allocated to future package
 #'
 #' @return
 #' @export
-#' @import shiny
+#'
 #' @examples
 seuratApp <- function(proj_dir, plot_types, filterTypes, appTitle, futureMb = 849){
 
