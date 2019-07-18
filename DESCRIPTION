@@ -1,7 +1,7 @@
 Package: seuratTools
 Type: Package
 Title: Tools for Managing Seurat Objects
-Version: 0.1.0
+Version: 0.2.0
 Author: Kevin Stachelek
 Maintainer: Kevin Stachelek <kevin.stachelek@gmail.com>
 Description: Tools for using seurat with single cell projects
