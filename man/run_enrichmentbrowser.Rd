@@ -4,7 +4,7 @@
 \alias{run_enrichmentbrowser}
 \title{Run Enrichment Browser on Differentially Expressed Genes}
 \usage{
-run_enrichmentbrowser(seu, cluster1_cells, cluster2_cells)
+run_enrichmentbrowser(seu, cluster1_cells, cluster2_cells, ...)
 }
 \arguments{
 \item{cluster2_cells}{}

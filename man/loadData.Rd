@@ -4,10 +4,11 @@
 \alias{loadData}
 \title{Load Data}
 \usage{
-loadData(input, output, session, proj_dir, feature_type)
+loadData(input, output, session, proj_dir, feature_types = c("gene"),
+  selected_feature)
 }
 \arguments{
-\item{feature_type}{}
+\item{proj_dir}{}
 }
 \description{
 Load Data
