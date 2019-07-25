@@ -143,7 +143,7 @@ filter_low_rc_cells <- function(seu, read_thresh = 1e5){
 #' @export
 #'
 #' @examples
-save_seurat <- function(seu, feature, suffix = "", proj_dir = proj_dir, temp = F){
+save_seurat <- function(seu, feature, suffix = "", proj_dir = getwd(), temp = F){
 
   if (temp == TRUE) return(seu)
 
@@ -151,11 +151,11 @@ save_seurat <- function(seu, feature, suffix = "", proj_dir = proj_dir, temp = F
     suffix = paste0("_", suffix)
   }
 
-  sce_dir <- fs::path(proj_dir, "output", "sce")
+  seurat_dir <- fs::path(proj_dir, "output", "seurat")
 
-  dir_create(sce_dir)
+  fs::dir_create(seurat_dir)
 
-  seu_path <- fs::path(sce_dir, paste0(feature, "_seu", suffix, ".rds"))
+  seu_path <- fs::path(seurat_dir, paste0(feature, "_seu", suffix, ".rds"))
 
   saveRDS(seu, seu_path)
   seu

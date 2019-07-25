@@ -4,10 +4,10 @@
 \alias{plotDimRedui}
 \title{Plot Dimensionally Reduced Data UI}
 \usage{
-plotDimRedui(id, plot_types)
+plotDimRedui(id)
 }
 \arguments{
-\item{plot_types}{}
+\item{id}{}
 }
 \description{
 Plot Dimensionally Reduced Data UI

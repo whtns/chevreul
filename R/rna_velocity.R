@@ -25,8 +25,8 @@ run_rna_velocity <- function(seu, loom_path) {
   ## grab cell colors ------------------------------------------------------------------------
 
   clusters_meta <- seu[[]] %>%
-    dplyr::select(dplyr::starts_with("clusters_")) %>%
-    dplyr::select(paste0("clusters_", seq(0.2, 2.0, by = 0.2))) %>%
+    dplyr::select(dplyr::starts_with(paste0(DefaultAssay(seu), "_snn_res."))) %>%
+    dplyr::select(paste0(DefaultAssay(seu), "_snn_res.", seq(0.2, 2.0, by = 0.2))) %>%
     identity()
 
   colvecs <- purrr::map_int(clusters_meta, ~length(unique(.x))) %>%

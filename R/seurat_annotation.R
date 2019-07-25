@@ -8,29 +8,12 @@
 #' @export
 #'
 #' @examples
-annotate_cell_cycle <- function(seu_list){
-
-  # S phase genes
-  s.genes <- cc.genes[1:43]
-
-  # G2/M phase genes
-  g2m.genes <- cc.genes[44:97]
-
-  # S phase transcripts
-  s.transcripts <- genes_to_transcripts(s.genes)
-
-  # G2/M phase transcripts
-  g2m.transcripts <- genes_to_transcripts(g2m.genes)
-
-  cc.features <- list(
-    "gene" = list("s" = s.genes, "g2m" = g2m.genes),
-    "transcript" = list("s" = s.transcripts, "g2m" = g2m.transcripts)
-  )
+annotate_cell_cycle <- function(seu, s.features, g2m.features, ...){
 
   # setdefaultassay to "RNA"
-  seu_list <- purrr::map(seu_list, SetDefaultAssay, "RNA")
+  DefaultAssay(seu) <- "RNA"
 
-  seu_list <- purrr::map2(seu_list, cc.features, ~CellCycleScoring(.x, s.features = .y$s, g2m.features = .y$g2m, set.ident = FALSE))
+  seu <- CellCycleScoring(seu, s.features = s.features, g2m.features = g2m.features, set.ident = FALSE)
 
 }
 

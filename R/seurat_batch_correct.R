@@ -17,7 +17,12 @@ seurat_batch_correct <- function(seu_list, ...) {
 
   for (i in 1:length(x = seu_list)) {
   	seu_list[[i]] <- seurat_preprocess(seu_list[[i]], scale = TRUE, ...)
+  	seu_list[[i]]$batch <- names(seu_list)[[i]]
   }
+
+  seu_list <- purrr::map(seu_list, seurat_preprocess, scale = TRUE)
+
+
 
   # Next, we identify anchors using the FindIntegrationAnchors function, which takes a list of Seurat objects as input.
 
@@ -31,8 +36,8 @@ seurat_batch_correct <- function(seu_list, ...) {
   seu_list.integrated <- Seurat::IntegrateData(anchorset = seu_list.anchors, dims = 1:30)
 
   # #stash batches
-  # Idents(seu_list.integrated) <- "batch"
-  # seu_list.integrated <- StashIdent(seu_list.integrated, save.name = "batch")
+  Idents(seu_list.integrated) <- "batch"
+  seu_list.integrated <- StashIdent(seu_list.integrated, save.name = "batch")
 
   # switch to integrated assay. The variable features of this assay are
   # automatically set during IntegrateData
@@ -50,12 +55,14 @@ seurat_batch_correct <- function(seu_list, ...) {
 #' @param seu
 #' @param resolution
 #' @param custom_clust
+#' @param reduction
+#' @param ...
 #'
 #' @return
 #' @export
 #'
 #' @examples
-seurat_cluster <- function(seu, resolution = 0.6, cluster_prefix = "clusters_", custom_clust = NULL, reduction = "pca", ...) {
+seurat_cluster <- function(seu, resolution = 0.6, custom_clust = NULL, reduction = "pca", ...){
   # browser()
   seu <- FindNeighbors(object = seu, dims = 1:10, reduction = reduction)
 
@@ -63,7 +70,6 @@ seurat_cluster <- function(seu, resolution = 0.6, cluster_prefix = "clusters_", 
     for (i in resolution){
       # browser()
       seu <- Seurat::FindClusters(object = seu, resolution = i, ...)
-      seu[[paste0(cluster_prefix, i)]] <- Idents(seu)
     }
   } else if (length(resolution) == 1){
     seu <- Seurat::FindClusters(object = seu, resolution = resolution, ...)
@@ -93,22 +99,23 @@ seurat_cluster <- function(seu, resolution = 0.6, cluster_prefix = "clusters_", 
 #' @return
 #' @export
 #'
+#'
 #' @examples
-pull_gene_trx_seus <- function(proj_dir, suffix = ""){
+load_seurat_path <- function(proj_dir = getwd(), features = "gene", suffix = ""){
   # browser()
 
   if(suffix != ""){
     suffix = paste0("_", suffix)
   }
 
-  seu_path <- paste0("*", "_seu", suffix, ".rds")
+  seu_paths <- paste0(paste0("*", features, "_seu", suffix, ".rds"), collapse = "|")
 
-  gene_trx_sces <- fs::path(proj_dir, "output", "sce") %>%
+  seu_paths <- fs::path(proj_dir, "output", "seurat") %>%
     fs::dir_ls() %>%
-    fs::path_filter(seu_path) %>%
-    purrr::set_names(c("gene", "transcript")) %>%
+    fs::path_filter(seu_paths) %>%
+    purrr::set_names(features) %>%
     identity()
-  return(gene_trx_sces)
+  return(seu_paths)
 }
 
 
@@ -120,14 +127,31 @@ pull_gene_trx_seus <- function(proj_dir, suffix = ""){
 #' @export
 #'
 #' @examples
-load_seurat_from_rds <- function(proj_dirs){
-  seu_files <- purrr::map(proj_dirs, pull_gene_trx_seus)
+load_seurat_from_projs <- function(proj_dirs, ...){
+  seu_files <- purrr::map(proj_dirs, load_seurat_path, ...)
   names(seu_files) <- gsub("_proj", "", basename(proj_dirs))
 
   seu_files <- purrr::transpose(seu_files)
 
   seu_files <- purrr::map(seu_files, ~purrr::map(.x, readRDS))
 }
+
+#' Load Seurat Files from a signle project path
+#'
+#' @param proj_dir
+#' @param ...
+#'
+#' @return
+#' @export
+#'
+#' @examples
+load_seurat_from_proj <- function(proj_dir, features = "gene", ...){
+  seu_files <- load_seurat_path(proj_dir, features = features, ...)
+  names(seu_files) <- features
+
+  seu_files <- purrr::map(seu_files, readRDS)
+}
+
 
 #' Run Seurat Integration
 #'

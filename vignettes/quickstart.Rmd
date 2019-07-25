@@ -14,10 +14,202 @@ knitr::opts_chunk$set(
 )
 ```
 
+# load required packages
+
 ```{r setup}
 library(seuratTools)
+# library(SeuratData)
+
+library(tidyverse)
+library(panc8.SeuratData)
+library(Seurat)
+library(SeuratWrappers)
+
+library(tidyverse)
+library(shiny)
+library(shinydashboard)
+library(fs)
+library(shinycssloaders)
+library(annotables)
+library(Seurat)
+library(plotly)
+library(rprojroot)
+library(DT)
+library(crosstalk)
+library(seuratTools)
+library(EnrichmentBrowser)
 ```
 
 ```{r}
+seu <- panc8[,Idents(panc8) %in% c("fluidigcm1", "smartseq2")]
+
+seus <- SplitObject(seu, split.by = "ident")
+```
+
+
+# run seurat batch correction on 'child' projects 
+
+```{r}
+
+integrated_seu <- seurat_batch_correct(seus)
+```
+
+# run clustering on integrated seurat object
+
+```{r}
+
+# cluster merged seurat objects
+integrated_seu <- seurat_cluster(integrated_seu, resolution = seq(0.2, 2.0, by = 0.2))
 
 ```
+
+# save integrated seurat object
+
+```{r}
+
+save_seurat(seu = integrated_seu, feature = "gene")
+
+```
+
+# load seurat object
+
+```{r}
+seurat_path <- load_seurat_path()
+
+integrated_seu <- readRDS(seurat_path)
+
+```
+
+# add cell cycle scoring to seurat objects
+
+```{r}
+# S phase genes
+s.genes <- cc.genes$s.genes
+
+# G2/M phase genes
+g2m.genes <- cc.genes$g2m.genes
+
+integrated_seu <- seuratTools::annotate_cell_cycle(integrated_seu, s.features = s.genes, g2m.features = g2m.genes)
+```
+
+# add marker genes to seurat object
+
+```{r}
+integrated_seu <- find_all_markers(integrated_seu)
+
+```
+
+# save annotated seurat object
+
+```{r}
+save_seurat(integrated_seu, feature = "gene", suffix = "annotated")
+```
+
+# load seurat objects
+
+```{r}
+seurat_path <- load_seurat_path(features = "gene", suffix = "annotated")
+
+integrated_seu <- readRDS(seurat_path)
+
+```
+
+
+# launch app to inspect
+
+```{r}
+
+
+filterTypes <- c("", "annotated") %>% 
+  purrr::set_names(c("Unfiltered", "Annotated"))
+
+appTitle <- "SHL 2 seq"
+
+organism <- "human"
+
+
+
+seuratApp("/dataVolume/storage/rpkgs/seuratTools/vignettes", filterTypes = c("", "annotated"), appTitle = appTitle)
+
+```
+
+# regress out stress related genes from integrated seurat object
+
+```{r}
+
+stress_genes <- list(c("FOS", "FOSB", "EGR1", "IER2", "JUNB", "DUSP1", "ID1", "RASD1", "BTG2"))
+
+stress_transcripts <- genes_to_transcripts(stress_genes)
+
+integrated_seu <- seuratTools::regress_by_features(integrated_seu, feature_set = stress_genes, set_name = "stress_score")
+
+```
+
+
+```{r}
+seuratApp(proj_dir = ".", plot_types)
+```
+
+#annotate excluded cells 
+
+```{r}
+
+corrected_seus <- map(corrected_seus, seuratTools::annotate_excluded, wandering_cells = c("ds20170407_S476", "ds20170407_S490", "ds20170407_S492", "ds20170407_S473", "ds20170407_S482", "ds20170407_S491", "ds20170407_S487", "ds20170407_S477", "ds20170407_S486", "ds20170407_S374", "ds20170407_S409", "ds20170407_S335", "ds20170407_S327", "ds20170407_S314", "ds20170407_S317", "ds20170407_S424", "ds20170407_S430", "ds20171031_S196", "ds20171031_S287", "ds20171031_S128", "ds20171031_S108", "ds20171031_S116", "shl20190501-083", "shl20190501-643", "hs20151130_SC1_95", "hs20151130_SC2_33", "hs20151130_SC2_50", "hs20151130_SC2_52", "hs20151130_SC2_56", "hs20151130_SC2_65", "hs20151130_SC2_72", "hs20151130_SC2_80", "hs20151130_SC2_89", "hs20151130_SC3_13", "hs20151130_SC3_2", "hs20151130_SC3_32", "hs20151130_SC3_43", "hs20151130_SC3_46", "hs20151130_SC3_53", "hs20151130_SC3_63", "hs20151130_SC3_75", "hs20151130_SC3_90", "hs20151130_SC2_15", "hs20151130_SC2_37", "hs20151130_SC2_47", "hs20151130_SC2_54", "hs20151130_SC2_75", "hs20151130_SC2_82", "hs20151130_SC3_25", "hs20151130_SC3_42", "hs20151130_SC3_78", "hs20151130_SC3_81", "hs20151130_SC3_85", "hs20151130_SC2_59", "hs20151130_SC2_70", "hs20151130_SC2_93", "hs20151130_SC1_29", "hs20151130_SC1_94", "hs20151130_SC3_22", "hs20151130_SC3_16", "hs20151130_SC2_17", "hs20151130_SC2_69", "hs20151130_SC3_12", "hs20151130_SC2_79", "hs20151130_SC3_4", "hs20151130_SC3_71", "hs20151130_SC1_75"))
+
+```
+
+# filter seurat objects by metadata criteria -- remove actinomycin-D treated cells
+
+```{r}
+
+excluded_actD_cells_seus <- filter_merged_seus(corrected_seus, "act_d_status", "Untreated") 
+excluded_actD_cells_seus <- reintegrate_seus(excluded_actD_cells_seus, suffix = "remove_actD_treated_cells")
+
+```
+
+# filter seurat objects by metadata criteria -- remove nonPR cells
+
+```{r}
+
+excluded_nonPRs_cells_seus <- filter_merged_seus(corrected_seus, "excluded_because", "keep") 
+excluded_nonPRs_cells_seus <- reintegrate_seus(excluded_nonPRs_cells_seus, suffix = "remove_nonPRs_cells")
+
+```
+
+# filter seurat objects by metadata criteria -- low read count cells
+
+```{r}
+
+high_rc_seus <- purrr::map(corrected_seus, ~subset(.x, subset = nCount_RNA > 1e5)) 
+high_rc_seus <- reintegrate_seus(high_rc_seus, suffix = "remove_lowrc")
+
+
+```
+
+
+## filter seurat objects by both read count and non-photoreceptor cells
+
+```{r}
+excluded_nonPRs_seus <- filter_merged_seus(corrected_seus, "excluded_because", "keep") 
+high_rc_seus <- purrr::map(excluded_nonPRs_seus, ~subset(.x, subset = nCount_RNA > 1e5)) 
+
+merged_seus <- reintegrate_seus(high_rc_seus, suffix = "remove_lowrc_and_nonPRs")
+
+
+```
+
+
+## filter seurat objects by both read count, non photo-receptor cells and actinomycin treated cells
+
+```{r}
+excluded_nonPRs_seus <- filter_merged_seus(corrected_seus, "excluded_because", "keep") 
+high_rc_seus <- purrr::map(excluded_nonPRs_seus, ~subset(.x, subset = nCount_RNA > 1e5)) 
+excluded_actD_cells_seus <- filter_merged_seus(high_rc_seus, "act_d_status", "Untreated")
+
+merged_seus <- reintegrate_seus(excluded_actD_cells_seus, suffix = "remove_lowrc_nonPRs_and_actD_treated_cells")
+
+
+```
+
+
+

@@ -29,7 +29,8 @@ Imports:
     shinyFiles,
     EnrichmentBrowser,
     janitor,
-    SeuratWrappers (>= 0.1.0)
+    SeuratWrappers (>= 0.1.0),
+    monocle3 (>= 0.1.2)
 Suggests: 
     dplyr,
     tidyr,
@@ -39,9 +40,10 @@ Suggests:
     rmarkdown
 URL: https://github.com/cobriniklab/seuratTools
 BugReports: https://github.com/cobriniklab/seuratTools/issues
-Remotes: 
+Remotes:  
     immunogenomics/presto,
-    satijalab/seurat-wrappers
+    satijalab/seurat-wrappers,
+    cole-trapnell-lab/monocle3
 Depends: 
     Rcpp,
     Seurat

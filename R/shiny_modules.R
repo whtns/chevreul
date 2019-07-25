@@ -22,36 +22,53 @@ loadDataui <- function(id, label = "Load Data", filterTypes) {
 #' @param input
 #' @param output
 #' @param session
+#' @param feature_types
+#' @param selected_feature
 #' @param proj_dir
-#' @param feature_type
 #'
 #' @return
 #' @export
 #'
 #' @examples
-loadData <- function(input, output, session, proj_dir, feature_type) {
+loadData <- function(input, output, session, proj_dir, feature_types = c("gene"), selected_feature) {
   ns <- session$ns
   seu <- reactiveValues()
 
   observeEvent(input$loadButton, {
     showModal(modalDialog("Loading Data", footer = NULL))
-    if (!input$filterType == "") {
-      filterType = paste0("_", input$filterType)
-    }
-    else {
-      filterType = input$filterType
-    }
-    seu_paths <- rprojroot::find_root_file("output/sce", criterion = rprojroot::has_file_pattern("*.Rproj"),
-                                           path = proj_dir) %>% fs::dir_ls() %>% fs::path_filter(paste0("*_seu",
-                                                                                                        filterType, ".rds")) %>% identity()
+    # if (!input$filterType == "") {
+    #   filterType = paste0("_", input$filterType)
+    # }
+    # else {
+    #   filterType = input$filterType
+    # }
+
+    # seu_paths <- paste0("*", feature_types, "_seu", filterType, ".rds")
+    #
+    # seu_paths <- fs::path(proj_dir, "output", "seurat") %>%
+    #   fs::dir_ls() %>%
+    #   fs::path_filter(seu_paths) %>%
+    #   purrr::set_names(feature_types) %>%
+    #   identity()
+
+    seu_paths <- load_seurat_path(proj_dir, features = feature_types, suffix = input$filterType)
+
     feature_seus <- purrr::map(seu_paths, readRDS) %>%
-      purrr::set_names(c("gene", "transcript"))
-    Seurat::DefaultAssay(feature_seus$gene) <- "RNA"
-    Seurat::DefaultAssay(feature_seus$transcript) <- "RNA"
+      purrr::set_names(feature_types)
+
+    feature_seus <- purrr::map(feature_seus, SetDefaultAssay, "RNA")
     removeModal()
-    seu$gene <- feature_seus$gene
-    seu$transcript <- feature_seus$transcript
-    seu$active <- feature_seus[[feature_type]]
+
+    for (i in names(feature_seus)){
+      seu[[i]] <- feature_seus[[i]]
+    }
+    seu$active <- feature_seus[[selected_feature]]
+
+    # seu$transcript <- feature_seus[["transcript"]]
+    # seu$gene <- feature_seus[["gene"]]
+    # seu$active <- feature_seus[[selected_feature]]
+
+
   })
 
   return(seu)
@@ -112,8 +129,9 @@ changeEmbedParamsui <- function(id){
   negsamprate_vals <- prep_slider_values(5)
 
   tagList(
+    selectizeInput(ns("dims"), label = "Dimensions from PCA", choices = seq(1,99), multiple = TRUE, selected = 1:30),
     sliderInput(ns("minDist"), label = "Minimum Distance", min = minDist_vals$min, max = minDist_vals$max, value = minDist_vals$value, step = minDist_vals$step),
-    sliderInput(ns("negativeSampleRate"), label = "NegativeSampleRate", min = negsamprate_vals$min, max = negsamprate_vals$max, value = negsamprate_vals$value, step = negsamprate_vals$step)
+    sliderInput(ns("negativeSampleRate"), label = "Negative Sample Rate", min = negsamprate_vals$min, max = negsamprate_vals$max, value = negsamprate_vals$value, step = negsamprate_vals$step)
   )
 }
 
@@ -138,8 +156,8 @@ changeEmbedParams <- function(input, output, session, seu){
   #   )
   # })
 
-  seu$gene <- RunUMAP(seu$gene, dims = 1:30, reduction = "pca", min.dist = input$minDist, negative.sample.rate = input$negativeSampleRate)
-  seu$transcript <- RunUMAP(seu$transcript, dims = 1:30, reduction = "pca", min.dist = input$minDist, negative.sample.rate = input$negativeSampleRate)
+  seu$gene <- RunUMAP(seu$gene, dims = as.numeric(input$dims), reduction = "pca", min.dist = input$minDist, negative.sample.rate = input$negativeSampleRate)
+  seu$transcript <- RunUMAP(seu$transcript, dims = as.numeric(input$dims), reduction = "pca", min.dist = input$minDist, negative.sample.rate = input$negativeSampleRate)
   seu$active <- seu$gene
 
 
@@ -150,22 +168,27 @@ changeEmbedParams <- function(input, output, session, seu){
 #' Plot Dimensionally Reduced Data UI
 #'
 #' @param id
-#' @param plot_types
 #'
 #' @return
 #' @export
 #'
 #' @examples
-plotDimRedui <- function(id, plot_types) {
+plotDimRedui <- function(id) {
   ns <- NS(id)
-  tagList(selectizeInput(ns("dplottype"), "Variable to Plot",
-                         choices = plot_types, selected = c("custom"), multiple = TRUE),
-          shinyWidgets::prettyRadioButtons(ns("embedding"),
-                                           "dimensional reduction method", choices = c("pca", "harmony", "tsne", "umap"), selected = "umap", inline = TRUE),
-          uiOutput(ns("featuretext")),
-          sliderInput(ns("resolution"), "Resolution of clustering algorithm (affects number of clusters)", min = 0.2, max = 2, step = 0.2, value = 0.6),
-          plotly::plotlyOutput(ns("dplot"), height = 750) %>%
-            shinycssloaders::withSpinner())
+  tagList(
+    uiOutput(ns("dplottype")),
+    shinyWidgets::prettyRadioButtons(ns("embedding"),
+      "dimensional reduction method",
+      choices = c("pca", "harmony", "tsne", "umap"), selected = "umap", inline = TRUE
+    ),
+    fluidRow(
+      column(2, selectizeInput(ns("dim1"), "Dimension 1", choices = seq(1,99), selected = 1)),
+      column(2, selectizeInput(ns("dim2"), "Dimension 2", choices = seq(1,99), selected = 2))
+    ),
+    uiOutput(ns("featuretext")),
+    sliderInput(ns("resolution"), "Resolution of clustering algorithm (affects number of clusters)", min = 0.2, max = 2, step = 0.2, value = 0.6),
+    plotly::plotlyOutput(ns("dplot"), height = 750)
+  )
 }
 
 #' Plot Dimensionally Reduced Data
@@ -184,9 +207,13 @@ plotDimRedui <- function(id, plot_types) {
 #' @examples
 plotDimRed <- function(input, output, session, seu, plot_types, feature_type, organism_type) {
   ns <- session$ns
-  continuous_vars <- plot_types$continuous_vars
-  category_vars <- plot_types$category_vars
-  plot_types <- purrr::flatten_chr(plot_types)
+
+  output$dplottype <- renderUI({
+    req(seu$active)
+    selectizeInput(ns("plottype"), "Variable to Plot",
+                   choices = purrr::flatten_chr(plot_types()), selected = c("custom"), multiple = TRUE)
+  })
+
   prefill_feature <- reactive({
     if (feature_type() == "transcript") {
       "ENST00000488147"
@@ -199,12 +226,16 @@ plotDimRed <- function(input, output, session, seu, plot_types, feature_type, or
     textInput(ns("customFeature"), "gene or transcript on which to color the plot; eg. 'RXRG' or 'ENST00000488147'",
               value = prefill_feature())
   })
+
   output$dplot <- plotly::renderPlotly({
+    req(input$plottype)
     req(seu$active)
+
     req(input$customFeature)
     if (length(input$dplottype) > 1) {
       mycols = input$dplottype
-      louvain_resolution = paste0("clusters_", input$resolution)
+
+      louvain_resolution = paste0(DefaultAssay(seu$active), "_snn_res.", input$resolution)
       leiden_resolution = paste0("leiden_clusters_", input$resolution)
       mycols <- gsub("^seurat$", louvain_resolution,
                      mycols)
@@ -214,33 +245,45 @@ plotDimRed <- function(input, output, session, seu, plot_types, feature_type, or
         identity()
       seu$active <- AddMetaData(seu$active, metadata = newdata,
                                 col.name = newcolname)
-      plot_var(seu$active, embedding = input$embedding,
+      plot_var(seu$active, dims = c(input$dim1, input$dim2), embedding = input$embedding,
                group = newcolname)
     }
     else {
-      if (input$dplottype == "custom") {
-        plot_feature(seu$active, embedding = input$embedding,
+      if (input$plottype == "custom") {
+        plot_feature(seu$active, dims = c(input$dim1, input$dim2), embedding = input$embedding,
                      features = input$customFeature)
       }
-      else if (input$dplottype %in% continuous_vars) {
-        plot_feature(seu$active, embedding = input$embedding,
-                     features = input$dplottype)
+      else if (input$plottype %in% plot_types()$continuous_vars) {
+        plot_feature(seu$active, dims = c(input$dim1, input$dim2), embedding = input$embedding,
+                     features = input$plottype)
       }
-      else if (input$dplottype == "seurat") {
-        louvain_resolution = paste0("clusters_", input$resolution)
-        plot_var(seu$active, embedding = input$embedding,
+      else if (input$plottype == "seurat") {
+
+        if ("integrated" %in% names(seu$active@assays)){
+          active_assay <- "integrated"
+        } else {
+          active_assay <- "RNA"
+        }
+
+        louvain_resolution = paste0(active_assay, "_snn_res.", input$resolution)
+        plot_var(seu$active, dims = c(input$dim1, input$dim2), embedding = input$embedding,
                  group = louvain_resolution)
       }
-      else if (input$dplottype == "leiden") {
+      else if (input$plottype == "leiden") {
         leiden_resolution = paste0("leiden_clusters_", input$resolution)
-        plot_var(seu$active, embedding = input$embedding,
+        plot_var(seu$active, dims = c(input$dim1, input$dim2), embedding = input$embedding,
                  group = leiden_resolution)
       }
-      else if (input$dplottype %in% plot_types) {
-        plot_var(seu$active, embedding = input$embedding,
-                 group = input$dplottype)
+      else if (input$plottype %in% plot_types()$category_vars) {
+        plot_var(seu$active, dims = c(input$dim1, input$dim2), embedding = input$embedding,
+                 group = input$plottype)
       }
     }
+
+    # if ("integrated" %in% names(seu$active@assays)){
+    #   DefaultAssay(seu$active) <- "RNA"
+    # }
+
   })
 }
 
@@ -294,63 +337,10 @@ tableSelected <- function(input, output, session, seu) {
   return(selected_cells)
 }
 
-#' Display a Subset of Cells UI
-#'
-#' @param id
-#'
-#' @return
-#' @export
-#'
-#' @examples
-displaySubsetui <- function(id) {
-  ns <- NS(id)
-  tagList(fluidRow(box(DT::DTOutput(ns("seu_meta")), width = 6),
-                   box(DT::DTOutput(ns("sub_seu_meta")), width = 6)))
-}
-
-#' Display a Subset of Cells
-#'
-#' @param input
-#' @param output
-#' @param session
-#' @param seu
-#' @param plot_types
-#'
-#' @return
-#' @export
-#'
-#' @examples
-displaySubset <- function(input, output, session, seu, plot_types) {
-  ns <- session$ns
-  plot_types <- plot_types[-which(plot_types %in% c("seurat",
-                                                    "custom"))]
-  output$seu_meta <- DT::renderDT({
-    req(seu$active)
-    seu_meta <- data.frame(seu$active[[]]) %>% dplyr::select(Sample_ID,
-                                                             batch, one_of(plot_types), everything())
-    DT::datatable(seu_meta, extensions = "Buttons",
-                  options = list(dom = "Bft", buttons = c("copy",
-                                                          "csv"), scrollX = "100px", scrollY = "1000px"))
-  }, server = TRUE)
-  output$sub_seu_meta <- DT::renderDT({
-    req(seu$active)
-    req(input$seu_meta_rows_selected)
-    sub_seu_meta <- data.frame(seu$active[[]][input$seu_meta_rows_selected,
-                                              ]) %>% dplyr::select(Sample_ID, batch, one_of(plot_types),
-                                                                   everything())
-    brushtable <- DT::datatable(sub_seu_meta, extensions = "Buttons",
-                                options = list(dom = "Bft", buttons = c("copy",
-                                                                        "csv"), scrollX = "100px", scrollY = "1000px"))
-  }, server = TRUE)
-  selected_rows <- reactive({
-    input$seu_meta_rows_selected
-  })
-  return(selected_rows)
-}
-
 #' Subset Seruat UI
 #'
 #' @param id
+#'
 #'
 #' @return
 #' @export
@@ -525,7 +515,7 @@ diffex <- function(input, output, session, seu) {
 
   cluster_list <- reactive({
     if (input$diffex_scheme == "seurat"){
-      seu_meta <- seu$active[[paste0("clusters_", input$resolution)]]
+      seu_meta <- seu$active[[paste0(DefaultAssay(seu$active), "_snn_res.", input$resolution)]]
       cluster1_cells <- rownames(seu_meta[seu_meta == input$cluster1, , drop = FALSE])
       cluster2_cells <- rownames(seu_meta[seu_meta == input$cluster2, , drop = FALSE])
       list(cluster1 = cluster1_cells, cluster2 = cluster2_cells)
@@ -632,7 +622,15 @@ findMarkersui <- function(id) {
 findMarkers <- function(input, output, session, seu) {
   ns <- session$ns
 
-  resolution <- reactive({paste0("clusters_", input$resolution2)})
+  resolution <- reactive({
+    if ("integrated" %in% names(seu$active@assays)){
+      active_assay <- "integrated"
+    } else {
+      active_assay <- "RNA"
+    }
+    paste0(active_assay, "_snn_res.", input$resolution2)
+
+    })
 
   output$markerplot <- plotly::renderPlotly({
     req(seu)
@@ -650,14 +648,15 @@ findMarkers <- function(input, output, session, seu) {
 #' @export
 #'
 #' @examples
-plotReadCountui <- function(id, plot_types) {
+plotReadCountui <- function(id) {
   ns <- NS(id)
-  tagList(shiny::selectInput(ns("rcplottype"), "Variable to Plot",
-                             choices = plot_types, selected = c("custom"), multiple = TRUE),
-          sliderInput(ns("resolution"), "Resolution of clustering algorithm (affects number of clusters)",
-                      min = 0.2, max = 2, step = 0.2, value = 0.6),
-          plotly::plotlyOutput(ns("rcplot"), height = 750) %>%
-            shinycssloaders::withSpinner())
+  tagList(
+    uiOutput(ns("rcplottype")),
+    sliderInput(ns("resolution"), "Resolution of clustering algorithm (affects number of clusters)",
+      min = 0.2, max = 2, step = 0.2, value = 0.6
+    ),
+    plotly::plotlyOutput(ns("rcplot"), height = 750)
+  )
 }
 
 #' Plot Read Count
@@ -674,17 +673,31 @@ plotReadCountui <- function(id, plot_types) {
 #' @examples
 plotReadCount <- function(input, output, session, seu, plot_types) {
   ns <- session$ns
+
+  output$rcplottype <- renderUI({
+    req(seu$active)
+    shiny::selectInput(ns("plottype"), "Variable to Plot",
+                       choices = purrr::flatten_chr(plot_types()), selected = c("seurat"), multiple = TRUE
+    )
+  })
+
   output$rcplot <- plotly::renderPlotly({
     req(seu$active)
-    if (input$rcplottype == "custom") {
-      plot_readcount(seu$active, input$rcplottype)
-    }
-    else if (input$rcplottype == "seurat") {
-      louvain_resolution = paste0("clusters_", input$resolution)
+    req(input$plottype)
+
+    if (input$plottype == "seurat") {
+
+      if ("integrated" %in% names(seu$active@assays)){
+        active_assay <- "integrated"
+      } else {
+        active_assay <- "RNA"
+      }
+
+      louvain_resolution = paste0(active_assay, "_snn_res.", input$resolution)
       plot_readcount(seu$active, louvain_resolution)
     }
-    else if (input$rcplottype %in% plot_types) {
-      plot_readcount(seu$active, input$rcplottype)
+    else if (input$plottype %in% purrr::flatten_chr(plot_types())) {
+      plot_readcount(seu$active, input$plottype)
     }
   })
 }
@@ -883,7 +896,7 @@ rnaVelocity <- function(input, output, session, seu, feature_type, format = "gri
     vel <- seu$active@misc$vel
     emb <- Embeddings(seu$active, reduction = input$embedding)
 
-    louvain_resolution = paste0("clusters_", input$resolution)
+    louvain_resolution = paste0(DefaultAssay(seu$active), "_snn_res.", input$resolution)
 
     cell.colors <- as_tibble(seu$active[[louvain_resolution]], rownames = "cellid") %>%
       tibble::deframe() %>%
@@ -896,3 +909,46 @@ rnaVelocity <- function(input, output, session, seu, feature_type, format = "gri
   })
 }
 
+
+monocleui <- function(id){
+    ns <- NS(id)
+    tagList(
+      sliderInput(ns("resolution"), "Resolution of clustering algorithm (affects number of clusters)", min = 0.2, max = 2, step = 0.2, value = 0.6),
+      # actionButton(ns("plotMonocle"), "plot trajectory"),
+      plotlyOutput(ns("monoclePlot"))
+      # box(textOutput(ns("monocleText")))
+
+        )
+}
+
+monocle <- function(input, output, session, seu, input_type){
+    ns <- session$ns
+
+    cds <- reactive({
+      req(seu$active)
+      convert_seu_to_cds(seu$active)
+    })
+
+    output$monoclePlot <- renderPlotly({
+      req(seu$active)
+
+      plot_cds(cds(), input$resolution)
+    })
+
+    root_cells <- reactive({
+      d <- plotly::event_data("plotly_selected")
+      if (is.null(d)) {
+        msg <- "Click and drag events (i.e. select/lasso) appear here (double-click to clear)"
+        return(d)
+      }
+      else {
+        selected_cells <- colnames(cds())[as.numeric(d$key)]
+      }
+    })
+
+    output$monocleText <- renderText({
+      req(root_cells())
+      root_cells()
+    })
+
+}

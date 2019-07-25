@@ -4,7 +4,7 @@
 \alias{plotReadCountui}
 \title{Plot Read Count UI}
 \usage{
-plotReadCountui(id, plot_types)
+plotReadCountui(id)
 }
 \arguments{
 \item{plot_types}{}

@@ -4,10 +4,10 @@
 \alias{plot_feature}
 \title{Plot Features}
 \usage{
-plot_feature(seu, embedding, features)
+plot_feature(seu, embedding, features, dims = c(1, 2))
 }
 \arguments{
-\item{features}{}
+\item{dims}{}
 }
 \description{
 Plot Features

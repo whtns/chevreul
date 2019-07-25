@@ -33,12 +33,18 @@ seurat_preprocess <- function(seu, scale=TRUE, ...){
 #' @export
 #'
 #' @examples
-find_all_markers <- function(seu, resolution = 0.6, ...){
+find_all_markers <- function(seu, ...){
   # browser()
-  clusters <- paste0("clusters_", resolution) %>%
-    purrr::set_names(.)
 
-  clusters <- seu[[clusters]]
+  resolutions <- colnames(seu[[]])[grepl(paste0(DefaultAssay(seu), "_snn_res."), colnames(seu[[]]))]
+
+  cluster_index <- grepl(paste0(DefaultAssay(seu), "_snn_res."), colnames(seu[[]]))
+
+  if(!any(cluster_index)) {
+    stop("no clusters found in metadata. Please run seurat_cluster")
+  }
+
+  clusters <- seu[[]][,cluster_index]
 
   cluster_levels <- purrr::map_int(clusters, ~length(levels(.x)))
   cluster_levels <- cluster_levels[cluster_levels > 1]
@@ -74,5 +80,68 @@ stash_marker_features <- function(resolution, seu){
 
   return(markers)
 
+}
+
+#' Convenience Function to transition existing seus
+#'
+#' @param seu
+#'
+#' @return
+#' @export
+#'
+#' @examples
+rename_markers <- function(seu){
+  default_assay <- DefaultAssay(seu)
+  test <- names(seu@misc$markers)
+  names(seu@misc$markers) <- gsub("clusters_", paste0(default_assay, "_snn_res."), test)
+  return(seu)
+}
+
+#' Convenience function to save all seurat objects of a given project by feature and suffix
+#'
+#' @param seu_list list of names seurat objects by suffix then feature; can generate with load_seurat_from_proj and purrr
+#' @param proj_dir
+#'
+#' @return
+#' @export
+#'
+#' @examples
+save_proj_feature_seus <- function(seu_list, proj_dir){
+  # browser()
+  suffixes <- names(seu_list)
+  features <- names(seu_list[[1]])
+
+  args <- expand.grid(features, suffixes)
+  seus <- unlist(seu_list)
+
+  args <- dplyr::mutate(args, seu = seus) %>%
+    dplyr::rename(feature = "Var1", suffix = "Var2")
+
+  purrr::pmap(args, save_seurat, proj_dir = proj_dir)
+
+  return(args)
+
+}
+
+#' Convenience function to replace markers in seurat objects
+#'
+#' @param suffixes
+#' @param features
+#' @param proj_dir
+#'
+#' @return
+#' @export
+#'
+#' @examples
+replace_markers_in_proj <- function(suffixes, features, proj_dir){
+  names(suffixes) <- suffixes
+
+  names(suffixes)[1] <- "unfiltered"
+
+  seus <- purrr::map(suffixes, ~load_seurat_from_proj(proj_dir, features = features, suffix = .x))
+
+  seus <- purrr::map(seus, ~purrr::map(.x, find_all_markers))
+
+  save_proj_feature_seus(seus, proj_dir)
 }
 
