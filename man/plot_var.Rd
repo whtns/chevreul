@@ -4,7 +4,7 @@
 \alias{plot_var}
 \title{Plot Metadata Variables}
 \usage{
-plot_var(seu, embedding = "umap", group = "batch")
+plot_var(seu, embedding = "umap", group = "batch", dims = c(1, 2))
 }
 \arguments{
 \item{group}{}

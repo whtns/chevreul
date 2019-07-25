@@ -4,12 +4,11 @@
 \alias{seuratApp}
 \title{Create Seurat App}
 \usage{
-seuratApp(proj_dir, plot_types, filterTypes, appTitle, futureMb = 849)
+seuratApp(proj_dir, filterTypes, appTitle, feature_types = "gene",
+  futureMb = 849)
 }
 \arguments{
 \item{proj_dir}{The project directory of the base dataset}
-
-\item{plot_types}{The types of plots to be shown as a named list containing two vectors: 1) category_vars and 2) continuous_vars}
 
 \item{filterTypes}{A named vector of file suffixes corresponding to subsets of the data}
 

@@ -4,7 +4,7 @@
 \alias{annotate_cell_cycle}
 \title{Annotate Cell Cycle}
 \usage{
-annotate_cell_cycle(seu_list)
+annotate_cell_cycle(seu, s.features, g2m.features, ...)
 }
 \arguments{
 \item{seu_list}{A list of seurat objects}
