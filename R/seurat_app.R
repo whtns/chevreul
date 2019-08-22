@@ -329,10 +329,9 @@ seuratApp <- function(proj_dir, filterTypes, appTitle, feature_types = "gene", f
 
   header <- shinydashboard::dashboardHeader(title = appTitle)
 
-  sidebar <- shinydashboard::dashboardSidebar(loadDataui("loadDataui", filterTypes = filterTypes),
-                                              shinyWidgets::prettyRadioButtons("feature_type", "Feature for Display", choices = feature_types, selected = "gene"),
+  sidebar <- shinydashboard::dashboardSidebar(shinyWidgets::prettyRadioButtons("feature_type", "Feature for Display", choices = feature_types, selected = "gene"),
                                               shinyWidgets::prettyRadioButtons("organism_type", "Organism", choices = c("human", "mouse"), selected = "human"),
-                                              shinyFiles::shinyFilesButton("seuratUpload", "Load a Custom Dataset", "Please select a .rds file", multiple = FALSE),
+                                              shinyFiles::shinyFilesButton("seuratUpload", "Load a Seurat Dataset", "Please select a .rds file", multiple = FALSE),
                                               shinyFiles::shinySaveButton("saveSeurat", "Save current Dataset", "Save file as...", filetype = list(rds = "rds")),
                                               verbatimTextOutput("savefile"),
                                               actionButton("changeEmbedAction", label = "Change Embedding Parameters"),
@@ -346,6 +345,7 @@ seuratApp <- function(proj_dir, filterTypes, appTitle, feature_types = "gene", f
                                                                           shinydashboard::menuItem("All Transcripts", tabName = "allTranscripts"),
                                                                           # shinydashboard::menuItem("RNA Velocity", tabName = "rnaVelocity"),
                                                                           shinydashboard::menuItem("Monocle", tabName = "monocle"),
+                                                                          shinydashboard::menuItem("cellAlign", tabName = "cellAlign"),
                                                                           shinydashboard::menuItem("Regress Features", tabName = "regressFeatures")),
 
                                               width = 450)
@@ -353,102 +353,122 @@ seuratApp <- function(proj_dir, filterTypes, appTitle, feature_types = "gene", f
 
 
   body <- shinydashboard::dashboardBody(shinydashboard::tabItems(
-    shinydashboard::tabItem(
-      tabName = "comparePlots",
-      h2("Compare Plots"), fluidRow(box(plotDimRedui(
+  shinydashboard::tabItem(
+    tabName = "comparePlots",
+    h2("Compare Plots"), fluidRow(
+      box(plotDimRedui(
         "hello"
       )), box(plotDimRedui(
         "howdy"
-      ))), fluidRow(box(
-        title = "Selected Cells",
-        tableSelectedui("hello"), width = 12
       ))
-    ), shinydashboard::tabItem(
-      tabName = "compareReadCount",
-      h2("Compare Read Counts"), fluidRow(box(plotReadCountui(
-        "hello2"
-      )), box(plotReadCountui(
-        "howdy2"
-      )))
-    ), shinydashboard::tabItem(
-      tabName = "subsetSeurat",
-      h2("Subset Seurat Input"), column(box(plotDimRedui(
-        "subset"
-      ), width = 12), width = 6),
-      column(
-        box(shinyWidgets::actionBttn(
-          "subsetAction",
-          "subset seurat"
-        ),
-        shinyjs::useShinyjs(),
-        textOutput("subsetMessages"),
-        width = 12
-        ),
-        box(
-          title = "Selected Cells",
-          tableSelectedui("subset"), width = 12
-        ), width = 6)
-    ),
-    shinydashboard::tabItem(
-      tabName = "findMarkers", h2("Find Markers"),
-      fluidRow(box(findMarkersui("hello")))
-    ), shinydashboard::tabItem(
-      tabName = "allTranscripts",
-      h2("All Transcripts"), fluidRow(shinyWidgets::actionBttn(
-        "plotTrx",
-        "Plot all transcripts"
-      )), fluidRow(column(allTranscriptsui("hello"),
-                          width = 6
-      ), column(allTranscriptsui("howdy"),
-                width = 6
-      ))
-    ), shinydashboard::tabItem(
-      tabName = "diffex",
-      h2("Differential Expression"), column(diffexui("hello"),
-                                            width = 6
-      ), column(box(plotDimRedui(
-        "diffex"
-      ), width = 12),
+    ), fluidRow(box(
+      title = "Selected Cells",
+      tableSelectedui("hello"), width = 12
+    ))
+  ), shinydashboard::tabItem(
+    tabName = "compareReadCount",
+    h2("Compare Read Counts"), fluidRow(box(plotReadCountui(
+      "hello2"
+    )), box(plotReadCountui(
+      "howdy2"
+    )))
+  ), shinydashboard::tabItem(
+    tabName = "subsetSeurat",
+    h2("Subset Seurat Input"), column(box(plotDimRedui(
+      "subset"
+    ), width = 12), width = 6),
+    column(
+      box(shinyWidgets::actionBttn(
+        "subsetAction",
+        "subset seurat"
+      ),
+      shinyjs::useShinyjs(),
+      textOutput("subsetMessages"),
+      width = 12
+      ),
       box(
-        title = "Selected Cells", tableSelectedui("diffex"),
-        width = 12
+        title = "Selected Cells",
+        tableSelectedui("subset"), width = 12
       ),
       width = 6
+    )
+  ),
+  shinydashboard::tabItem(
+    tabName = "findMarkers", h2("Find Markers"),
+    fluidRow(box(findMarkersui("hello")))
+  ), shinydashboard::tabItem(
+    tabName = "allTranscripts",
+    h2("All Transcripts"), fluidRow(shinyWidgets::actionBttn(
+      "plotTrx",
+      "Plot all transcripts"
+    )), fluidRow(column(allTranscriptsui("hello"),
+      width = 6
+    ), column(allTranscriptsui("howdy"),
+      width = 6
+    ))
+  ), shinydashboard::tabItem(
+    tabName = "diffex",
+    h2("Differential Expression"), column(diffexui("hello"),
+      width = 6
+    ), column(box(plotDimRedui(
+      "diffex"
+    ), width = 12),
+    box(
+      title = "Selected Cells", tableSelectedui("diffex"),
+      width = 12
+    ),
+    width = 6
+    )
+  ),
+  shinydashboard::tabItem(
+    tabName = "geneEnrichment",
+    h2("Gene Enrichment"),
+    geneEnrichmentui("hello")
+  ),
+  # shinydashboard::tabItem(
+  #   tabName = "rnaVelocity",
+  #   h2("RNA Velocity"),
+  #   fluidRow(
+  #     box(rnaVelocityui("arrow"),
+  #         width = 12)),
+  #   fluidRow(
+  #     box(rnaVelocityui("grid"),
+  #         width = 12))
+  # ),
+  shinydashboard::tabItem(
+    tabName = "regressFeatures",
+    h2("Regress Features"),
+    fluidRow(
+      actionButton("regressAction", "Regress Seurat Objects By Genes"),
+      box(
+        selectizeInput("geneSet", "List of genes", choices = NULL, multiple = TRUE),
+        textInput("geneSetName", "Name for Gene Set"),
+        width = 12
       )
-    ),
-    shinydashboard::tabItem(
-      tabName = "geneEnrichment",
-      h2("Gene Enrichment"),
-      geneEnrichmentui("hello")
-    ),
-    # shinydashboard::tabItem(
-    #   tabName = "rnaVelocity",
-    #   h2("RNA Velocity"),
-    #   fluidRow(
-    #     box(rnaVelocityui("arrow"),
-    #         width = 12)),
-    #   fluidRow(
-    #     box(rnaVelocityui("grid"),
-    #         width = 12))
-    # ),
-    shinydashboard::tabItem(
-      tabName = "regressFeatures",
-      h2("Regress Features"),
-      fluidRow(
-        actionButton("regressAction", "Regress Seurat Objects By Genes"),
-        box(
-          selectizeInput("geneSet", "List of genes", choices = NULL, multiple = TRUE),
-          textInput("geneSetName", "Name for Gene Set"),
-          width = 12))
-    ),
-    shinydashboard::tabItem(
-      tabName = "monocle",
-      h2("Monocle"),
+    )
+  ),
+  shinydashboard::tabItem(
+    tabName = "monocle",
+    h2("Monocle"),
+    fluidRow(
+      box(
+      actionButton("calcCDS", "Calculate Pseudotime"),
+      shinyFiles::shinySaveButton("saveCDS", "Save Existing Pseudotime to File", "Save file as...", filetype = list(rds = "rds")),
+      shinyFiles::shinyFilesButton("loadCDS", "Load Pseudotime from File", "Load Pseudotime File", multiple = FALSE),
+      sliderInput("cdsResolution", "Resolution of clustering algorithm (affects number of clusters)", min = 0.2, max = 2, step = 0.2, value = 0.6)
+      ),
       fluidRow(
         box(monocleui("arrow"),
-            width = 12))
+            width = 12
+        )
+      )
     )
-  ))
+  ),
+  shinydashboard::tabItem(
+    tabName = "cellAlign",
+    h2("cellalign")
+  )
+))
 
   ui <- dashboardPage(
     header = header,
@@ -458,8 +478,11 @@ seuratApp <- function(proj_dir, filterTypes, appTitle, feature_types = "gene", f
 
   server <- function(input, output, session) {
     options(warn = -1)
+
     # sidebar
-    seu <- callModule(loadData, "loadDataui", proj_dir, feature_types = feature_types, selected_feature = input$feature_type)
+    # seu <- callModule(loadData, "loadDataui", proj_dir, feature_types = feature_types, selected_feature = input$feature_type)
+
+    seu <- reactiveValues()
 
     observeEvent(input$feature_type, {
       seu$active <- seu[[input$feature_type]]
@@ -473,10 +496,10 @@ seuratApp <- function(proj_dir, filterTypes, appTitle, feature_types = "gene", f
       list_plot_types(seu$active)
     })
 
-    # list volumes
-    volumes <- c(Home = fs::path_home(), "R Installation" = R.home(), shinyFiles::getVolumes()())
-
     # upload seurat object
+
+    # list volumes
+    volumes <- c(Home = fs::path(proj_dir, "output", "seurat"), "R Installation" = R.home(), shinyFiles::getVolumes())
 
     shinyFiles::shinyFileChoose(input, "seuratUpload", roots = volumes, session = session)
     uploadSeuratPath <- eventReactive(input$seuratUpload, {
@@ -531,13 +554,8 @@ seuratApp <- function(proj_dir, filterTypes, appTitle, feature_types = "gene", f
         {
           Sys.sleep(6)
           shiny::incProgress(2/10)
-          Sys.sleep(12)
-          shiny::incProgress(4/10)
-          Sys.sleep(18)
-          shiny::incProgress(6/10)
-          Sys.sleep(24)
-          shiny::incProgress(8/10)
           saveRDS(list(gene = seu$gene, transcript = seu$transcript), subSeuratPath())
+          shiny::incProgress(10/10)
 
         }
       )
@@ -581,17 +599,12 @@ seuratApp <- function(proj_dir, filterTypes, appTitle, feature_types = "gene", f
         if(length(unique(seu$gene[[]]$batch)) > 1){
 
           for (i in names(seu)[!names(seu) == "active"]){
-            seu[[i]] <- seurat_pipeline(seu[[i]], reduction = "harmony", resolution = seq(0.2, 2.0, by = 0.2))
+            message(paste0("reintegrating ", i, " expression"))
+            # harmony
+            # seu[[i]] <- seurat_pipeline(seu[[i]], reduction = "harmony", resolution = seq(0.2, 2.0, by = 0.2))
+            # seurat cca
+            seu[[i]] <- reintegrate_seu(seu[[i]], feature = i, resolution = seq(0.2, 2.0, by = 0.2))
           }
-
-          message("reintegrating transcript expression")
-          seu$transcript <- seurat_pipeline(seu$transcript, reduction = "harmony", resolution = seq(0.2, 2.0, by = 0.2))
-
-          message("reintegrating gene expression")
-          seu$gene <- seurat_pipeline(seu$gene, reduction = "harmony", resolution = seq(0.2, 2.0, by = 0.2))
-
-          # subset_seus <- seuratTools::reintegrate_seus(list(gene = seu$gene,
-          #                                                   transcript = seu$transcript), reduction = "harmony", temp = TRUE)
 
         } else {
 
@@ -661,7 +674,95 @@ seuratApp <- function(proj_dir, filterTypes, appTitle, feature_types = "gene", f
       removeModal()
     })
 
-    callModule(monocle, "arrow", seu, feature_type)
+    cds <- reactiveValues()
+
+    observeEvent(input$calcCDS, {
+      req(seu$active)
+      cds$traj <- convert_seu_to_cds(seu$active, resolution = input$cdsResolution)
+    })
+
+    observeEvent(input$calCDS, {
+      req(cds$traj)
+      cds$traj <- learn_graph_by_resolution(cds$traj, seu$active, resolution = input$cdsResolution)
+    })
+
+    shinyFiles::shinyFileChoose(input, "loadCDS", roots = volumes, session = session)
+
+    cdsLoadPath <- eventReactive(input$loadCDS, {
+      file <- shinyFiles::parseFilePaths(volumes, input$loadCDS)
+      file$datapath
+    })
+
+      observeEvent(input$loadCDS, {
+        req(cdsLoadPath())
+        shiny::withProgress(
+          message = paste0("Uploading Data"),
+          value = 0,
+          {
+            Sys.sleep(6)
+            shiny::incProgress(2/10)
+            # Sys.sleep(12)
+            # shiny::incProgress(4/10)
+            # Sys.sleep(18)
+            # shiny::incProgress(6/10)
+            # Sys.sleep(24)
+            # shiny::incProgress(8/10)
+            # browser()
+            dataset <- readRDS(cdsLoadPath())
+            shiny::incProgress(10/10)
+
+            for (i in names(dataset)){
+              cds[[i]] <- dataset[[i]]
+            }
+
+            # cds$traj <- dataset$traj
+          }
+        )
+    })
+
+    callModule(monocle, "arrow", cds, seu, feature_type, resolution = reactive(input$cdsResolution))
+
+    shinyFiles::shinyFileSave(input, "saveCDS", roots = volumes, session = session, restrictions = system.file(package = "base"))
+
+    cdsSavePath <- eventReactive(input$saveCDS, {
+      savefile <- shinyFiles::parseSavePath(volumes, input$saveCDS)
+
+      savefile$datapath
+    })
+
+    observeEvent(input$saveCDS, {
+
+      req(cds$traj)
+      req(cdsSavePath())
+
+      if (!is.null(cdsSavePath())){
+        shiny::withProgress(
+          message = paste0("Saving Data"),
+          value = 0,
+          {
+            Sys.sleep(6)
+            shiny::incProgress(2/10)
+            # Sys.sleep(12)
+            # shiny::incProgress(4/10)
+            # Sys.sleep(18)
+            # shiny::incProgress(6/10)
+            # Sys.sleep(24)
+            # shiny::incProgress(8/10)
+
+            cdsList <- reactiveValuesToList(cds)
+            names(cdsList) <- names(cds)
+
+
+            saveRDS(cdsList, cdsSavePath())
+            shiny::incProgress(10/10)
+
+          }
+        )
+      }
+
+    })
+
+    callModule(cellAlign, "hello")
 
 
   }

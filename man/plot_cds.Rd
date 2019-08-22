@@ -4,10 +4,10 @@
 \alias{plot_cds}
 \title{Plot a Monocle Cell Data Set}
 \usage{
-plot_cds(cds, resolution)
+plot_cds(cds, resolution, color_cells_by = "louvain_cluster")
 }
 \arguments{
-\item{resolution}{}
+\item{color_cells_by}{}
 }
 \description{
 Plot a Monocle Cell Data Set

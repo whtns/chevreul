@@ -4,7 +4,7 @@
 \alias{load_seurat_from_proj}
 \title{Load Seurat Files from a signle project path}
 \usage{
-load_seurat_from_proj(proj_dir, features = "gene", ...)
+load_seurat_from_proj(proj_dir, ...)
 }
 \arguments{
 \item{...}{}
