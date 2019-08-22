@@ -64,7 +64,7 @@ plot_var <- function(seu, embedding = "umap", group = "batch", dims = c(1,2)){
 }
 
 #' Plot Features
-#'
+#' This is a great function
 #' @param seu
 #' @param embedding
 #' @param features
