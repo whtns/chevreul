@@ -17,6 +17,7 @@ loadDataui <- function(id, label = "Load Data", filterTypes) {
   )
 }
 
+
 #' Load Data
 #'
 #' @param input
@@ -32,7 +33,6 @@ loadDataui <- function(id, label = "Load Data", filterTypes) {
 #' @examples
 loadData <- function(input, output, session, proj_dir, feature_types = c("gene"), selected_feature) {
   ns <- session$ns
-  seu <- reactiveValues()
 
   observeEvent(input$loadButton, {
     showModal(modalDialog("Loading Data", footer = NULL))
@@ -51,10 +51,9 @@ loadData <- function(input, output, session, proj_dir, feature_types = c("gene")
     #   purrr::set_names(feature_types) %>%
     #   identity()
 
-    seu_paths <- load_seurat_path(proj_dir, features = feature_types, suffix = input$filterType)
+    seu_path <- load_seurat_path(proj_dir, prefix = input$filterType)
 
-    feature_seus <- purrr::map(seu_paths, readRDS) %>%
-      purrr::set_names(feature_types)
+    feature_seus <- readRDS(seu_path)
 
     feature_seus <- purrr::map(feature_seus, SetDefaultAssay, "RNA")
     removeModal()
@@ -62,6 +61,7 @@ loadData <- function(input, output, session, proj_dir, feature_types = c("gene")
     for (i in names(feature_seus)){
       seu[[i]] <- feature_seus[[i]]
     }
+
     seu$active <- feature_seus[[selected_feature]]
 
     # seu$transcript <- feature_seus[["transcript"]]
@@ -369,12 +369,10 @@ subsetSeurat <- function(input, output, session, seu, selected_rows) {
     showModal(modalDialog(title = "Subsetting and Recalculating Embeddings",
                           "This process may take a minute or two!"))
     seu$gene <- seu$gene[, selected_rows()]
-    seu$gene <- seuratTools::seurat_pipeline(seu$gene,
-                                             resolution = seq(0.6, 2, by = 0.2))
+    seu$gene <- seuratTools::seurat_pipeline(seu$gene, resolution = seq(0.6, 2, by = 0.2))
     seu$transcript <- seu$transcript[, selected_rows()]
 
-    seu$transcript <- seuratTools::seurat_pipeline(seu$transcript,
-                                                   resolution = seq(0.6, 2, by = 0.2))
+    seu$transcript <- seuratTools::seurat_pipeline(seu$transcript, resolution = seq(0.6, 2, by = 0.2))
     seu$active <- seu$gene
     removeModal()
   })
@@ -913,42 +911,170 @@ rnaVelocity <- function(input, output, session, seu, feature_type, format = "gri
 monocleui <- function(id){
     ns <- NS(id)
     tagList(
-      sliderInput(ns("resolution"), "Resolution of clustering algorithm (affects number of clusters)", min = 0.2, max = 2, step = 0.2, value = 0.6),
-      # actionButton(ns("plotMonocle"), "plot trajectory"),
-      plotlyOutput(ns("monoclePlot"))
-      # box(textOutput(ns("monocleText")))
-
+      fluidRow(
+        box(
+          # sliderInput(ns("resolution"), "Resolution of clustering algorithm (affects number of clusters)", min = 0.2, max = 2, step = 0.2, value = 0.6),
+          shinycssloaders::withSpinner(plotlyOutput(ns("monoclePlot"))),
+          width = 6
+        ),
+        box(
+          uiOutput(ns("rootCellsui")),
+          actionButton(ns("plotPseudotime"), "Calculate Pseudotime With Root Cells"),
+          plotOutput(ns("ptimePlot")),
+          width = 6
         )
+      ),
+      fluidRow(
+        box(actionButton(ns("calcPtimeGenes"), "Find Pseudotime Correlated Genes"),
+            uiOutput(ns("partitionSelect")),
+            uiOutput(ns("genePlotQuery2")),
+            uiOutput(ns("ptimeGenes")),
+            width = 12
+            )
+      )
+      )
 }
 
-monocle <- function(input, output, session, seu, input_type){
+monocle <- function(input, output, session, cds, seu, input_type, resolution){
     ns <- session$ns
 
-    cds <- reactive({
-      req(seu$active)
-      convert_seu_to_cds(seu$active)
-    })
-
     output$monoclePlot <- renderPlotly({
-      req(seu$active)
+      req(cds$traj)
 
-      plot_cds(cds(), input$resolution)
+      plot_cds(cds$traj, resolution = resolution())
     })
 
-    root_cells <- reactive({
-      d <- plotly::event_data("plotly_selected")
-      if (is.null(d)) {
-        msg <- "Click and drag events (i.e. select/lasso) appear here (double-click to clear)"
-        return(d)
-      }
-      else {
-        selected_cells <- colnames(cds())[as.numeric(d$key)]
-      }
+    output$rootCellsui <- renderUI({
+      selectizeInput(ns("rootCells"), "Choose Root Cells", choices = c("Choose Root Cells" = "", colnames(cds$traj)), multiple = TRUE)
     })
 
-    output$monocleText <- renderText({
-      req(root_cells())
-      root_cells()
+    observeEvent(input$plotPseudotime, {
+
+      req(cds$traj)
+
+      cds$ptime <- monocle3::order_cells(cds$traj, root_cells = input$rootCells)
+
+      # plot_pseudotime(cds$ptime, color_cells_by = "pseudotime", resolution = input$resolution)
+
+    })
+
+    output$ptimePlot <- renderPlot({
+      req(cds$ptime)
+      plot_pseudotime(cds$ptime, color_cells_by = "pseudotime", resolution = resolution())
+
+    })
+
+
+
+    observeEvent(input$calcPtimeGenes, {
+      req(cds$ptime)
+      showModal(modalDialog(
+        title = "Calculating features that vary over pseudotime",
+        "This process may take a minute or two!"
+      ))
+
+      cds_pr_test_res = monocle3::graph_test(cds$ptime, neighbor_graph="principal_graph", cores=4)
+      removeModal()
+
+      cds$ptime@metadata[["diff_genes"]] <- cds_pr_test_res
+      cds$diff_genes <- cds$ptime
+
+    })
+
+    observe({
+      req(cds$diff_genes)
+
+      cds_pr_test_res <- cds$diff_genes@metadata$diff_genes
+      pr_deg_ids = row.names(subset(cds_pr_test_res, q_value < 0.05))
+
+      output$genePlotQuery1 <- renderPlot({
+        req(cds$diff_genes)
+
+        gene_ptime_plot <- monocle3::plot_cells(cds$ptime, genes=pr_deg_ids,
+                                                show_trajectory_graph=FALSE,
+                                                label_cell_groups=FALSE,
+                                                label_leaves=FALSE)
+
+        print(gene_ptime_plot)
+
+
+      })
+
+      output$genePlotQuery2 <- renderUI({
+        selectizeInput(ns("genePlotQuery1"), "Pick Gene to Plot on Pseudotime", choices = pr_deg_ids, multiple = TRUE, selected = pr_deg_ids[1])
+      })
+
+      output$ptimeGenesRedPlot <- renderPlot({
+
+        gene_ptime_plot <- monocle3::plot_cells(cds$ptime, genes=input$genePlotQuery1,
+                                                show_trajectory_graph=FALSE,
+                                                label_cell_groups=FALSE,
+                                                label_leaves=FALSE)
+
+        print(gene_ptime_plot)
+
+
+      })
+
+      available_partitions <- levels(monocle3::partitions(cds$ptime))
+
+      output$partitionSelect <- renderUI({
+        selectizeInput(ns("partitions"), "Select a Partition to Plot", choices = available_partitions, multiple = FALSE, selected = available_partitions[1])
+      })
+
+      output$ptimeGenesLinePlot <- renderPlot({
+
+        partition_cells <- monocle3::partitions(cds$ptime)
+        partition_cells = split(names(partition_cells), partition_cells)
+        partition_cells <- partition_cells[[input$partitions]]
+
+        cds_subset = cds$ptime[rownames(cds$ptime) %in% input$genePlotQuery1, colnames(cds$ptime) %in% partition_cells]
+
+        if (any(grepl("integrated", colnames(colData(cds_subset))))){
+          default_assay = "integrated"
+        } else {
+          default_assay = "RNA"
+        }
+
+        color_cells_by = paste0(default_assay, "_snn_res.", resolution())
+
+        gene_ptime_plot <- monocle3::plot_genes_in_pseudotime(cds_subset,
+                                 color_cells_by=color_cells_by,
+                                 min_expr=0.5)
+
+        print(gene_ptime_plot)
+
+      })
+
+      output$ptimeGenesDT <- renderDT({
+        DT::datatable(cds_pr_test_res,
+                      options = list(paging  = TRUE, pageLength = 15))
+      })
+
+      output$ptimeGenes <- renderUI({
+        shinycssloaders::withSpinner(tagList(
+          box(plotOutput(ns("ptimeGenesRedPlot")),
+              width = 6),
+          box(plotOutput(ns("ptimeGenesLinePlot")),
+              width = 6),
+          DTOutput(ns("ptimeGenesDT"))
+                ))
+      })
+
     })
 
 }
+
+cellAlignui <- function(id){
+    ns <- NS(id)
+    tagList(
+
+        )
+    }
+
+cellAlign <- function(input, output, session){
+    ns <- session$ns
+}
+
+
+

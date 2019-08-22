@@ -4,7 +4,7 @@
 \alias{seurat_pipeline}
 \title{Run Seurat Pipeline}
 \usage{
-seurat_pipeline(seu, resolution = 0.6, reduction = "pca", ...)
+seurat_pipeline(seu = seu, resolution = 0.6, reduction = "pca", ...)
 }
 \arguments{
 \item{resolution}{}

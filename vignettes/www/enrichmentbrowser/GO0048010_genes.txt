@@ -1,0 +1,8 @@
+ENTREZID	SYMBOL	GENENAME	FC	ADJ.PVAL
+5879	RAC1	Rac family small GTPase 1	0.88	4.8e-17
+10787	NCKAP1	NCK associated protein 1	-0.72	5.2e-08
+5747	PTK2	protein tyrosine kinase 2	-0.64	5.3e-07
+387	RHOA	ras homolog family member A	-0.16	0.022
+55845	BRK1	BRICK1 subunit of SCAR/WAVE actin nucleating complex	-0.16	0.084
+3320	HSP90AA1	heat shock protein 90 alpha family class A member 1	-0.1	0.19
+998	CDC42	cell division cycle 42	0.03	0.78

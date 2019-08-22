@@ -6,28 +6,49 @@
 #' @export
 #'
 #' @examples
-convert_seu_to_cds <- function(seu) {
+convert_seu_to_cds <- function(seu, resolution = 1) {
 
   ### Building the necessary parts for a basic cds
 
-  # part one, gene annotations
+  # part two, counts sparse matrix
 
-  gene_annotation <- data.frame(gene_short_name = rownames(seu), row.names = rownames(seu))
 
-  # part two, cell information
+  if (any(grepl("integrated", names(seu[[]])))){
+    default_assay = "integrated"
+  } else {
+    default_assay = "RNA"
+  }
 
-  cell_metadata <- seu[[]]
+  DefaultAssay(seu) <- default_assay
 
-  # part three, counts sparse matrix
+  expression_matrix <- Seurat::GetAssayData(seu, slot = "data", assay = default_assay)
 
-  expression_matrix <- GetAssayData(seu, slot = "counts")
+  count_matrix <- Seurat::GetAssayData(seu, slot = "counts", assay = "RNA")
 
+  count_matrix <- count_matrix[row.names(expression_matrix),]
+  count_matrix <- count_matrix[,Matrix::colSums(count_matrix) != 0]
+
+  # part three, gene annotations
+
+  gene_annotation <- data.frame(gene_short_name = rownames(count_matrix),
+                                row.names = rownames(count_matrix))
+
+  # part one, cell information
+
+  cell_metadata <- seu[[]][colnames(count_matrix),]
+
+  seu <- seu[,colnames(count_matrix)]
 
   ### Construct the basic cds object
-
-  cds_from_seurat <- monocle3::new_cell_data_set(expression_matrix,
+  cds_from_seurat <- monocle3::new_cell_data_set(expression_data = count_matrix,
                                        cell_metadata = cell_metadata,
                                        gene_metadata = gene_annotation)
+
+  cds_from_seurat <- cds_from_seurat[,colnames(seu)]
+
+  # estimate size factors
+  cds_from_seurat <- cds_from_seurat[, colSums(as.matrix(monocle3::exprs(cds_from_seurat))) != 0]
+  cds_from_seurat <- monocle3::estimate_size_factors(cds_from_seurat)
 
 
   ### Construct and assign the made up partition
@@ -38,51 +59,39 @@ convert_seu_to_cds <- function(seu) {
 
   cds_from_seurat@clusters@listData[["UMAP"]][["partitions"]] <- recreate.partition
 
-
-  ### Assign the cluster info
-
-  cds_from_seurat@clusters@listData[["UMAP"]][["clusters"]] <- seu[[]][[paste0(Seurat::DefaultAssay(seu), '_snn_res.1')]]
-
-
   ### Could be a space-holder, but essentially fills out louvain parameters
-
   cds_from_seurat@clusters@listData[["UMAP"]][["louvain_res"]] <- "NA"
-
-
-  ### Assign UMAP coordinate
-
   cds_from_seurat@reducedDims@listData[["UMAP"]] <- Embeddings(seu, "umap")
-
-
-  ### Assign feature loading for downstream module analysis
-
+  # cds_from_seurat@reducedDims@listData[["PCA"]] <- Embeddings(seu, "pca")
   cds_from_seurat@preprocess_aux$gene_loadings <- Loadings(seu, "pca")
 
+  cds_from_seurat <- learn_graph_by_resolution(cds_from_seurat, seu, resolution = resolution)
 
-  ### Learn graph, this step usually takes a significant period of time for larger samples
-
-  print("Learning graph, which can take a while depends on the sample")
-
-  cds_from_seurat <- monocle3::learn_graph(cds_from_seurat, use_partition = T)
-
-
-  ### Plot cluster info with trajectory
-
-  print("Plotting clusters")
-
-  # pdf(sprintf("%s/clusters.with.trajectory.%s.pdf", output.dir, Dim), width = 10, height = 10)
-  # clus <- monocle3::plot_cells(cds_from_seurat,
-  #                    color_cells_by = paste0(DefaultAssay(seu), '_snn_res.1'),
-  #                    label_cell_groups = FALSE,
-  #                    label_groups_by_cluster=FALSE,
-  #                    label_leaves=FALSE,
-  #                    label_branch_points=FALSE)
-  # clus
   return(cds_from_seurat)
 
 }
 
-#' Plot a Monocle Cell Data Set
+#' Assign Clusters to CDS
+#'
+#' @param cds
+#' @param clusters
+#'
+#' @return
+#' @export
+#'
+#' @examples
+assign_clusters_to_cds <- function(cds, clusters){
+
+  clusters <- clusters[colnames(cds)]
+
+  cds@clusters@listData[["UMAP"]][["clusters"]] <- clusters
+  names(cds@clusters@listData[["UMAP"]][["clusters"]]) <- cds@colData@rownames
+
+  return(cds)
+
+}
+
+#' Learn Monocle Graph by Resolution
 #'
 #' @param cds
 #' @param resolution
@@ -91,7 +100,39 @@ convert_seu_to_cds <- function(seu) {
 #' @export
 #'
 #' @examples
-plot_cds <- function(cds, resolution){
+learn_graph_by_resolution <- function(cds, seu, resolution = 1){
+
+  ### Assign the cluster info
+  if (any(grepl("integrated", names(cds@colData)))){
+    default_assay = "integrated"
+  } else {
+    default_assay = "RNA"
+  }
+
+  cds <- monocle3::cluster_cells(cds)
+
+  clusters <- seu[[paste0(default_assay, '_snn_res.', resolution)]]
+
+  clusters <- purrr::set_names(clusters[[1]], rownames(clusters))
+
+  cds <- assign_clusters_to_cds(cds, clusters = clusters)
+  print("Learning graph, which can take a while depends on the sample")
+  cds <- monocle3::learn_graph(cds, use_partition = T)
+
+  return(cds)
+}
+
+#' Plot a Monocle Cell Data Set
+#'
+#' @param cds
+#' @param resolution
+#' @param color_cells_by
+#'
+#' @return
+#' @export
+#'
+#' @examples
+plot_cds <- function(cds, resolution, color_cells_by = "louvain_cluster"){
 
   key <- seq(1, length(colnames(cds)))
   cellid <- colnames(cds)
@@ -99,10 +140,60 @@ plot_cds <- function(cds, resolution){
   cds[['key']] = key
   cds[['cellid']] = cellid
 
-  if (grepl("integrated", colnames(colData(cds)))){
+  if (any(grepl("integrated", names(cds@colData)))){
     default_assay = "integrated"
   } else {
     default_assay = "RNA"
+  }
+
+  if (color_cells_by == "louvain_cluster"){
+    color_cells_by = paste0(default_assay, "_snn_res.", resolution)
+  }
+
+
+  cds_plot <- monocle3::plot_cells(cds,
+                                   label_cell_groups = FALSE,
+                                   label_groups_by_cluster = FALSE,
+                                   label_leaves = FALSE,
+                                   label_branch_points = FALSE,
+                                   color_cells_by = color_cells_by) +
+    # aes(key = key, cellid = cellid) +
+    NULL
+
+
+  plotly::ggplotly(cds_plot, height = 400) %>%
+    # plotly::layout(dragmode = "lasso") %>%
+    identity()
+
+
+}
+
+#' Plot a Monocle Cell Data Set
+#'
+#' @param cds
+#' @param resolution
+#' @param color_cells_by
+#'
+#' @return
+#' @export
+#'
+#' @examples
+plot_pseudotime <- function(cds, resolution, color_cells_by = "louvain_cluster"){
+
+  key <- seq(1, length(colnames(cds)))
+  cellid <- colnames(cds)
+
+  cds[['key']] = key
+  cds[['cellid']] = cellid
+
+  if (any(grepl("integrated", colnames(cds@colData)))){
+    default_assay = "integrated"
+  } else {
+    default_assay = "RNA"
+  }
+
+  if (color_cells_by == "louvain_cluster"){
+    color_cells_by = paste0(default_assay, "_snn_res.", resolution)
   }
 
   cds_plot <- monocle3::plot_cells(cds,
@@ -110,15 +201,12 @@ plot_cds <- function(cds, resolution){
                                    label_groups_by_cluster = FALSE,
                                    label_leaves = FALSE,
                                    label_branch_points = FALSE,
-                                   color_cells_by = paste0(default_assay, "_snn_res.", resolution)) +
+                                   color_cells_by = color_cells_by) +
     # aes(key = key, cellid = cellid) +
     NULL
 
-
-  plotly::ggplotly(cds_plot, height = 750) %>%
-    plotly::layout(dragmode = "lasso") %>%
-    identity()
-
+  print(cds_plot)
 
 }
+
 

@@ -4,7 +4,7 @@
 \alias{convert_seu_to_cds}
 \title{Convert a Seurat Object to a Monocle Cell Data Set}
 \usage{
-convert_seu_to_cds(seu)
+convert_seu_to_cds(seu, resolution = 1)
 }
 \arguments{
 \item{seu}{}
