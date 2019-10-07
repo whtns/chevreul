@@ -1,79 +1,59 @@
-#' Load Data UI
-#'
-#' @param id
-#' @param label
-#' @param filterTypes
-#'
-#' @return
-#' @export
-#'
-#' @examples
-loadDataui <- function(id, label = "Load Data", filterTypes) {
-  ns <- NS(id)
-  tagList(
-    shinyWidgets::prettyRadioButtons(ns("filterType"), "dataset to include", choices = filterTypes, selected = ""),
-    shinyWidgets::actionBttn(ns("loadButton"), "Load Default Dataset")
-    # fileInput(ns("seuratUpload"), "Upload .rds file")
-  )
-}
 
-#' Load Data
-#'
-#' @param input
-#' @param output
-#' @param session
-#' @param feature_types
-#' @param selected_feature
-#' @param proj_dir
-#'
-#' @return
-#' @export
-#'
-#' @examples
-loadData <- function(input, output, session, proj_dir, feature_types = c("gene"), selected_feature) {
-  ns <- session$ns
-  seu <- reactiveValues()
-
-  observeEvent(input$loadButton, {
-    showModal(modalDialog("Loading Data", footer = NULL))
-    # if (!input$filterType == "") {
-    #   filterType = paste0("_", input$filterType)
-    # }
-    # else {
-    #   filterType = input$filterType
-    # }
-
-    # seu_paths <- paste0("*", feature_types, "_seu", filterType, ".rds")
-    #
-    # seu_paths <- fs::path(proj_dir, "output", "seurat") %>%
-    #   fs::dir_ls() %>%
-    #   fs::path_filter(seu_paths) %>%
-    #   purrr::set_names(feature_types) %>%
-    #   identity()
-
-    seu_paths <- load_seurat_path(proj_dir, features = feature_types, suffix = input$filterType)
-
-    feature_seus <- purrr::map(seu_paths, readRDS) %>%
-      purrr::set_names(feature_types)
-
-    feature_seus <- purrr::map(feature_seus, SetDefaultAssay, "RNA")
-    removeModal()
-
-    for (i in names(feature_seus)){
-      seu[[i]] <- feature_seus[[i]]
-    }
-    seu$active <- feature_seus[[selected_feature]]
-
-    # seu$transcript <- feature_seus[["transcript"]]
-    # seu$gene <- feature_seus[["gene"]]
-    # seu$active <- feature_seus[[selected_feature]]
-
-
-  })
-
-  return(seu)
-
-}
+# loadDataui <- function(id, label = "Load Data", filterTypes) {
+#   ns <- NS(id)
+#   tagList(
+#     shinyWidgets::prettyRadioButtons(ns("filterType"), "dataset to include", choices = filterTypes, selected = ""),
+#     shinyWidgets::actionBttn(ns("loadButton"), "Load Default Dataset")
+#     # fileInput(ns("seuratUpload"), "Upload .rds file")
+#   )
+# }
+#
+#
+#
+# loadData <- function(input, output, session, proj_dir, feature_types = c("gene"), selected_feature) {
+#   ns <- session$ns
+#
+#   observeEvent(input$loadButton, {
+#     showModal(modalDialog("Loading Data", footer = NULL))
+#     # if (!input$filterType == "") {
+#     #   filterType = paste0("_", input$filterType)
+#     # }
+#     # else {
+#     #   filterType = input$filterType
+#     # }
+#
+#     # seu_paths <- paste0("*", feature_types, "_seu", filterType, ".rds")
+#     #
+#     # seu_paths <- fs::path(proj_dir, "output", "seurat") %>%
+#     #   fs::dir_ls() %>%
+#     #   fs::path_filter(seu_paths) %>%
+#     #   purrr::set_names(feature_types) %>%
+#     #   identity()
+#
+#     seu_path <- load_seurat_path(proj_dir, prefix = input$filterType)
+#
+#     feature_seus <- readRDS(seu_path)
+#
+#     feature_seus <- purrr::map(feature_seus, SetDefaultAssay, "RNA")
+#     removeModal()
+#
+#     for (i in names(feature_seus)){
+#       seu[[i]] <- feature_seus[[i]]
+#     }
+#
+#     seu$active <- feature_seus[[selected_feature]]
+#     seu$active <- find_all_markers(seu$active)
+#
+#     # seu$transcript <- feature_seus[["transcript"]]
+#     # seu$gene <- feature_seus[["gene"]]
+#     # seu$active <- feature_seus[[selected_feature]]
+#
+#
+#   })
+#
+#   return(seu)
+#
+# }
 
 #' Plot Custom Feature UI
 #'
@@ -216,10 +196,18 @@ plotDimRed <- function(input, output, session, seu, plot_types, feature_type, or
 
   prefill_feature <- reactive({
     if (feature_type() == "transcript") {
-      "ENST00000488147"
-    }
-    else if (feature_type() == "gene") {
-      "RXRG"
+      if (organism_type() == "human"){
+        "ENST00000488147"
+      } else if (organism_type() == "mouse"){
+        "ENSG00000488147"
+      }
+
+    } else if (feature_type() == "gene") {
+      if (organism_type() == "human"){
+        "RXRG"
+      } else if (organism_type() == "mouse"){
+        "Rxrg"
+      }
     }
   })
   output$featuretext <- renderUI({
@@ -327,59 +315,42 @@ tableSelected <- function(input, output, session, seu) {
   output$brushtable <- DT::renderDT({
     req(seu$active)
     req(brush())
-    selected_meta <- data.frame(seu$active[[]][brush(),
-                                               ])
+    selected_meta <- data.frame(seu$active[[]][brush(),])
+
     DT::datatable(selected_meta, extensions = "Buttons",
                   options = list(dom = "Bft", buttons = c("copy",
                                                           "csv"), scrollX = "100px", scrollY = "400px"))
   })
-  selected_cells <- brush
+
+  selected_cells <- reactive({
+    input$brushtable_rows_selected
+  })
+  # selected_cells <- brush
   return(selected_cells)
 }
 
-#' Subset Seruat UI
-#'
-#' @param id
-#'
-#'
-#' @return
-#' @export
-#'
-#' @examples
-subsetSeuratui <- function(id) {
-  ns <- NS(id)
-  tagList()
-}
 
-#' Subset Seruat
-#'
-#' @param input
-#' @param output
-#' @param session
-#' @param seu
-#' @param selected_rows
-#'
-#' @return
-#' @export
-#'
-#' @examples
-subsetSeurat <- function(input, output, session, seu, selected_rows) {
-  ns <- session$ns
-  sub_seu <- reactive({
-    showModal(modalDialog(title = "Subsetting and Recalculating Embeddings",
-                          "This process may take a minute or two!"))
-    seu$gene <- seu$gene[, selected_rows()]
-    seu$gene <- seuratTools::seurat_pipeline(seu$gene,
-                                             resolution = seq(0.6, 2, by = 0.2))
-    seu$transcript <- seu$transcript[, selected_rows()]
-
-    seu$transcript <- seuratTools::seurat_pipeline(seu$transcript,
-                                                   resolution = seq(0.6, 2, by = 0.2))
-    seu$active <- seu$gene
-    removeModal()
-  })
-  return(sub_seu)
-}
+# subsetSeuratui <- function(id) {
+#   ns <- NS(id)
+#   tagList()
+# }
+#
+#
+# subsetSeurat <- function(input, output, session, seu, selected_rows) {
+#   ns <- session$ns
+#   sub_seu <- reactive({
+#     showModal(modalDialog(title = "Subsetting and Recalculating Embeddings",
+#                           "This process may take a minute or two!"))
+#     seu$gene <- seu$gene[, selected_rows()]
+#     seu$gene <- seuratTools::seurat_pipeline(seu$gene, resolution = seq(0.6, 2, by = 0.2))
+#     seu$transcript <- seu$transcript[, selected_rows()]
+#
+#     seu$transcript <- seuratTools::seurat_pipeline(seu$transcript, resolution = seq(0.6, 2, by = 0.2))
+#     seu$active <- seu$gene
+#     removeModal()
+#   })
+#   return(sub_seu)
+# }
 
 
 #' Differential Expression UI
@@ -392,9 +363,7 @@ subsetSeurat <- function(input, output, session, seu, selected_rows) {
 #' @examples
 diffexui <- function(id) {
   ns <- NS(id)
-  tagList(box(sliderInput(ns("resolution"), "Resolution of clustering algorithm (affects number of clusters)",
-                          min = 0.2, max = 2, step = 0.2, value = 0.6
-  ), shinyWidgets::prettyRadioButtons(ns("diffex_scheme"),
+  tagList(box(shinyWidgets::prettyRadioButtons(ns("diffex_scheme"),
                                       "Cells to Compare",
                                       choiceNames = c(
                                         "Seurat Cluster",
@@ -403,7 +372,11 @@ diffexui <- function(id) {
                                       selected = "seurat"
   ), conditionalPanel(
     ns = ns,
-    condition = "input.diffex_scheme == 'seurat'", numericInput(ns("cluster1"),
+    condition = "input.diffex_scheme == 'seurat'",
+    sliderInput(ns("seuratResolution"), "Resolution of clustering algorithm (affects number of clusters)",
+                min = 0.2, max = 2, step = 0.2, value = 0.6
+    ),
+    numericInput(ns("cluster1"),
                                                                 "first cluster to compare",
                                                                 value = 0
     ), numericInput(ns("cluster2"),
@@ -412,7 +385,11 @@ diffexui <- function(id) {
     )
   ), conditionalPanel(
     ns = ns,
-    condition = "input.diffex_scheme == 'custom'", shinyWidgets::actionBttn(
+    condition = "input.diffex_scheme == 'custom'",
+    sliderInput(ns("customResolution"), "Resolution of clustering algorithm (affects number of clusters)",
+                min = 0.2, max = 2, step = 0.2, value = 0.6
+    ),
+    shinyWidgets::actionBttn(
       ns("saveClust1"),
       "Save to Custom Cluster 1"
     ), shinyWidgets::actionBttn(
@@ -454,8 +431,10 @@ diffexui <- function(id) {
 #' @export
 #'
 #' @examples
-diffex <- function(input, output, session, seu) {
+diffex <- function(input, output, session, seu, feature_type) {
   ns <- session$ns
+
+
   brush <- reactive({
     req(seu$active)
     d <- plotly::event_data("plotly_selected")
@@ -494,9 +473,10 @@ diffex <- function(input, output, session, seu) {
   })
 
   de_results <- eventReactive(input$diffex, {
+
     if (input$diffex_scheme == "seurat") {
       run_seurat_de(seu$active, input$cluster1, input$cluster2,
-                    input$resolution, diffex_scheme = "seurat")
+                    resolution = input$seuratResolution, diffex_scheme = "seurat", feature_type)
     }
 
     else if (input$diffex_scheme == "custom") {
@@ -505,17 +485,17 @@ diffex <- function(input, output, session, seu) {
       cluster2 <- unlist(strsplit(custom_cluster2(),
                                   " "))
       run_seurat_de(seu$active, cluster1, cluster2,
-                    input$resolution, diffex_scheme = "custom")
+                    input$customResolution, diffex_scheme = "custom", feature_type)
     }
   })
 
   output$DT1 <- DT::renderDT(de_results()[[input$diffex_method]],
-                             extensions = "Buttons", options = list(dom = "Bftpr",
-                                                                    buttons = c("copy", "csv")), class = "display")
+                             extensions = "Buttons", options = list(dom = "Bfptr",
+                                                                    buttons = c("copy", "csv"), scrollX = "100px", pageLength = 20, paging = FALSE), class = "display")
 
   cluster_list <- reactive({
     if (input$diffex_scheme == "seurat"){
-      seu_meta <- seu$active[[paste0(DefaultAssay(seu$active), "_snn_res.", input$resolution)]]
+      seu_meta <- seu$active[[paste0(DefaultAssay(seu$active), "_snn_res.", input$seuratResolution)]]
       cluster1_cells <- rownames(seu_meta[seu_meta == input$cluster1, , drop = FALSE])
       cluster2_cells <- rownames(seu_meta[seu_meta == input$cluster2, , drop = FALSE])
       list(cluster1 = cluster1_cells, cluster2 = cluster2_cells)
@@ -604,6 +584,8 @@ findMarkersui <- function(id) {
   ns <- NS(id)
   tagList(
     sliderInput(ns("resolution2"), label = "Resolution of clustering algorithm (affects number of clusters)", min = 0.2, max = 2, step = 0.2, value = 0.6),
+    numericInput(ns("num_markers"), "Select Number of Markers to Plot for Each Cluster", value = 5, min = 2, max = 20),
+    # actionButton(ns("plotDots"), "Plot Markers!"),
     plotly::plotlyOutput(ns("markerplot"), height = 800)
   )
 }
@@ -619,6 +601,7 @@ findMarkersui <- function(id) {
 #' @export
 #'
 #' @examples
+#'
 findMarkers <- function(input, output, session, seu) {
   ns <- session$ns
 
@@ -633,9 +616,7 @@ findMarkers <- function(input, output, session, seu) {
     })
 
   output$markerplot <- plotly::renderPlotly({
-    req(seu)
-    #
-    plot_markers(seu$active, resolution())
+    plot_markers(seu = seu$active, resolution = resolution(), num_markers = input$num_markers)
   })
 }
 
@@ -744,9 +725,9 @@ ccScore <- function(input, output, session) {
 #' @examples
 allTranscriptsui <- function(id) {
   ns <- NS(id)
-  tagList(fluidRow(box(shinyWidgets::prettyRadioButtons(ns("color_feature"), "cluster on genes or transcripts?", choices = c("gene", "transcript"), selected = "gene"),
-                       textInput(ns("feature"), "gene or transcript on which to color the plot; eg. 'RXRG' or 'ENST00000488147'"),
-                       uiOutput(ns("outfile")), uiOutput(ns("downloadPlot")),
+  tagList(fluidRow(box(textInput(ns("feature"), "gene on which to color the plot; eg. 'RXRG'"),
+                       # uiOutput(ns("outfile")),
+                       # uiOutput(ns("downloadPlot")),
                        width = 12)), fluidRow(uiOutput(ns("plotlys"))))
 }
 
@@ -763,31 +744,22 @@ allTranscriptsui <- function(id) {
 #'
 #' @examples
 allTranscripts <- function(input, output, session, seu,
-                           feature_type) {
+                           feature_type, organism_type) {
   ns <- session$ns
   transcripts <- reactiveValues()
   transcripts <- reactive({
     req(feature_type())
+    req(organism_type())
     req(input$feature)
     req(seu)
-    if (feature_type() == "gene") {
-      transcripts <- dplyr::filter(annotables::grch38,
-                                   symbol == input$feature) %>% dplyr::inner_join(annotables::grch38_tx2gene,
-                                                                                  by = "ensgene") %>% dplyr::pull(enstxp)
-      transcripts <- transcripts[transcripts %in%
-                                   rownames(seu$transcript)]
-    }
-    else if (feature_type() == "transcript") {
-      transcripts <- input$feature
-      transcripts <- transcripts[transcripts %in%
-                                   rownames(seu$transcript)]
-    }
+    transcripts <- get_transcripts_from_seu(seu, input$feature, organism = organism_type())
+
   })
 
   pList <- reactive({
     req(seu$active)
 
-    if(input$color_feature == "gene"){
+    if(feature_type() == "gene"){
       # browser()
       transcript_cols <- as.data.frame(t(as.matrix(seu$transcript[["RNA"]][transcripts(),])))
 
@@ -801,7 +773,7 @@ allTranscripts <- function(input, output, session, seu,
                                                        embedding = input$embedding, features = .x))
       names(pList) <- transcripts()
 
-    } else if (input$color_feature == "transcript"){
+    } else if (feature_type() == "transcript"){
       pList <- purrr::map(transcripts(), ~plot_feature(seu$transcript,
                                                        embedding = input$embedding, features = .x))
       names(pList) <- transcripts()
@@ -840,16 +812,27 @@ allTranscripts <- function(input, output, session, seu,
   output$outfile <- renderUI({
     req(pList())
     textInput(ns("outfile"), "a descriptive name for the output file",
-              value = paste0(input$feature, "_transcripts", "_clustered_by_", input$color_feature, ".pdf"))
+              value = paste0(input$feature, "_transcripts", "_clustered_by_", feature_type(), ".pdf"))
   })
 
-  output$plots <- downloadHandler(filename = function() {
-    paste(input$outfile, ".pdf", sep = "")
-  }, content = function(file) {
-    pdf(file)
-    lapply(pList(), print)
-    dev.off()
+  output$plots <-
+    downloadHandler(filename = function() {
+      input$outfile
+    },
+    content = function(file) {
+      pdf(file)
+      lapply(pList(), print)
+      dev.off()
   })
+
+  output$downloadPlot <- downloadHandler(
+    filename = function() { paste(input$dataset, '.png', sep='') },
+    content = function(file) {
+      png(file)
+      print(plotInput())
+      dev.off()
+    })
+
 
   output$downloadPlot <- renderUI({
     req(pList())
@@ -913,42 +896,170 @@ rnaVelocity <- function(input, output, session, seu, feature_type, format = "gri
 monocleui <- function(id){
     ns <- NS(id)
     tagList(
-      sliderInput(ns("resolution"), "Resolution of clustering algorithm (affects number of clusters)", min = 0.2, max = 2, step = 0.2, value = 0.6),
-      # actionButton(ns("plotMonocle"), "plot trajectory"),
-      plotlyOutput(ns("monoclePlot"))
-      # box(textOutput(ns("monocleText")))
-
+      fluidRow(
+        box(
+          # sliderInput(ns("resolution"), "Resolution of clustering algorithm (affects number of clusters)", min = 0.2, max = 2, step = 0.2, value = 0.6),
+          shinycssloaders::withSpinner(plotlyOutput(ns("monoclePlot"))),
+          width = 6
+        ),
+        box(
+          uiOutput(ns("rootCellsui")),
+          actionButton(ns("plotPseudotime"), "Calculate Pseudotime With Root Cells"),
+          plotOutput(ns("ptimePlot")),
+          width = 6
         )
+      ),
+      fluidRow(
+        box(actionButton(ns("calcPtimeGenes"), "Find Pseudotime Correlated Genes"),
+            uiOutput(ns("partitionSelect")),
+            uiOutput(ns("genePlotQuery2")),
+            uiOutput(ns("ptimeGenes")),
+            width = 12
+            )
+      )
+      )
 }
 
-monocle <- function(input, output, session, seu, input_type){
+monocle <- function(input, output, session, cds, seu, input_type, resolution){
     ns <- session$ns
 
-    cds <- reactive({
-      req(seu$active)
-      convert_seu_to_cds(seu$active)
-    })
-
     output$monoclePlot <- renderPlotly({
-      req(seu$active)
+      req(cds$traj)
 
-      plot_cds(cds(), input$resolution)
+      plot_cds(cds$traj, resolution = resolution())
     })
 
-    root_cells <- reactive({
-      d <- plotly::event_data("plotly_selected")
-      if (is.null(d)) {
-        msg <- "Click and drag events (i.e. select/lasso) appear here (double-click to clear)"
-        return(d)
-      }
-      else {
-        selected_cells <- colnames(cds())[as.numeric(d$key)]
-      }
+    output$rootCellsui <- renderUI({
+      selectizeInput(ns("rootCells"), "Choose Root Cells", choices = c("Choose Root Cells" = "", colnames(cds$traj)), multiple = TRUE)
     })
 
-    output$monocleText <- renderText({
-      req(root_cells())
-      root_cells()
+    observeEvent(input$plotPseudotime, {
+
+      req(cds$traj)
+
+      cds$ptime <- monocle3::order_cells(cds$traj, root_cells = input$rootCells)
+
+      # plot_pseudotime(cds$ptime, color_cells_by = "pseudotime", resolution = input$resolution)
+
+    })
+
+    output$ptimePlot <- renderPlot({
+      req(cds$ptime)
+      plot_pseudotime(cds$ptime, color_cells_by = "pseudotime", resolution = resolution())
+
+    })
+
+
+
+    observeEvent(input$calcPtimeGenes, {
+      req(cds$ptime)
+      showModal(modalDialog(
+        title = "Calculating features that vary over pseudotime",
+        "This process may take a minute or two!"
+      ))
+
+      cds_pr_test_res = monocle3::graph_test(cds$ptime, neighbor_graph="principal_graph", cores=4)
+      removeModal()
+
+      cds$ptime@metadata[["diff_genes"]] <- cds_pr_test_res
+      cds$diff_genes <- cds$ptime
+
+    })
+
+    observe({
+      req(cds$diff_genes)
+
+      cds_pr_test_res <- cds$diff_genes@metadata$diff_genes
+      pr_deg_ids = row.names(subset(cds_pr_test_res, q_value < 0.05))
+
+      output$genePlotQuery1 <- renderPlot({
+        req(cds$diff_genes)
+
+        gene_ptime_plot <- monocle3::plot_cells(cds$ptime, genes=pr_deg_ids,
+                                                show_trajectory_graph=FALSE,
+                                                label_cell_groups=FALSE,
+                                                label_leaves=FALSE)
+
+        print(gene_ptime_plot)
+
+
+      })
+
+      output$genePlotQuery2 <- renderUI({
+        selectizeInput(ns("genePlotQuery1"), "Pick Gene to Plot on Pseudotime", choices = pr_deg_ids, multiple = TRUE, selected = pr_deg_ids[1])
+      })
+
+      output$ptimeGenesRedPlot <- renderPlot({
+
+        gene_ptime_plot <- monocle3::plot_cells(cds$ptime, genes=input$genePlotQuery1,
+                                                show_trajectory_graph=FALSE,
+                                                label_cell_groups=FALSE,
+                                                label_leaves=FALSE)
+
+        print(gene_ptime_plot)
+
+
+      })
+
+      available_partitions <- levels(monocle3::partitions(cds$ptime))
+
+      output$partitionSelect <- renderUI({
+        selectizeInput(ns("partitions"), "Select a Partition to Plot", choices = available_partitions, multiple = FALSE, selected = available_partitions[1])
+      })
+
+      output$ptimeGenesLinePlot <- renderPlot({
+
+        partition_cells <- monocle3::partitions(cds$ptime)
+        partition_cells = split(names(partition_cells), partition_cells)
+        partition_cells <- partition_cells[[input$partitions]]
+
+        cds_subset = cds$ptime[rownames(cds$ptime) %in% input$genePlotQuery1, colnames(cds$ptime) %in% partition_cells]
+
+        if (any(grepl("integrated", colnames(colData(cds_subset))))){
+          default_assay = "integrated"
+        } else {
+          default_assay = "RNA"
+        }
+
+        color_cells_by = paste0(default_assay, "_snn_res.", resolution())
+
+        gene_ptime_plot <- monocle3::plot_genes_in_pseudotime(cds_subset,
+                                 color_cells_by=color_cells_by,
+                                 min_expr=0.5)
+
+        print(gene_ptime_plot)
+
+      })
+
+      output$ptimeGenesDT <- renderDT({
+        DT::datatable(cds_pr_test_res,
+                      options = list(paging  = TRUE, pageLength = 15))
+      })
+
+      output$ptimeGenes <- renderUI({
+        shinycssloaders::withSpinner(tagList(
+          box(plotOutput(ns("ptimeGenesRedPlot")),
+              width = 6),
+          box(plotOutput(ns("ptimeGenesLinePlot")),
+              width = 6),
+          DTOutput(ns("ptimeGenesDT"))
+                ))
+      })
+
     })
 
 }
+
+cellAlignui <- function(id){
+    ns <- NS(id)
+    tagList(
+
+        )
+    }
+
+cellAlign <- function(input, output, session){
+    ns <- session$ns
+}
+
+
+

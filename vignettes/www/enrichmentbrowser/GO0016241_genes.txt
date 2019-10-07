@@ -1,0 +1,18 @@
+ENTREZID	SYMBOL	GENENAME	FC	ADJ.PVAL
+533	ATP6V0B	ATPase H+ transporting V0 subunit b	-0.97	9.9e-48
+9550	ATP6V1G1	ATPase H+ transporting V1 subunit G1	-0.92	1.3e-44
+526	ATP6V1B2	ATPase H+ transporting V1 subunit B2	-1.76	1.1e-37
+389541	LAMTOR4	late endosomal/lysosomal adaptor, MAPK and MTOR activator 4	-0.7	5.4e-13
+2597	GAPDH	glyceraldehyde-3-phosphate dehydrogenase	0.51	1.2e-12
+527	ATP6V0C	ATPase H+ transporting V0 subunit c	0.59	5.7e-07
+55004	LAMTOR1	late endosomal/lysosomal adaptor, MAPK and MTOR activator 1	0.58	9.1e-07
+529	ATP6V1E1	ATPase H+ transporting V1 subunit E1	-0.46	1.1e-05
+8992	ATP6V0E1	ATPase H+ transporting V0 subunit e1	0.26	1e-04
+55737	VPS35	VPS35 retromer complex component	0.41	0.00073
+10542	LAMTOR5	late endosomal/lysosomal adaptor, MAPK and MTOR activator 5	-0.22	0.0011
+51382	ATP6V1D	ATPase H+ transporting V1 subunit D	-0.29	0.0025
+523	ATP6V1A	ATPase H+ transporting V1 subunit A	-0.17	0.24
+9114	ATP6V0D1	ATPase H+ transporting V0 subunit d1	0.12	0.25
+826	CAPNS1	calpain small subunit 1	0.11	0.43
+51100	SH3GLB1	SH3 domain containing GRB2 like, endophilin B1	0.07	0.61
+8649	LAMTOR3	late endosomal/lysosomal adaptor, MAPK and MTOR activator 3	-0.07	0.64

@@ -4,13 +4,12 @@
 \alias{seurat_integration_pipeline}
 \title{Run Seurat Integration}
 \usage{
-seurat_integration_pipeline(seus, res_low = 0.2, res_hi = 2,
-  suffix = "", ...)
+seurat_integration_pipeline(seus, resolution, suffix = "", ...)
 }
 \arguments{
 \item{suffix}{a suffix to be appended to a file save in output dir}
 
-\item{seu}{A seurat object}
+\item{...}{}
 }
 \description{
 run batch correction, followed by:

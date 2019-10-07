@@ -67,35 +67,51 @@ load_meta <- function(proj_dir){
 
 #Make SCE from census counts-------------------------------------------
 
-#' Create a Seurat Object from tximport and sample data
+#' Create a Seurat Object from return of tximport
 #'
 #' @param txi
-#' @param colData
+#' @param meta_tbl
+#' @param ...
+#'
+#' @return
+#' @export
+#'
+#' @examples
+seu_from_tximport <- function(txi, meta_tbl, ...){
+  exp_tbl <- as.matrix(txi$counts)
+
+  seu <- seu_from_tibbles(exp_tbl, meta_tbl)
+
+  return(seu)
+
+}
+
+#' Create a Seurat Object from a set of tibbles
+#'
+#' @param exp_tbl
+#' @param meta_tbl
 #' @param census_counts
 #'
 #' @return
 #' @export
 #'
 #' @examples
-seu_from_tibbles <- function(txi, colData, census_counts=NULL){
-	# browser()
+seu_from_tibbles <- function(exp_tbl, meta_tbl, census_counts=NULL){
+  # browser()
 
-	expid <- gsub("_.*", "", colData[1,1])
+  expid <- gsub("-.*", "", colnames(exp_tbl))
 
-  featuredata <- data.frame(rownames(txi$counts))
+  featuredata <- data.frame(rownames(exp_tbl))
   rownames(featuredata) <- featuredata[,1]
 
-  txi$counts <- as.matrix(txi$counts)
+  meta_tbl <- data.frame(meta_tbl)
+  rownames(meta_tbl) <- meta_tbl[,"sample_id"]
 
+  # exp_tbl[1:3] <- purrr::map(exp_tbl[1:3], ~ .x[,(colnames(.x) %in% rownames(meta_tbl))])
 
-  colData <- data.frame(colData)
-  rownames(colData) <- colData[,1]
+  meta_tbl <- meta_tbl[colnames(exp_tbl),]
 
-  txi[1:3] <- purrr::map(txi[1:3], ~ .x[,(colnames(.x) %in% rownames(colData))])
-
-  colData <- colData[colnames(txi$counts),]
-
-  seu <- Seurat::CreateSeuratObject(counts = txi$counts, project = expid, assay = "RNA", meta.data = colData)
+  seu <- Seurat::CreateSeuratObject(counts = exp_tbl, project = expid, assay = "RNA", meta.data = meta_tbl)
 
   # add default batch if missing
   seu$batch <- seu@project.name
@@ -133,31 +149,36 @@ filter_low_rc_cells <- function(seu, read_thresh = 1e5){
 
 #' Save seurat object to <project>/output/sce/<feature>_seu.rds
 #'
-#' @param seu A seurat object
-#' @param feature
-#' @param suffix
+#' @param ... named arguments specifying seurat objects list of seurat objects; default "gene" and "transcript"
+#' @param prefix
 #' @param proj_dir
-#' @param temp
 #'
 #' @return
 #' @export
 #'
 #' @examples
-save_seurat <- function(seu, feature, suffix = "", proj_dir = getwd(), temp = F){
+#' \dontrun{
+#' save_seurat(gene = feature_seus$gene, transcript = feature_seus$transcript, proj_dir = proj_dir)
+#'
+#' save_seurat(gene = feature_seus$gene, transcript = feature_seus$transcript, prefix = "remove_nonPRs", proj_dir = proj_dir)
+#'
+#' }
+save_seurat <- function(..., prefix = "unfiltered", proj_dir = getwd()){
 
-  if (temp == TRUE) return(seu)
-
-  if(suffix != ""){
-    suffix = paste0("_", suffix)
+  seu_list = list(...)
+  if(is.null(names(seu_list))){
+    seu_list = flatten(seu_list)
   }
 
   seurat_dir <- fs::path(proj_dir, "output", "seurat")
 
   fs::dir_create(seurat_dir)
 
-  seu_path <- fs::path(seurat_dir, paste0(feature, "_seu", suffix, ".rds"))
+  seu_path <- fs::path(seurat_dir, paste0(prefix, "_seu.rds"))
 
-  saveRDS(seu, seu_path)
-  seu
+  message(paste0("saving seurat objects to ", seu_path))
+  saveRDS(seu_list, seu_path)
+
+  return(seu_list)
 }
 

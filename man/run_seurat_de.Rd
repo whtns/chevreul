@@ -5,7 +5,7 @@
 \title{Run Seurat Differential Expression}
 \usage{
 run_seurat_de(seu, cluster1, cluster2, resolution,
-  diffex_scheme = "seurat")
+  diffex_scheme = "seurat", feature_type)
 }
 \arguments{
 \item{diffex_scheme}{}

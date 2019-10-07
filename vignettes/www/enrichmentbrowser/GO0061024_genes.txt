@@ -1,0 +1,32 @@
+ENTREZID	SYMBOL	GENENAME	FC	ADJ.PVAL
+60	ACTB	actin beta	1.85	7e-127
+71	ACTG1	actin gamma 1	1.41	7.2e-53
+6844	VAMP2	vesicle associated membrane protein 2	-1.85	8.4e-48
+7531	YWHAE	tyrosine 3-monooxygenase/tryptophan 5-monooxygenase activation protein epsilon	-0.54	8.7e-27
+1211	CLTA	clathrin light chain A	1.11	5.3e-26
+8673	VAMP8	vesicle associated membrane protein 8	1.1	6.5e-25
+7314	UBB	ubiquitin B	-0.61	1.5e-22
+7534	YWHAZ	tyrosine 3-monooxygenase/tryptophan 5-monooxygenase activation protein zeta	1	9.1e-21
+7529	YWHAB	tyrosine 3-monooxygenase/tryptophan 5-monooxygenase activation protein beta	0.64	2.5e-15
+1213	CLTC	clathrin heavy chain	-0.81	3.5e-15
+10109	ARPC2	actin related protein 2/3 complex subunit 2	0.49	1.1e-12
+10096	ACTR3	actin related protein 3	0.86	8.5e-12
+6233	RPS27A	ribosomal protein S27a	-0.67	2.5e-11
+950	SCARB2	scavenger receptor class B member 2	-0.53	1.2e-07
+7311	UBA52	ubiquitin A-52 residue ribosomal protein fusion product 1	0.3	4.1e-05
+7316	UBC	ubiquitin C	-0.37	8.4e-05
+1175	AP2S1	adaptor related protein complex 2 subunit sigma 1	0.47	0.00029
+2017	CTTN	cortactin	0.38	0.00058
+10092	ARPC5	actin related protein 2/3 complex subunit 5	0.27	0.0037
+10552	ARPC1A	actin related protein 2/3 complex subunit 1A	0.31	0.016
+1173	AP2M1	adaptor related protein complex 2 subunit mu 1	0.23	0.032
+10097	ACTR2	actin related protein 2	-0.25	0.043
+9341	VAMP3	vesicle associated membrane protein 3	-0.28	0.055
+11261	CHP1	calcineurin like EF-hand protein 1	0.19	0.09
+3312	HSPA8	heat shock protein family A (Hsp70) member 8	-0.14	0.12
+10971	YWHAQ	tyrosine 3-monooxygenase/tryptophan 5-monooxygenase activation protein theta	0.11	0.21
+54874	FNBP1L	formin binding protein 1 like	0.07	0.61
+10094	ARPC3	actin related protein 2/3 complex subunit 3	0.03	0.76
+7533	YWHAH	tyrosine 3-monooxygenase/tryptophan 5-monooxygenase activation protein eta	-0.03	0.82
+10618	TGOLN2	trans-golgi network protein 2	-0.02	0.83
+10093	ARPC4	actin related protein 2/3 complex subunit 4	-0.01	0.91

@@ -1,0 +1,18 @@
+ENTREZID	SYMBOL	GENENAME	FC	ADJ.PVAL
+60	ACTB	actin beta	1.85	7e-127
+71	ACTG1	actin gamma 1	1.41	7.2e-53
+3326	HSP90AB1	heat shock protein 90 alpha family class B member 1	-0.69	9.8e-28
+10095	ARPC1B	actin related protein 2/3 complex subunit 1B	1.06	2.1e-19
+5879	RAC1	Rac family small GTPase 1	0.88	4.8e-17
+10109	ARPC2	actin related protein 2/3 complex subunit 2	0.49	1.1e-12
+10096	ACTR3	actin related protein 3	0.86	8.5e-12
+10787	NCKAP1	NCK associated protein 1	-0.72	5.2e-08
+5747	PTK2	protein tyrosine kinase 2	-0.64	5.3e-07
+10092	ARPC5	actin related protein 2/3 complex subunit 5	0.27	0.0037
+10552	ARPC1A	actin related protein 2/3 complex subunit 1A	0.31	0.016
+10097	ACTR2	actin related protein 2	-0.25	0.043
+55845	BRK1	BRICK1 subunit of SCAR/WAVE actin nucleating complex	-0.16	0.084
+3320	HSP90AA1	heat shock protein 90 alpha family class A member 1	-0.1	0.19
+10094	ARPC3	actin related protein 2/3 complex subunit 3	0.03	0.76
+998	CDC42	cell division cycle 42	0.03	0.78
+10093	ARPC4	actin related protein 2/3 complex subunit 4	-0.01	0.91

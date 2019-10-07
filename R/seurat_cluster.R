@@ -9,9 +9,13 @@
 #' @export
 #'
 #' @examplesse
-seurat_preprocess <- function(seu, scale=TRUE, ...){
+
+seurat_preprocess <- function(seu, scale=TRUE, normalize = TRUE, ...){
   # Normalize data
-  seu <- Seurat::NormalizeData(object = seu, verbose = FALSE)
+
+  if (normalize){
+    seu <- Seurat::NormalizeData(object = seu, verbose = FALSE)
+  }
 
   # Filter out only variable genes
   seu <- Seurat::FindVariableFeatures(object = seu, selection.method = "vst", nfeatures = 2000, verbose = FALSE)
@@ -75,8 +79,9 @@ stash_marker_features <- function(resolution, seu){
 
   markers <- presto::wilcoxauc(seu, resolution) %>%
     dplyr::group_by(group) %>%
-    dplyr::top_n(n = 5, wt = logFC) %>%
-    dplyr::pull(feature)
+    dplyr::top_n(n = 200, wt = logFC) %>%
+    # dplyr::pull(feature) %>%
+    identity()
 
   return(markers)
 

@@ -8,12 +8,30 @@
 #' @export
 #'
 #' @examples
-annotate_cell_cycle <- function(seu, s.features, g2m.features, ...){
+annotate_cell_cycle <- function(seu, feature, organism = "human", ...){
 
   # setdefaultassay to "RNA"
   DefaultAssay(seu) <- "RNA"
 
-  seu <- CellCycleScoring(seu, s.features = s.features, g2m.features = g2m.features, set.ident = FALSE)
+  s_genes <- cc.genes$s.genes
+  g2m_genes <- cc.genes$g2m.genes
+
+  s_transcripts <- cc.transcripts$s.genes
+  g2m_transcripts <- cc.transcripts$g2m.genes
+
+  if(organism == "mouse"){
+    s_genes <- stringr::str_to_title(s_genes)
+    g2m_genes <- stringr::str_to_title(g2m_genes)
+    s_transcripts <- genes_to_transcripts(s_genes)
+    g2m_transcripts <- genes_to_transcripts(g2m_genes)
+  }
+
+  if (feature == "gene"){
+    seu <- CellCycleScoring(seu, s.features = s_genes, g2m.features = g2m_genes, set.ident = FALSE)
+
+  } else if (feature == "transcript"){
+    seu <- CellCycleScoring(seu, s.features = s_transcripts, g2m.features = g2m_transcripts, set.ident = FALSE)
+  }
 
 }
 

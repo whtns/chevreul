@@ -11,4 +11,5 @@ seurat_reduce_dimensions(seu, reduction = "pca", ...)
 }
 \description{
 Run PCA, TSNE and UMAP on a seurat object
+perplexity should not be bigger than 3 * perplexity < nrow(X) - 1, see details for interpretation
 }

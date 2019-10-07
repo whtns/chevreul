@@ -4,7 +4,8 @@
 \alias{plot_feature}
 \title{Plot Features}
 \usage{
-plot_feature(seu, embedding, features, dims = c(1, 2))
+plot_feature(seu, embedding, features, dims = c(1, 2),
+  return_plotly = TRUE)
 }
 \arguments{
 \item{dims}{}
