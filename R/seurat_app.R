@@ -100,7 +100,7 @@ plot_violin <- function(seu, plot_var = "batch", plot_vals = NULL, features = "R
 
 
 #' Plot Features
-#'
+#' This is a great function
 #' @param seu
 #' @param embedding
 #' @param features
@@ -429,6 +429,7 @@ seuratApp <- function(proj_dir, filterTypes, appTitle, feature_types = "gene", f
         "hello"
       )), box(plotDimRedui(
         "howdy"
+<<<<<<< HEAD
       ))
     ), fluidRow(box(
       title = "Selected Cells",
@@ -455,6 +456,85 @@ seuratApp <- function(proj_dir, filterTypes, appTitle, feature_types = "gene", f
       textOutput("subsetMessages"),
       width = 12
       ),
+||||||| merged common ancestors
+      ))), fluidRow(box(
+        title = "Selected Cells",
+        tableSelectedui("hello"), width = 12
+      ))
+    ), shinydashboard::tabItem(
+      tabName = "compareReadCount",
+      h2("Compare Read Counts"), fluidRow(box(plotReadCountui(
+        "hello2"
+      )), box(plotReadCountui(
+        "howdy2"
+      )))
+    ), shinydashboard::tabItem(
+      tabName = "subsetSeurat",
+      h2("Subset Seurat Input"), column(box(plotDimRedui(
+        "subset"
+      ), width = 12), width = 6),
+      column(
+        box(shinyWidgets::actionBttn(
+          "subsetAction",
+          "subset seurat"
+        ),
+        shinyjs::useShinyjs(),
+        textOutput("subsetMessages"),
+        width = 12
+        ),
+        box(
+          title = "Selected Cells",
+          tableSelectedui("subset"), width = 12
+        ), width = 6)
+    ),
+    shinydashboard::tabItem(
+      tabName = "findMarkers", h2("Find Markers"),
+      fluidRow(box(findMarkersui("hello")))
+    ), shinydashboard::tabItem(
+      tabName = "allTranscripts",
+      h2("All Transcripts"), fluidRow(shinyWidgets::actionBttn(
+        "plotTrx",
+        "Plot all transcripts"
+      )), fluidRow(column(allTranscriptsui("hello"),
+                          width = 6
+      ), column(allTranscriptsui("howdy"),
+                width = 6
+      ))
+    ), shinydashboard::tabItem(
+      tabName = "diffex",
+      h2("Differential Expression"), column(diffexui("hello"),
+                                            width = 6
+      ), column(box(plotDimRedui(
+        "diffex"
+      ), width = 12),
+=======
+      ))
+    ), fluidRow(box(
+      title = "Selected Cells",
+      tableSelectedui("hello"), width = 12
+    ))
+  ), shinydashboard::tabItem(
+    tabName = "compareReadCount",
+    h2("Compare Read Counts"), fluidRow(box(plotReadCountui(
+      "hello2"
+    )), box(plotReadCountui(
+      "howdy2"
+    )))
+  ), shinydashboard::tabItem(
+    tabName = "subsetSeurat",
+    h2("Subset Seurat Input"), column(box(plotDimRedui(
+      "subset"
+    ), width = 12), width = 6),
+    column(
+      box(shinyWidgets::actionBttn(
+        "subsetAction",
+        "subset seurat"
+      ),
+      shinyjs::useShinyjs(),
+      textOutput("subsetMessages"),
+      width = 12
+      ),
+>>>>>>> 2d43e2725a02764750212f5c9acf866ac6e6a483
       box(
         title = "Selected Cells",
         tableSelectedui("subset"), width = 12

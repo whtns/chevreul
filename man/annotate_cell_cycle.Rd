@@ -4,7 +4,13 @@
 \alias{annotate_cell_cycle}
 \title{Annotate Cell Cycle}
 \usage{
+<<<<<<< HEAD
 annotate_cell_cycle(seu, feature, organism = "human", ...)
+||||||| merged common ancestors
+annotate_cell_cycle(seu, s.features, g2m.features, ...)
+=======
+annotate_cell_cycle(seu, feature, ...)
+>>>>>>> 2d43e2725a02764750212f5c9acf866ac6e6a483
 }
 \arguments{
 \item{seu_list}{A list of seurat objects}

@@ -1,3 +1,155 @@
+<<<<<<< HEAD
+||||||| merged common ancestors
+#' Load Data UI
+#'
+#' @param id
+#' @param label
+#' @param filterTypes
+#'
+#' @return
+#' @export
+#'
+#' @examples
+loadDataui <- function(id, label = "Load Data", filterTypes) {
+  ns <- NS(id)
+  tagList(
+    shinyWidgets::prettyRadioButtons(ns("filterType"), "dataset to include", choices = filterTypes, selected = ""),
+    shinyWidgets::actionBttn(ns("loadButton"), "Load Default Dataset")
+    # fileInput(ns("seuratUpload"), "Upload .rds file")
+  )
+}
+
+#' Load Data
+#'
+#' @param input
+#' @param output
+#' @param session
+#' @param feature_types
+#' @param selected_feature
+#' @param proj_dir
+#'
+#' @return
+#' @export
+#'
+#' @examples
+loadData <- function(input, output, session, proj_dir, feature_types = c("gene"), selected_feature) {
+  ns <- session$ns
+  seu <- reactiveValues()
+
+  observeEvent(input$loadButton, {
+    showModal(modalDialog("Loading Data", footer = NULL))
+    # if (!input$filterType == "") {
+    #   filterType = paste0("_", input$filterType)
+    # }
+    # else {
+    #   filterType = input$filterType
+    # }
+
+    # seu_paths <- paste0("*", feature_types, "_seu", filterType, ".rds")
+    #
+    # seu_paths <- fs::path(proj_dir, "output", "seurat") %>%
+    #   fs::dir_ls() %>%
+    #   fs::path_filter(seu_paths) %>%
+    #   purrr::set_names(feature_types) %>%
+    #   identity()
+
+    seu_paths <- load_seurat_path(proj_dir, features = feature_types, suffix = input$filterType)
+
+    feature_seus <- purrr::map(seu_paths, readRDS) %>%
+      purrr::set_names(feature_types)
+
+    feature_seus <- purrr::map(feature_seus, SetDefaultAssay, "RNA")
+    removeModal()
+
+    for (i in names(feature_seus)){
+      seu[[i]] <- feature_seus[[i]]
+    }
+    seu$active <- feature_seus[[selected_feature]]
+
+    # seu$transcript <- feature_seus[["transcript"]]
+    # seu$gene <- feature_seus[["gene"]]
+    # seu$active <- feature_seus[[selected_feature]]
+
+
+  })
+
+  return(seu)
+=======
+#' Load Data UI
+#'
+#' @param id
+#' @param label
+#' @param filterTypes
+#'
+#' @return
+#' @export
+#'
+#' @examples
+loadDataui <- function(id, label = "Load Data", filterTypes) {
+  ns <- NS(id)
+  tagList(
+    shinyWidgets::prettyRadioButtons(ns("filterType"), "dataset to include", choices = filterTypes, selected = ""),
+    shinyWidgets::actionBttn(ns("loadButton"), "Load Default Dataset")
+    # fileInput(ns("seuratUpload"), "Upload .rds file")
+  )
+}
+
+
+#' Load Data
+#'
+#' @param input
+#' @param output
+#' @param session
+#' @param feature_types
+#' @param selected_feature
+#' @param proj_dir
+#'
+#' @return
+#' @export
+#'
+#' @examples
+loadData <- function(input, output, session, proj_dir, feature_types = c("gene"), selected_feature) {
+  ns <- session$ns
+
+  observeEvent(input$loadButton, {
+    showModal(modalDialog("Loading Data", footer = NULL))
+    # if (!input$filterType == "") {
+    #   filterType = paste0("_", input$filterType)
+    # }
+    # else {
+    #   filterType = input$filterType
+    # }
+
+    # seu_paths <- paste0("*", feature_types, "_seu", filterType, ".rds")
+    #
+    # seu_paths <- fs::path(proj_dir, "output", "seurat") %>%
+    #   fs::dir_ls() %>%
+    #   fs::path_filter(seu_paths) %>%
+    #   purrr::set_names(feature_types) %>%
+    #   identity()
+
+    seu_path <- load_seurat_path(proj_dir, prefix = input$filterType)
+
+    feature_seus <- readRDS(seu_path)
+
+    feature_seus <- purrr::map(feature_seus, SetDefaultAssay, "RNA")
+    removeModal()
+
+    for (i in names(feature_seus)){
+      seu[[i]] <- feature_seus[[i]]
+    }
+
+    seu$active <- feature_seus[[selected_feature]]
+
+    # seu$transcript <- feature_seus[["transcript"]]
+    # seu$gene <- feature_seus[["gene"]]
+    # seu$active <- feature_seus[[selected_feature]]
+
+
+  })
+
+  return(seu)
+>>>>>>> 2d43e2725a02764750212f5c9acf866ac6e6a483
 
 # loadDataui <- function(id, label = "Load Data", filterTypes) {
 #   ns <- NS(id)
@@ -330,6 +482,7 @@ tableSelected <- function(input, output, session, seu) {
 }
 
 
+<<<<<<< HEAD
 # subsetSeuratui <- function(id) {
 #   ns <- NS(id)
 #   tagList()
@@ -351,6 +504,65 @@ tableSelected <- function(input, output, session, seu) {
 #   })
 #   return(sub_seu)
 # }
+||||||| merged common ancestors
+#' Subset Seruat
+#'
+#' @param input
+#' @param output
+#' @param session
+#' @param seu
+#' @param selected_rows
+#'
+#' @return
+#' @export
+#'
+#' @examples
+subsetSeurat <- function(input, output, session, seu, selected_rows) {
+  ns <- session$ns
+  sub_seu <- reactive({
+    showModal(modalDialog(title = "Subsetting and Recalculating Embeddings",
+                          "This process may take a minute or two!"))
+    seu$gene <- seu$gene[, selected_rows()]
+    seu$gene <- seuratTools::seurat_pipeline(seu$gene,
+                                             resolution = seq(0.6, 2, by = 0.2))
+    seu$transcript <- seu$transcript[, selected_rows()]
+
+    seu$transcript <- seuratTools::seurat_pipeline(seu$transcript,
+                                                   resolution = seq(0.6, 2, by = 0.2))
+    seu$active <- seu$gene
+    removeModal()
+  })
+  return(sub_seu)
+}
+=======
+#' Subset Seruat
+#'
+#' @param input
+#' @param output
+#' @param session
+#' @param seu
+#' @param selected_rows
+#'
+#' @return
+#' @export
+#'
+#' @examples
+subsetSeurat <- function(input, output, session, seu, selected_rows) {
+  ns <- session$ns
+  sub_seu <- reactive({
+    showModal(modalDialog(title = "Subsetting and Recalculating Embeddings",
+                          "This process may take a minute or two!"))
+    seu$gene <- seu$gene[, selected_rows()]
+    seu$gene <- seuratTools::seurat_pipeline(seu$gene, resolution = seq(0.6, 2, by = 0.2))
+    seu$transcript <- seu$transcript[, selected_rows()]
+
+    seu$transcript <- seuratTools::seurat_pipeline(seu$transcript, resolution = seq(0.6, 2, by = 0.2))
+    seu$active <- seu$gene
+    removeModal()
+  })
+  return(sub_seu)
+}
+>>>>>>> 2d43e2725a02764750212f5c9acf866ac6e6a483
 
 
 #' Differential Expression UI

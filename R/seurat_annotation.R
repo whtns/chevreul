@@ -8,11 +8,18 @@
 #' @export
 #'
 #' @examples
+<<<<<<< HEAD
 annotate_cell_cycle <- function(seu, feature, organism = "human", ...){
+||||||| merged common ancestors
+annotate_cell_cycle <- function(seu, s.features, g2m.features, ...){
+=======
+annotate_cell_cycle <- function(seu, feature, ...){
+>>>>>>> 2d43e2725a02764750212f5c9acf866ac6e6a483
 
   # setdefaultassay to "RNA"
   DefaultAssay(seu) <- "RNA"
 
+<<<<<<< HEAD
   s_genes <- cc.genes$s.genes
   g2m_genes <- cc.genes$g2m.genes
 
@@ -32,6 +39,16 @@ annotate_cell_cycle <- function(seu, feature, organism = "human", ...){
   } else if (feature == "transcript"){
     seu <- CellCycleScoring(seu, s.features = s_transcripts, g2m.features = g2m_transcripts, set.ident = FALSE)
   }
+||||||| merged common ancestors
+  seu <- CellCycleScoring(seu, s.features = s.features, g2m.features = g2m.features, set.ident = FALSE)
+=======
+  if (feature == "gene"){
+    seu <- CellCycleScoring(seu, s.features = cc.genes$s.genes, g2m.features = cc.genes$g2m.genes, set.ident = FALSE)
+
+  } else if (feature == "transcript"){
+    seu <- CellCycleScoring(seu, s.features = cc.transcripts$s.genes, g2m.features = cc.transcripts$g2m.genes, set.ident = FALSE)
+  }
+>>>>>>> 2d43e2725a02764750212f5c9acf866ac6e6a483
 
 }
 
