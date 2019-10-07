@@ -4,7 +4,7 @@
 \alias{annotate_cell_cycle}
 \title{Annotate Cell Cycle}
 \usage{
-annotate_cell_cycle(seu, s.features, g2m.features, ...)
+annotate_cell_cycle(seu, feature, organism = "human", ...)
 }
 \arguments{
 \item{seu_list}{A list of seurat objects}

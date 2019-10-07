@@ -4,7 +4,7 @@
 \alias{diffex}
 \title{Differential Expression}
 \usage{
-diffex(input, output, session, seu)
+diffex(input, output, session, seu, feature_type)
 }
 \arguments{
 \item{seu}{}

@@ -4,10 +4,10 @@
 \alias{load_seurat_path}
 \title{Read in Gene and Transcript Seurat Objects}
 \usage{
-load_seurat_path(proj_dir = getwd(), features = "gene", suffix = "")
+load_seurat_path(proj_dir = getwd(), prefix = "unfiltered")
 }
 \arguments{
-\item{proj_dir}{}
+\item{prefix}{}
 }
 \description{
 Read in Gene and Transcript Seurat Objects

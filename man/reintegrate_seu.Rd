@@ -4,7 +4,8 @@
 \alias{reintegrate_seu}
 \title{Reintegrate (filtered) seurat objects}
 \usage{
-reintegrate_seu(seu, feature, suffix = "", reduction = "pca", ...)
+reintegrate_seu(seu, feature = "gene", suffix = "",
+  reduction = "pca", ...)
 }
 \arguments{
 \item{suffix}{to be appended to file saved in output dir}

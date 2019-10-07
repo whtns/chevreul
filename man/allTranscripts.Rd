@@ -4,7 +4,7 @@
 \alias{allTranscripts}
 \title{Plot All Transcripts}
 \usage{
-allTranscripts(input, output, session, seu, feature_type)
+allTranscripts(input, output, session, seu, feature_type, organism_type)
 }
 \arguments{
 \item{feature_type}{}

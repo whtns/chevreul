@@ -2,13 +2,13 @@
 % Please edit documentation in R/create_seu.R
 \name{seu_from_tibbles}
 \alias{seu_from_tibbles}
-\title{Create a Seurat Object from tximport and sample data}
+\title{Create a Seurat Object from a set of tibbles}
 \usage{
-seu_from_tibbles(txi, colData, census_counts = NULL)
+seu_from_tibbles(exp_tbl, meta_tbl, census_counts = NULL)
 }
 \arguments{
 \item{census_counts}{}
 }
 \description{
-Create a Seurat Object from tximport and sample data
+Create a Seurat Object from a set of tibbles
 }

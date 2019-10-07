@@ -12,3 +12,6 @@ findMarkers(input, output, session, seu)
 \description{
 Find Markers
 }
+\examples{
+
+}

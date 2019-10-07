@@ -4,13 +4,21 @@
 \alias{save_seurat}
 \title{Save seurat object to <project>/output/sce/<feature>_seu.rds}
 \usage{
-save_seurat(seu, feature, suffix = "", proj_dir = getwd(), temp = F)
+save_seurat(..., prefix = "unfiltered", proj_dir = getwd())
 }
 \arguments{
-\item{seu}{A seurat object}
+\item{...}{named arguments specifying seurat objects list of seurat objects; default "gene" and "transcript"}
 
-\item{temp}{}
+\item{proj_dir}{}
 }
 \description{
 Save seurat object to <project>/output/sce/<feature>_seu.rds
+}
+\examples{
+\dontrun{
+save_seurat(gene = feature_seus$gene, transcript = feature_seus$transcript, proj_dir = proj_dir)
+
+save_seurat(gene = feature_seus$gene, transcript = feature_seus$transcript, prefix = "remove_nonPRs", proj_dir = proj_dir)
+
+}
 }
