@@ -174,7 +174,7 @@ plot_ridge <- function(seu, features){
 #' @export
 #'
 #' @examples
-run_seurat_de <- function(seu, cluster1, cluster2, resolution, diffex_scheme = "seurat", feature_type) {
+run_seurat_de <- function(seu, cluster1, cluster2, resolution, diffex_scheme = "seurat", feature_type, tests = c("t", "wilcox", "bimod")) {
 
   if (diffex_scheme == "seurat"){
 
@@ -201,7 +201,6 @@ run_seurat_de <- function(seu, cluster1, cluster2, resolution, diffex_scheme = "
 
   }
 
-  tests <- c("t", "wilcox", "bimod")
   test_list <- vector("list", length(tests))
 
   for (test in tests){
@@ -316,14 +315,14 @@ plot_markers <- function(seu, resolution, num_markers = 5){
     dplyr::pull(feature) %>%
     identity()
 
-  markerplot <- DotPlot(seu, features = unique(markers), group.by = resolution) +
+  markerplot <- DotPlot(seu, features = unique(markers), group.by = resolution, dot.scale = 4) +
     theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
     coord_flip() +
     NULL
 
   plot_height = (300*num_markers)
 
-  plotly::ggplotly(markerplot, height = 1500, width = 800) %>%
+  plotly::ggplotly(markerplot, height = plot_height, width = 600) %>%
     plotly::layout(dragmode = "lasso")
 
 }
@@ -377,18 +376,23 @@ prep_slider_values <- function(default_val){
 
 #' Create Seurat App
 #'
-#' @param proj_dir The project directory of the base dataset
+#' @param preset_project A preloaded project to start the app with
 #' @param filterTypes A named vector of file suffixes corresponding to subsets of the data
 #' @param appTitle A title of the App
 #' @param futureMb amount of Mb allocated to future package
+#' @param feature_types
+#' @param preset_project
 #'
 #' @return
 #' @export
 #'
 #' @examples
-seuratApp <- function(proj_dir, filterTypes, appTitle, feature_types = "gene", futureMb = 849){
+seuratApp <- function(preset_project, filterTypes, appTitle, feature_types = "gene", futureMb = 849){
 
-  futureMb = 850
+  proj_list <- create_proj_list()
+  proj_matrices <- create_proj_matrix(proj_list)
+
+  futureMb = 1500
   future::plan(strategy = "multicore", workers = 6)
   future_size = futureMb*1024^2
   options(future.globals.maxSize= future_size)
@@ -396,16 +400,20 @@ seuratApp <- function(proj_dir, filterTypes, appTitle, feature_types = "gene", f
                             info = TRUE, searching = TRUE, autoWidth = F, ordering = TRUE, scrollX = TRUE,
                             language = list(search = "Filter:")))
 
-  header <- shinydashboard::dashboardHeader(title = appTitle)
+  header <- shinydashboard::dashboardHeader()
 
-  sidebar <- shinydashboard::dashboardSidebar(shinyWidgets::prettyRadioButtons("feature_type", "Feature for Display", choices = feature_types, selected = "gene"),
+  sidebar <- shinydashboard::dashboardSidebar(selectizeInput("setProject", "Select Project to Load", choices = proj_list, multiple  = F),
+                                              actionButton("loadProject", "Load Selected Project"),
+                                              textOutput("appTitle"),
+                                              shinyWidgets::prettyRadioButtons("feature_type", "Feature for Display", choices = feature_types, selected = "gene"),
                                               shinyWidgets::prettyRadioButtons("organism_type", "Organism", choices = c("human", "mouse"), selected = "human"),
                                               shinyFiles::shinyFilesButton("seuratUpload", "Load a Seurat Dataset", "Please select a .rds file", multiple = FALSE),
                                               shinyFiles::shinySaveButton("saveSeurat", "Save current Dataset", "Save file as...", filetype = list(rds = "rds")),
                                               verbatimTextOutput("savefile"),
                                               actionButton("changeEmbedAction", label = "Change Embedding Parameters"),
                                               changeEmbedParamsui("changeembed"),
-                                              shinydashboard::sidebarMenu(shinydashboard::menuItem("Compare Plots", tabName = "comparePlots"),
+                                              shinydashboard::sidebarMenu(shinydashboard::menuItem("Integrate Projects", tabName = "integrateProjects"),
+                                                                          shinydashboard::menuItem("Compare Plots", tabName = "comparePlots"),
                                                                           shinydashboard::menuItem("Compare Read Counts", tabName = "compareReadCount"),
                                                                           shinydashboard::menuItem("Differential Expression", tabName = "diffex"),
                                                                           shinydashboard::menuItem("Gene Enrichment Analysis", tabName = "geneEnrichment"),
@@ -429,90 +437,18 @@ seuratApp <- function(proj_dir, filterTypes, appTitle, feature_types = "gene", f
         "hello"
       )), box(plotDimRedui(
         "howdy"
-<<<<<<< HEAD
       ))
     ), fluidRow(box(
       title = "Selected Cells",
       tableSelectedui("hello"), width = 12
     ))
-  ), shinydashboard::tabItem(
-    tabName = "compareReadCount",
-    h2("Compare Read Counts"), fluidRow(box(plotReadCountui(
-      "hello2"
-    )), box(plotReadCountui(
-      "howdy2"
-    )))
-  ), shinydashboard::tabItem(
-    tabName = "subsetSeurat",
-    h2("Subset Seurat Input"), column(box(plotDimRedui(
-      "subset"
-    ), width = 12), width = 6),
-    column(
-      box(shinyWidgets::actionBttn(
-        "subsetAction",
-        "subset seurat"
-      ),
-      shinyjs::useShinyjs(),
-      textOutput("subsetMessages"),
-      width = 12
-      ),
-||||||| merged common ancestors
-      ))), fluidRow(box(
-        title = "Selected Cells",
-        tableSelectedui("hello"), width = 12
-      ))
-    ), shinydashboard::tabItem(
-      tabName = "compareReadCount",
-      h2("Compare Read Counts"), fluidRow(box(plotReadCountui(
-        "hello2"
-      )), box(plotReadCountui(
-        "howdy2"
+  ),
+  shinydashboard::tabItem(
+    tabName = "integrateProjects",
+    h2("Integrate Projects"), fluidRow(
+      (integrateProjui(
+        "hello"
       )))
-    ), shinydashboard::tabItem(
-      tabName = "subsetSeurat",
-      h2("Subset Seurat Input"), column(box(plotDimRedui(
-        "subset"
-      ), width = 12), width = 6),
-      column(
-        box(shinyWidgets::actionBttn(
-          "subsetAction",
-          "subset seurat"
-        ),
-        shinyjs::useShinyjs(),
-        textOutput("subsetMessages"),
-        width = 12
-        ),
-        box(
-          title = "Selected Cells",
-          tableSelectedui("subset"), width = 12
-        ), width = 6)
-    ),
-    shinydashboard::tabItem(
-      tabName = "findMarkers", h2("Find Markers"),
-      fluidRow(box(findMarkersui("hello")))
-    ), shinydashboard::tabItem(
-      tabName = "allTranscripts",
-      h2("All Transcripts"), fluidRow(shinyWidgets::actionBttn(
-        "plotTrx",
-        "Plot all transcripts"
-      )), fluidRow(column(allTranscriptsui("hello"),
-                          width = 6
-      ), column(allTranscriptsui("howdy"),
-                width = 6
-      ))
-    ), shinydashboard::tabItem(
-      tabName = "diffex",
-      h2("Differential Expression"), column(diffexui("hello"),
-                                            width = 6
-      ), column(box(plotDimRedui(
-        "diffex"
-      ), width = 12),
-=======
-      ))
-    ), fluidRow(box(
-      title = "Selected Cells",
-      tableSelectedui("hello"), width = 12
-    ))
   ), shinydashboard::tabItem(
     tabName = "compareReadCount",
     h2("Compare Read Counts"), fluidRow(box(plotReadCountui(
@@ -528,13 +464,17 @@ seuratApp <- function(proj_dir, filterTypes, appTitle, feature_types = "gene", f
     column(
       box(shinyWidgets::actionBttn(
         "subsetAction",
-        "subset seurat"
+        "subset seurat by selected cells"
       ),
+      shinyWidgets::actionBttn(
+        "subsetCsv",
+        "subset seurat by uploaded csv"
+      ),
+      fileInput("uploadCsv", "Upload .csv file with cells to include", accept = c(".csv")),
       shinyjs::useShinyjs(),
       textOutput("subsetMessages"),
       width = 12
       ),
->>>>>>> 2d43e2725a02764750212f5c9acf866ac6e6a483
       box(
         title = "Selected Cells",
         tableSelectedui("subset"), width = 12
@@ -544,7 +484,10 @@ seuratApp <- function(proj_dir, filterTypes, appTitle, feature_types = "gene", f
   ),
   shinydashboard::tabItem(
     tabName = "findMarkers", h2("Find Markers"),
-    fluidRow(box(findMarkersui("hello")))
+    fluidRow(
+      box(findMarkersui("hello")),
+      box(plotDimRedui("markerScatter"))
+      )
   ), shinydashboard::tabItem(
     tabName = "allTranscripts",
     h2("All Transcripts"), fluidRow(shinyWidgets::actionBttn(
@@ -632,6 +575,11 @@ seuratApp <- function(proj_dir, filterTypes, appTitle, feature_types = "gene", f
     # seu <- callModule(loadData, "loadDataui", proj_dir, feature_types = feature_types, selected_feature = input$feature_type)
 
     seu <- reactiveValues()
+    proj_dir <- reactiveVal()
+
+    if(!is.null(preset_project)){
+      proj_dir(preset_project)
+    }
 
     observeEvent(input$feature_type, {
       seu$active <- seu[[input$feature_type]]
@@ -651,12 +599,31 @@ seuratApp <- function(proj_dir, filterTypes, appTitle, feature_types = "gene", f
 
     # upload seurat object
 
-    # list volumes
-    volumes <- c(Home = fs::path(proj_dir, "output", "seurat"), "R Installation" = R.home(), shinyFiles::getVolumes())
+    observeEvent(input$loadProject, {
+      proj_dir(input$setProject)
+    })
 
-    shinyFiles::shinyFileChoose(input, "seuratUpload", roots = volumes, session = session)
+    output$appTitle <- renderText({
+      req(proj_dir())
+      paste0("Loaded Project: ", fs::path_file(proj_dir()))
+    })
+
+    # list volumes
+    volumes <- reactive({
+      volumes <- c(Home = fs::path(proj_dir(), "output", "seurat"), "R Installation" = R.home(), shinyFiles::getVolumes())
+      # print(volumes)
+      volumes
+      })
+
+
+    observe({
+      req(volumes())
+      shinyFiles::shinyFileChoose(input, "seuratUpload", roots = volumes(), session = session)
+    })
+
     uploadSeuratPath <- eventReactive(input$seuratUpload, {
-      file <- shinyFiles::parseFilePaths(volumes, input$seuratUpload)
+      req(volumes())
+      file <- shinyFiles::parseFilePaths(volumes(), input$seuratUpload)
       file$datapath
     })
 
@@ -674,9 +641,15 @@ seuratApp <- function(proj_dir, filterTypes, appTitle, feature_types = "gene", f
           # Sys.sleep(18)
           # shiny::incProgress(6/10)
           dataset <- readRDS(uploadSeuratPath())
+
+          if(!typeof(dataset[[1]]@misc$markers[[1]]) == "list"){
+            dataset <- purrr::map(dataset, find_all_markers)
+            saveRDS(dataset, uploadSeuratPath())
+          }
+
           shiny::incProgress(6/10)
-          dataset$gene <- find_all_markers(dataset$gene)
-          dataset$transcript <- find_all_markers(dataset$transcript)
+          # dataset$gene <- find_all_markers(dataset$gene)
+          # dataset$transcript <- find_all_markers(dataset$transcript)
           seu$gene <- dataset$gene
           seu$transcript <- dataset$transcript
           seu$active <- dataset[[input$feature_type]]
@@ -688,12 +661,15 @@ seuratApp <- function(proj_dir, filterTypes, appTitle, feature_types = "gene", f
     })
 
     # save seurat object
-    shinyFiles::shinyFileSave(input, "saveSeurat", roots = volumes, session = session, restrictions = system.file(package = "base"))
+    observe({
+      shinyFiles::shinyFileSave(input, "saveSeurat", roots = volumes(), session = session, restrictions = system.file(package = "base"))
+    })
+
 
     subSeuratPath <- eventReactive(input$saveSeurat, {
 
       req(seu$active)
-      savefile <- shinyFiles::parseSavePath(volumes, input$saveSeurat)
+      savefile <- shinyFiles::parseSavePath(volumes(), input$saveSeurat)
 
       return(savefile$datapath)
 
@@ -717,7 +693,7 @@ seuratApp <- function(proj_dir, filterTypes, appTitle, feature_types = "gene", f
     })
 
 
-    # observeEvent(input$subSeuratPath, { print(parseSavePath(volumes, input$subSeuratPath)$datapath) })
+    # observeEvent(input$subSeuratPath, { print(parseSavePath(volumes(), input$subSeuratPath)$datapath) })
     #
     # shiny::withProgress(
     #   message = paste0("Downloading Data"),
@@ -733,15 +709,33 @@ seuratApp <- function(proj_dir, filterTypes, appTitle, feature_types = "gene", f
 
 
     # body
+
+    integrationResults <- callModule(integrateProj, "hello", proj_matrices = proj_matrices, seu, proj_dir)
+
+    observe({
+      req(integrationResults())
+      proj_dir(integrationResults())
+    })
+
     callModule(plotDimRed, "hello", seu, plot_types, feature_type, organism_type = organism_type)
     callModule(plotDimRed, "howdy", seu, plot_types, feature_type, organism_type = organism_type)
     callModule(plotDimRed, "diffex", seu, plot_types, feature_type, organism_type = organism_type)
     callModule(plotDimRed, "subset", seu, plot_types, feature_type, organism_type = organism_type)
+    callModule(plotDimRed, "markerScatter", seu, plot_types, feature_type, organism_type = organism_type)
     callModule(plotReadCount, "hello2", seu, plot_types)
     callModule(plotReadCount, "howdy2", seu, plot_types)
     callModule(tableSelected, "hello", seu)
     callModule(tableSelected, "diffex", seu)
     selected_cells <- callModule(tableSelected, "subset", seu)
+    upload_cells <- reactive({
+      req(input$uploadCsv)
+
+      upload_cells <- readr::read_csv(input$uploadCsv$datapath) %>%
+        dplyr::pull(X1)
+
+
+
+    })
     observeEvent(input$subsetAction, {
 
       withCallingHandlers({
@@ -750,6 +744,42 @@ seuratApp <- function(proj_dir, filterTypes, appTitle, feature_types = "gene", f
 
         seu$gene <- seu$gene[, selected_cells()]
         seu$transcript <- seu$transcript[, selected_cells()]
+
+        if(length(unique(seu$gene[[]]$batch)) > 1){
+
+          for (i in names(seu)[!names(seu) == "active"]){
+            message(paste0("reintegrating ", i, " expression"))
+            # harmony
+            # seu[[i]] <- seurat_pipeline(seu[[i]], reduction = "harmony", resolution = seq(0.2, 2.0, by = 0.2))
+            # seurat cca
+            seu[[i]] <- reintegrate_seu(seu[[i]], feature = i, resolution = seq(0.2, 2.0, by = 0.2))
+          }
+
+        } else {
+
+          for (i in names(seu)[!names(seu) == "active"]){
+            seu[[i]] <- seurat_pipeline(seu[[i]], resolution = seq(0.2, 2.0, by = 0.2))
+          }
+
+        }
+        seu$active <- seu[[input$feature_type]]
+
+        message("Complete!")
+
+      },
+      message = function(m) {
+        shinyjs::html(id = "subsetMessages", html = paste0("Subsetting Seurat Object: ", m$message), add = FALSE)
+      })
+    })
+
+    observeEvent(input$subsetCsv, {
+
+      withCallingHandlers({
+        shinyjs::html("subsetMessages", "")
+        message("Beginning")
+
+        seu$gene <- seu$gene[, upload_cells()]
+        seu$transcript <- seu$transcript[, upload_cells()]
 
         if(length(unique(seu$gene[[]]$batch)) > 1){
 
@@ -841,10 +871,13 @@ seuratApp <- function(proj_dir, filterTypes, appTitle, feature_types = "gene", f
       cds$traj <- learn_graph_by_resolution(cds$traj, seu$active, resolution = input$cdsResolution)
     })
 
-    shinyFiles::shinyFileChoose(input, "loadCDS", roots = volumes, session = session)
+    observe({
+      shinyFiles::shinyFileChoose(input, "loadCDS", roots = volumes(), session = session)
+    })
+
 
     cdsLoadPath <- eventReactive(input$loadCDS, {
-      file <- shinyFiles::parseFilePaths(volumes, input$loadCDS)
+      file <- shinyFiles::parseFilePaths(volumes(), input$loadCDS)
       file$datapath
     })
 
@@ -877,10 +910,13 @@ seuratApp <- function(proj_dir, filterTypes, appTitle, feature_types = "gene", f
 
     callModule(monocle, "arrow", cds, seu, feature_type, resolution = reactive(input$cdsResolution))
 
-    shinyFiles::shinyFileSave(input, "saveCDS", roots = volumes, session = session, restrictions = system.file(package = "base"))
+    observe({
+      shinyFiles::shinyFileSave(input, "saveCDS", roots = volumes(), session = session, restrictions = system.file(package = "base"))
+    })
+
 
     cdsSavePath <- eventReactive(input$saveCDS, {
-      savefile <- shinyFiles::parseSavePath(volumes, input$saveCDS)
+      savefile <- shinyFiles::parseSavePath(volumes(), input$saveCDS)
 
       savefile$datapath
     })

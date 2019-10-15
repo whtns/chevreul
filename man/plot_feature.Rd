@@ -2,7 +2,8 @@
 % Please edit documentation in R/seurat_app.R
 \name{plot_feature}
 \alias{plot_feature}
-\title{Plot Features}
+\title{Plot Features
+This is a great function}
 \usage{
 plot_feature(seu, embedding, features, dims = c(1, 2),
   return_plotly = TRUE)
@@ -12,4 +13,5 @@ plot_feature(seu, embedding, features, dims = c(1, 2),
 }
 \description{
 Plot Features
+This is a great function
 }

@@ -40,9 +40,16 @@ seurat_preprocess <- function(seu, scale=TRUE, normalize = TRUE, ...){
 find_all_markers <- function(seu, ...){
   # browser()
 
-  resolutions <- colnames(seu[[]])[grepl(paste0(DefaultAssay(seu), "_snn_res."), colnames(seu[[]]))]
+  if (any(grepl("integrated", colnames(seu[[]])))){
+    default_assay = "integrated"
+  } else {
+    default_assay = "RNA"
+  }
 
-  cluster_index <- grepl(paste0(DefaultAssay(seu), "_snn_res."), colnames(seu[[]]))
+
+  resolutions <- colnames(seu[[]])[grepl(paste0(default_assay, "_snn_res."), colnames(seu[[]]))]
+
+  cluster_index <- grepl(paste0(default_assay, "_snn_res."), colnames(seu[[]]))
 
   if(!any(cluster_index)) {
     stop("no clusters found in metadata. Please run seurat_cluster")

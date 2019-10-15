@@ -4,17 +4,19 @@
 \alias{seuratApp}
 \title{Create Seurat App}
 \usage{
-seuratApp(proj_dir, filterTypes, appTitle, feature_types = "gene",
+seuratApp(preset_project, filterTypes, appTitle, feature_types = "gene",
   futureMb = 849)
 }
 \arguments{
-\item{proj_dir}{The project directory of the base dataset}
+\item{preset_project}{A preloaded project to start the app with}
 
 \item{filterTypes}{A named vector of file suffixes corresponding to subsets of the data}
 
 \item{appTitle}{A title of the App}
 
 \item{futureMb}{amount of Mb allocated to future package}
+
+\item{preset_project}{}
 }
 \description{
 Create Seurat App

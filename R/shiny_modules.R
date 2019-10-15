@@ -1,211 +1,164 @@
-<<<<<<< HEAD
-||||||| merged common ancestors
-#' Load Data UI
+
+#' Integrate Project UI
 #'
 #' @param id
-#' @param label
-#' @param filterTypes
 #'
 #' @return
 #' @export
 #'
 #' @examples
-loadDataui <- function(id, label = "Load Data", filterTypes) {
-  ns <- NS(id)
-  tagList(
-    shinyWidgets::prettyRadioButtons(ns("filterType"), "dataset to include", choices = filterTypes, selected = ""),
-    shinyWidgets::actionBttn(ns("loadButton"), "Load Default Dataset")
-    # fileInput(ns("seuratUpload"), "Upload .rds file")
-  )
-}
+integrateProjui <- function(id){
+    ns <- NS(id)
+    tagList(
+      box(
+        actionButton(ns("integrateAction"), "Integrate Selected Projects"),
+        DT::dataTableOutput(ns("myDatatable"))
+        ),
+      box(
+        textOutput(ns("integrationComplete")),
+        textOutput(ns("integrationResult")),
+        shinyFiles::shinySaveButton(ns("saveIntegratedProject"), "Save Integrated Project", "Save project as...")
+      )
+      )
+    }
 
-#' Load Data
+#' Integrate Projects Server Function
 #'
 #' @param input
 #' @param output
+#' @param proj_matrices
 #' @param session
-#' @param feature_types
-#' @param selected_feature
-#' @param proj_dir
 #'
 #' @return
 #' @export
 #'
 #' @examples
-loadData <- function(input, output, session, proj_dir, feature_types = c("gene"), selected_feature) {
-  ns <- session$ns
-  seu <- reactiveValues()
+integrateProj <- function(input, output, session, proj_matrices, seu, proj_dir){
+    ns <- session$ns
 
-  observeEvent(input$loadButton, {
-    showModal(modalDialog("Loading Data", footer = NULL))
-    # if (!input$filterType == "") {
-    #   filterType = paste0("_", input$filterType)
-    # }
-    # else {
-    #   filterType = input$filterType
-    # }
+    proj_matrix <- proj_matrices$primary_projects
 
-    # seu_paths <- paste0("*", feature_types, "_seu", filterType, ".rds")
+    clean_proj_matrix <- proj_matrix %>%
+      dplyr::select(-project_path) %>%
+      identity()
+
+    output$myDatatable <- DT::renderDataTable(clean_proj_matrix,
+                                              server = FALSE,
+                                              rownames=TRUE)
+
+    selectedRows <- eventReactive(input$integrateAction, {
+      ids <- input$myDatatable_rows_selected
+    })
+
+    selectedProjects <- reactive({
+      selectedProjects <- dplyr::slice(proj_matrix, selectedRows()) %>%
+        dplyr::pull(project_path) %>%
+        identity()
+    })
+
+    mergedSeus <- eventReactive(input$integrateAction, {
+      req(selectedProjects())
+      showModal(modalDialog(paste0("Integrating "), footer=NULL))
+
+      merged_seus <- integration_workflow(selectedProjects())
+      removeModal()
+
+      merged_seus
+
+    })
+
+    newProjDir <- reactive({
+      req(mergedSeus())
+
+      print(names(mergedSeus()))
+
+      for (i in names(mergedSeus())){
+        seu[[i]] <- mergedSeus()[[i]]
+      }
+
+      # seu$gene <- merged_seus$gene
+      # seu$transcript <- merged_seus$transcript
+
+      newProjName <- paste0(purrr::map(fs::path_file(selectedProjects()), ~gsub("_proj", "", .x)), collapse = "_")
+      newProjName <- paste0(newProjName, "_proj")
+      integrated_proj_dir <- "/dataVolume/storage/single_cell_projects/integrated_projects/"
+      newProjDir <- fs::path(integrated_proj_dir, newProjName)
+
+      proj_dir(newProjDir)
+
+      newProjDir
+
+    })
+
+    # output$integrationResult <- renderText({
+    #   newProjDir()
+    # })
     #
-    # seu_paths <- fs::path(proj_dir, "output", "seurat") %>%
-    #   fs::dir_ls() %>%
-    #   fs::path_filter(seu_paths) %>%
-    #   purrr::set_names(feature_types) %>%
-    #   identity()
+    #
+    # observeEvent(input$saveIntegratedProject, {
+    #   shiny::withProgress(
+    #     message = paste0("Saving Integrated Dataset to ", newProjDir()),
+    #     value = 0,
+    #     {
+    #       # Sys.sleep(6)
+    #       shiny::incProgress(2/10)
+    #   save_seurat(mergedSeus(), proj_dir = newProjDir())
+    #   shiny::incProgress(8/10)
+    #     })
+    # })
 
-    seu_paths <- load_seurat_path(proj_dir, features = feature_types, suffix = input$filterType)
-
-    feature_seus <- purrr::map(seu_paths, readRDS) %>%
-      purrr::set_names(feature_types)
-
-    feature_seus <- purrr::map(feature_seus, SetDefaultAssay, "RNA")
-    removeModal()
-
-    for (i in names(feature_seus)){
-      seu[[i]] <- feature_seus[[i]]
-    }
-    seu$active <- feature_seus[[selected_feature]]
-
-    # seu$transcript <- feature_seus[["transcript"]]
-    # seu$gene <- feature_seus[["gene"]]
-    # seu$active <- feature_seus[[selected_feature]]
+    output$integrationComplete <- renderText({
+      req(mergedSeus())
+      print("integration complete!")
+    })
 
 
-  })
+    volumes <- reactive({
+      volumes <- c(Home = fs::path("/dataVolume/storage/single_cell_projects/integrated_projects"), "R Installation" = R.home(), shinyFiles::getVolumes())
+      # print(volumes)
+      volumes
+    })
 
-  return(seu)
-=======
-#' Load Data UI
-#'
-#' @param id
-#' @param label
-#' @param filterTypes
-#'
-#' @return
-#' @export
-#'
-#' @examples
-loadDataui <- function(id, label = "Load Data", filterTypes) {
-  ns <- NS(id)
-  tagList(
-    shinyWidgets::prettyRadioButtons(ns("filterType"), "dataset to include", choices = filterTypes, selected = ""),
-    shinyWidgets::actionBttn(ns("loadButton"), "Load Default Dataset")
-    # fileInput(ns("seuratUpload"), "Upload .rds file")
-  )
+    observe({
+      shinyFiles::shinyFileSave(input, "saveIntegratedProject", roots = volumes(), session = session, restrictions = system.file(package = "base"))
+    })
+
+
+    integratedProjectSavePath <- eventReactive(input$saveIntegratedProject, {
+      savefile <- shinyFiles::parseSavePath(volumes(), input$saveIntegratedProject)
+
+      savefile$datapath
+    })
+
+    output$integrationResult <- renderText({
+      integratedProjectSavePath()
+    })
+
+    observeEvent(input$saveIntegratedProject, {
+      req(mergedSeus())
+      req(integratedProjectSavePath())
+
+      if (!is.null(integratedProjectSavePath())){
+
+        shiny::withProgress(
+          message = paste0("Saving Integrated Dataset to ", integratedProjectSavePath()),
+          value = 0,
+          {
+            # Sys.sleep(6)
+            shiny::incProgress(2/10)
+            save_seurat(mergedSeus(), proj_dir = paste0(integratedProjectSavePath(), "_proj"))
+            shiny::incProgress(8/10)
+          })
+
+      }
+
+    })
+
+
+    return(proj_dir)
+
 }
 
-
-#' Load Data
-#'
-#' @param input
-#' @param output
-#' @param session
-#' @param feature_types
-#' @param selected_feature
-#' @param proj_dir
-#'
-#' @return
-#' @export
-#'
-#' @examples
-loadData <- function(input, output, session, proj_dir, feature_types = c("gene"), selected_feature) {
-  ns <- session$ns
-
-  observeEvent(input$loadButton, {
-    showModal(modalDialog("Loading Data", footer = NULL))
-    # if (!input$filterType == "") {
-    #   filterType = paste0("_", input$filterType)
-    # }
-    # else {
-    #   filterType = input$filterType
-    # }
-
-    # seu_paths <- paste0("*", feature_types, "_seu", filterType, ".rds")
-    #
-    # seu_paths <- fs::path(proj_dir, "output", "seurat") %>%
-    #   fs::dir_ls() %>%
-    #   fs::path_filter(seu_paths) %>%
-    #   purrr::set_names(feature_types) %>%
-    #   identity()
-
-    seu_path <- load_seurat_path(proj_dir, prefix = input$filterType)
-
-    feature_seus <- readRDS(seu_path)
-
-    feature_seus <- purrr::map(feature_seus, SetDefaultAssay, "RNA")
-    removeModal()
-
-    for (i in names(feature_seus)){
-      seu[[i]] <- feature_seus[[i]]
-    }
-
-    seu$active <- feature_seus[[selected_feature]]
-
-    # seu$transcript <- feature_seus[["transcript"]]
-    # seu$gene <- feature_seus[["gene"]]
-    # seu$active <- feature_seus[[selected_feature]]
-
-
-  })
-
-  return(seu)
->>>>>>> 2d43e2725a02764750212f5c9acf866ac6e6a483
-
-# loadDataui <- function(id, label = "Load Data", filterTypes) {
-#   ns <- NS(id)
-#   tagList(
-#     shinyWidgets::prettyRadioButtons(ns("filterType"), "dataset to include", choices = filterTypes, selected = ""),
-#     shinyWidgets::actionBttn(ns("loadButton"), "Load Default Dataset")
-#     # fileInput(ns("seuratUpload"), "Upload .rds file")
-#   )
-# }
-#
-#
-#
-# loadData <- function(input, output, session, proj_dir, feature_types = c("gene"), selected_feature) {
-#   ns <- session$ns
-#
-#   observeEvent(input$loadButton, {
-#     showModal(modalDialog("Loading Data", footer = NULL))
-#     # if (!input$filterType == "") {
-#     #   filterType = paste0("_", input$filterType)
-#     # }
-#     # else {
-#     #   filterType = input$filterType
-#     # }
-#
-#     # seu_paths <- paste0("*", feature_types, "_seu", filterType, ".rds")
-#     #
-#     # seu_paths <- fs::path(proj_dir, "output", "seurat") %>%
-#     #   fs::dir_ls() %>%
-#     #   fs::path_filter(seu_paths) %>%
-#     #   purrr::set_names(feature_types) %>%
-#     #   identity()
-#
-#     seu_path <- load_seurat_path(proj_dir, prefix = input$filterType)
-#
-#     feature_seus <- readRDS(seu_path)
-#
-#     feature_seus <- purrr::map(feature_seus, SetDefaultAssay, "RNA")
-#     removeModal()
-#
-#     for (i in names(feature_seus)){
-#       seu[[i]] <- feature_seus[[i]]
-#     }
-#
-#     seu$active <- feature_seus[[selected_feature]]
-#     seu$active <- find_all_markers(seu$active)
-#
-#     # seu$transcript <- feature_seus[["transcript"]]
-#     # seu$gene <- feature_seus[["gene"]]
-#     # seu$active <- feature_seus[[selected_feature]]
-#
-#
-#   })
-#
-#   return(seu)
-#
-# }
 
 #' Plot Custom Feature UI
 #'
@@ -482,7 +435,6 @@ tableSelected <- function(input, output, session, seu) {
 }
 
 
-<<<<<<< HEAD
 # subsetSeuratui <- function(id) {
 #   ns <- NS(id)
 #   tagList()
@@ -504,65 +456,6 @@ tableSelected <- function(input, output, session, seu) {
 #   })
 #   return(sub_seu)
 # }
-||||||| merged common ancestors
-#' Subset Seruat
-#'
-#' @param input
-#' @param output
-#' @param session
-#' @param seu
-#' @param selected_rows
-#'
-#' @return
-#' @export
-#'
-#' @examples
-subsetSeurat <- function(input, output, session, seu, selected_rows) {
-  ns <- session$ns
-  sub_seu <- reactive({
-    showModal(modalDialog(title = "Subsetting and Recalculating Embeddings",
-                          "This process may take a minute or two!"))
-    seu$gene <- seu$gene[, selected_rows()]
-    seu$gene <- seuratTools::seurat_pipeline(seu$gene,
-                                             resolution = seq(0.6, 2, by = 0.2))
-    seu$transcript <- seu$transcript[, selected_rows()]
-
-    seu$transcript <- seuratTools::seurat_pipeline(seu$transcript,
-                                                   resolution = seq(0.6, 2, by = 0.2))
-    seu$active <- seu$gene
-    removeModal()
-  })
-  return(sub_seu)
-}
-=======
-#' Subset Seruat
-#'
-#' @param input
-#' @param output
-#' @param session
-#' @param seu
-#' @param selected_rows
-#'
-#' @return
-#' @export
-#'
-#' @examples
-subsetSeurat <- function(input, output, session, seu, selected_rows) {
-  ns <- session$ns
-  sub_seu <- reactive({
-    showModal(modalDialog(title = "Subsetting and Recalculating Embeddings",
-                          "This process may take a minute or two!"))
-    seu$gene <- seu$gene[, selected_rows()]
-    seu$gene <- seuratTools::seurat_pipeline(seu$gene, resolution = seq(0.6, 2, by = 0.2))
-    seu$transcript <- seu$transcript[, selected_rows()]
-
-    seu$transcript <- seuratTools::seurat_pipeline(seu$transcript, resolution = seq(0.6, 2, by = 0.2))
-    seu$active <- seu$gene
-    removeModal()
-  })
-  return(sub_seu)
-}
->>>>>>> 2d43e2725a02764750212f5c9acf866ac6e6a483
 
 
 #' Differential Expression UI
@@ -608,14 +501,7 @@ diffexui <- function(id) {
       ns("saveClust2"),
       "Save to Custom Cluster 2"
     )
-  ), shinyWidgets::prettyRadioButtons(ns("diffex_method"),
-                                      "Method of Differential Expression",
-                                      choiceNames = c(
-                                        "t-test",
-                                        "wilcoxon rank-sum test", "Likelihood-ratio test (bimodal)"
-                                      ),
-                                      choiceValues = c("t", "wilcox", "bimod")
-  ),
+  ), uiOutput(ns("testChoices")),
   shinyWidgets::actionBttn(ns("diffex"),
                               "Run Differential Expression"),
   downloadLink(ns("downloadData"), "Download Complete DE Results"),
@@ -633,7 +519,6 @@ diffexui <- function(id) {
 
 
 #' Differential Expression
-#'
 #' @param input
 #' @param output
 #' @param session
@@ -643,8 +528,16 @@ diffexui <- function(id) {
 #' @export
 #'
 #' @examples
-diffex <- function(input, output, session, seu, feature_type) {
+diffex <- function(input, output, session, seu, feature_type, tests = c("t-test" = "t", "wilcoxon rank-sum test" = "wilcox", "Likelihood-ratio test (bimodal)" = "bimod", "MAST" = "MAST")) {
   ns <- session$ns
+
+  output$testChoices <- renderUI(
+    shinyWidgets::prettyRadioButtons(ns("diffex_method"),
+                                     "Method of Differential Expression",
+                                     choices = tests
+    )
+
+  )
 
 
   brush <- reactive({
@@ -688,7 +581,7 @@ diffex <- function(input, output, session, seu, feature_type) {
 
     if (input$diffex_scheme == "seurat") {
       run_seurat_de(seu$active, input$cluster1, input$cluster2,
-                    resolution = input$seuratResolution, diffex_scheme = "seurat", feature_type)
+                    resolution = input$seuratResolution, diffex_scheme = "seurat", feature_type, tests = tests)
     }
 
     else if (input$diffex_scheme == "custom") {
@@ -697,7 +590,7 @@ diffex <- function(input, output, session, seu, feature_type) {
       cluster2 <- unlist(strsplit(custom_cluster2(),
                                   " "))
       run_seurat_de(seu$active, cluster1, cluster2,
-                    input$customResolution, diffex_scheme = "custom", feature_type)
+                    input$customResolution, diffex_scheme = "custom", feature_type, tests = tests)
     }
   })
 
@@ -795,10 +688,10 @@ geneEnrichment <- function(input, output, session, seu, diffex_results){
 findMarkersui <- function(id) {
   ns <- NS(id)
   tagList(
-    sliderInput(ns("resolution2"), label = "Resolution of clustering algorithm (affects number of clusters)", min = 0.2, max = 2, step = 0.2, value = 0.6),
-    numericInput(ns("num_markers"), "Select Number of Markers to Plot for Each Cluster", value = 5, min = 2, max = 20),
-    # actionButton(ns("plotDots"), "Plot Markers!"),
-    plotly::plotlyOutput(ns("markerplot"), height = 800)
+      sliderInput(ns("resolution2"), label = "Resolution of clustering algorithm (affects number of clusters)", min = 0.2, max = 2, step = 0.2, value = 0.6),
+      numericInput(ns("num_markers"), "Select Number of Markers to Plot for Each Cluster", value = 5, min = 2, max = 20),
+      # actionButton(ns("plotDots"), "Plot Markers!"),
+      plotly::plotlyOutput(ns("markerplot"), height = 800)
   )
 }
 
