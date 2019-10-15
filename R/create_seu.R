@@ -157,7 +157,6 @@ filter_low_rc_cells <- function(seu, read_thresh = 1e5){
 #' @export
 #'
 #' @examples
-<<<<<<< HEAD
 #' \dontrun{
 #' save_seurat(gene = feature_seus$gene, transcript = feature_seus$transcript, proj_dir = proj_dir)
 #'
@@ -168,46 +167,20 @@ save_seurat <- function(..., prefix = "unfiltered", proj_dir = getwd()){
 
   seu_list = list(...)
   if(is.null(names(seu_list))){
-    seu_list = flatten(seu_list)
+    seu_list = purrr::flatten(seu_list)
   }
-||||||| merged common ancestors
-save_seurat <- function(seu, feature, suffix = "", proj_dir = getwd(), temp = F){
-
-  if (temp == TRUE) return(seu)
-
-  if(suffix != ""){
-    suffix = paste0("_", suffix)
-  }
-=======
-save_seurat <- function(seu, feature, prefix = "unfiltered", proj_dir = getwd()){
-
-  prefix <- paste0(prefix, "_")
->>>>>>> 2d43e2725a02764750212f5c9acf866ac6e6a483
 
   seurat_dir <- fs::path(proj_dir, "output", "seurat")
 
   fs::dir_create(seurat_dir)
 
-<<<<<<< HEAD
+
   seu_path <- fs::path(seurat_dir, paste0(prefix, "_seu.rds"))
 
   message(paste0("saving seurat objects to ", seu_path))
   saveRDS(seu_list, seu_path)
-||||||| merged common ancestors
-  seu_path <- fs::path(seurat_dir, paste0(feature, "_seu", suffix, ".rds"))
-=======
-  seu_path <- fs::path(seurat_dir, paste0(prefix, "_seu.rds"))
->>>>>>> 2d43e2725a02764750212f5c9acf866ac6e6a483
 
-<<<<<<< HEAD
   return(seu_list)
-||||||| merged common ancestors
-  saveRDS(seu, seu_path)
-  seu
-=======
-  message(paste0("saving seurat object to ", seu_path))
-  saveRDS(seu, seu_path)
-  seu
->>>>>>> 2d43e2725a02764750212f5c9acf866ac6e6a483
+
 }
 

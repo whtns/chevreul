@@ -15,7 +15,6 @@ Imports:
     rprojroot,
     rlang,
     magrittr,
-    tximport (>= 1.10.1),
     furrr,
     velocyto.R,
     future,
@@ -27,19 +26,11 @@ Imports:
     shiny,
     presto (>= 1.0.0),
     shinyFiles,
-    EnrichmentBrowser,
     janitor,
     SeuratWrappers (>= 0.1.0),
-<<<<<<< HEAD
     monocle3 (>= 0.1.2),
     cellAlign (>= 0.1.0),
-    Biobase
-||||||| merged common ancestors
-    monocle3 (>= 0.1.2)
-=======
-    monocle3 (>= 0.1.2),
-    cellAlign (>= 0.1.0)
->>>>>>> 2d43e2725a02764750212f5c9acf866ac6e6a483
+    unglue
 Suggests: 
     dplyr,
     tidyr,
@@ -53,7 +44,10 @@ Remotes:
     immunogenomics/presto,
     satijalab/seurat-wrappers,
     cole-trapnell-lab/monocle3,
-    shenorrLab/cellAlign
+    shenorrLab/cellAlign,
+    bioc::release/Biobase,
+    bioc::release/EnrichmentBrowser,
+    bioc::release/tximport
 Depends: 
     Rcpp,
     Seurat

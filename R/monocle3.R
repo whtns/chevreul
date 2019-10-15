@@ -71,25 +71,6 @@ convert_seu_to_cds <- function(seu, resolution = 1) {
 
 }
 
-#' Assign Clusters to CDS
-#'
-#' @param cds
-#' @param clusters
-#'
-#' @return
-#' @export
-#'
-#' @examples
-assign_clusters_to_cds <- function(cds, clusters){
-
-  clusters <- clusters[colnames(cds)]
-
-  cds@clusters@listData[["UMAP"]][["clusters"]] <- clusters
-  names(cds@clusters@listData[["UMAP"]][["clusters"]]) <- cds@colData@rownames
-
-  return(cds)
-
-}
 
 #' Learn Monocle Graph by Resolution
 #'

@@ -4,11 +4,9 @@
 \alias{integration_workflow}
 \title{Integration Workflow}
 \usage{
-integration_workflow(proj_dir, child_proj_dirs, excluded_cells, ...)
+integration_workflow(child_proj_dirs, excluded_cells, ...)
 }
 \arguments{
-\item{proj_dir}{home directory of current project}
-
 \item{child_proj_dirs}{child projects to be integrated}
 
 \item{excluded_cells}{named list of cells to exclude}

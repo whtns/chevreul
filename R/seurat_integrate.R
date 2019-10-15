@@ -11,7 +11,7 @@
 #' @export
 #'
 #' @examples
-seurat_batch_correct <- function(seu_list, method = "cca", ...) {
+seurat_integrate <- function(seu_list, method = "cca", ...) {
   #browser()
   # To construct a reference we will identify ‘anchors’ between the individual datasets. First, we split the combined object into a list, with each dataset as an element.
 
@@ -52,6 +52,7 @@ seurat_batch_correct <- function(seu_list, method = "cca", ...) {
 
   return(seu_list.integrated)
 }
+
 
 #' Run Louvain Clustering at Multiple Resolutions
 #'
@@ -153,12 +154,23 @@ load_seurat_from_proj <- function(proj_dir, ...){
 #' @examples
 seurat_integration_pipeline <- function(seus, resolution, suffix = '', ...) {
 
-  corrected_seu <- seurat_batch_correct(seus, ...)
+  corrected_seu <- seurat_integrate(seus, ...)
 
   # cluster merged seurat objects
   corrected_seu <- seurat_cluster(corrected_seu, resolution = resolution, ...)
 
   corrected_seu <- find_all_markers(corrected_seu)
+
+  # add read count column
+  corrected_seus <- map(corrected_seus, add_read_count_col)
+
+  # annotate cell cycle scoring to seurat objects
+
+  corrected_seu <- annotate_cell_cycle(corrected_seu)
+
+  #annotate excluded cells
+
+  corrected_seu <- map(corrected_seu, annotate_excluded, excluded_cells)
 
   # corrected_seu <- save_seurat(corrected_seu, feature = feature, suffix = suffix, ...)
 
