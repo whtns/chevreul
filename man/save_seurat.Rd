@@ -4,13 +4,7 @@
 \alias{save_seurat}
 \title{Save seurat object to <project>/output/sce/<feature>_seu.rds}
 \usage{
-<<<<<<< HEAD
 save_seurat(..., prefix = "unfiltered", proj_dir = getwd())
-||||||| merged common ancestors
-save_seurat(seu, feature, suffix = "", proj_dir = getwd(), temp = F)
-=======
-save_seurat(seu, feature, prefix = "unfiltered", proj_dir = getwd())
->>>>>>> 2d43e2725a02764750212f5c9acf866ac6e6a483
 }
 \arguments{
 \item{...}{named arguments specifying seurat objects list of seurat objects; default "gene" and "transcript"}
