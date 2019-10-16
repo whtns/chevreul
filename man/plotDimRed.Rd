@@ -4,7 +4,7 @@
 \alias{plotDimRed}
 \title{Plot Dimensionally Reduced Data}
 \usage{
-plotDimRed(input, output, session, seu, plot_types, feature_type,
+plotDimRed(input, output, session, seu, plot_types, featureType,
   organism_type)
 }
 \arguments{
