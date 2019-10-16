@@ -74,16 +74,6 @@ plot_var <- function(seu, embedding = "umap", group = "batch", dims = c(1,2)){
 #' @return
 #' @export
 #'
-#' @examples
-#' /dontrun{
-#' plot_violin(seu, plot_var = "custom_cluster", plot_vals = c("c2", "c22"))
-#'
-#' to specify more than one gene
-#' plot_violin(seu, plot_var = "custom_cluster", plot_vals = c("c2", "c22"), features = c("RXRG", "NRL"))
-#'
-#' If you want all plots to have the same y axis values
-#' plot_violin(seu, plot_var = "custom_cluster", plot_vals = c("c2", "c22"), features = c("RXRG", "NRL"), same.y.lim = TRUE)
-#' }
 plot_violin <- function(seu, plot_var = "batch", plot_vals = NULL, features = "RXRG", ...) {
   if (is.null(plot_vals)){
     plot_vals = unique(seu[[]][[plot_var]])
@@ -174,7 +164,7 @@ plot_ridge <- function(seu, features){
 #' @export
 #'
 #' @examples
-run_seurat_de <- function(seu, cluster1, cluster2, resolution, diffex_scheme = "seurat", feature_type, tests = c("t", "wilcox", "bimod")) {
+run_seurat_de <- function(seu, cluster1, cluster2, resolution, diffex_scheme = "seurat", featureType, tests = c("t", "wilcox", "bimod")) {
 
   if (diffex_scheme == "seurat"){
 
@@ -211,7 +201,7 @@ run_seurat_de <- function(seu, cluster1, cluster2, resolution, diffex_scheme = "
                       test.use = test)
 
 
-    if (feature_type() == "transcript"){
+    if (featureType() == "transcript"){
       de_cols <- c("enstxp", "ensgene", "symbol", "p_val", "avg_logFC", "pct.1", "pct.2", "p_val_adj")
 
       de <-
@@ -221,7 +211,7 @@ run_seurat_de <- function(seu, cluster1, cluster2, resolution, diffex_scheme = "
         dplyr::left_join(annotables::grch38, by = "ensgene") %>%
         dplyr::select(one_of(de_cols))
 
-    } else if (feature_type() == "gene"){
+    } else if (featureType() == "gene"){
       de_cols <- c("ensgene", "symbol", "p_val", "avg_logFC", "pct.1", "pct.2", "p_val_adj")
 
       de <-
@@ -380,7 +370,7 @@ prep_slider_values <- function(default_val){
 #' @param filterTypes A named vector of file suffixes corresponding to subsets of the data
 #' @param appTitle A title of the App
 #' @param futureMb amount of Mb allocated to future package
-#' @param feature_types
+#' @param featureTypes
 #' @param preset_project
 #'
 #' @return
@@ -389,6 +379,7 @@ prep_slider_values <- function(default_val){
 #' @examples
 seuratApp <- function(preset_project, filterTypes, appTitle, feature_types = "gene", futureMb = 849){
 
+  print(feature_types)
   proj_list <- create_proj_list()
   proj_matrices <- create_proj_matrix(proj_list)
 
@@ -405,7 +396,8 @@ seuratApp <- function(preset_project, filterTypes, appTitle, feature_types = "ge
   sidebar <- shinydashboard::dashboardSidebar(selectizeInput("setProject", "Select Project to Load", choices = proj_list, multiple  = F),
                                               actionButton("loadProject", "Load Selected Project"),
                                               textOutput("appTitle"),
-                                              shinyWidgets::prettyRadioButtons("feature_type", "Feature for Display", choices = feature_types, selected = "gene"),
+                                              uiOutput("featureType"),
+                                              # shinyWidgets::prettyRadioButtons("featureType", "Feature for Display", choices = featureTypes, selected = "gene"),
                                               shinyWidgets::prettyRadioButtons("organism_type", "Organism", choices = c("human", "mouse"), selected = "human"),
                                               shinyFiles::shinyFilesButton("seuratUpload", "Load a Seurat Dataset", "Please select a .rds file", multiple = FALSE),
                                               shinyFiles::shinySaveButton("saveSeurat", "Save current Dataset", "Save file as...", filetype = list(rds = "rds")),
@@ -422,7 +414,7 @@ seuratApp <- function(preset_project, filterTypes, appTitle, feature_types = "ge
                                                                           shinydashboard::menuItem("All Transcripts", tabName = "allTranscripts"),
                                                                           # shinydashboard::menuItem("RNA Velocity", tabName = "rnaVelocity"),
                                                                           shinydashboard::menuItem("Monocle", tabName = "monocle"),
-                                                                          shinydashboard::menuItem("cellAlign", tabName = "cellAlign"),
+                                                                          # shinydashboard::menuItem("cellAlign", tabName = "cellAlign"),
                                                                           shinydashboard::menuItem("Regress Features", tabName = "regressFeatures")),
 
                                               width = 450)
@@ -555,11 +547,11 @@ seuratApp <- function(preset_project, filterTypes, appTitle, feature_types = "ge
         )
       )
     )
-  ),
-  shinydashboard::tabItem(
-    tabName = "cellAlign",
-    h2("cellalign")
   )
+  # shinydashboard::tabItem(
+  #   tabName = "cellAlign",
+  #   h2("cellalign")
+  # )
 ))
 
   ui <- dashboardPage(
@@ -572,7 +564,6 @@ seuratApp <- function(preset_project, filterTypes, appTitle, feature_types = "ge
     options(warn = -1)
 
     # sidebar
-    # seu <- callModule(loadData, "loadDataui", proj_dir, feature_types = feature_types, selected_feature = input$feature_type)
 
     seu <- reactiveValues()
     proj_dir <- reactiveVal()
@@ -580,14 +571,6 @@ seuratApp <- function(preset_project, filterTypes, appTitle, feature_types = "ge
     if(!is.null(preset_project)){
       proj_dir(preset_project)
     }
-
-    observeEvent(input$feature_type, {
-      seu$active <- seu[[input$feature_type]]
-    })
-
-    feature_type <- reactive({
-      input$feature_type
-    })
 
     organism_type <- reactive({
       input$organism_type
@@ -640,6 +623,7 @@ seuratApp <- function(preset_project, filterTypes, appTitle, feature_types = "ge
           # shiny::incProgress(4/10)
           # Sys.sleep(18)
           # shiny::incProgress(6/10)
+          print(uploadSeuratPath())
           dataset <- readRDS(uploadSeuratPath())
 
           if(!typeof(dataset[[1]]@misc$markers[[1]]) == "list"){
@@ -650,14 +634,36 @@ seuratApp <- function(preset_project, filterTypes, appTitle, feature_types = "ge
           shiny::incProgress(6/10)
           # dataset$gene <- find_all_markers(dataset$gene)
           # dataset$transcript <- find_all_markers(dataset$transcript)
-          seu$gene <- dataset$gene
-          seu$transcript <- dataset$transcript
-          seu$active <- dataset[[input$feature_type]]
-          # seu$active <- find_all_markers(seu$active)
+
+          seu_names <- names(dataset)[!names(dataset) == "active"]
+
+          for (i in seu_names){
+            seu[[i]] <- dataset[[i]]
+          }
+
+          print(names(seu))
+
           shiny::incProgress(8/10)
         }
       )
 
+    })
+
+    output$featureType <- renderUI({
+      req(seu)
+
+      seu_names <- names(seu)[names(seu) != "active"]
+
+      shinyWidgets::prettyRadioButtons("feature_type", "Feature for Display", choices = seu_names, selected = "gene")
+    })
+
+    observeEvent(input$feature_type, {
+      seu$active <- seu[[input$feature_type]]
+    })
+
+    featureType <- reactive({
+      featureType <- input$feature_type
+      # "gene"
     })
 
     # save seurat object
@@ -685,7 +691,7 @@ seuratApp <- function(preset_project, filterTypes, appTitle, feature_types = "ge
         {
           Sys.sleep(6)
           shiny::incProgress(2/10)
-          saveRDS(list(gene = seu$gene, transcript = seu$transcript), subSeuratPath())
+          saveRDS(shiny::reactiveValuesToList(seu), subSeuratPath())
           shiny::incProgress(10/10)
 
         }
@@ -717,11 +723,11 @@ seuratApp <- function(preset_project, filterTypes, appTitle, feature_types = "ge
       proj_dir(integrationResults())
     })
 
-    callModule(plotDimRed, "hello", seu, plot_types, feature_type, organism_type = organism_type)
-    callModule(plotDimRed, "howdy", seu, plot_types, feature_type, organism_type = organism_type)
-    callModule(plotDimRed, "diffex", seu, plot_types, feature_type, organism_type = organism_type)
-    callModule(plotDimRed, "subset", seu, plot_types, feature_type, organism_type = organism_type)
-    callModule(plotDimRed, "markerScatter", seu, plot_types, feature_type, organism_type = organism_type)
+    callModule(plotDimRed, "hello", seu, plot_types, featureType, organism_type = organism_type)
+    callModule(plotDimRed, "howdy", seu, plot_types, featureType, organism_type = organism_type)
+    callModule(plotDimRed, "diffex", seu, plot_types, featureType, organism_type = organism_type)
+    callModule(plotDimRed, "subset", seu, plot_types, featureType, organism_type = organism_type)
+    callModule(plotDimRed, "markerScatter", seu, plot_types, featureType, organism_type = organism_type)
     callModule(plotReadCount, "hello2", seu, plot_types)
     callModule(plotReadCount, "howdy2", seu, plot_types)
     callModule(tableSelected, "hello", seu)
@@ -742,8 +748,9 @@ seuratApp <- function(preset_project, filterTypes, appTitle, feature_types = "ge
         shinyjs::html("subsetMessages", "")
         message("Beginning")
 
-        seu$gene <- seu$gene[, selected_cells()]
-        seu$transcript <- seu$transcript[, selected_cells()]
+        for (i in names(seu)){
+          seu[[i]] <- seu[[i]][, selected_cells()]
+        }
 
         if(length(unique(seu$gene[[]]$batch)) > 1){
 
@@ -762,7 +769,7 @@ seuratApp <- function(preset_project, filterTypes, appTitle, feature_types = "ge
           }
 
         }
-        seu$active <- seu[[input$feature_type]]
+        seu$active <- seu[[input$featureType]]
 
         message("Complete!")
 
@@ -778,8 +785,9 @@ seuratApp <- function(preset_project, filterTypes, appTitle, feature_types = "ge
         shinyjs::html("subsetMessages", "")
         message("Beginning")
 
-        seu$gene <- seu$gene[, upload_cells()]
-        seu$transcript <- seu$transcript[, upload_cells()]
+        for (i in names(seu)){
+          seu[[i]] <- seu[[i]][, upload_cells()]
+        }
 
         if(length(unique(seu$gene[[]]$batch)) > 1){
 
@@ -798,7 +806,7 @@ seuratApp <- function(preset_project, filterTypes, appTitle, feature_types = "ge
           }
 
         }
-        seu$active <- seu[[input$feature_type]]
+        seu$active <- seu[[input$featureType]]
 
         message("Complete!")
 
@@ -824,20 +832,20 @@ seuratApp <- function(preset_project, filterTypes, appTitle, feature_types = "ge
 
 
     callModule(findMarkers, "hello", seu)
-    diffex_results <- callModule(diffex, "hello", seu, feature_type)
+    diffex_results <- callModule(diffex, "hello", seu, featureType)
     callModule(geneEnrichment, "hello", seu, diffex_results)
     observeEvent(input$plotTrx, {
       showModal(modalDialog(
         title = "Plotting Transcripts",
         "This process may take a minute or two!"
       ))
-      callModule(allTranscripts, "hello", seu, feature_type, organism_type)
-      callModule(allTranscripts, "howdy", seu, feature_type, organism_type)
+      callModule(allTranscripts, "hello", seu, featureType, organism_type)
+      callModule(allTranscripts, "howdy", seu, featureType, organism_type)
       removeModal()
     })
 
-    # callModule(rnaVelocity, "arrow", seu, feature_type, "arrow")
-    # callModule(rnaVelocity, "grid", seu, feature_type, "grid")
+    # callModule(rnaVelocity, "arrow", seu, featureType, "arrow")
+    # callModule(rnaVelocity, "grid", seu, featureType, "grid")
 
     observe({
       updateSelectizeInput(session,
@@ -855,7 +863,7 @@ seuratApp <- function(preset_project, filterTypes, appTitle, feature_types = "ge
       seu$gene <- seuratTools::regress_by_features(seu$gene, feature_set = list(input$geneSet), set_name = janitor::make_clean_names(input$geneSetName))
       # seu$gene <- regressed_seu$gene
       # seu$transcript <- regressed_seu$transcript
-      seu$active <- seu[[input$feature_type]]
+      seu$active <- seu[[input$featureType]]
       removeModal()
     })
 
@@ -908,7 +916,7 @@ seuratApp <- function(preset_project, filterTypes, appTitle, feature_types = "ge
         )
     })
 
-    callModule(monocle, "arrow", cds, seu, feature_type, resolution = reactive(input$cdsResolution))
+    callModule(monocle, "arrow", cds, seu, featureType, resolution = reactive(input$cdsResolution))
 
     observe({
       shinyFiles::shinyFileSave(input, "saveCDS", roots = volumes(), session = session, restrictions = system.file(package = "base"))

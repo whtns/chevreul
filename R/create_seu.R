@@ -179,6 +179,9 @@ save_seurat <- function(..., prefix = "unfiltered", proj_dir = getwd()){
 
   message(paste0("saving seurat objects to ", seu_path))
   saveRDS(seu_list, seu_path)
+  if(prefix == "unfiltered"){
+    Sys.chmod(seu_path, "755")
+  }
 
   return(seu_list)
 

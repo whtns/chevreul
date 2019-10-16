@@ -22,16 +22,15 @@ integration_workflow <- function(child_proj_dirs, excluded_cells, ...) {
 
   # check species of child projects
   # project_names <- purrr::map(seus, ~.x[[1]]@project.name)
-  project_names <- names(child_proj_dirs)
 
-  if (all(grepl("Hs", project_names))){
+  if (all(grepl("Hs", names(seus)))){
     seus <- purrr::transpose(seus)
     merged_seus <- purrr::map(seus, seuratTools::seurat_integration_pipeline, ...)
     for (i in names(merged_seus)){
       merged_seus[[i]]@misc$child_projs <- names(child_proj_dirs)
     }
 
-  } else if (any(grepl("Mm", project_names))){
+  } else if (any(grepl("Mm", names(seus)))){
 
     mouse_seu_list <- seus[grepl("Mm", names(seus))]
     human_seu_list <- seus[grepl("Hs", names(seus))]

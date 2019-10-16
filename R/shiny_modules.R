@@ -16,6 +16,8 @@ integrateProjui <- function(id){
         ),
       box(
         textOutput(ns("integrationComplete")),
+        shinyjs::useShinyjs(),
+        # textOutput("subsetMessages")
         textOutput(ns("integrationResult")),
         shinyFiles::shinySaveButton(ns("saveIntegratedProject"), "Save Integrated Project", "Save project as...")
       )
@@ -160,45 +162,6 @@ integrateProj <- function(input, output, session, proj_matrices, seu, proj_dir){
 }
 
 
-#' Plot Custom Feature UI
-#'
-#' @param id
-#'
-#' @return
-#' @export
-#'
-#' @examples
-customFeatureui <- function(id) {
-  ns <- NS(id)
-  tagList(choice <- reactive({
-    if (input$feature_type == "transcript") {
-      def_text <- "ENST00000488147"
-    }
-    else if (input$feature_type == "gene") {
-      def_text <- "RXRG"
-    }
-  }))
-}
-
-#' Plot Custom Feature
-#'
-#' @param input
-#' @param output
-#' @param session
-#'
-#' @return
-#' @export
-#'
-#' @examples
-customFeature <- function(input, output, session) {
-  ns <- session$ns
-  output$featuretext <- renderUI({
-    textInput("feature", "gene or transcript on which to color the plot; eg. 'RXRG' or 'ENST00000488147'",
-              value = choice())
-  })
-  uiOutput("featuretext")
-}
-
 #' Change Embedding Parameters UI
 #'
 #' @param id
@@ -283,14 +246,14 @@ plotDimRedui <- function(id) {
 #' @param session
 #' @param seu
 #' @param plot_types
-#' @param feature_type
+#' @param featureType
 #' @param organism_type
 #'
 #' @return
 #' @export
 #'
 #' @examples
-plotDimRed <- function(input, output, session, seu, plot_types, feature_type, organism_type) {
+plotDimRed <- function(input, output, session, seu, plot_types, featureType, organism_type) {
   ns <- session$ns
 
   output$dplottype <- renderUI({
@@ -300,14 +263,14 @@ plotDimRed <- function(input, output, session, seu, plot_types, feature_type, or
   })
 
   prefill_feature <- reactive({
-    if (feature_type() == "transcript") {
+    if (featureType() == "transcript") {
       if (organism_type() == "human"){
         "ENST00000488147"
       } else if (organism_type() == "mouse"){
         "ENSG00000488147"
       }
 
-    } else if (feature_type() == "gene") {
+    } else if (featureType() == "gene") {
       if (organism_type() == "human"){
         "RXRG"
       } else if (organism_type() == "mouse"){
@@ -528,7 +491,7 @@ diffexui <- function(id) {
 #' @export
 #'
 #' @examples
-diffex <- function(input, output, session, seu, feature_type, tests = c("t-test" = "t", "wilcoxon rank-sum test" = "wilcox", "Likelihood-ratio test (bimodal)" = "bimod", "MAST" = "MAST")) {
+diffex <- function(input, output, session, seu, featureType, tests = c("t-test" = "t", "wilcoxon rank-sum test" = "wilcox", "Likelihood-ratio test (bimodal)" = "bimod", "MAST" = "MAST")) {
   ns <- session$ns
 
   output$testChoices <- renderUI(
@@ -581,7 +544,7 @@ diffex <- function(input, output, session, seu, feature_type, tests = c("t-test"
 
     if (input$diffex_scheme == "seurat") {
       run_seurat_de(seu$active, input$cluster1, input$cluster2,
-                    resolution = input$seuratResolution, diffex_scheme = "seurat", feature_type, tests = tests)
+                    resolution = input$seuratResolution, diffex_scheme = "seurat", featureType, tests = tests)
     }
 
     else if (input$diffex_scheme == "custom") {
@@ -590,7 +553,7 @@ diffex <- function(input, output, session, seu, feature_type, tests = c("t-test"
       cluster2 <- unlist(strsplit(custom_cluster2(),
                                   " "))
       run_seurat_de(seu$active, cluster1, cluster2,
-                    input$customResolution, diffex_scheme = "custom", feature_type, tests = tests)
+                    input$customResolution, diffex_scheme = "custom", featureType, tests = tests)
     }
   })
 
@@ -842,18 +805,18 @@ allTranscriptsui <- function(id) {
 #' @param output
 #' @param session
 #' @param seu
-#' @param feature_type
+#' @param featureType
 #'
 #' @return
 #' @export
 #'
 #' @examples
 allTranscripts <- function(input, output, session, seu,
-                           feature_type, organism_type) {
+                           featureType, organism_type) {
   ns <- session$ns
   transcripts <- reactiveValues()
   transcripts <- reactive({
-    req(feature_type())
+    req(featureType())
     req(organism_type())
     req(input$feature)
     req(seu)
@@ -864,7 +827,7 @@ allTranscripts <- function(input, output, session, seu,
   pList <- reactive({
     req(seu$active)
 
-    if(feature_type() == "gene"){
+    if(featureType() == "gene"){
       # browser()
       transcript_cols <- as.data.frame(t(as.matrix(seu$transcript[["RNA"]][transcripts(),])))
 
@@ -878,7 +841,7 @@ allTranscripts <- function(input, output, session, seu,
                                                        embedding = input$embedding, features = .x))
       names(pList) <- transcripts()
 
-    } else if (feature_type() == "transcript"){
+    } else if (featureType() == "transcript"){
       pList <- purrr::map(transcripts(), ~plot_feature(seu$transcript,
                                                        embedding = input$embedding, features = .x))
       names(pList) <- transcripts()
@@ -917,7 +880,7 @@ allTranscripts <- function(input, output, session, seu,
   output$outfile <- renderUI({
     req(pList())
     textInput(ns("outfile"), "a descriptive name for the output file",
-              value = paste0(input$feature, "_transcripts", "_clustered_by_", feature_type(), ".pdf"))
+              value = paste0(input$feature, "_transcripts", "_clustered_by_", featureType(), ".pdf"))
   })
 
   output$plots <-
@@ -968,14 +931,14 @@ rnaVelocityui <- function(id){
 #' @param output
 #' @param session
 #' @param seu
-#' @param feature_type
+#' @param featureType
 #' @param format
 #'
 #' @return
 #' @export
 #'
 #' @examples
-rnaVelocity <- function(input, output, session, seu, feature_type, format = "grid"){
+rnaVelocity <- function(input, output, session, seu, featureType, format = "grid"){
   ns <- session$ns
   output$vel_plot <- renderPlot({
     req(seu$active)

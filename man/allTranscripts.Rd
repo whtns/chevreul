@@ -4,10 +4,10 @@
 \alias{allTranscripts}
 \title{Plot All Transcripts}
 \usage{
-allTranscripts(input, output, session, seu, feature_type, organism_type)
+allTranscripts(input, output, session, seu, featureType, organism_type)
 }
 \arguments{
-\item{feature_type}{}
+\item{featureType}{}
 }
 \description{
 Plot All Transcripts
