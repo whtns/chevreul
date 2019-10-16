@@ -4,7 +4,7 @@
 \alias{diffex}
 \title{Differential Expression}
 \usage{
-diffex(input, output, session, seu, feature_type, tests = c(`t-test` =
+diffex(input, output, session, seu, featureType, tests = c(`t-test` =
   "t", `wilcoxon rank-sum test` = "wilcox", `Likelihood-ratio test
   (bimodal)` = "bimod", MAST = "MAST"))
 }

@@ -21,14 +21,3 @@ plot_violin(seu, plot_var = "batch", plot_vals = NULL,
 \description{
 Make Violin Plots Based on Metadata and Feature Expression
 }
-\examples{
-/dontrun{
-plot_violin(seu, plot_var = "custom_cluster", plot_vals = c("c2", "c22"))
-
-to specify more than one gene
-plot_violin(seu, plot_var = "custom_cluster", plot_vals = c("c2", "c22"), features = c("RXRG", "NRL"))
-
-If you want all plots to have the same y axis values
-plot_violin(seu, plot_var = "custom_cluster", plot_vals = c("c2", "c22"), features = c("RXRG", "NRL"), same.y.lim = TRUE)
-}
-}

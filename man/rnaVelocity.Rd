@@ -4,7 +4,7 @@
 \alias{rnaVelocity}
 \title{RNA Velocity}
 \usage{
-rnaVelocity(input, output, session, seu, feature_type, format = "grid")
+rnaVelocity(input, output, session, seu, featureType, format = "grid")
 }
 \arguments{
 \item{format}{}
