@@ -20,6 +20,10 @@ You can install the released version of seuratTools from [our github](https://gi
 devtools::install_package("whtns/seuratTools")
 ```
 
+## Site
+
+You can view documentation on the [seuratTools website](https://whtns.github.io/seuratTools)
+
 ## Example
 
 This is a basic example which shows you how to solve a common problem:
