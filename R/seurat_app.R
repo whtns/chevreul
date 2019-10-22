@@ -610,7 +610,7 @@ seuratApp <- function(preset_project, filterTypes, appTitle, feature_types = "ge
       file$datapath
     })
 
-    observe({
+    observeEvent(input$seuratUpload, {
       req(uploadSeuratPath())
 
       shiny::withProgress(
@@ -652,7 +652,7 @@ seuratApp <- function(preset_project, filterTypes, appTitle, feature_types = "ge
     output$featureType <- renderUI({
       req(seu)
 
-      seu_names <- names(seu)[names(seu) != "active"]
+      seu_names <- names(seu)[!(names(seu) == "active")]
 
       shinyWidgets::prettyRadioButtons("feature_type", "Feature for Display", choices = seu_names, selected = "gene")
     })
@@ -732,29 +732,28 @@ seuratApp <- function(preset_project, filterTypes, appTitle, feature_types = "ge
     callModule(plotReadCount, "howdy2", seu, plot_types)
     callModule(tableSelected, "hello", seu)
     callModule(tableSelected, "diffex", seu)
+
     selected_cells <- callModule(tableSelected, "subset", seu)
+
     upload_cells <- reactive({
       req(input$uploadCsv)
-
       upload_cells <- readr::read_csv(input$uploadCsv$datapath) %>%
         dplyr::pull(X1)
-
-
-
     })
+
     observeEvent(input$subsetAction, {
 
       withCallingHandlers({
         shinyjs::html("subsetMessages", "")
         message("Beginning")
 
-        for (i in names(seu)){
+        for (i in names(seu)[!(names(seu) == "active")]){
           seu[[i]] <- seu[[i]][, selected_cells()]
         }
 
         if(length(unique(seu$gene[[]]$batch)) > 1){
-
-          for (i in names(seu)[!names(seu) == "active"]){
+          print(names(seu)[!(names(seu) == "active")])
+          for (i in names(seu)[!(names(seu) == "active")]){
             message(paste0("reintegrating ", i, " expression"))
             # harmony
             # seu[[i]] <- seurat_pipeline(seu[[i]], reduction = "harmony", resolution = seq(0.2, 2.0, by = 0.2))
@@ -764,12 +763,12 @@ seuratApp <- function(preset_project, filterTypes, appTitle, feature_types = "ge
 
         } else {
 
-          for (i in names(seu)[!names(seu) == "active"]){
+          for (i in names(seu)[!(names(seu) == "active")]){
             seu[[i]] <- seurat_pipeline(seu[[i]], resolution = seq(0.2, 2.0, by = 0.2))
           }
 
         }
-        seu$active <- seu[[input$featureType]]
+        seu$active <- seu[[input$feature_type]]
 
         message("Complete!")
 
@@ -791,7 +790,7 @@ seuratApp <- function(preset_project, filterTypes, appTitle, feature_types = "ge
 
         if(length(unique(seu$gene[[]]$batch)) > 1){
 
-          for (i in names(seu)[!names(seu) == "active"]){
+          for (i in names(seu)[!(names(seu) == "active")]){
             message(paste0("reintegrating ", i, " expression"))
             # harmony
             # seu[[i]] <- seurat_pipeline(seu[[i]], reduction = "harmony", resolution = seq(0.2, 2.0, by = 0.2))
@@ -801,12 +800,12 @@ seuratApp <- function(preset_project, filterTypes, appTitle, feature_types = "ge
 
         } else {
 
-          for (i in names(seu)[!names(seu) == "active"]){
+          for (i in names(seu)[!(names(seu) == "active")]){
             seu[[i]] <- seurat_pipeline(seu[[i]], resolution = seq(0.2, 2.0, by = 0.2))
           }
 
         }
-        seu$active <- seu[[input$featureType]]
+        seu$active <- seu[[input$feature_type]]
 
         message("Complete!")
 

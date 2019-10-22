@@ -1,5 +1,25 @@
+#' Merge Small Seurat Objects
+#'
+#' @param seu_list
+#'
+#' @return
+#' @export
+#'
+#' @examples
+merge_small_seus <- function(seu_list, k.filter = 50){
+  # check if any seurat objects are too small and if so merge with the first seurat object
+  seu_dims <- purrr::map(seu_list, dim) %>%
+    purrr::map_lgl(~.x[[2]] < k.filter)
 
-## ----load-funcs----------------------------------------------------------
+  small_seus <- seu_list[seu_dims]
+
+  seu_list <- seu_list[!seu_dims]
+
+  seu_list[[1]] <- purrr::reduce(c(small_seus, seu_list[[1]]), merge)
+
+  return(seu_list)
+}
+
 
 #' Batch Correct Multiple Seurat Objects
 #'
@@ -21,6 +41,8 @@ seurat_integrate <- function(seu_list, method = "cca", ...) {
     seu_list[[i]] <- seurat_preprocess(seu_list[[i]], scale = TRUE, ...)
     seu_list[[i]]$batch <- names(seu_list)[[i]]
   }
+
+  seu_list <- merge_small_seus(seu_list)
 
   if (method == "rpca"){
     # scale and run pca for each separate batch in order to use reciprocal pca instead of cca

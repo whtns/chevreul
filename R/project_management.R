@@ -40,14 +40,15 @@ create_proj_matrix <- function(proj_list){
 #' @export
 #'
 #' @examples
-create_proj_list <- function(projects_dir = "/dataVolume/storage/single_cell_projects", sub_dirs = c("sc_cone_devel", "sc_RB_devel", "integrated_projects")){
+create_proj_list <- function(projects_dir = "/dataVolume/storage/single_cell_projects", sub_dirs = c("sc_cone_devel", "sc_RB_devel", "integrated_projects", "resources")){
 
-  project_list <- fs::dir_ls(fs::path(projects_dir, sub_dirs), recurse = T) %>%
-    fs::path_filter("*_proj") %>%
+  project_list <- fs::dir_ls(fs::path(projects_dir, sub_dirs), recurse = T, glob = "*_proj") %>%
+    # fs::path_filter("*_proj") %>%
     tibble::enframe("name", "path") %>%
     dplyr::mutate(sub_dir = dplyr::case_when(grepl("sc_cone_devel", path) ~ "sc_cone_devel",
                                       grepl("sc_RB_devel", path) ~ "sc_RB_devel",
-                                      grepl("integrated_projects", path) ~ "integrated_projects")) %>%
+                                      grepl("integrated_projects", path) ~ "integrated_projects",
+                                      grepl("resources", path) ~ "resources")) %>%
     dplyr::select(-name) %>%
     split(.$sub_dir) %>%
     purrr::map(~dplyr::pull(.x, path)) %>%
