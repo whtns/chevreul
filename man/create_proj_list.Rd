@@ -6,7 +6,8 @@
 \usage{
 
   create_proj_list(projects_dir = "/dataVolume/storage/single_cell_projects",
-  sub_dirs = c("sc_cone_devel", "sc_RB_devel", "integrated_projects"))
+  sub_dirs = c("sc_cone_devel", "sc_RB_devel", "integrated_projects",
+  "resources"))
 }
 \arguments{
 \item{proj_matrices}{}
