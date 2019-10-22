@@ -17,8 +17,8 @@ seurat_reference_integrate <- function(ref_seu_list, query_seu) {
   ## Prior to finding anchors, we perform standard preprocessing (log-normalization), and identify variable features individually for each. Note that Seurat v3 implements an improved method for variable feature selection based on a variance stabilizing transformation ("vst")
 
   for (i in 1:length(x = seu_list)) {
-  	seu_list[[i]] <- NormalizeData(object = seu_list[[i]], verbose = FALSE)
-  	seu_list[[i]] <- FindVariableFeatures(object = seu_list[[i]],
+  	seu_list[[i]] <- Seurat::NormalizeData(object = seu_list[[i]], verbose = FALSE)
+  	seu_list[[i]] <- Seurat::FindVariableFeatures(object = seu_list[[i]],
   																							selection.method = "vst", nfeatures = 2000, verbose = FALSE)
   }
 
@@ -32,18 +32,18 @@ seurat_reference_integrate <- function(ref_seu_list, query_seu) {
   ## The returned object will contain a new Assay, which holds an integrated (or ‘batch-corrected’) expression matrix for all cells, enabling them to be jointly analyzed.
 
 
-  seu_list.integrated <- IntegrateData(anchorset = seu_list.anchors, dims = 1:30)
+  seu_list.integrated <- Seurat::IntegrateData(anchorset = seu_list.anchors, dims = 1:30)
 
   ## switch to integrated assay. The variable features of this assay are
   ## automatically set during IntegrateData
   DefaultAssay(object = seu_list.integrated) <- "integrated"
 
   ## Run the standard workflow for visualization and clustering
-  seu_list.integrated <- ScaleData(object = seu_list.integrated, verbose = FALSE)
-  seu_list.integrated <- RunPCA(object = seu_list.integrated, npcs = 30, verbose = FALSE)
-  seu_list.integrated <- RunUMAP(object = seu_list.integrated, reduction = "pca",
+  seu_list.integrated <- Seurat::ScaleData(object = seu_list.integrated, verbose = FALSE)
+  seu_list.integrated <- Seurat::RunPCA(object = seu_list.integrated, npcs = 30, verbose = FALSE)
+  seu_list.integrated <- Seurat::RunUMAP(object = seu_list.integrated, reduction = "pca",
   																dims = 1:30)
-  seu_list.integrated <- RunTSNE(object = seu_list.integrated, reduction = "pca", dims = 1:30)
+  seu_list.integrated <- Seurat::RunTSNE(object = seu_list.integrated, reduction = "pca", dims = 1:30)
 
   return(seu_list.integrated)
 }

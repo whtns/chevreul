@@ -25,8 +25,13 @@ convert_mouse_seu_to_human <- function(seu){
   new_rownames <- new_rownames[keep_rows,] %>%
     dplyr::pull(human)
 
-  for (i in seu_slots <- c("counts", "data", "scale.data", "meta.features")){
-    rownames(slot(seu$gene@assays$RNA, i)) <- new_rownames
+  seu_slots <- c("counts", "data", "scale.data", "meta.features")
+
+  for (i in seu_slots){
+    current_slot <- slot(seu$gene@assays$RNA, i)
+    if(!(dim(current_slot) == c(0,0))){
+      rownames(slot(seu$gene@assays$RNA, i)) <- new_rownames
+    }
   }
 
   return(seu)
@@ -54,7 +59,11 @@ convert_human_seu_to_mouse <- function(seu){
   new_rownames <- new_rownames[keep_rows,] %>%
     dplyr::pull(mouse)
 
-  for (i in seu_slots <- c("counts", "data", "scale.data", "meta.features")){
+  seu_slots <- c("counts", "data", "scale.data", "meta.features")
+
+
+
+  for (i in seu_slots){
     rownames(slot(seu$gene@assays$RNA, i)) <- new_rownames
   }
 

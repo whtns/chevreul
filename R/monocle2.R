@@ -196,7 +196,7 @@ plot_monocle_all_ptimes <- function(monocle_list, query_name, ...) {
     dplyr::pull(gene_short_name) %>%
     identity()
 
-  sig_gene_names <- sig_gene_names[1:100]
+  # sig_gene_names <- sig_gene_names[1:100]
   monocle_list[[query_name]]$monocle_cds <- monocle_list[[query_name]]$monocle_cds[sig_gene_names, ]
 
   message("creating main heatmap")
@@ -211,17 +211,28 @@ plot_monocle_all_ptimes <- function(monocle_list, query_name, ...) {
   gene_order <- monocle_list[[query_name]]$heatmap[["tree_row"]][["labels"]][monocle_list[[query_name]]$heatmap[["tree_row"]][["order"]]]
 
 
-
   monocle_list[[query_name]]$monocle_cds <- monocle_list[[query_name]]$monocle_cds[gene_order,]
 
-  message("recreating main heatmap")
-  monocle_list[[query_name]]$heatmap <- seuratTools::plot_pseudotime_heatmap(monocle_list[[query_name]]$monocle_cds,
-                                                                cores = 6,
-                                                                show_rownames = T,
-                                                                return_heatmap = TRUE,
-                                                                cluster_rows = F,
-                                                                ...
-  )
+  mod_diff_test_res <- filter_rows_to_top(monocle_list[[query_name]]$diff_test_res, "gene_short_name", gene_order)
+
+  annotation_row <- monocle_list[[query_name]]$heatmap$annotation_row %>%
+    tibble::rownames_to_column("feature")
+
+  mod_diff_test_res <- dplyr::left_join(mod_diff_test_res, annotation_row, by = c("gene_short_name" = "feature"))
+
+  monocle_list[[query_name]]$diff_test_res <- mod_diff_test_res
+
+  monocle_list[[query_name]]$ordered_diff_test_res <- dplyr::filter(mod_diff_test_res, gene_short_name %in% gene_order)
+
+
+  # message("recreating main heatmap")
+  # monocle_list[[query_name]]$heatmap <- seuratTools::plot_pseudotime_heatmap(monocle_list[[query_name]]$monocle_cds,
+  #                                                               cores = 6,
+  #                                                               show_rownames = T,
+  #                                                               return_heatmap = TRUE,
+  #                                                               cluster_rows = F,
+  #                                                               ...
+  # )
 
   # reference_cds <- monocle_list[names(monocle_list) != query_name]
   reference_names <- names(monocle_list)[names(monocle_list) != query_name]
@@ -233,7 +244,7 @@ plot_monocle_all_ptimes <- function(monocle_list, query_name, ...) {
     message(paste0("creating reference heatmap ", i))
     monocle_list[[i]]$heatmap  <- seuratTools::plot_pseudotime_heatmap(monocle_list[[i]]$monocle_cds,
                                                           cores = 6,
-                                                          show_rownames = T,
+                                                          show_rownames = F,
                                                           return_heatmap = TRUE,
                                                           cluster_rows = F,
                                                           ...
@@ -501,14 +512,16 @@ plot_pseudotime_heatmap <- function(cds_subset, cluster_rows = TRUE, hclust_meth
     else {
       # feature_label <- row.names(heatmap_matrix)
       feature_label <- make.names(row.names(heatmap_matrix), unique=TRUE)
-      row_ann_labels <- row.names(annotation_row)
+      # row_ann_labels <- row.names(annotation_row)
+      row_ann_labels <- make.names(row.names(annotation_row), unique = T)
     }
   }
   else {
     # feature_label <- row.names(heatmap_matrix)
     feature_label <- make.names(row.names(heatmap_matrix), unique=TRUE)
     if (!is.null(annotation_row))
-      row_ann_labels <- row.names(annotation_row)
+      # row_ann_labels <- row.names(annotation_row)
+      row_ann_labels <- make.names(row.names(annotation_row), unique = T)
   }
   row.names(heatmap_matrix) <- feature_label
   if (!is.null(annotation_row))
@@ -524,6 +537,7 @@ plot_pseudotime_heatmap <- function(cds_subset, cluster_rows = TRUE, hclust_meth
   grid::grid.rect(gp = grid::gpar("fill", col = NA))
   grid::grid.draw(ph_res$gtable)
   if (return_heatmap) {
+    ph_res[["annotation_row"]] <- annotation_row
     return(ph_res)
   }
 }

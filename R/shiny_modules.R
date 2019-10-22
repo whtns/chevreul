@@ -17,7 +17,7 @@ integrateProjui <- function(id){
       box(
         textOutput(ns("integrationComplete")),
         shinyjs::useShinyjs(),
-        # textOutput("subsetMessages")
+        textOutput(ns("integrationMessages")),
         textOutput(ns("integrationResult")),
         shinyFiles::shinySaveButton(ns("saveIntegratedProject"), "Save Integrated Project", "Save project as...")
       )
@@ -58,16 +58,34 @@ integrateProj <- function(input, output, session, proj_matrices, seu, proj_dir){
         identity()
     })
 
-    mergedSeus <- eventReactive(input$integrateAction, {
+    mergedSeus <- reactiveVal()
+
+    observeEvent(input$integrateAction, {
       req(selectedProjects())
-      showModal(modalDialog(paste0("Integrating "), footer=NULL))
+          withCallingHandlers({
+            shinyjs::html("integrationMessages", "")
+            message("Beginning")
 
-      merged_seus <- integration_workflow(selectedProjects())
-      removeModal()
+            mergedSeus(integration_workflow(selectedProjects()))
 
-      merged_seus
+            message("Integration Complete!")
 
-    })
+          },
+          message = function(m) {
+            shinyjs::html(id = "integrationMessages", html = paste0("Running Integration: ", m$message), add = FALSE)
+          })
+      })
+
+    # mergedSeus <- eventReactive(input$integrateAction, {
+    #   req(selectedProjects())
+    #   showModal(modalDialog(paste0("Integrating "), footer=NULL))
+    #
+    #   merged_seus <- integration_workflow(selectedProjects())
+    #   removeModal()
+    #
+    #   merged_seus
+    #
+    # })
 
     newProjDir <- reactive({
       req(mergedSeus())
@@ -111,7 +129,8 @@ integrateProj <- function(input, output, session, proj_matrices, seu, proj_dir){
 
     output$integrationComplete <- renderText({
       req(mergedSeus())
-      print("integration complete!")
+      # print("integration complete!")
+      print("")
     })
 
 
@@ -391,9 +410,10 @@ tableSelected <- function(input, output, session, seu) {
   })
 
   selected_cells <- reactive({
-    input$brushtable_rows_selected
+    selected_rows <- input$brushtable_rows_selected
+    rownames(seu$active[[]][brush(),])[selected_rows]
   })
-  # selected_cells <- brush
+
   return(selected_cells)
 }
 

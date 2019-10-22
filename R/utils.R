@@ -1,3 +1,27 @@
+#' Filter Rows to Top
+#'
+#' @param df
+#' @param column
+#' @param values
+#'
+#' @return
+#' @export
+#'
+#' @examples
+filter_rows_to_top <- function(df, column, values){
+  matched_df <- df[df[[column]] %in% values,]
+
+  matched_df <- matched_df[match(values, matched_df[[column]]),]
+
+  unmatched_df <- df[!(df[[column]] %in% values),]
+
+  total_df <- list(matched_df = matched_df, unmatched_df = unmatched_df)
+  total_df <- dplyr::bind_rows(total_df)
+
+  return(total_df)
+
+}
+
 #' Collate list of variables to be plotted
 #'
 #' @param seu
