@@ -4,12 +4,21 @@
 \alias{run_seurat_de}
 \title{Run Seurat Differential Expression}
 \usage{
-run_seurat_de(seu, cluster1, cluster2, resolution,
-  diffex_scheme = "seurat", featureType, tests = c("t", "wilcox",
-  "bimod"))
+run_seurat_de(
+  seu,
+  cluster1,
+  cluster2,
+  resolution,
+  diffex_scheme = "seurat",
+  featureType,
+  tests = c("t", "wilcox", "bimod")
+)
 }
 \arguments{
 \item{diffex_scheme}{}
+}
+\value{
+
 }
 \description{
 Run Seurat Differential Expression

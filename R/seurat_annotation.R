@@ -15,7 +15,6 @@ annotate_cell_cycle <- function(seu, feature, organism = "human", ...){
   # setdefaultassay to "RNA"
   DefaultAssay(seu) <- "RNA"
 
-
   s_genes <- cc.genes$s.genes
   g2m_genes <- cc.genes$g2m.genes
 
@@ -25,8 +24,8 @@ annotate_cell_cycle <- function(seu, feature, organism = "human", ...){
   if(organism == "mouse"){
     s_genes <- stringr::str_to_title(s_genes)
     g2m_genes <- stringr::str_to_title(g2m_genes)
-    s_transcripts <- genes_to_transcripts(s_genes)
-    g2m_transcripts <- genes_to_transcripts(g2m_genes)
+    s_transcripts <- genes_to_transcripts(s_genes, organism = organism)
+    g2m_transcripts <- genes_to_transcripts(g2m_genes, organism = organism)
   }
 
   if (feature == "gene"){
@@ -77,7 +76,7 @@ genes_to_transcripts <- function(genes, organism = "human") {
 #'
 #' @examples
 add_read_count_col <- function(seu, thresh = 1e5){
-  rc <- dplyr::as_tibble(seu[["nCount_RNA"]], rownames = "Sample_ID") %>%
+  rc <- dplyr::as_tibble(seu[["nCount_RNA"]], rownames = "sample_id") %>%
     dplyr::mutate(read_count = ifelse(nCount_RNA > thresh, NA, "low_read_count")) %>%
     dplyr::select(-nCount_RNA) %>%
     tibble::deframe()
@@ -111,8 +110,8 @@ annotate_excluded <- function(seu, ...){
     purrr::set_names(unlist(excluded_cells)) %>%
     tibble::enframe("Sample_ID", "excluded_because")
 
-  excluded_because <- as_tibble(seu[["nCount_RNA"]], rownames = "Sample_ID") %>%
-    dplyr::full_join(excluded_cells, by = "Sample_ID")
+  excluded_because <- as_tibble(seu[["nCount_RNA"]], rownames = "sample_id") %>%
+    dplyr::full_join(excluded_cells, by = "sample_id")
 
   if ("excluded_because.x" %in% colnames(excluded_because)){
     excluded_because <- dplyr::coalesce(excluded_because, excluded_because.x, excluded_because.y) %>%

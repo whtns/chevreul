@@ -9,6 +9,9 @@ load_seurat_path(proj_dir = getwd(), prefix = "unfiltered")
 \arguments{
 \item{prefix}{}
 }
+\value{
+
+}
 \description{
 Read in Gene and Transcript Seurat Objects
 }

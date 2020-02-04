@@ -4,12 +4,22 @@
 \alias{diffex}
 \title{Differential Expression}
 \usage{
-diffex(input, output, session, seu, featureType, tests = c(`t-test` =
-  "t", `wilcoxon rank-sum test` = "wilcox", `Likelihood-ratio test
-  (bimodal)` = "bimod", MAST = "MAST"))
+diffex(
+  input,
+  output,
+  session,
+  seu,
+  featureType,
+  selected_cells,
+  tests = c(`t-test` = "t", `wilcoxon rank-sum test` = "wilcox", `Likelihood-ratio test
+    (bimodal)` = "bimod", MAST = "MAST")
+)
 }
 \arguments{
-\item{seu}{}
+\item{tests}{}
+}
+\value{
+
 }
 \description{
 Differential Expression

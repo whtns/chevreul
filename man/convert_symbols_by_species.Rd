@@ -4,10 +4,17 @@
 \alias{convert_symbols_by_species}
 \title{convert gene symbols between species}
 \usage{
-convert_symbols_by_species(src_genes, src_species)
+convert_symbols_by_species(src_genes, src_species, host = "uswest.ensembl.org")
 }
 \arguments{
-\item{src_species}{}
+\item{src_genes}{a vector of hgnc/mgi symbols}
+
+\item{src_species}{"mouse" or "human"}
+
+\item{host}{the biomart host to use try also useast.ensembl.org}
+}
+\value{
+
 }
 \description{
 convert gene symbols between species

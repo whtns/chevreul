@@ -9,6 +9,9 @@ convert_human_seu_to_mouse(seu)
 \arguments{
 \item{seu}{}
 }
+\value{
+
+}
 \description{
 Convert Seurat Objects from Human to Mouse
 }

@@ -9,6 +9,9 @@ load_meta(proj_dir)
 \arguments{
 \item{meta_path}{}
 }
+\value{
+
+}
 \description{
 Load Project Sample Data
 }

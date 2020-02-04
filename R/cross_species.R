@@ -73,25 +73,26 @@ convert_human_seu_to_mouse <- function(seu){
 
 #' convert gene symbols between species
 #'
-#' @param src_genes
-#' @param src_species
+#' @param src_genes a vector of hgnc/mgi symbols
+#' @param src_species "mouse" or "human"
+#' @param host the biomart host to use try also useast.ensembl.org
 #'
 #' @return
 #' @export
 #'
 #' @examples
-convert_symbols_by_species <- function(src_genes, src_species){
+convert_symbols_by_species <- function(src_genes, src_species, host = "uswest.ensembl.org"){
   # browser()
   if(src_species == "human"){
     dest_species = "mouse"
-    src_species_mart = biomaRt::useMart("ensembl", dataset = "hsapiens_gene_ensembl")
-    dest_species_mart = biomaRt::useMart("ensembl", dataset = "mmusculus_gene_ensembl")
+    src_species_mart = biomaRt::useMart("ensembl", dataset = "hsapiens_gene_ensembl", host = host)
+    dest_species_mart = biomaRt::useMart("ensembl", dataset = "mmusculus_gene_ensembl", host = host)
     src_attribute = "hgnc_symbol"
     dest_attribute = "mgi_symbol"
   } else if (src_species == "mouse"){
     dest_species = "human"
-    src_species_mart = biomaRt::useMart("ensembl", dataset = "mmusculus_gene_ensembl")
-    dest_species_mart = biomaRt::useMart("ensembl", dataset = "hsapiens_gene_ensembl")
+    src_species_mart = biomaRt::useMart("ensembl", dataset = "mmusculus_gene_ensembl", host = host)
+    dest_species_mart = biomaRt::useMart("ensembl", dataset = "hsapiens_gene_ensembl", host = host)
     src_attribute = "mgi_symbol"
     dest_attribute = "hgnc_symbol"
   }
@@ -100,6 +101,23 @@ convert_symbols_by_species <- function(src_genes, src_species){
 
   dest_symbols <- genesV2[match(src_genes, genesV2[,1]),]
   names(dest_symbols) <- c(src_species, dest_species)
+
+  # use if biomart server is down
+  # symbols <- c("SERPINA1","KERA","CD5")
+  #
+  # ensemblprots <- AnnotationDbi::select(ensdb,
+  #                                       keys = symbols,
+  #                                       columns = c("PROTEINID", "GENEID"),
+  #                                       keytype = c("SYMBOL")) %>%
+  #   dplyr::pull(PROTEINID)
+  #
+  # x <- hom.Hs.inpMUSMU# Get honeybee IDs that are paralogous to the pkg IDs
+  # mapped_IDs <- mappedkeys(x)
+  # # Convert to a list
+  # xx <- as.list(x[mapped_IDs])
+  #
+  # orthologs <- xx[ensemblprots]
+
 
   return(dest_symbols)
 }

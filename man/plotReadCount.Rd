@@ -9,6 +9,9 @@ plotReadCount(input, output, session, seu, plot_types)
 \arguments{
 \item{plot_types}{}
 }
+\value{
+
+}
 \description{
 Plot Read Count
 }

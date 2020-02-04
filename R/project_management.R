@@ -11,72 +11,46 @@ create_proj_matrix <- function(proj_list){
 
   proj_list <- unlist(proj_list)
 
+  proj_tbl <- tibble::tibble(project_path = proj_list, project_name = fs::path_file(proj_list))
+
   patterns <- c("{date}-{user}-{note}-{species}_proj")
+
   proj_matrix <- unglue::unglue_data(proj_list, patterns) %>%
-    tidyr::unite(project_path, date, user, note, species, sep = "-", remove = F) %>%
-    dplyr::mutate(project_path = paste0(project_path, "_proj")) %>%
-    dplyr::mutate(project_name = fs::path_file(project_path)) %>%
     dplyr::mutate(date = fs::path_file(date)) %>%
+    dplyr::bind_cols(proj_tbl) %>%
     identity()
 
   primary_projects <-
     proj_matrix %>%
-    dplyr::filter(species %in% c("Hs", "Mm"))
+    dplyr::filter(!grepl("integrated_projects", project_path)) %>%
+    dplyr::filter(str_count(project_name, "_") == 1) %>%
+  identity()
 
   integrated_projects <-
     proj_matrix %>%
-    dplyr::filter(!species %in% c("Hs", "Mm"))
+    dplyr::anti_join(primary_projects) %>%
+    identity()
 
   proj_matrices <- list(primary_projects = primary_projects, integrated_projects = integrated_projects)
 
   return(proj_matrices)
 }
 
-#' Create List of Projects
-#'
-#' @param proj_matrices
+
+#' Create Project database
 #'
 #' @return
 #' @export
 #'
 #' @examples
-create_proj_list <- function(projects_dir = "/dataVolume/storage/single_cell_projects", sub_dirs = c("sc_cone_devel", "sc_RB_devel", "integrated_projects", "resources")){
+create_proj_db <- function(projects_dir = "/dataVolume/storage/single_cell_projects/"){
 
-  project_list <- fs::dir_ls(fs::path(projects_dir, sub_dirs), recurse = T, glob = "*_proj") %>%
-    # fs::path_filter("*_proj") %>%
-    tibble::enframe("name", "path") %>%
-    dplyr::mutate(sub_dir = dplyr::case_when(grepl("sc_cone_devel", path) ~ "sc_cone_devel",
-                                      grepl("sc_RB_devel", path) ~ "sc_RB_devel",
-                                      grepl("integrated_projects", path) ~ "integrated_projects",
-                                      grepl("resources", path) ~ "resources")) %>%
-    dplyr::select(-name) %>%
-    split(.$sub_dir) %>%
-    purrr::map(~dplyr::pull(.x, path)) %>%
-    identity()
+  projects_db <- paste0(projects_dir, "single_cell_projects.db")
 
-  project_list <- purrr::map(project_list, ~purrr::set_names(.x, fs::path_file(.x)))
+  system(paste0("updatedb -l 0 -U ", projects_dir, " -o ", projects_db))
 
-
-
-  # names(proj_list) <- fs::path_file(fs::path_dir(proj_list))
-
-
-
-# proj_list <- fs::dir_ls(fs::path(projects_dir, sub_dirs), recurse = T) %>%
-#     fs::path_filter("*_proj") %>%
-#     identity()
-#
-#   primary_project_list <- proj_matrices$primary_projects %>%
-#     dplyr::pull(project_path) %>%
-#     purrr::set_names(fs::path_file(.))
-#
-#   integrated_project_list <- proj_matrices$integrated_projects %>%
-#     dplyr::pull(project_path) %>%
-#     purrr::set_names(fs::path_file(.))
-#
-#   project_list <- list(primary = primary_project_list,
-#                     integrated = integrated_project_list)
-
-  return(project_list)
 }
+
+
+
 

@@ -9,6 +9,9 @@ convert_seu_to_cds(seu, resolution = 1)
 \arguments{
 \item{seu}{}
 }
+\value{
+
+}
 \description{
 Convert a Seurat Object to a Monocle Cell Data Set
 }

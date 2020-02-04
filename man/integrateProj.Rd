@@ -9,6 +9,9 @@ integrateProj(input, output, session, proj_matrices, seu, proj_dir)
 \arguments{
 \item{session}{}
 }
+\value{
+
+}
 \description{
 Integrate Projects Server Function
 }

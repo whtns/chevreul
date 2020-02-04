@@ -4,10 +4,20 @@
 \alias{gene_test_plot}
 \title{Plot Gene expression over pseudotime on reference and query trajectories from cellAlign}
 \usage{
-gene_test_plot(expGlobalRef, expGlobalQuery, trajRef, trajQuery)
+gene_test_plot(
+  expGlobalRef,
+  expGlobalQuery,
+  trajRef,
+  trajQuery,
+  winSz = 0.1,
+  numPts = 200
+)
 }
 \arguments{
-\item{trajQuery}{}
+\item{numPts}{}
+}
+\value{
+
 }
 \description{
 Plot Gene expression over pseudotime on reference and query trajectories from cellAlign

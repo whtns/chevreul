@@ -9,6 +9,9 @@ allTranscripts(input, output, session, seu, featureType, organism_type)
 \arguments{
 \item{featureType}{}
 }
+\value{
+
+}
 \description{
 Plot All Transcripts
 }

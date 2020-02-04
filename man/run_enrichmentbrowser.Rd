@@ -9,6 +9,9 @@ run_enrichmentbrowser(seu, cluster1_cells, cluster2_cells, ...)
 \arguments{
 \item{cluster2_cells}{}
 }
+\value{
+
+}
 \description{
 Run Enrichment Browser on Differentially Expressed Genes
 }

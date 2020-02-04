@@ -9,6 +9,9 @@ genes_to_transcripts(genes, organism = "human")
 \arguments{
 \item{genes}{}
 }
+\value{
+
+}
 \description{
 convert genes to transcripts
 }

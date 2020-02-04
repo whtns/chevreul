@@ -9,6 +9,9 @@ filter_merged_seus(seus, filter_var, filter_val, .drop = F)
 \arguments{
 \item{.drop}{}
 }
+\value{
+
+}
 \description{
 Filter Seurat Objects by custom variable and reset assay to uncorrected "RNA"
 }

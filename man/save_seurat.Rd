@@ -11,6 +11,9 @@ save_seurat(..., prefix = "unfiltered", proj_dir = getwd())
 
 \item{proj_dir}{}
 }
+\value{
+
+}
 \description{
 Save seurat object to <project>/output/sce/<feature>_seu.rds
 }

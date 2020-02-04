@@ -9,6 +9,9 @@ reorg_seurat_files(proj_dir = NULL)
 \arguments{
 \item{proj_dir}{}
 }
+\value{
+
+}
 \description{
 Reorganize seurat objects
 }

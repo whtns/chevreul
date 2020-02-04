@@ -9,6 +9,9 @@ get_transcripts_from_seu(seu, gene, organism = "human")
 \arguments{
 \item{organism}{}
 }
+\value{
+
+}
 \description{
 Get Transcripts in Seurat Object
 }

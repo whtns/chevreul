@@ -9,6 +9,9 @@ seu_from_tximport(txi, meta_tbl, ...)
 \arguments{
 \item{...}{}
 }
+\value{
+
+}
 \description{
 Create a Seurat Object from return of tximport
 }

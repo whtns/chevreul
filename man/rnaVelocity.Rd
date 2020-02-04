@@ -9,6 +9,9 @@ rnaVelocity(input, output, session, seu, featureType, format = "grid")
 \arguments{
 \item{format}{}
 }
+\value{
+
+}
 \description{
 RNA Velocity
 }
