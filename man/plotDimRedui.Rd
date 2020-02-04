@@ -9,6 +9,9 @@ plotDimRedui(id)
 \arguments{
 \item{id}{}
 }
+\value{
+
+}
 \description{
 Plot Dimensionally Reduced Data UI
 }

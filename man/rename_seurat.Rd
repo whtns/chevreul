@@ -9,6 +9,9 @@ rename_seurat(seu, new_name)
 \arguments{
 \item{new_name}{}
 }
+\value{
+
+}
 \description{
 Give a new project name to a seurat object
 }

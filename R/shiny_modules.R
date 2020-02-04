@@ -1,4 +1,138 @@
 
+#' Plot Violin plots UI
+#'
+#' @param id
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
+plotViolinui <- function(id){
+  ns <- NS(id)
+  tagList(
+    uiOutput(ns("vln_group")),
+    uiOutput(ns("featuretext")),
+    plotly::plotlyOutput(ns("vplot"), height = 750)
+
+  )
+}
+
+
+#' Plot Violin server
+#'
+#' @param input
+#' @param output
+#' @param session
+#' @param seu
+#' @param feature_type
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
+plotViolin <- function(input, output, session, seu, feature_type){
+  ns <- session$ns
+  prefill_feature <- reactive({
+    if (feature_type() == "transcript") {
+      "ENST00000488147"
+    }
+    else if (feature_type() == "gene") {
+      "RXRG"
+    }
+  })
+
+  output$featuretext <- renderUI({
+    textInput(ns("customFeature"), "gene or transcript on which to color the plot; eg. 'RXRG' or 'ENST00000488147'",
+              value = prefill_feature())
+  })
+
+  output$vln_group <- renderUI({
+    req(seu$active)
+    selectizeInput(ns("vlnGroup"), "choose variable to group by", choices = colnames(seu$active[[]]), selected = "batch")
+  })
+
+  output$vplot <- renderPlotly({
+    req(input$customFeature)
+    req(input$vlnGroup)
+    plot_violin(seu$active, plot_var = input$vlnGroup, features = input$customFeature)
+  })
+}
+
+
+#' Reformat Seurat Object Metadata UI
+#'
+#' @param id
+#'
+#' @return
+#' @export
+#'
+#' @examples
+reformatMetadataui <- function(id) {
+  ns <- NS(id)
+  tagList(
+    box(
+    uiOutput(ns("colNames")),
+    textInput(ns("newCol"), "provide a name for the new column"),
+    actionButton(ns("mergeCol"), "Merge Selected Columns"),
+    DTOutput(ns("seuTable")),
+    width = 12
+    )
+
+  )
+}
+
+#' Reformat Seurat Object Metadata Server
+#'
+#' @param input
+#' @param output
+#' @param sessionk
+#' @param seu
+#'
+#' @return
+#' @export
+#'
+#' @examples
+reformatMetadata <- function(input, output, session, seu) {
+  ns <- session$ns
+  seuColNames <- reactive({
+    seuColNames <- colnames(seu$gene[[]]) %>%
+      purrr::set_names(.)
+  })
+
+  output$colNames <- renderUI({
+    selectizeInput(ns("col_names"), "Seurat Object Metdata Columns", choices = seuColNames(), multiple = TRUE)
+  })
+
+  observeEvent(input$mergeCol, {
+
+    meta <- combine_cols(seu, input$col_names, input$newCol)
+
+    for (i in names(seu)){
+      seu[[i]]@meta.data <- meta
+    }
+  })
+
+  output$seuTable <- renderDT({
+    meta <- data.frame(seu$active[[]])
+
+    na_cols <- purrr::map_lgl(meta, ~all(is.na(.x)))
+    cluster_cols <- grepl("^cluster|snn_res", colnames(meta))
+
+    keep_cols <- !(na_cols | cluster_cols)
+
+    meta <- meta[,keep_cols]
+
+    DT::datatable(meta, extensions = 'ColReorder', options = list(colReorder = TRUE, scrollX = "100px", scrollY = "800px"))
+
+  })
+
+  return(seu)
+
+}
+
+
 #' Integrate Project UI
 #'
 #' @param id
@@ -38,13 +172,21 @@ integrateProjui <- function(id){
 integrateProj <- function(input, output, session, proj_matrices, seu, proj_dir){
     ns <- session$ns
 
-    proj_matrix <- proj_matrices$primary_projects
+    proj_matrix <- reactive({
+      proj_matrices()$primary_projects
+    })
 
-    clean_proj_matrix <- proj_matrix %>%
-      dplyr::select(-project_path) %>%
-      identity()
+    clean_proj_matrix <- reactive({
 
-    output$myDatatable <- DT::renderDataTable(clean_proj_matrix,
+
+      clean_proj_matrix <- proj_matrix() %>%
+        dplyr::select(-project_path) %>%
+        identity()
+    })
+
+
+
+    output$myDatatable <- DT::renderDataTable(clean_proj_matrix(),
                                               server = FALSE,
                                               rownames=TRUE)
 
@@ -53,7 +195,7 @@ integrateProj <- function(input, output, session, proj_matrices, seu, proj_dir){
     })
 
     selectedProjects <- reactive({
-      selectedProjects <- dplyr::slice(proj_matrix, selectedRows()) %>%
+      selectedProjects <- dplyr::slice(proj_matrix(), selectedRows()) %>%
         dplyr::pull(project_path) %>%
         identity()
     })
@@ -76,17 +218,6 @@ integrateProj <- function(input, output, session, proj_matrices, seu, proj_dir){
           })
       })
 
-    # mergedSeus <- eventReactive(input$integrateAction, {
-    #   req(selectedProjects())
-    #   showModal(modalDialog(paste0("Integrating "), footer=NULL))
-    #
-    #   merged_seus <- integration_workflow(selectedProjects())
-    #   removeModal()
-    #
-    #   merged_seus
-    #
-    # })
-
     newProjDir <- reactive({
       req(mergedSeus())
 
@@ -95,9 +226,6 @@ integrateProj <- function(input, output, session, proj_matrices, seu, proj_dir){
       for (i in names(mergedSeus())){
         seu[[i]] <- mergedSeus()[[i]]
       }
-
-      # seu$gene <- merged_seus$gene
-      # seu$transcript <- merged_seus$transcript
 
       newProjName <- paste0(purrr::map(fs::path_file(selectedProjects()), ~gsub("_proj", "", .x)), collapse = "_")
       newProjName <- paste0(newProjName, "_proj")
@@ -109,23 +237,6 @@ integrateProj <- function(input, output, session, proj_matrices, seu, proj_dir){
       newProjDir
 
     })
-
-    # output$integrationResult <- renderText({
-    #   newProjDir()
-    # })
-    #
-    #
-    # observeEvent(input$saveIntegratedProject, {
-    #   shiny::withProgress(
-    #     message = paste0("Saving Integrated Dataset to ", newProjDir()),
-    #     value = 0,
-    #     {
-    #       # Sys.sleep(6)
-    #       shiny::incProgress(2/10)
-    #   save_seurat(mergedSeus(), proj_dir = newProjDir())
-    #   shiny::incProgress(8/10)
-    #     })
-    # })
 
     output$integrationComplete <- renderText({
       req(mergedSeus())
@@ -176,7 +287,7 @@ integrateProj <- function(input, output, session, proj_matrices, seu, proj_dir){
     })
 
 
-    return(proj_dir)
+    return(integratedProjectSavePath)
 
 }
 
@@ -275,10 +386,15 @@ plotDimRedui <- function(id) {
 plotDimRed <- function(input, output, session, seu, plot_types, featureType, organism_type) {
   ns <- session$ns
 
+  selected_plot <- reactiveVal()
+
   output$dplottype <- renderUI({
     req(seu$active)
+
+    selected_plot <- ifelse(is.null(selected_plot()), "custom", selected_plot())
+
     selectizeInput(ns("plottype"), "Variable to Plot",
-                   choices = purrr::flatten_chr(plot_types()), selected = c("custom"), multiple = TRUE)
+                   choices = purrr::flatten_chr(plot_types()), selected = selected_plot, multiple = TRUE)
   })
 
   prefill_feature <- reactive({
@@ -305,21 +421,25 @@ plotDimRed <- function(input, output, session, seu, plot_types, featureType, org
   output$dplot <- plotly::renderPlotly({
     req(input$plottype)
     req(seu$active)
-
     req(input$customFeature)
-    if (length(input$dplottype) > 1) {
-      mycols = input$dplottype
+
+    if (length(input$plottype) > 1) {
+      mycols = input$plottype
 
       louvain_resolution = paste0(DefaultAssay(seu$active), "_snn_res.", input$resolution)
       leiden_resolution = paste0("leiden_clusters_", input$resolution)
       mycols <- gsub("^seurat$", louvain_resolution,
                      mycols)
+
       newcolname = paste(mycols, collapse = "_")
       newdata = as_tibble(seu$active[[mycols]], rownames = "Sample_ID") %>%
         tidyr::unite(!!newcolname, mycols) %>% deframe() %>%
         identity()
       seu$active <- AddMetaData(seu$active, metadata = newdata,
-                                col.name = newcolname)
+                         col.name = newcolname)
+
+      selected_plot(newcolname)
+
       plot_var(seu$active, dims = c(input$dim1, input$dim2), embedding = input$embedding,
                group = newcolname)
     }
@@ -452,30 +572,30 @@ tableSelected <- function(input, output, session, seu) {
 diffexui <- function(id) {
   ns <- NS(id)
   tagList(box(shinyWidgets::prettyRadioButtons(ns("diffex_scheme"),
-                                      "Cells to Compare",
-                                      choiceNames = c(
-                                        "Seurat Cluster",
-                                        "Custom"
-                                      ), choiceValues = c("seurat", "custom"),
-                                      selected = "seurat"
+    "Cells to Compare",
+    choiceNames = c(
+      "Seurat Cluster",
+      "Custom"
+    ), choiceValues = c("seurat", "custom"),
+    selected = "seurat"
   ), conditionalPanel(
     ns = ns,
     condition = "input.diffex_scheme == 'seurat'",
     sliderInput(ns("seuratResolution"), "Resolution of clustering algorithm (affects number of clusters)",
-                min = 0.2, max = 2, step = 0.2, value = 0.6
+      min = 0.2, max = 2, step = 0.2, value = 0.6
     ),
     numericInput(ns("cluster1"),
-                                                                "first cluster to compare",
-                                                                value = 0
+      "first cluster to compare",
+      value = 0
     ), numericInput(ns("cluster2"),
-                    "second cluster to compare",
-                    value = 1
+      "second cluster to compare",
+      value = 1
     )
   ), conditionalPanel(
     ns = ns,
     condition = "input.diffex_scheme == 'custom'",
     sliderInput(ns("customResolution"), "Resolution of clustering algorithm (affects number of clusters)",
-                min = 0.2, max = 2, step = 0.2, value = 0.6
+      min = 0.2, max = 2, step = 0.2, value = 0.6
     ),
     shinyWidgets::actionBttn(
       ns("saveClust1"),
@@ -485,8 +605,10 @@ diffexui <- function(id) {
       "Save to Custom Cluster 2"
     )
   ), uiOutput(ns("testChoices")),
-  shinyWidgets::actionBttn(ns("diffex"),
-                              "Run Differential Expression"),
+  shinyWidgets::actionBttn(
+    ns("diffex"),
+    "Run Differential Expression"
+  ),
   downloadLink(ns("downloadData"), "Download Complete DE Results"),
   DT::dataTableOutput(ns("DT1")),
   width = 12
@@ -497,21 +619,40 @@ diffexui <- function(id) {
     title = "Custom Cluster 2", DT::DTOutput(ns("cc2")),
     width = 12
   ))
+
 }
 
-
-
-#' Differential Expression
+#' Title
+#'
 #' @param input
-#' @param output
-#' @param session
-#' @param seu
 #'
 #' @return
 #' @export
 #'
 #' @examples
-diffex <- function(input, output, session, seu, featureType, tests = c("t-test" = "t", "wilcoxon rank-sum test" = "wilcox", "Likelihood-ratio test (bimodal)" = "bimod", "MAST" = "MAST")) {
+cells_selected <- function(input) {
+  if (identical(input, character(0))) {
+    "Please selected desired cells by clicking on the table"
+  } else {
+    NULL
+  }
+}
+
+#' Differential Expression
+#'
+#' @param input
+#' @param output
+#' @param session
+#' @param seu
+#' @param featureType
+#' @param selected_cells
+#' @param tests
+#'
+#' @return
+#' @export
+#'
+#' @examples
+diffex <- function(input, output, session, seu, featureType, selected_cells, tests = c("t-test" = "t", "wilcoxon rank-sum test" = "wilcox", "Likelihood-ratio test (bimodal)" = "bimod", "MAST" = "MAST")) {
   ns <- session$ns
 
   output$testChoices <- renderUI(
@@ -521,7 +662,6 @@ diffex <- function(input, output, session, seu, featureType, tests = c("t-test" 
     )
 
   )
-
 
   brush <- reactive({
     req(seu$active)
@@ -536,11 +676,17 @@ diffex <- function(input, output, session, seu, featureType, tests = c("t-test" 
   })
   custom_cluster1 <- eventReactive(input$saveClust1,
                                    {
-                                     isolate(brush())
+                                     validate(
+                                       cells_selected(selected_cells())
+                                     )
+                                     isolate(selected_cells())
                                    })
   custom_cluster2 <- eventReactive(input$saveClust2,
                                    {
-                                     isolate(brush())
+                                     validate(
+                                       cells_selected(selected_cells())
+                                     )
+                                     isolate(selected_cells())
                                    })
 
   output$cc1 <- DT::renderDT({
@@ -981,6 +1127,14 @@ rnaVelocity <- function(input, output, session, seu, featureType, format = "grid
 }
 
 
+#' Title
+#'
+#' @param id
+#'
+#' @return
+#' @export
+#'
+#' @examples
 monocleui <- function(id){
     ns <- NS(id)
     tagList(
@@ -1008,6 +1162,20 @@ monocleui <- function(id){
       )
 }
 
+#' Title
+#'
+#' @param input
+#' @param output
+#' @param session
+#' @param cds
+#' @param seu
+#' @param input_type
+#' @param resolution
+#'
+#' @return
+#' @export
+#'
+#' @examples
 monocle <- function(input, output, session, cds, seu, input_type, resolution){
     ns <- session$ns
 
@@ -1137,17 +1305,4 @@ monocle <- function(input, output, session, cds, seu, input_type, resolution){
     })
 
 }
-
-cellAlignui <- function(id){
-    ns <- NS(id)
-    tagList(
-
-        )
-    }
-
-cellAlign <- function(input, output, session){
-    ns <- session$ns
-}
-
-
 

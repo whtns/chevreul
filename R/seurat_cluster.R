@@ -57,7 +57,7 @@ find_all_markers <- function(seu, ...){
 
   clusters <- seu[[]][,cluster_index]
 
-  cluster_levels <- purrr::map_int(clusters, ~length(levels(.x)))
+  cluster_levels <- purrr::map_int(clusters, ~length(unique(.x)))
   cluster_levels <- cluster_levels[cluster_levels > 1]
 
   clusters <- dplyr::select(clusters, dplyr::one_of(names(cluster_levels)))

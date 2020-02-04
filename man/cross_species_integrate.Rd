@@ -4,11 +4,18 @@
 \alias{cross_species_integrate}
 \title{Integrate Seurat Objects from Moust to Human}
 \usage{
-cross_species_integrate(mouse_seu_list, human_seu_list,
-  excluded_cells = NULL, ...)
+cross_species_integrate(
+  mouse_seu_list,
+  human_seu_list,
+  excluded_cells = NULL,
+  ...
+)
 }
 \arguments{
 \item{human_seu_list}{}
+}
+\value{
+
 }
 \description{
 Integrate Seurat Objects from Moust to Human

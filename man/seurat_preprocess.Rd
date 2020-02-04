@@ -9,6 +9,9 @@ seurat_preprocess(seu, scale = TRUE, normalize = TRUE, ...)
 \arguments{
 \item{scale}{}
 }
+\value{
+
+}
 \description{
 Preprocess Seurat Object
 }

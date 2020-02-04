@@ -9,6 +9,9 @@ replace_markers_in_proj(suffixes, features, proj_dir)
 \arguments{
 \item{proj_dir}{}
 }
+\value{
+
+}
 \description{
 Convenience function to replace markers in seurat objects
 }

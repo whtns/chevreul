@@ -4,10 +4,13 @@
 \alias{arrange_ptime_heatmaps}
 \title{Arrange processed monocle CDS objects containing heatmaps}
 \usage{
-arrange_ptime_heatmaps(cds_list)
+arrange_ptime_heatmaps(cds_list, cds_name)
 }
 \arguments{
 \item{cds_list}{}
+}
+\value{
+
 }
 \description{
 Arrange processed monocle CDS objects containing heatmaps

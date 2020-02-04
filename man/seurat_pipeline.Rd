@@ -9,6 +9,9 @@ seurat_pipeline(seu = seu, resolution = 0.6, reduction = "pca", ...)
 \arguments{
 \item{resolution}{}
 }
+\value{
+
+}
 \description{
 Preprocess, Cluster and Reduce Dimensions for a single seurat object
 }

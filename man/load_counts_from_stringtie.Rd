@@ -4,11 +4,13 @@
 \alias{load_counts_from_stringtie}
 \title{Load Counts from Stringtie Files}
 \usage{
-load_counts_from_stringtie(proj_dir, txOut,
-  countsFromAbundance = "scaledTPM")
+load_counts_from_stringtie(proj_dir, countsFromAbundance = "scaledTPM")
 }
 \arguments{
 \item{countsFromAbundance}{}
+}
+\value{
+
 }
 \description{
 Load Counts from Stringtie Files

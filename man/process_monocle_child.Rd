@@ -9,6 +9,9 @@ process_monocle_child(ptime, monocle_cds)
 \arguments{
 \item{monocle_cds}{}
 }
+\value{
+
+}
 \description{
 Preprocess a Monocle v2 object for heatmap based on provided pseudotime
 }

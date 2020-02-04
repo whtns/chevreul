@@ -11,6 +11,9 @@ filter_low_rc_cells(seu, read_thresh = 1e+05)
 
 \item{read_thresh}{}
 }
+\value{
+
+}
 \description{
 Filter our Cells from Seurat below read count threshold
 }

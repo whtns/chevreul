@@ -9,6 +9,9 @@ allTranscriptsui(id)
 \arguments{
 \item{id}{}
 }
+\value{
+
+}
 \description{
 Plot All Transcripts UI
 }

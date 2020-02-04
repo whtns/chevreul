@@ -9,6 +9,9 @@ filter_merged_seu(seu, filter_var, filter_val, .drop = .drop)
 \arguments{
 \item{.drop}{}
 }
+\value{
+
+}
 \description{
 Filter a Single Seurat Object
 }

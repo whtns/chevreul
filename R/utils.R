@@ -1,3 +1,51 @@
+
+#' Rename cell ids from annoying old notation
+#'
+#' @param cell_ids
+#' @param batch_id
+#'
+#' @return
+#' @export
+#'
+#' @examples
+rename_from_x_notation <- function(cell_ids, batch_id){
+  cell_ids <- str_replace(cell_ids, "X", "")
+  cell_ids <- paste0(batch_id, str_pad(cell_ids, width = max(nchar(cell_ids)), pad = "0"))
+}
+
+#' Reformat Seurat Object Metadata
+#'
+#'
+#' @param seu
+#' @param cols
+#' @param new_col
+#'
+#' @return
+#' @export
+#'
+#' @examples
+combine_cols <- function(seu, cols, new_col) {
+
+  new_col <- janitor::make_clean_names(new_col)
+
+  # ensure that new colname will not be dropped
+  drop_cols <- cols[!cols == new_col]
+
+  # make sure that none of the columns to be coalesced are entirely NA
+  na_cols <- purrr::map_lgl(cols, ~all(is.na(seu$gene[[.x]])))
+  cols <- cols[!na_cols]
+
+  # check class of cols to be coalesced
+
+
+  meta <- tibble::rownames_to_column(seu$gene[[]]) %>%
+    dplyr::mutate_at(vars(one_of(cols)), as.character) %>%
+    dplyr::mutate(!!new_col := dplyr::coalesce(!!!syms(cols))) %>%
+    dplyr::select(-drop_cols) %>%
+    tibble::column_to_rownames(var = "rowname") %>%
+    identity()
+}
+
 #' Filter Rows to Top
 #'
 #' @param df
@@ -124,7 +172,7 @@ reorg_seurat_files <- function(proj_dir = NULL){
 #' Get Transcripts in Seurat Object
 #'
 #' @param seu
-#' @param gene
+  #' @param gene
 #' @param organism
 #'
 #' @return
@@ -136,5 +184,45 @@ get_transcripts_from_seu <- function(seu, gene, organism = "human") {
 
   transcripts <- transcripts[transcripts %in%
                                rownames(GetAssay(seu$transcript, "RNA"))]
+}
+
+#' pad sample numbers to prep for armor
+#'
+#' @param proj_dir
+#'
+#' @return
+#' @export
+#'
+#' @examples
+pad_sample_files <- function(proj_dir) {
+  fastq_files <-
+    fs::dir_ls(fs::path(proj_dir, "data", "FASTQ"), glob = "*.fastq.gz") %>%
+    purrr::set_names(path_file(.)) %>%
+    tibble::enframe("file", "path") %>%
+    tidyr::separate(file, into = c("proj_id", "sample_number", "pair"), sep = "-|_") %>%
+    dplyr::mutate(sample_number = str_pad(sample_number, max(nchar(sample_number)), pad = "0")) %>%
+    dplyr::mutate(file = fs::path(proj_dir, "data", "FASTQ", paste0(proj_id, "-", sample_number, "_", pair))) %>%
+    # dplyr::mutate() %>%
+    identity()
+
+  purrr::map2(fastq_files$path, fastq_files$file, file_move)
+
+}
+
+#' prep armor metadata file
+#'
+#' @param proj_dir
+#'
+#' @return
+#' @export
+#'
+#' @examples
+prep_armor_meta <- function(proj_dir){
+  seu <- load_seurat_from_proj(proj_dir)
+  meta <- seu[[1]]@meta.data %>%
+    dplyr::mutate(names = sample_id) %>%
+    dplyr::mutate(type = "PE")
+
+  readr::write_tsv(meta, fs::path(proj_dir, "data", "metadata.txt"))
 }
 

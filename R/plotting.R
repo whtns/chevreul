@@ -211,3 +211,267 @@ plot_multiple_branches_heatmap <- function(cds,
     return(ph_res)
   }
 }
+
+
+#' Plot RNA velocity Computed by Velocyto.R
+#'
+#' @param seu
+#' @param reduction
+#' @param format either an arrow or grid format
+#' @param arrow.scale
+#'
+#' @return
+#' @export
+#'
+#' @examples
+plot_velocity_arrows <- function(seu, reduction = "umap", format = "arrow", arrow.scale = 3){
+
+  emb <- Embeddings(object = seu, reduction = reduction)
+  ident.colors <- (scales::hue_pal())(n = length(x = levels(x = seu)))
+  names(x = ident.colors) <- levels(x = seu)
+  cell.colors <- ident.colors[Idents(object = seu)]
+  names(x = cell.colors) <- colnames(x = seu)
+
+  cell.alpha=1.0; cell.cex=1; fig.height=4; fig.width=4.5;
+
+  if (format == "arrow") {
+    velocyto.R::show.velocity.on.embedding.cor(emb, seu@misc$vel, n=100, scale='sqrt',
+                                               cell.colors=velocyto.R::ac(cell.colors, alpha=cell.alpha),
+                                               cex=cell.cex, arrow.scale=arrow.scale, arrow.lwd=1)
+  } else if (format == "grid"){
+    #Alternatively, the same function can be used to calculate a velocity vector field:
+    velocyto.R::show.velocity.on.embedding.cor(emb, seu@misc$vel, n=100, scale='sqrt',
+                                               cell.colors=velocyto.R::ac(cell.colors, alpha=cell.alpha),
+                                               cex=cell.cex, arrow.scale=arrow.scale,
+                                               show.grid.flow=TRUE, min.grid.cell.mass=0.5,
+                                               grid.n=20, arrow.lwd=2)
+  }
+
+
+}
+
+#' Plot RNA velocity trajectory computed by Velocyto.R
+#'
+#' @param seu
+#' @param reduction
+#' @param format either an arrow or grid format
+#' @param arrow.scale
+#'
+#' @return
+#' @export
+#'
+#' @examples
+plot_velocity_trajectory <- function(seu, reduction = "umap", format = "arrow", arrow.scale = 3){
+
+  emb <- Embeddings(object = seu, reduction = reduction)
+  ident.colors <- (scales::hue_pal())(n = length(x = levels(x = seu)))
+  names(x = ident.colors) <- levels(x = seu)
+  cell.colors <- ident.colors[Idents(object = seu)]
+  names(x = cell.colors) <- colnames(x = seu)
+
+  cell.alpha=1.0; cell.cex=1; fig.height=4; fig.width=4.5;
+
+  velocyto.R::show.velocity.on.embedding.eu(emb, seu@misc$vel, n=40, scale='sqrt', cell.colors=ac(cell.colors,alpha=cell.alpha),
+                                            cex=cell.cex, nPcs=30, sigma=2.5, show.trajectories=TRUE, diffusion.steps=400,
+                                            n.trajectory.clusters=15, ntop.trajectories=1,
+                                            embedding.knn=T, control.for.neighborhood.density=TRUE,n.cores=6)
+
+}
+
+#' Plot Metadata Variables
+#'
+#' @param seu
+#' @param embedding
+#' @param group
+#'
+#' @return
+#' @export
+#'
+#' @examples
+plot_var <- function(seu, embedding = "umap", group = "batch", dims = c(1,2)){
+  #
+  metadata <- as_tibble(seu[[]][Seurat::Cells(seu),], rownames = "sID")
+  cellid <- metadata[["sID"]]
+  key <- rownames(metadata)
+
+  if (embedding == "umap"){
+    dims = c(1,2)
+  } else if (embedding == "tsne"){
+    dims = c(1,2)
+  }
+
+  dims <- as.numeric(dims)
+
+  d <- Seurat::DimPlot(object = seu, dims = dims, reduction = embedding, group.by = group, pt.size = 0.5) +
+    aes(key = key, cellid = cellid)
+
+  plotly_plot <- plotly::ggplotly(d, tooltip = "cellid", height  = 750) %>%
+    plotly::layout(dragmode = "lasso") %>%
+    plotly::toWebGL() %>%
+    # plotly::partial_bundle() %>%
+    identity()
+
+}
+
+#' Make Violin Plots Based on Metadata and Feature Expression
+#'
+#' @param seu a seurat object
+#' @param plot_var a metadata value
+#' @param plot_vals set of values to subset on
+#' @param features vector of gene or transcript names
+#' @param ... additional arguments to \link[Seurat]{VlnPlot}
+#'
+#' @return
+#' @export
+#'
+plot_violin <- function(seu, plot_var = "batch", plot_vals = NULL, features = "RXRG", ...) {
+  if (is.null(plot_vals)){
+    plot_vals = unique(seu[[]][[plot_var]])
+
+    plot_vals <- plot_vals[!is.na(plot_vals)]
+  }
+
+  seu <- seu[,seu[[]][[plot_var]] %in% plot_vals]
+
+  vln_plot <- Seurat::VlnPlot(seu, features = features, group.by = plot_var, ...) +
+    labs(title = "Expression Values for each cell are normalized by that cell's total expression then multiplied by 10,000 and natural-log transformed")
+
+  vln_plot <- plotly::ggplotly(vln_plot, tooltip = "cellid", height = 750) %>%
+    plotly::layout(dragmode = "lasso") %>%
+    identity()
+
+  # plot(vln_plot)
+  return(vln_plot)
+
+}
+
+
+#' Plot Features
+#' This is a great function
+#' @param seu
+#' @param embedding
+#' @param features
+#' @param dims
+#'
+#' @return
+#' @export
+#'
+#' @examples
+plot_feature <- function(seu, embedding, features, dims = c(1,2), return_plotly = TRUE){
+
+  metadata <- as_tibble(seu[[]][Seurat::Cells(seu),], rownames = "sID")
+
+  cellid <- metadata[["sID"]]
+  key <- rownames(metadata)
+
+  if (embedding == "umap"){
+    dims = c(1,2)
+  } else if (embedding == "tsne"){
+    dims = c(1,2)
+  }
+
+  dims <- as.numeric(dims)
+
+  fp <- Seurat::FeaturePlot(object = seu, features = features, dims = dims, reduction = embedding, pt.size = 0.5)	+
+    aes(key = key, cellid = cellid)
+
+  if (return_plotly == FALSE) return(fp)
+
+  plotly_plot <- plotly::ggplotly(fp, tooltip = "cellid", height = 750) %>%
+    plotly::layout(dragmode = "lasso") %>%
+    plotly::toWebGL() %>%
+    # plotly::partial_bundle() %>%
+    identity()
+
+}
+
+#' Plot Rides
+#'
+#' @param seu
+#' @param features
+#'
+#' @return
+#' @export
+#'
+#' @examples
+plot_ridge <- function(seu, features){
+
+  cc_genes_path <- "~/single_cell_projects/resources/regev_lab_cell_cycle_genes.txt"
+  cc.genes <- readLines(con = cc_genes_path)
+  s.genes <- cc.genes[1:43]
+  g2m.genes <- cc.genes[44:97]
+
+  seu <- CellCycleScoring(object = seu, s.genes, g2m.genes,
+                          set.ident = TRUE)
+
+  RidgePlot(object = seu, features = features)
+
+  # plotly::ggplotly(r, height = 750)
+  #
+}
+
+
+#' Plot Cluster Marker Genes
+#'
+#' @param seu
+#' @param resolution
+#'
+#' @return
+#' @export
+#'
+#' @examples
+plot_markers <- function(seu, resolution, num_markers = 5){
+
+  markers <- seu@misc$markers[[resolution]] %>%
+    dplyr::top_n(n = num_markers, wt = logFC) %>%
+    dplyr::pull(feature) %>%
+    identity()
+
+  markerplot <- DotPlot(seu, features = unique(markers), group.by = resolution, dot.scale = 4) +
+    theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
+    coord_flip() +
+    NULL
+
+  plot_height = (300*num_markers)
+
+  plotly_plot <- plotly::ggplotly(markerplot, height = plot_height, width = 600) %>%
+    plotly::layout(dragmode = "lasso") %>%
+    plotly::toWebGL() %>%
+    # plotly::partial_bundle() %>%
+    identity()
+
+}
+
+#' Plot Read Count
+#'
+#' @param seu
+#' @param plot_type
+#'
+#' @return
+#' @export
+#'
+#' @examples
+plot_readcount <- function(seu, plot_type){
+
+  seu_tbl <- tibble::rownames_to_column(seu[[]], "SID")
+
+  rc_plot <- ggplot(seu_tbl, aes(x=reorder(SID, -nCount_RNA), y = nCount_RNA, fill = !!as.symbol(plot_type))) +
+    # scale_y_continuous(breaks = seq(0, 8e7, by = 5e5)) +
+    scale_y_log10() +
+    geom_bar(position = "identity", stat = "identity") +
+    # geom_text(data=subset(agg_qc_wo_na, Sample %in% thresholded_cells & align_type == "paired_total"),
+    #   aes(Sample, count, label=Sample)) +
+    # geom_text(data=subset(agg_qc_wo_na, Sample %in% low_read_count_cells & align_type == "paired_aligned_one"),
+    #   aes(Sample, count, label=Sample)) +
+    theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
+    # scale_fill_manual(values = c( "low_read_count"="tomato", "keep"="gray" ), guide = FALSE ) +
+    labs(title = "Paired Unique Reads", x = "Sample") +
+    NULL
+
+  rc_plot <- rc_plot %>%
+    plotly::toWebGL() %>%
+    # plotly::partial_bundle() %>%
+    identity()
+
+}
+

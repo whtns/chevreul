@@ -9,6 +9,9 @@ rename_markers(seu)
 \arguments{
 \item{seu}{}
 }
+\value{
+
+}
 \description{
 Convenience Function to transition existing seus
 }

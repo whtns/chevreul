@@ -9,6 +9,9 @@ findMarkers(input, output, session, seu)
 \arguments{
 \item{seu}{}
 }
+\value{
+
+}
 \description{
 Find Markers
 }

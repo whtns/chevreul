@@ -9,6 +9,9 @@ diffexui(id)
 \arguments{
 \item{id}{}
 }
+\value{
+
+}
 \description{
 Differential Expression UI
 }

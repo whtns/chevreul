@@ -4,16 +4,19 @@
 #' @param exp_query
 #' @param traj_ref
 #' @param traj_query
+#' @param Thresh
+#' @param winSz
+#' @param numPts
 #'
 #' @return
 #' @export
 #'
 #'
 #' @examples
-local_align <- function(exp_ref, exp_query, traj_ref, traj_query) {
+local_cellalign <- function(exp_ref, exp_query, traj_ref, traj_query, Thresh=0.2, winSz = 0.1, numPts = 200) {
   #interpolating and scaling data for local alignment
-  interLocalRef = cellAlign::interWeights(expDataBatch = exp_ref, trajCond = traj_ref, winSz = 0.1, numPts = numPts)
-  interLocalQuery = cellAlign::interWeights(expDataBatch = exp_query, trajCond = traj_query, winSz = 0.1, numPts = numPts)
+  interLocalRef = interWeights(expDataBatch = exp_ref, trajCond = traj_ref, winSz = winSz, numPts = numPts)
+  interLocalQuery = interWeights(expDataBatch = exp_query, trajCond = traj_query, winSz = winSz, numPts = numPts)
   interScaledLocalRef = cellAlign::scaleInterpolate(interLocalRef)
   interScaledLocalQuery = cellAlign::scaleInterpolate(interLocalQuery)
 
@@ -45,8 +48,8 @@ local_align <- function(exp_ref, exp_query, traj_ref, traj_query) {
   text(90,1,"Ref")
   text(150,1,"Query")
   text(125,.3,"red points are conserved")
-
-  return(alignment, alignment_plot)
+  browser()
+  return(list(alignment, alignment_plot))
 }
 
 #' Global Alignment of two trajectories with cellAlign
@@ -60,7 +63,7 @@ local_align <- function(exp_ref, exp_query, traj_ref, traj_query) {
 #' @export
 #'
 #' @examples
-global_align <- function(exp_ref, exp_query, traj_ref, traj_query){
+global_cellalign <- function(exp_ref, exp_query, traj_ref, traj_query, numPts = 200){
   interRef = cellAlign::interWeights(expDataBatch = exp_ref, trajCond = traj_ref,
                                      winSz = 0.1, numPts = numPts)
   interQuery = cellAlign::interWeights(expDataBatch = exp_query, trajCond = traj_query,
@@ -81,11 +84,11 @@ global_align <- function(exp_ref, exp_query, traj_ref, traj_query){
                           scores = list(query = interScaledGlobalQuery$traj,
                                         ref = interScaledGlobalRef$traj),
                           sigCalc = F, numPerm = 20)
-  p <- cellalign::plotAlign(alignment)
+  p <- cellAlign::plotAlign(alignment)
   #map interpolation to real data
   mapping = mapRealDataGlobal(alignment,intTrajQuery = interScaledGlobalQuery$traj, realTrajQuery = traj_query,
                               intTrajRef = interScaledGlobalRef$traj, realTrajRef = traj_ref)
-  mapping_plot <- cellalign::plotMapping(mapping)
+  mapping_plot <- cellAlign::plotMapping(mapping)
   print(p)
   print(mapping_plot)
   return(list(alignment, mapping))
@@ -97,21 +100,19 @@ global_align <- function(exp_ref, exp_query, traj_ref, traj_query){
 #' @param expGlobalQuery
 #' @param trajRef
 #' @param trajQuery
+#' @param winSz
+#' @param numPts
 #'
 #' @return
 #' @export
 #'
 #' @examples
-gene_test_plot <- function(expGlobalRef, expGlobalQuery, trajRef, trajQuery) {
-  numPts = 200
+gene_test_plot <- function(expGlobalRef, expGlobalQuery, trajRef, trajQuery, winSz = 0.1, numPts = 200) {
   interGlobalRef = cellAlign::interWeights(expDataBatch = expGlobalRef, trajCond = trajRef,
-                                           winSz = 0.1, numPts = numPts)
+                                           winSz = winSz, numPts = numPts)
   interGlobalQuery = cellAlign::interWeights(expDataBatch = expGlobalQuery, trajCond = trajQuery,
-                                             winSz = 0.1, numPts = numPts)
+                                             winSz = winSz, numPts = numPts)
 
-  # require(ggplot2)
-  # require(reshape2)
-  # require(pheatmap)
   sharedMarkers = intersect(rownames(expGlobalRef), rownames(expGlobalQuery))
   #whichgene="NRL"
   whichgene=sharedMarkers[1]
@@ -124,6 +125,7 @@ gene_test_plot <- function(expGlobalRef, expGlobalQuery, trajRef, trajQuery) {
   dfQuery = data.frame(traj = trajQuery, t(expGlobalQuery[whichgene,]))
   dfRefM = melt(dfRef, id.vars = 'traj')
   dfQueryM = melt(dfQuery, id.vars = 'traj')
+
   #plot of an example gene and its interpolation with error bars
   p <- ggplot(dfRefi, aes(x=traj,y=value)) +  geom_errorbar(aes(ymin=value-error/2, ymax=value+error/2)) + geom_line(size = 2) + geom_point(data=dfRefM, aes(x=traj,y=value)) + ggtitle(whichgene)
   print(p)

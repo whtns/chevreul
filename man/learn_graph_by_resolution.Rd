@@ -9,6 +9,9 @@ learn_graph_by_resolution(cds, seu, resolution = 1)
 \arguments{
 \item{resolution}{}
 }
+\value{
+
+}
 \description{
 Learn Monocle Graph by Resolution
 }

@@ -9,6 +9,9 @@ integrateProjui(id)
 \arguments{
 \item{id}{}
 }
+\value{
+
+}
 \description{
 Integrate Project UI
 }

@@ -9,6 +9,9 @@ geneEnrichment(input, output, session, seu, diffex_results)
 \arguments{
 \item{diffex_clusters}{}
 }
+\value{
+
+}
 \description{
 Gene Enrichment
 }

@@ -2,19 +2,27 @@
 % Please edit documentation in R/monocle2.R
 \name{plot_pseudotime_heatmap}
 \alias{plot_pseudotime_heatmap}
-\title{Plot Pseudotime Heatmap}
+\title{plot pseudotime heatmap}
 \usage{
-plot_pseudotime_heatmap(cds_subset, cluster_rows = TRUE,
-  hclust_method = "ward.D2", num_clusters = 6, hmcols = NULL,
-  add_annotation_row = NULL, add_annotation_col = NULL,
-  show_rownames = FALSE, use_gene_short_name = TRUE,
-  norm_method = c("log", "vstExprs"), scale_max = 3, scale_min = -3,
-  trend_formula = "~sm.ns(Pseudotime, df=3)", return_heatmap = FALSE,
-  cores = 1, ...)
+plot_pseudotime_heatmap(
+  heatmap_matrix,
+  heatmap_title,
+  dend_k = 6,
+  cluster_rows = T,
+  query_set = T,
+  hmcols = NULL,
+  seriation = F,
+  row_font = 4,
+  heatmap_height = 96,
+  heatmap_width = 8
+)
 }
 \arguments{
-\item{cores}{}
+\item{heatmap_width}{}
+}
+\value{
+
 }
 \description{
-Plot Pseudotime Heatmap
+plot pseudotime heatmap
 }

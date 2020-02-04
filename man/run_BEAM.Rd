@@ -4,11 +4,21 @@
 \alias{run_BEAM}
 \title{Run BEAM from Monocle2}
 \usage{
-run_BEAM(HSMM, branch_point, branches, pt_param, pt_paramval, colorval,
-  top_genes)
+run_BEAM(
+  HSMM,
+  branch_point,
+  branches,
+  pt_param,
+  pt_paramval,
+  colorval,
+  top_genes
+)
 }
 \arguments{
 \item{top_genes}{}
+}
+\value{
+
 }
 \description{
 http://cole-trapnell-lab.github.io/monocle-release/docs/#differential-expression-analysis
