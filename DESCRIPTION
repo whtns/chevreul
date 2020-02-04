@@ -9,7 +9,8 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 6.1.1
+RoxygenNote: 7.0.2
+biocViews:
 Imports: 
     fs,
     rprojroot,
@@ -30,7 +31,13 @@ Imports:
     SeuratWrappers (>= 0.1.0),
     monocle3 (>= 0.1.2),
     cellAlign (>= 0.1.0),
-    unglue
+    unglue,
+    shinyjqui,
+    Biobase,
+    EnrichmentBrowser,
+    tximport,
+    flexmix (<= 2.3.13),
+    scde (<= 1.99.2)
 Suggests: 
     dplyr,
     tidyr,
@@ -44,10 +51,7 @@ Remotes:
     immunogenomics/presto,
     satijalab/seurat-wrappers,
     cole-trapnell-lab/monocle3,
-    shenorrLab/cellAlign,
-    bioc::release/Biobase,
-    bioc::release/EnrichmentBrowser,
-    bioc::release/tximport
+    shenorrLab/cellAlign
 Depends: 
     Rcpp,
     Seurat
