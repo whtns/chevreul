@@ -9,6 +9,9 @@ seurat_integrate(seu_list, method = "cca", ...)
 \arguments{
 \item{...}{}
 }
+\value{
+
+}
 \description{
 Batch Correct Multiple Seurat Objects
 }

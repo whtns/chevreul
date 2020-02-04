@@ -9,6 +9,9 @@ annotate_cell_cycle(seu, feature, organism = "human", ...)
 \arguments{
 \item{seu_list}{A list of seurat objects}
 }
+\value{
+
+}
 \description{
 Annotate Cell Cycle for Gene and Transcript Seurat Objects
 }

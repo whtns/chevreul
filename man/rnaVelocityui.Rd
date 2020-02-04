@@ -9,6 +9,9 @@ rnaVelocityui(id)
 \arguments{
 \item{id}{}
 }
+\value{
+
+}
 \description{
 RNA Velocity UI
 }

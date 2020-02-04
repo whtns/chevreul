@@ -9,6 +9,9 @@ prep_slider_values(default_val)
 \arguments{
 \item{default_val}{}
 }
+\value{
+
+}
 \description{
 Prep Slider Values
 }

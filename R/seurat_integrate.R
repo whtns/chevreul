@@ -90,22 +90,25 @@ seurat_integrate <- function(seu_list, method = "cca", ...) {
 #' @examples
 seurat_cluster <- function(seu = seu, resolution = 0.6, custom_clust = NULL, reduction = "pca", ...){
   # browser()
+
   seu <- FindNeighbors(object = seu, dims = 1:10, reduction = reduction)
 
   if (length(resolution) > 1){
     for (i in resolution){
       # browser()
+      message(paste0("clustering at ", i, " resolution"))
       seu <- Seurat::FindClusters(object = seu, resolution = i)
     }
   } else if (length(resolution) == 1){
+    message(paste0("clustering at ", resolution, " resolution"))
     seu <- Seurat::FindClusters(object = seu, resolution = resolution, ...)
   }
 
   if (!is.null(custom_clust)){
     seu <- Seurat::StashIdent(object = seu, save.name = "old.ident")
-    clusters <- tibble::tibble("Sample_ID" = rownames(seu[[]])) %>%
+    clusters <- tibble::tibble("sampl_id" = rownames(seu[[]])) %>%
     tibbl::rownames_to_column("order") %>%
-    dplyr::inner_join(custom_clust, by = "Sample_ID") %>%
+    dplyr::inner_join(custom_clust, by = "sample_id") %>%
     dplyr::pull(cluster) %>%
     identity()
 
@@ -131,11 +134,11 @@ seurat_cluster <- function(seu = seu, resolution = 0.6, custom_clust = NULL, red
 load_seurat_path <- function(proj_dir = getwd(), prefix = "unfiltered"){
   # browser()
 
-  seu_path <- paste0(paste0("*", prefix, "_seu.rds"))
+  seu_regex <- paste0(paste0(".*/", prefix, "_seu.rds"))
 
   seu_path <- fs::path(proj_dir, "output", "seurat") %>%
     fs::dir_ls() %>%
-    fs::path_filter(seu_path) %>%
+    fs::path_filter(regexp = seu_regex) %>%
     identity()
   return(seu_path)
 }
@@ -168,13 +171,14 @@ load_seurat_from_proj <- function(proj_dir, ...){
 #' @param seus
 #' @param resolution
 #' @param ...
+#' @param feature
 #'
 #' @return
 #' @export
 #'
 #'
 #' @examples
-seurat_integration_pipeline <- function(seus, resolution, suffix = '', ...) {
+seurat_integration_pipeline <- function(seus, feature, resolution, suffix = '', ...) {
 
   corrected_seu <- seurat_integrate(seus, ...)
 
@@ -184,15 +188,15 @@ seurat_integration_pipeline <- function(seus, resolution, suffix = '', ...) {
   corrected_seu <- find_all_markers(corrected_seu)
 
   # add read count column
-  corrected_seus <- map(corrected_seus, add_read_count_col)
+  corrected_seu <- add_read_count_col(corrected_seu)
 
   # annotate cell cycle scoring to seurat objects
 
-  corrected_seu <- annotate_cell_cycle(corrected_seu)
+  corrected_seu <- annotate_cell_cycle(corrected_seu, feature, ...)
 
   #annotate excluded cells
 
-  corrected_seu <- map(corrected_seu, annotate_excluded, excluded_cells)
+  # corrected_seu <- annotate_excluded(corrected_seu, excluded_cells)
 
   # corrected_seu <- save_seurat(corrected_seu, feature = feature, suffix = suffix, ...)
 
@@ -211,7 +215,15 @@ seurat_integration_pipeline <- function(seus, resolution, suffix = '', ...) {
 #' @examples
 seurat_reduce_dimensions <- function(seu, reduction = "pca", ...) {
 
-  seu <- Seurat::RunPCA(object = seu, features = Seurat::VariableFeatures(object = seu), do.print = FALSE, ...)
+  num_samples <- dim(seu)[[2]]
+
+  if (num_samples < 50){
+    npcs = num_samples - 1
+  } else {
+    npcs = 50
+  }
+
+  seu <- Seurat::RunPCA(object = seu, features = Seurat::VariableFeatures(object = seu), do.print = FALSE, npcs = npcs, ...)
   if (reduction == "harmony"){
     seu <- harmony::RunHarmony(seu, "batch")
   }

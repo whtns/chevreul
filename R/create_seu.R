@@ -26,7 +26,7 @@ set_colnames_txi <- function(txi, colnames){
 #' @export
 #'
 #' @examples
-load_counts_from_stringtie <- function(proj_dir, txOut, countsFromAbundance = "scaledTPM"){
+load_counts_from_stringtie <- function(proj_dir, countsFromAbundance = "scaledTPM"){
   stringtie_paths <- rlang::with_handlers(
     error = ~ rlang::abort("Can't find input stringtie files (stringtie output with extension t._ctab)", parent  = .),
     stringtie_files <- fs::path(proj_dir, "output", "stringtie") %>%
@@ -38,11 +38,15 @@ load_counts_from_stringtie <- function(proj_dir, txOut, countsFromAbundance = "s
   tmp <- read_tsv(stringtie_paths[1])
   tx2gene <- tmp[, c("t_name", "gene_name")]
 
-  txi <- tximport::tximport(stringtie_files, type = "stringtie", tx2gene = tx2gene, txOut = txOut, countsFromAbundance = countsFromAbundance)
+  txi_transcripts <- tximport::tximport(stringtie_files, type = "stringtie", tx2gene = tx2gene, txOut = T, countsFromAbundance = countsFromAbundance)
+
+  txi_genes <- tximport::summarizeToGene(txi_transcripts, tx2gene = tx2gene)
 
   sample_names <- path_file(path_dir(stringtie_paths))
 
-  txi <- set_colnames_txi(txi, sample_names)
+  txi_features <- purrr::map(list(gene = txi_genes, transcript = txi_transcripts), ~set_colnames_txi(.x, sample_names))
+
+  # txi <- set_colnames_txi(txi, sample_names)
 
 }
 
@@ -65,7 +69,6 @@ load_meta <- function(proj_dir){
 
 ## ------------------------------------------------------------------------
 
-#Make SCE from census counts-------------------------------------------
 
 #' Create a Seurat Object from return of tximport
 #'
@@ -105,7 +108,7 @@ seu_from_tibbles <- function(exp_tbl, meta_tbl, census_counts=NULL){
   rownames(featuredata) <- featuredata[,1]
 
   meta_tbl <- data.frame(meta_tbl)
-  rownames(meta_tbl) <- meta_tbl[,"sample_id"]
+  rownames(meta_tbl) <- meta_tbl[,grepl("sample_id", colnames(meta_tbl), ignore.case = TRUE)]
 
   # exp_tbl[1:3] <- purrr::map(exp_tbl[1:3], ~ .x[,(colnames(.x) %in% rownames(meta_tbl))])
 
@@ -146,7 +149,6 @@ filter_low_rc_cells <- function(seu, read_thresh = 1e5){
 	seu <- subset(seu, cells = names(keep_cells))
 }
 
-
 #' Save seurat object to <project>/output/sce/<feature>_seu.rds
 #'
 #' @param ... named arguments specifying seurat objects list of seurat objects; default "gene" and "transcript"
@@ -174,10 +176,21 @@ save_seurat <- function(..., prefix = "unfiltered", proj_dir = getwd()){
 
   fs::dir_create(seurat_dir)
 
-
   seu_path <- fs::path(seurat_dir, paste0(prefix, "_seu.rds"))
 
-  message(paste0("saving seurat objects to ", seu_path))
+
+  if (interactive()) {
+    message(paste0("Do you want to save to ", fs::path_file(seu_path)))
+    confirm_save <- (menu(c("Yes", "No")) == 1)
+  } else {
+    confirm_save <- TRUE
+  }
+
+  if (!confirm_save){
+    stop("aborting project save")
+  }
+
+  message(paste0("saving to ", fs::path_file(seu_path)))
   saveRDS(seu_list, seu_path)
   if(prefix == "unfiltered"){
     Sys.chmod(seu_path, "755")

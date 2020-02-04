@@ -4,14 +4,22 @@
 \alias{integration_workflow}
 \title{Integration Workflow}
 \usage{
-integration_workflow(child_proj_dirs, excluded_cells, ...)
+integration_workflow(
+  child_proj_dirs,
+  excluded_cells,
+  resolution = seq(0.2, 2, by = 0.2),
+  ...
+)
 }
 \arguments{
 \item{child_proj_dirs}{child projects to be integrated}
 
 \item{excluded_cells}{named list of cells to exclude}
 
-\item{...}{}
+\item{resolution}{}
+}
+\value{
+
 }
 \description{
 Integrate multiple seurat objects and save to file

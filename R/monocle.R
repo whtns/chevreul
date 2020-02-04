@@ -161,8 +161,11 @@ plot_cds <- function(cds, resolution, color_cells_by = "louvain_cluster"){
     NULL
 
 
-  plotly::ggplotly(cds_plot, height = 400) %>%
-    # plotly::layout(dragmode = "lasso") %>%
+  cds_plot <-
+    cds_plot %>%
+    plotly::ggplotly(cds_plot, height = 400) %>%
+    plotly::toWebGL() %>%
+    # plotly::partial_bundle() %>%
     identity()
 
 

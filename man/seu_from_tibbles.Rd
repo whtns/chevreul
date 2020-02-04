@@ -9,6 +9,9 @@ seu_from_tibbles(exp_tbl, meta_tbl, census_counts = NULL)
 \arguments{
 \item{census_counts}{}
 }
+\value{
+
+}
 \description{
 Create a Seurat Object from a set of tibbles
 }

@@ -9,6 +9,9 @@ reset_seu_meta(seu, new_meta)
 \arguments{
 \item{new_meta}{}
 }
+\value{
+
+}
 \description{
 Reset Seurat Metadata
 }

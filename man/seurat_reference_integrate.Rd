@@ -9,6 +9,9 @@ seurat_reference_integrate(ref_seu_list, query_seu)
 \arguments{
 \item{query_seu}{}
 }
+\value{
+
+}
 \description{
 Predict One Seurat Object on another merged set
 }

@@ -9,6 +9,9 @@ plot_cds(cds, resolution, color_cells_by = "louvain_cluster")
 \arguments{
 \item{color_cells_by}{}
 }
+\value{
+
+}
 \description{
 Plot a Monocle Cell Data Set
 }

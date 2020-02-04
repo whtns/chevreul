@@ -9,6 +9,14 @@ scdeTest(data.use, cells.1, cells.2, verbose = TRUE, ...)
 \arguments{
 \item{...}{}
 }
+\value{
+
+}
 \description{
-Compare two sets of cells with scde package
+check here for old flexmix version https://github.com/hms-dbmi/scde/issues/40
+devtools::install_version("flexmix", version = "2.3-13", repos = "http://cran.us.r-project.org")
+}
+\section{in bash}{
+
+R CMD INSTALL 1.99.2.tar.gz
 }

@@ -1,6 +1,4 @@
 
-
-
 #' Predict One Seurat Object on another merged set
 #'
 #' @param ref_seu_list

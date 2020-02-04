@@ -11,6 +11,9 @@ save_proj_feature_seus(seu_list, proj_dir)
 
 \item{proj_dir}{}
 }
+\value{
+
+}
 \description{
 Convenience function to save all seurat objects of a given project by feature and suffix
 }

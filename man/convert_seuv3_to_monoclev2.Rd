@@ -4,10 +4,13 @@
 \alias{convert_seuv3_to_monoclev2}
 \title{Convert a Seurat V3 object to a Monocle v2 object}
 \usage{
-convert_seuv3_to_monoclev2(seu)
+convert_seuv3_to_monoclev2(seu, return_census = FALSE, sig_slice = 1000)
 }
 \arguments{
 \item{seu}{}
+}
+\value{
+
 }
 \description{
 Convert a Seurat V3 object to a Monocle v2 object

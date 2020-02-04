@@ -9,6 +9,9 @@ stash_marker_features(resolution, seu)
 \arguments{
 \item{seu}{}
 }
+\value{
+
+}
 \description{
-Marker Genes will be stored in slot \code{@misc$markers}
+Marker Genes will be stored in slot \verb{@misc$markers}
 }

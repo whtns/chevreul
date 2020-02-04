@@ -9,6 +9,9 @@ geneEnrichmentui(id)
 \arguments{
 \item{id}{}
 }
+\value{
+
+}
 \description{
 Gene Enrichment UI
 }

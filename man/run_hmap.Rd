@@ -4,11 +4,22 @@
 \alias{run_hmap}
 \title{Run heatmap from Monocle2}
 \usage{
-run_hmap(HSMM, BEAM_res, branches, pt_param, pt_paramval, colorval,
-  top_genes, out_pdf)
+run_hmap(
+  HSMM,
+  BEAM_res,
+  branches,
+  pt_param,
+  pt_paramval,
+  colorval,
+  top_genes,
+  out_pdf
+)
 }
 \arguments{
 \item{out_pdf}{}
+}
+\value{
+
 }
 \description{
 http://cole-trapnell-lab.github.io/monocle-release/docs/#differential-expression-analysis

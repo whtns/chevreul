@@ -9,6 +9,9 @@ find_all_markers(seu, ...)
 \arguments{
 \item{seu}{}
 }
+\value{
+
+}
 \description{
 Find All Markers at a range of resolutions
 }

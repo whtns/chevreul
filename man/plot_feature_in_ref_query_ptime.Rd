@@ -4,11 +4,20 @@
 \alias{plot_feature_in_ref_query_ptime}
 \title{Plot Expression of a Given Feature of a set of Pseudotimes}
 \usage{
-plot_feature_in_ref_query_ptime(cds_list, features = c("RXRG"),
-  color_by = "State", relative_expr = FALSE)
+plot_feature_in_ref_query_ptime(
+  cds_list,
+  features = c("RXRG"),
+  color_by = "State",
+  relative_expr = FALSE,
+  min_expr = 0.5,
+  ...
+)
 }
 \arguments{
-\item{features}{}
+\item{min_expr}{}
+}
+\value{
+
 }
 \description{
 Plot Expression of a Given Feature of a set of Pseudotimes

@@ -1,157 +1,3 @@
-
-#' Plot RNA velocity Computed by Velocyto.R
-#'
-#' @param vel velocity from velocyto.R
-#' @param emb embedding -- either tnse or umap
-#' @param cell.colors A vector of colors to use for the plot
-#' @param format either an arrow or grid format
-#'
-#' @return
-#' @export
-#'
-#' @examples
-plot_velocity <- function(vel, emb, cell.colors, format = "arrow") {
-
-  arrow.scale=3; cell.alpha=1.0; cell.cex=1; fig.height=4; fig.width=4.5;
-
-  if (format == "arrow") {
-    velocyto.R::show.velocity.on.embedding.cor(emb, vel, n=100, scale='sqrt',
-                                   cell.colors=velocyto.R::ac(cell.colors, alpha=cell.alpha),
-                                   cex=cell.cex, arrow.scale=arrow.scale, arrow.lwd=1)
-  } else if (format == "grid"){
-    #Alternatively, the same function can be used to calculate a velocity vector field:
-    velocyto.R::show.velocity.on.embedding.cor(emb, vel, n=100, scale='sqrt',
-                                   cell.colors=velocyto.R::ac(cell.colors, alpha=cell.alpha),
-                                   cex=cell.cex, arrow.scale=arrow.scale,
-                                   show.grid.flow=TRUE, min.grid.cell.mass=0.5,
-                                   grid.n=20, arrow.lwd=2)
-  }
-
-
-}
-
-#' Plot Metadata Variables
-#'
-#' @param seu
-#' @param embedding
-#' @param group
-#'
-#' @return
-#' @export
-#'
-#' @examples
-plot_var <- function(seu, embedding = "umap", group = "batch", dims = c(1,2)){
-  #
-  metadata <- as_tibble(seu[[]][Seurat::Cells(seu),], rownames = "sID")
-  cellid <- metadata[["sID"]]
-  key <- rownames(metadata)
-
-  if (embedding == "umap"){
-    dims = c(1,2)
-  } else if (embedding == "tsne"){
-    dims = c(1,2)
-  }
-
-  dims <- as.numeric(dims)
-
-  d <- Seurat::DimPlot(object = seu, dims = dims, reduction = embedding, group.by = group) +
-    aes(key = key, cellid = cellid)
-
-  plotly::ggplotly(d, tooltip = "cellid", height  = 750) %>%
-    plotly::layout(dragmode = "lasso") %>%
-    identity()
-
-}
-
-#' Make Violin Plots Based on Metadata and Feature Expression
-#'
-#' @param seu a seurat object
-#' @param plot_var a metadata value
-#' @param plot_vals set of values to subset on
-#' @param features vector of gene or transcript names
-#' @param ... additional arguments to \link[Seurat]{VlnPlot}
-#'
-#' @return
-#' @export
-#'
-plot_violin <- function(seu, plot_var = "batch", plot_vals = NULL, features = "RXRG", ...) {
-  if (is.null(plot_vals)){
-    plot_vals = unique(seu[[]][[plot_var]])
-  }
-
-  seu <- seu[,seu[[]][[plot_var]] %in% plot_vals]
-
-  vln_plot <- Seurat::VlnPlot(seu, features = features, group.by = plot_var, ...)
-
-  plot(vln_plot)
-  return(vln_plot)
-
-}
-
-
-#' Plot Features
-#' This is a great function
-#' @param seu
-#' @param embedding
-#' @param features
-#' @param dims
-#'
-#' @return
-#' @export
-#'
-#' @examples
-plot_feature <- function(seu, embedding, features, dims = c(1,2), return_plotly = TRUE){
-
-  metadata <- as_tibble(seu[[]][Seurat::Cells(seu),], rownames = "sID")
-
-  cellid <- metadata[["sID"]]
-  key <- rownames(metadata)
-
-  if (embedding == "umap"){
-    dims = c(1,2)
-  } else if (embedding == "tsne"){
-    dims = c(1,2)
-  }
-
-  dims <- as.numeric(dims)
-
-  fp <- Seurat::FeaturePlot(object = seu, features = features, dims = dims, reduction = embedding)	+
-    aes(key = key, cellid = cellid)
-
-  if (return_plotly == FALSE) return(fp)
-
-  plotly::ggplotly(fp, tooltip = "cellid", height = 750) %>%
-    plotly::layout(dragmode = "lasso") %>%
-    identity()
-
-}
-
-#' Plot Rides
-#'
-#' @param seu
-#' @param features
-#'
-#' @return
-#' @export
-#'
-#' @examples
-plot_ridge <- function(seu, features){
-
-  cc_genes_path <- "~/single_cell_projects/resources/regev_lab_cell_cycle_genes.txt"
-  cc.genes <- readLines(con = cc_genes_path)
-  s.genes <- cc.genes[1:43]
-  g2m.genes <- cc.genes[44:97]
-
-  seu <- CellCycleScoring(object = seu, s.genes, g2m.genes,
-                          set.ident = TRUE)
-
-  RidgePlot(object = seu, features = features)
-
-  # plotly::ggplotly(r, height = 750)
-  #
-}
-
-
 #' Run Seurat Differential Expression
 #'
 #' @param seu
@@ -289,64 +135,6 @@ run_enrichmentbrowser <- function(seu, cluster1_cells, cluster2_cells, ...){
   return(fs::path("enrichmentbrowser", "mainpage.html"))
 }
 
-#' Plot Cluster Marker Genes
-#'
-#' @param seu
-#' @param resolution
-#'
-#' @return
-#' @export
-#'
-#' @examples
-plot_markers <- function(seu, resolution, num_markers = 5){
-
-  markers <- seu@misc$markers[[resolution]] %>%
-    dplyr::top_n(n = num_markers, wt = logFC) %>%
-    dplyr::pull(feature) %>%
-    identity()
-
-  markerplot <- DotPlot(seu, features = unique(markers), group.by = resolution, dot.scale = 4) +
-    theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
-    coord_flip() +
-    NULL
-
-  plot_height = (300*num_markers)
-
-  plotly::ggplotly(markerplot, height = plot_height, width = 600) %>%
-    plotly::layout(dragmode = "lasso")
-
-}
-
-#' Plot Read Count
-#'
-#' @param seu
-#' @param plot_type
-#'
-#' @return
-#' @export
-#'
-#' @examples
-plot_readcount <- function(seu, plot_type){
-
-  seu_tbl <- tibble::rownames_to_column(seu[[]], "SID")
-
-  rc_plot <- ggplot(seu_tbl, aes(x=reorder(SID, -nCount_RNA), y = nCount_RNA, fill = !!as.symbol(plot_type))) +
-    # scale_y_continuous(breaks = seq(0, 8e7, by = 5e5)) +
-    scale_y_log10() +
-    geom_bar(position = "identity", stat = "identity") +
-    # geom_text(data=subset(agg_qc_wo_na, Sample %in% thresholded_cells & align_type == "paired_total"),
-    #   aes(Sample, count, label=Sample)) +
-    # geom_text(data=subset(agg_qc_wo_na, Sample %in% low_read_count_cells & align_type == "paired_aligned_one"),
-    #   aes(Sample, count, label=Sample)) +
-    theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
-    # scale_fill_manual(values = c( "low_read_count"="tomato", "keep"="gray" ), guide = FALSE ) +
-    labs(title = "Paired Unique Reads", x = "Sample") +
-    NULL
-
-  rc_plot <- plotly::ggplotly(rc_plot)
-}
-
-
 #' Prep Slider Values
 #'
 #' @param default_val
@@ -380,10 +168,19 @@ prep_slider_values <- function(default_val){
 seuratApp <- function(preset_project, filterTypes, appTitle, feature_types = "gene", futureMb = 849){
 
   print(feature_types)
-  proj_list <- create_proj_list()
-  proj_matrices <- create_proj_matrix(proj_list)
 
-  futureMb = 1500
+  # projList <- system("locate -d /dataVolume/storage/single_cell_projects/single_cell_projects.db '*_proj'", intern = TRUE) %>%
+  #   purrr::set_names(fs::path_file(.)) %>%
+  #   identity()
+  #
+  # pc_projList <- fs::path(fs::path_file(fs::path_dir(projList)), fs::path_file(projList))
+  # pc_preset <- fs::path(fs::path_file(fs::path_dir(preset_project)), fs::path_file(preset_project))
+  #
+  # preset_project <- projList[match(pc_preset, pc_projList)]
+  #
+  # print(projList)
+  # print(preset_project)
+
   future::plan(strategy = "multicore", workers = 6)
   future_size = futureMb*1024^2
   options(future.globals.maxSize= future_size)
@@ -391,37 +188,51 @@ seuratApp <- function(preset_project, filterTypes, appTitle, feature_types = "ge
                             info = TRUE, searching = TRUE, autoWidth = F, ordering = TRUE, scrollX = TRUE,
                             language = list(search = "Filter:")))
 
+  # header ------------------------
   header <- shinydashboard::dashboardHeader()
 
-  sidebar <- shinydashboard::dashboardSidebar(selectizeInput("setProject", "Select Project to Load", choices = proj_list, multiple  = F),
-                                              actionButton("loadProject", "Load Selected Project"),
-                                              textOutput("appTitle"),
-                                              uiOutput("featureType"),
-                                              # shinyWidgets::prettyRadioButtons("featureType", "Feature for Display", choices = featureTypes, selected = "gene"),
-                                              shinyWidgets::prettyRadioButtons("organism_type", "Organism", choices = c("human", "mouse"), selected = "human"),
-                                              shinyFiles::shinyFilesButton("seuratUpload", "Load a Seurat Dataset", "Please select a .rds file", multiple = FALSE),
-                                              shinyFiles::shinySaveButton("saveSeurat", "Save current Dataset", "Save file as...", filetype = list(rds = "rds")),
-                                              verbatimTextOutput("savefile"),
-                                              actionButton("changeEmbedAction", label = "Change Embedding Parameters"),
-                                              changeEmbedParamsui("changeembed"),
-                                              shinydashboard::sidebarMenu(shinydashboard::menuItem("Integrate Projects", tabName = "integrateProjects"),
-                                                                          shinydashboard::menuItem("Compare Plots", tabName = "comparePlots"),
-                                                                          shinydashboard::menuItem("Compare Read Counts", tabName = "compareReadCount"),
-                                                                          shinydashboard::menuItem("Differential Expression", tabName = "diffex"),
-                                                                          shinydashboard::menuItem("Gene Enrichment Analysis", tabName = "geneEnrichment"),
-                                                                          shinydashboard::menuItem("Find Markers", tabName = "findMarkers"),
-                                                                          shinydashboard::menuItem("Subset Seurat Input", tabName = "subsetSeurat"),
-                                                                          shinydashboard::menuItem("All Transcripts", tabName = "allTranscripts"),
-                                                                          # shinydashboard::menuItem("RNA Velocity", tabName = "rnaVelocity"),
-                                                                          shinydashboard::menuItem("Monocle", tabName = "monocle"),
-                                                                          # shinydashboard::menuItem("cellAlign", tabName = "cellAlign"),
-                                                                          shinydashboard::menuItem("Regress Features", tabName = "regressFeatures")),
+  # sidebar ------------------------
+ sidebar <- shinydashboard::dashboardSidebar(
+  # selectizeInput("setProject", "Select Project to Load", choices = projList, selected = preset_project, multiple = F),
+  uiOutput("projInput"),
+  actionButton("loadProject", "Load Selected Project"),
+  textOutput("appTitle"),
+  uiOutput("featureType"),
+  # shinyWidgets::prettyRadioButtons("featureType", "Feature for Display", choices = featureTypes, selected = "gene"),
+  shinyWidgets::prettyRadioButtons("organism_type", "Organism", choices = c("human", "mouse"), selected = "human"),
+  shinyFiles::shinyFilesButton("seuratUpload", "Load a Seurat Dataset", "Please select a .rds file", multiple = FALSE),
+  shinyFiles::shinySaveButton("saveSeurat", "Save current Dataset", "Save file as...", filetype = list(rds = "rds")),
+  verbatimTextOutput("savefile"),
+  actionButton("changeEmbedAction", label = "Change Embedding Parameters"),
+  changeEmbedParamsui("changeembed"),
+  # bookmarkButton(),
+  shinydashboard::sidebarMenu(
+    shinydashboard::menuItem("Integrate Projects", tabName = "integrateProjects"),
+    shinydashboard::menuItem("Reformat Metadata", tabName = "reformatMetadata"),
+    shinydashboard::menuItem("Compare Scatter Plots", tabName = "comparePlots"),
+    shinydashboard::menuItem("Compare Read Counts", tabName = "compareReadCount"),
+    shinydashboard::menuItem("Violin Plots", tabName = "violinPlots"),
+    shinydashboard::menuItem("Differential Expression", tabName = "diffex"),
+    shinydashboard::menuItem("Gene Enrichment Analysis", tabName = "geneEnrichment"),
+    shinydashboard::menuItem("Find Markers", tabName = "findMarkers"),
+    shinydashboard::menuItem("Subset Seurat Input", tabName = "subsetSeurat"),
+    shinydashboard::menuItem("All Transcripts", tabName = "allTranscripts"),
+    # shinydashboard::menuItem("RNA Velocity", tabName = "rnaVelocity"),
+    shinydashboard::menuItem("Monocle", tabName = "monocle"),
+    # shinydashboard::menuItem("cellAlign", tabName = "cellAlign"),
+    shinydashboard::menuItem("Regress Features", tabName = "regressFeatures")
+  ),
+  width = 450
+)
 
-                                              width = 450)
-
-
-
+# body ------------------------
   body <- shinydashboard::dashboardBody(shinydashboard::tabItems(
+    shinydashboard::tabItem(
+      tabName = "violinPlots",
+      h2("Violin Plots"), fluidRow(
+        plotViolinui("violinPlot")
+      )
+    ),
   shinydashboard::tabItem(
     tabName = "comparePlots",
     h2("Compare Plots"), fluidRow(
@@ -439,6 +250,12 @@ seuratApp <- function(preset_project, filterTypes, appTitle, feature_types = "ge
     tabName = "integrateProjects",
     h2("Integrate Projects"), fluidRow(
       (integrateProjui(
+        "hello"
+      )))
+  ), shinydashboard::tabItem(
+    tabName = "reformatMetadata",
+    h2("Reformat Metadata"), fluidRow(
+      (reformatMetadataui(
         "hello"
       )))
   ), shinydashboard::tabItem(
@@ -492,16 +309,18 @@ seuratApp <- function(preset_project, filterTypes, appTitle, feature_types = "ge
     ))
   ), shinydashboard::tabItem(
     tabName = "diffex",
-    h2("Differential Expression"), column(diffexui("hello"),
-      width = 6
-    ), column(box(plotDimRedui(
+    h2("Differential Expression"), column(box(plotDimRedui(
       "diffex"
     ), width = 12),
-    box(
-      title = "Selected Cells", tableSelectedui("diffex"),
-      width = 12
-    ),
-    width = 6
+      box(
+        tableSelectedui("diffex"), width = 12
+      ), width = 6),
+    column(
+      box(
+        diffexui("hello"),
+        width = 12
+      ),
+      width = 6
     )
   ),
   shinydashboard::tabItem(
@@ -509,16 +328,6 @@ seuratApp <- function(preset_project, filterTypes, appTitle, feature_types = "ge
     h2("Gene Enrichment"),
     geneEnrichmentui("hello")
   ),
-  # shinydashboard::tabItem(
-  #   tabName = "rnaVelocity",
-  #   h2("RNA Velocity"),
-  #   fluidRow(
-  #     box(rnaVelocityui("arrow"),
-  #         width = 12)),
-  #   fluidRow(
-  #     box(rnaVelocityui("grid"),
-  #         width = 12))
-  # ),
   shinydashboard::tabItem(
     tabName = "regressFeatures",
     h2("Regress Features"),
@@ -548,23 +357,42 @@ seuratApp <- function(preset_project, filterTypes, appTitle, feature_types = "ge
       )
     )
   )
-  # shinydashboard::tabItem(
-  #   tabName = "cellAlign",
-  #   h2("cellalign")
-  # )
 ))
 
-  ui <- dashboardPage(
-    header = header,
-    sidebar = sidebar,
-    body = body
-  )
+  # shinydashboard ui ------------------------
+  ui <- function(request){
+    ui <- dashboardPage(
+      header = header,
+      sidebar = sidebar,
+      body = body
+    )
+  }
 
+# shinydashboard server ------------------------
   server <- function(input, output, session) {
     options(warn = -1)
 
-    # sidebar
+    projList <- reactive({
+      system("locate -d /dataVolume/storage/single_cell_projects/single_cell_projects.db '*_proj'", intern = TRUE) %>%
+      purrr::set_names(fs::path_file(.))
+    })
 
+    # presetProject <- reactive({
+    #   pc_projList <- fs::path(fs::path_file(fs::path_dir(projList())), fs::path_file(projList()))
+    #   pc_preset <- fs::path(fs::path_file(fs::path_dir(preset_project)), fs::path_file(preset_project))
+    #
+    #   projList()[match(pc_preset, pc_projList())]
+    # })
+
+    output$projInput = renderUI({
+      selectizeInput("setProject", "Select Project to Load", choices = projList(), selected = preset_project, multiple = F)
+    })
+
+    proj_matrices <- reactive({
+      create_proj_matrix(projList())
+    })
+
+# sidebar ------------------------
     seu <- reactiveValues()
     proj_dir <- reactiveVal()
 
@@ -593,9 +421,9 @@ seuratApp <- function(preset_project, filterTypes, appTitle, feature_types = "ge
 
     # list volumes
     volumes <- reactive({
+      print(proj_dir())
       volumes <- c(Home = fs::path(proj_dir(), "output", "seurat"), "R Installation" = R.home(), shinyFiles::getVolumes())
       # print(volumes)
-      volumes
       })
 
 
@@ -654,7 +482,7 @@ seuratApp <- function(preset_project, filterTypes, appTitle, feature_types = "ge
 
       seu_names <- names(seu)[!(names(seu) == "active")]
 
-      shinyWidgets::prettyRadioButtons("feature_type", "Feature for Display", choices = seu_names, selected = "gene")
+      shinyWidgets::prettyRadioButtons("feature_type", "Feature for Display", choices = seu_names, selected = "gene", inline = T)
     })
 
     observeEvent(input$feature_type, {
@@ -698,31 +526,27 @@ seuratApp <- function(preset_project, filterTypes, appTitle, feature_types = "ge
       )
     })
 
+# body ------------------------
 
-    # observeEvent(input$subSeuratPath, { print(parseSavePath(volumes(), input$subSeuratPath)$datapath) })
-    #
-    # shiny::withProgress(
-    #   message = paste0("Downloading Data"),
-    #   value = 0,
-    #   {
-    #     shiny::incProgress(1/10)
-    #     Sys.sleep(1)
-    #     shiny::incProgress(5/10)
-    #     saveRDS(list(gene = seu$gene, transcript = seu$transcript), fileinfo$datapath)
-    #
-    #   }
-    # )
-
-
-    # body
-
-    integrationResults <- callModule(integrateProj, "hello", proj_matrices = proj_matrices, seu, proj_dir)
+    integrationResults <- callModule(integrateProj, "hello", proj_matrices, seu, proj_dir)
 
     observe({
       req(integrationResults())
-      proj_dir(integrationResults())
+      create_proj_db()
+      integration_path <- paste0(integrationResults(), "_proj")
+      proj_dir(integration_path)
+
+      newintegrated_project <- purrr::set_names(integration_path, fs::path_file(integration_path))
+
+      projList <- c(projList, newintegrated_project)
+
+      updateSelectizeInput(session, "setProject",
+                        label = "Select input label",
+                        choices = projList,
+      )
     })
 
+    seu <- callModule(reformatMetadata, "hello", seu)
     callModule(plotDimRed, "hello", seu, plot_types, featureType, organism_type = organism_type)
     callModule(plotDimRed, "howdy", seu, plot_types, featureType, organism_type = organism_type)
     callModule(plotDimRed, "diffex", seu, plot_types, featureType, organism_type = organism_type)
@@ -730,10 +554,11 @@ seuratApp <- function(preset_project, filterTypes, appTitle, feature_types = "ge
     callModule(plotDimRed, "markerScatter", seu, plot_types, featureType, organism_type = organism_type)
     callModule(plotReadCount, "hello2", seu, plot_types)
     callModule(plotReadCount, "howdy2", seu, plot_types)
+    callModule(plotViolin, "violinPlot", seu, featureType)
     callModule(tableSelected, "hello", seu)
-    callModule(tableSelected, "diffex", seu)
+    diffex_selected_cells <- callModule(tableSelected, "diffex", seu)
 
-    selected_cells <- callModule(tableSelected, "subset", seu)
+    subset_selected_cells <- callModule(tableSelected, "subset", seu)
 
     upload_cells <- reactive({
       req(input$uploadCsv)
@@ -748,7 +573,7 @@ seuratApp <- function(preset_project, filterTypes, appTitle, feature_types = "ge
         message("Beginning")
 
         for (i in names(seu)[!(names(seu) == "active")]){
-          seu[[i]] <- seu[[i]][, selected_cells()]
+          seu[[i]] <- seu[[i]][, subset_selected_cells()]
         }
 
         if(length(unique(seu$gene[[]]$batch)) > 1){
@@ -784,7 +609,7 @@ seuratApp <- function(preset_project, filterTypes, appTitle, feature_types = "ge
         shinyjs::html("subsetMessages", "")
         message("Beginning")
 
-        for (i in names(seu)){
+        for (i in names(seu)[!(names(seu) == "active")]){
           seu[[i]] <- seu[[i]][, upload_cells()]
         }
 
@@ -831,7 +656,9 @@ seuratApp <- function(preset_project, filterTypes, appTitle, feature_types = "ge
 
 
     callModule(findMarkers, "hello", seu)
-    diffex_results <- callModule(diffex, "hello", seu, featureType)
+
+    diffex_results <- callModule(diffex, "hello", seu, featureType, diffex_selected_cells)
+
     callModule(geneEnrichment, "hello", seu, diffex_results)
     observeEvent(input$plotTrx, {
       showModal(modalDialog(
@@ -960,9 +787,8 @@ seuratApp <- function(preset_project, filterTypes, appTitle, feature_types = "ge
 
     })
 
-    callModule(cellAlign, "hello")
-
 
   }
-  shinyApp(ui, server)
+  shinyApp(ui, server, enableBookmarking = "server")
+
 }
