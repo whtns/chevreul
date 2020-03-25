@@ -2,20 +2,16 @@
 % Please edit documentation in R/cross_species.R
 \name{convert_symbols_by_species}
 \alias{convert_symbols_by_species}
-\title{convert gene symbols between species}
+\title{Title}
 \usage{
-convert_symbols_by_species(src_genes, src_species, host = "uswest.ensembl.org")
+convert_symbols_by_species(src_genes, src_species)
 }
 \arguments{
-\item{src_genes}{a vector of hgnc/mgi symbols}
-
-\item{src_species}{"mouse" or "human"}
-
-\item{host}{the biomart host to use try also useast.ensembl.org}
+\item{src_species}{}
 }
 \value{
 
 }
 \description{
-convert gene symbols between species
+Title
 }

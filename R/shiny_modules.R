@@ -1,3 +1,99 @@
+#' Title
+#'
+#' @param id
+#'
+#' @return
+#' @export
+#'
+#' @examples
+downloadTable_UI <- function(id) {
+  ns <- NS(id)
+  tagList(
+    uiOutput(ns("geaDownloadButton"))
+    # downloadButton(ns("mydata"), "my data")
+  )
+}
+
+#' Title
+#'
+#' @param input
+#' @param output
+#' @param session
+#' @param mytable
+#'
+#' @return
+#' @export
+#'
+#' @examples
+downloadTable <- function(input, output, session, mytable) {
+  ns <- session$ns
+  results <- reactive({
+    req(mytable())
+    mytable()$results
+  })
+
+  reportLink <- reactive({
+    req(mytable())
+    mytable()$report
+  })
+
+  output$geaDownloadButton <- renderUI({
+    req(mytable())
+    downloadButton(ns("mydata"), "Gene Enrichment Results")
+  })
+
+  # Downloadable csv of selected dataset ----
+  output$mydata <- downloadHandler(
+    filename = function(){
+      paste0(fs::path_file(reportLink()), ".csv")
+      },
+    content = function(myfile) {
+      write.csv(results(), myfile, row.names = FALSE)
+    }
+  )
+}
+
+#' plot clustree ui
+#'
+#' @param id
+#'
+#' @return
+#' @export
+#'
+#' @examples
+plotClustree_UI <- function(id) {
+  ns <- NS(id)
+  tagList(
+    # textOutput(ns("checkSeu")),
+    plotOutput(ns("clustree"))
+
+  )
+}
+
+#' plot clustree server
+#'
+#' @param input
+#' @param output
+#' @param session
+#' @param seu
+#'
+#' @return
+#' @export
+#'
+#' @examples
+plotClustree <- function(input, output, session, seu) {
+
+  output$checkSeu <- renderText({
+    req(seu$active)
+    "test"
+  })
+
+  output$clustree <- renderPlot({
+    req(seu$active)
+    clustree::clustree(seu$active)
+  })
+
+}
 
 #' Plot Violin plots UI
 #'
@@ -11,9 +107,11 @@
 plotViolinui <- function(id){
   ns <- NS(id)
   tagList(
+    uiOutput(ns("vln_split")),
+    uiOutput(ns("split_val")),
     uiOutput(ns("vln_group")),
     uiOutput(ns("featuretext")),
-    plotly::plotlyOutput(ns("vplot"), height = 750)
+    plotOutput(ns("vplot"), height = 750)
 
   )
 }
@@ -48,15 +146,34 @@ plotViolin <- function(input, output, session, seu, feature_type){
               value = prefill_feature())
   })
 
+  output$vln_split <- renderUI({
+    req(seu$active)
+    selectizeInput(ns("vlnSplit"), "choose variable filter by", choices = colnames(seu$active[[]]), selected = "batch")
+  })
+
+  output$split_val <- renderUI({
+    req(seu$active)
+    req(input$vlnSplit)
+    selectizeInput(ns("splitVal"), "choose value to filter by", choices = unique(seu$active[[input$vlnSplit]][,1]))
+  })
+
   output$vln_group <- renderUI({
     req(seu$active)
     selectizeInput(ns("vlnGroup"), "choose variable to group by", choices = colnames(seu$active[[]]), selected = "batch")
   })
 
-  output$vplot <- renderPlotly({
+  output$vplot <- renderPlot({
     req(input$customFeature)
     req(input$vlnGroup)
-    plot_violin(seu$active, plot_var = input$vlnGroup, features = input$customFeature)
+    req(input$vlnSplit)
+
+    selected_cells <- as_tibble(seu$active[[input$vlnSplit]], rownames= "sample_id") %>%
+      dplyr::filter(!!sym(input$vlnSplit) == input$splitVal) %>%
+      dplyr::pull(sample_id)
+
+    sub_seu <- seu$active[,selected_cells]
+
+    plot_violin(sub_seu, plot_var = input$vlnGroup, features = input$customFeature)
   })
 }
 
@@ -76,6 +193,13 @@ reformatMetadataui <- function(id) {
     uiOutput(ns("colNames")),
     textInput(ns("newCol"), "provide a name for the new column"),
     actionButton(ns("mergeCol"), "Merge Selected Columns"),
+    checkboxInput(ns("header"), "Header", TRUE),
+    fileInput(ns("addCols"), "Choose CSV File of metadata with cell names in first column",
+              accept = c(
+                "text/csv",
+                "text/comma-separated-values,text/plain",
+                ".csv")
+    ),
     DTOutput(ns("seuTable")),
     width = 12
     )
@@ -96,6 +220,22 @@ reformatMetadataui <- function(id) {
 #' @examples
 reformatMetadata <- function(input, output, session, seu) {
   ns <- session$ns
+
+  meta <- reactiveValues()
+
+  observe({
+    # req(seu$active)
+    meta$old <- data.frame(seu$active[[]]) %>%
+      identity()
+
+    # na_cols <- purrr::map_lgl(meta$old, ~all(is.na(.x)))
+    # cluster_cols <- grepl("^cluster|snn_res", colnames(meta$old))
+    #
+    # keep_cols <- !(na_cols | cluster_cols)
+    #
+    # meta$old <- meta$old[,keep_cols]
+  })
+
   seuColNames <- reactive({
     seuColNames <- colnames(seu$gene[[]]) %>%
       purrr::set_names(.)
@@ -107,24 +247,41 @@ reformatMetadata <- function(input, output, session, seu) {
 
   observeEvent(input$mergeCol, {
 
-    meta <- combine_cols(seu, input$col_names, input$newCol)
+    combined_cols <- combine_cols(seu, input$col_names, input$newCol)
+    meta$new <- combined_cols
 
     for (i in names(seu)){
-      seu[[i]]@meta.data <- meta
+      seu[[i]] <- Seurat::AddMetaData(seu[[i]], meta$new)
     }
+
+    meta$old <- cbind(meta$old, meta$new)
+
+  })
+
+  observeEvent(input$addCols, {
+
+    inFile <- input$addCols
+
+    if (is.null(inFile))
+      return(NULL)
+
+    meta$new <- read.csv(inFile$datapath, header = input$header, row.names = 1)
+
+    for (i in names(seu)){
+      seu[[i]] <- Seurat::AddMetaData(seu[[i]], meta$new)
+      print(colnames(seu[[i]][[]]))
+    }
+
+    meta$old <- cbind(meta$old, meta$new)
+
   })
 
   output$seuTable <- renderDT({
-    meta <- data.frame(seu$active[[]])
+    # req(meta$old)
 
-    na_cols <- purrr::map_lgl(meta, ~all(is.na(.x)))
-    cluster_cols <- grepl("^cluster|snn_res", colnames(meta))
+    DT::datatable(meta$old, extensions = 'Buttons', options = list(dom = "Bft", buttons = c("copy", "csv"),
+                                                                  scrollX = "100px", scrollY = "800px"))
 
-    keep_cols <- !(na_cols | cluster_cols)
-
-    meta <- meta[,keep_cols]
-
-    DT::datatable(meta, extensions = 'ColReorder', options = list(colReorder = TRUE, scrollX = "100px", scrollY = "800px"))
 
   })
 
@@ -208,6 +365,12 @@ integrateProj <- function(input, output, session, proj_matrices, seu, proj_dir){
             shinyjs::html("integrationMessages", "")
             message("Beginning")
 
+            # check if seurat paths exist
+
+            # validate(
+            #   need(input$data != "", "Please select a data set")
+            # )
+
             mergedSeus(integration_workflow(selectedProjects()))
 
             message("Integration Complete!")
@@ -278,7 +441,15 @@ integrateProj <- function(input, output, session, proj_matrices, seu, proj_dir){
           {
             # Sys.sleep(6)
             shiny::incProgress(2/10)
+            # myseuratdir <- fs::path(paste0(integratedProjectSavePath(), "_proj"), "output", "seurat")
+            # dir.create(myseuratdir)
+            # myseuratpath <- fs::path(myseuratdir, "unfiltered_seu.rds")
+            # saveRDS(mergedSeus(), myseuratpath)
+            # Sys.chmod(myseuratpath)
             save_seurat(mergedSeus(), proj_dir = paste0(integratedProjectSavePath(), "_proj"))
+            set_permissions_call <- paste0("chmod -R 775 ", integratedProjectSavePath(), "_proj")
+            # print(set_permissions_call)
+            system(set_permissions_call)
             shiny::incProgress(8/10)
           })
 
@@ -524,9 +695,10 @@ tableSelected <- function(input, output, session, seu) {
     req(brush())
     selected_meta <- data.frame(seu$active[[]][brush(),])
 
+    # selection = list(mode = 'multiple', selected = c(1, 3, 8), target = 'row'),
     DT::datatable(selected_meta, extensions = "Buttons",
-                  options = list(dom = "Bft", buttons = c("copy",
-                                                          "csv"), scrollX = "100px", scrollY = "400px"))
+                  selection = list(mode = 'multiple', selected = 1:nrow(selected_meta), target = 'row'),
+                  options = list(dom = "Bft", buttons = c("copy", "csv"), scrollX = "100px", scrollY = "800px"))
   })
 
   selected_cells <- reactive({
@@ -739,7 +911,7 @@ diffex <- function(input, output, session, seu, featureType, selected_cells, tes
 
   })
 
-  return(cluster_list)
+  return(list(cluster_list = cluster_list, de_results = de_results))
 
 }
 
@@ -754,11 +926,26 @@ diffex <- function(input, output, session, seu, featureType, selected_cells, tes
 geneEnrichmentui <- function(id){
   ns <- NS(id)
   tagList(
-    actionButton(ns("enrichmentAction"), "Run Enrichment Analysis"),
-    textOutput(ns("enrichmentMessages")),
-    uiOutput(ns("reportLink"))
-    # tags$a("Results of Functional Enrichment Analysis", target = "_blank", href = "enrichmentbrowser/mainpage.html")
-    # tags$iframe(style = "height:1400px; width:100%", src = "enrichmentbrowser/mainpage.html")
+    fluidRow(
+      box(
+        actionButton(ns("enrichmentAction"), "Run Enrichment Analysis"),
+        textOutput(ns("enrichmentMessages")),
+        radioButtons(ns("enrichmentMethod"), "Enrichment Method to Use:",
+                     c("Gene Set Enrichment Analysis" = "gsea",
+                       "GO Over-representation Analysis" = "ora",
+                       "GO Network Analysis" = "nbea"),
+                     selected = c("ora")),
+      ),
+      box(
+        fileInput(ns("uploadDiffex"), "Choose CSV File Differential Expression Results",
+                  accept = c(
+                    "text/csv",
+                    "text/comma-separated-values,text/plain",
+                    ".csv")
+        )
+      )
+    ),
+    htmlOutput(ns("map"))
   )
 
 }
@@ -778,6 +965,18 @@ geneEnrichmentui <- function(id){
 #' @examples
 geneEnrichment <- function(input, output, session, seu, diffex_results){
     ns <- session$ns
+
+    observeEvent(input$uploadDiffex, {
+
+      inFile <- input$addCols
+
+      if (is.null(inFile))
+        return(NULL)
+
+      # meta$new <- read.csv(inFile$datapath, header = input$header, row.names = 1)
+
+    })
+
     enrichmentReport <- eventReactive(input$enrichmentAction, {
       withCallingHandlers({
         shinyjs::html("enrichmentMessages", "")
@@ -785,11 +984,14 @@ geneEnrichment <- function(input, output, session, seu, diffex_results){
 
         # showModal(modalDialog("Calculating Functional Enrichment", footer=NULL))
         enrichmentReport <- run_enrichmentbrowser(seu = seu$active,
-                              cluster1_cells = diffex_results()$cluster1,
-                              cluster2_cells = diffex_results()$cluster2)
+                              cluster_list = diffex_results$cluster_list(),
+                              de_results = diffex_results$de_results(),
+                              enrichment_method = input$enrichmentMethod)
 
         # enrichmentReport <- "enrichmentbrowser2/mainpage.html"
         # removeModal()
+
+        # zip::zipr("test.zip", "enrichmentreport")
 
         return(enrichmentReport)
 
@@ -800,8 +1002,15 @@ geneEnrichment <- function(input, output, session, seu, diffex_results){
     })
 
     output$reportLink <- renderUI({
-      tags$a("Results of Functional Enrichment Analysis", target = "_blank", href = enrichmentReport())
+      tags$a("Results of Functional Enrichment Analysis", target = "_blank", href = enrichmentReport()$report)
     })
+
+    output$map <- renderUI({
+      tags$iframe(seamless="seamless", src= enrichmentReport()$report, width=1000, height=800)
+    })
+
+    return(enrichmentReport)
+
 
 }
 

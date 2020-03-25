@@ -81,7 +81,7 @@ convert_human_seu_to_mouse <- function(seu){
 #' @export
 #'
 #' @examples
-convert_symbols_by_species <- function(src_genes, src_species, host = "uswest.ensembl.org"){
+convert_symbols_by_biomart <- function(src_genes, src_species, host = "uswest.ensembl.org"){
   # browser()
   if(src_species == "human"){
     dest_species = "mouse"
@@ -97,27 +97,52 @@ convert_symbols_by_species <- function(src_genes, src_species, host = "uswest.en
     dest_attribute = "hgnc_symbol"
   }
 
-  genesV2 = biomaRt::getLDS(attributes = src_attribute, filters = src_attribute, values = src_genes , mart = src_species_mart, attributesL = dest_attribute, martL = dest_species_mart, uniqueRows=T)
+  chunk2 <- function(x,n) split(x, cut(seq_along(x), n, labels = FALSE))
+
+  src_genes <- chunk2(src_genes, 4)
+
+  genesv2 <- purrr::map(src_genes, ~biomaRt::getLDS(attributes = src_attribute,
+                                                    filters = src_attribute,
+                                                    values = .x ,
+                                                    mart = src_species_mart,
+                                                    attributesL = dest_attribute,
+                                                    martL = dest_species_mart,
+                                                    uniqueRows=T)
+  )
+
+  genesv2 <- dplyr::bind_rows(genesv2)
 
   dest_symbols <- genesV2[match(src_genes, genesV2[,1]),]
   names(dest_symbols) <- c(src_species, dest_species)
 
-  # use if biomart server is down
-  # symbols <- c("SERPINA1","KERA","CD5")
-  #
-  # ensemblprots <- AnnotationDbi::select(ensdb,
-  #                                       keys = symbols,
-  #                                       columns = c("PROTEINID", "GENEID"),
-  #                                       keytype = c("SYMBOL")) %>%
-  #   dplyr::pull(PROTEINID)
-  #
-  # x <- hom.Hs.inpMUSMU# Get honeybee IDs that are paralogous to the pkg IDs
-  # mapped_IDs <- mappedkeys(x)
-  # # Convert to a list
-  # xx <- as.list(x[mapped_IDs])
-  #
-  # orthologs <- xx[ensemblprots]
+  return(dest_symbols)
+}
 
+#' Title
+#'
+#' @param src_genes
+#' @param src_species
+#'
+#' @return
+#' @export
+#'
+#' @examples
+convert_symbols_by_species <- function(src_genes, src_species){
+  # browser()
+  if(src_species == "human"){
+    dest_species = "mouse"
+
+    genesV2 <- human_to_mouse_homologs
+
+  } else if (src_species == "mouse"){
+    dest_species = "human"
+
+    genesV2 <- mouse_to_human_homologs
+
+  }
+
+  dest_symbols <- genesV2[match(src_genes, genesV2[,1]),]
+  names(dest_symbols) <- c(src_species, dest_species)
 
   return(dest_symbols)
 }

@@ -20,6 +20,7 @@ run_seurat_de <- function(seu, cluster1, cluster2, resolution, diffex_scheme = "
       active_assay <- "RNA"
     }
 
+
     Idents(seu) <- paste0(active_assay, "_snn_res.", resolution)
     seu <- subset(seu, idents = c(cluster1, cluster2))
   } else if (diffex_scheme == "custom"){
@@ -72,24 +73,40 @@ run_seurat_de <- function(seu, cluster1, cluster2, resolution, diffex_scheme = "
   }
   names(test_list) <- tests
   return(test_list)
+
 }
 
 
 #' Run Enrichment Browser on Differentially Expressed Genes
 #'
 #' @param seu
-#' @param cluster1_cells
-#' @param cluster2_cells
+#' @param enrichment_method
+#' @param ...
+#' @param cluster_list
+#' @param de_results
 #'
 #' @return
 #' @export
 #'
 #' @examples
-run_enrichmentbrowser <- function(seu, cluster1_cells, cluster2_cells, ...){
+run_enrichmentbrowser <- function(seu, cluster_list, de_results, enrichment_method = c("ora"), ...){
 
-    # subset by supplied cell ids
-    #
+  cluster1_cells <- cluster_list$cluster1
+  cluster2_cells <- cluster_list$cluster2
+
+  test_diffex_results <- de_results$t %>%
+    dplyr::mutate(FC = log2(exp(avg_logFC))) %>%
+    dplyr::mutate(ADJ.PVAL = p_val_adj) %>%
+    dplyr::distinct(symbol, .keep_all = TRUE) %>%
+    tibble::column_to_rownames("symbol") %>%
+    identity()
+
+  # subset by supplied cell ids
+  #
   seu <- seu[,c(cluster1_cells, cluster2_cells)]
+  seu <- seu[rownames(seu) %in% de_results$t$symbol,]
+
+  seu[["RNA"]]@meta.features <- test_diffex_results
 
   keep_cells <- c(cluster1_cells, cluster2_cells)
   new_idents <- c(rep(0, length(cluster1_cells)), rep(1, length(cluster2_cells)))
@@ -97,11 +114,13 @@ run_enrichmentbrowser <- function(seu, cluster1_cells, cluster2_cells, ...){
   new_idents <- new_idents[colnames(seu)]
   Idents(seu) <- new_idents
 
-  counts <- GetAssayData(seu, slot = "counts")
+  counts <- GetAssayData(seu, assay = "RNA", slot = "counts")
   counts <- as.matrix(counts)
   mode(counts) <- "integer"
 
-  rowData <- data.frame(rownames(seu), row.names = rownames(seu))
+  rowData <- data.frame(FC = seu[["RNA"]][[]]$FC,
+                        ADJ.PVAL = seu[["RNA"]][[]]$ADJ.PVAL,
+                        row.names = rownames(seu@assays$RNA))
 
   colData <- as.data.frame(seu[[]])
 
@@ -110,29 +129,51 @@ run_enrichmentbrowser <- function(seu, cluster1_cells, cluster2_cells, ...){
 
   se$GROUP <- forcats::fct_inseq(Idents(seu))
 
-  se <- EnrichmentBrowser::deAna(se, grp = se$GROUP, de.method = "edgeR")
+  # se <- EnrichmentBrowser::deAna(se, grp = se$GROUP, de.method = "edgeR")
   se <- EnrichmentBrowser::idMap(se, org = "hsa", from = "SYMBOL", to = "ENTREZID")
 
   outdir <- fs::path("www", "enrichmentbrowser")
-  report.name = "mainpage.html"
 
-  hsa.grn <- EnrichmentBrowser::compileGRN(org="hsa", db="kegg")
+  # hsa.grn <- EnrichmentBrowser::compileGRN(org="hsa", db="kegg")
 
   # EnrichmentBrowser::ebrowser( meth=c("ora", "ggea"), perm=0, comb=TRUE,
   #           exprs=se, gs=go.gs, grn=hsa.grn, org="hsa", nr.show=3,
   #           out.dir=outdir, report.name=report.name, browse = FALSE)
 
-  sbea.res <- EnrichmentBrowser::sbea(method = "ora", se = se, gs = go.gs, perm = 0,
+
+  enrichment.res <- list()
+
+  if("ora" %in% enrichment_method){
+  enrichment.res$ora <- EnrichmentBrowser::sbea(method = "ora", se = se, gs = go.gs, perm = 0,
                                       alpha = 0.1)
-
-  nbea.res <- EnrichmentBrowser::nbea(method="ggea", se=se, gs=go.gs, grn=hsa.grn)
-
-  res <- EnrichmentBrowser::combResults(list(sbea.res, nbea.res))
-
-  EnrichmentBrowser::eaBrowse(res, html.only = TRUE, out.dir = outdir, graph.view=hsa.grn,
+  results <- enrichment.res$ora
+  report.name = "ora.html"
+  EnrichmentBrowser::eaBrowse(results, html.only = TRUE, out.dir = outdir, graph.view=hsa.grn,
                               report.name = report.name)
 
-  return(fs::path("enrichmentbrowser", "mainpage.html"))
+  }
+
+  if ("gsea" %in% enrichment_method){
+  enrichment.res$gsea <- EnrichmentBrowser::sbea(method = "gsea", se = se, gs = msigdb.gs, perm = 100,
+                                     alpha = 0.1)
+  results <- enrichment.res$gsea
+  report.name = "gsea.html"
+  EnrichmentBrowser::eaBrowse(results, html.only = TRUE, out.dir = outdir, graph.view=hsa.grn,
+                              report.name = report.name)
+
+  }
+
+  if ("nbea" %in% enrichment_method){
+  enrichment.res$nbea <- EnrichmentBrowser::nbea(method="ggea", se=se, gs=go.gs, grn=hsa.grn)
+
+  results <- enrichment.res$nbea
+  report.name = "nbea.html"
+  EnrichmentBrowser::eaBrowse(results, html.only = TRUE, out.dir = outdir, graph.view=hsa.grn,
+                              report.name = report.name)
+
+  }
+
+  return(list(report = fs::path("enrichmentbrowser", report.name), results = results$res.tbl))
 }
 
 #' Prep Slider Values
@@ -165,7 +206,7 @@ prep_slider_values <- function(default_val){
 #' @export
 #'
 #' @examples
-seuratApp <- function(preset_project, filterTypes, appTitle, feature_types = "gene", futureMb = 849){
+seuratApp <- function(preset_project, filterTypes, appTitle, feature_types = "gene", futureMb = 1000){
 
   print(feature_types)
 
@@ -196,6 +237,7 @@ seuratApp <- function(preset_project, filterTypes, appTitle, feature_types = "ge
   # selectizeInput("setProject", "Select Project to Load", choices = projList, selected = preset_project, multiple = F),
   uiOutput("projInput"),
   actionButton("loadProject", "Load Selected Project"),
+  shinyFiles::shinyDirButton("deleteProject", "Delete an Integrated Project or Dataset", "Please select a file or directory to delete"),
   textOutput("appTitle"),
   uiOutput("featureType"),
   # shinyWidgets::prettyRadioButtons("featureType", "Feature for Display", choices = featureTypes, selected = "gene"),
@@ -217,7 +259,7 @@ seuratApp <- function(preset_project, filterTypes, appTitle, feature_types = "ge
     shinydashboard::menuItem("Find Markers", tabName = "findMarkers"),
     shinydashboard::menuItem("Subset Seurat Input", tabName = "subsetSeurat"),
     shinydashboard::menuItem("All Transcripts", tabName = "allTranscripts"),
-    # shinydashboard::menuItem("RNA Velocity", tabName = "rnaVelocity"),
+    shinydashboard::menuItem("RNA Velocity", tabName = "rnaVelocity"),
     shinydashboard::menuItem("Monocle", tabName = "monocle"),
     # shinydashboard::menuItem("cellAlign", tabName = "cellAlign"),
     shinydashboard::menuItem("Regress Features", tabName = "regressFeatures")
@@ -229,8 +271,11 @@ seuratApp <- function(preset_project, filterTypes, appTitle, feature_types = "ge
   body <- shinydashboard::dashboardBody(shinydashboard::tabItems(
     shinydashboard::tabItem(
       tabName = "violinPlots",
-      h2("Violin Plots"), fluidRow(
-        plotViolinui("violinPlot")
+      h2("Violin Plots"),
+      fluidRow(
+        box(
+          plotViolinui("violinPlot")
+        )
       )
     ),
   shinydashboard::tabItem(
@@ -241,10 +286,15 @@ seuratApp <- function(preset_project, filterTypes, appTitle, feature_types = "ge
       )), box(plotDimRedui(
         "howdy"
       ))
-    ), fluidRow(box(
+    ), fluidRow(
+      box(
       title = "Selected Cells",
-      tableSelectedui("hello"), width = 12
-    ))
+      tableSelectedui("hello"), width = 6
+    ),
+    box(
+      plotClustree_UI("clustreePlot")
+    )
+    )
   ),
   shinydashboard::tabItem(
     tabName = "integrateProjects",
@@ -326,7 +376,8 @@ seuratApp <- function(preset_project, filterTypes, appTitle, feature_types = "ge
   shinydashboard::tabItem(
     tabName = "geneEnrichment",
     h2("Gene Enrichment"),
-    geneEnrichmentui("hello")
+    geneEnrichmentui("hello"),
+    downloadTable_UI("hello")
   ),
   shinydashboard::tabItem(
     tabName = "regressFeatures",
@@ -419,23 +470,39 @@ seuratApp <- function(preset_project, filterTypes, appTitle, feature_types = "ge
       paste0("Loaded Project: ", fs::path_file(proj_dir()))
     })
 
-    # list volumes
-    volumes <- reactive({
+    # list project volumes
+    project_volumes <- reactive({
       print(proj_dir())
-      volumes <- c(Home = fs::path(proj_dir(), "output", "seurat"), "R Installation" = R.home(), shinyFiles::getVolumes())
-      # print(volumes)
+      project_volumes <- c(Home = fs::path("/dataVolume/storage/single_cell_projects/integrated_projects"), "R Installation" = R.home(), shinyFiles::getVolumes())
+    })
+
+    # list dataset_volumes
+    dataset_volumes <- reactive({
+      print(proj_dir())
+      dataset_volumes <- c(Home = fs::path(proj_dir(), "output", "seurat"), "R Installation" = R.home(), shinyFiles::getVolumes())
       })
 
 
     observe({
-      req(volumes())
-      shinyFiles::shinyFileChoose(input, "seuratUpload", roots = volumes(), session = session)
+      req(dataset_volumes())
+      shinyFiles::shinyFileChoose(input, "seuratUpload", roots = dataset_volumes(), session = session)
+    })
+
+    observe({
+      req(project_volumes())
+      shinyFiles::shinyDirChoose(input, "deleteProject", roots = project_volumes(), session = session, restrictions = system.file(package = "base"))
     })
 
     uploadSeuratPath <- eventReactive(input$seuratUpload, {
-      req(volumes())
-      file <- shinyFiles::parseFilePaths(volumes(), input$seuratUpload)
+      req(dataset_volumes())
+      file <- shinyFiles::parseFilePaths(dataset_volumes(), input$seuratUpload)
       file$datapath
+    })
+
+    deleteSeuratPath <- eventReactive(input$deleteProject, {
+      req(project_volumes())
+      file <- shinyFiles::parseDirPath(project_volumes(), input$deleteProject)
+      # file$datapath
     })
 
     observeEvent(input$seuratUpload, {
@@ -477,6 +544,22 @@ seuratApp <- function(preset_project, filterTypes, appTitle, feature_types = "ge
 
     })
 
+    observeEvent(input$deleteProject, {
+      req(deleteSeuratPath())
+
+      message = paste0("Deleting Project")
+      print(deleteSeuratPath())
+      # delete_seurat(deleteSeuratPath())
+      fs::file_delete(deleteSeuratPath())
+      showModal(modalDialog(
+        title = "Project Deleted",
+        paste0("You successfully deleted: ", deleteSeuratPath()),
+        easyClose = TRUE,
+        footer = NULL
+      ))
+
+    })
+
     output$featureType <- renderUI({
       req(seu)
 
@@ -496,14 +579,14 @@ seuratApp <- function(preset_project, filterTypes, appTitle, feature_types = "ge
 
     # save seurat object
     observe({
-      shinyFiles::shinyFileSave(input, "saveSeurat", roots = volumes(), session = session, restrictions = system.file(package = "base"))
+      shinyFiles::shinyFileSave(input, "saveSeurat", roots = dataset_volumes(), session = session, restrictions = system.file(package = "base"))
     })
 
 
     subSeuratPath <- eventReactive(input$saveSeurat, {
 
       req(seu$active)
-      savefile <- shinyFiles::parseSavePath(volumes(), input$saveSeurat)
+      savefile <- shinyFiles::parseSavePath(dataset_volumes(), input$saveSeurat)
 
       return(savefile$datapath)
 
@@ -529,6 +612,8 @@ seuratApp <- function(preset_project, filterTypes, appTitle, feature_types = "ge
 # body ------------------------
 
     integrationResults <- callModule(integrateProj, "hello", proj_matrices, seu, proj_dir)
+    # for debugging
+    # integrationResults <- proj_dir
 
     observe({
       req(integrationResults())
@@ -538,11 +623,13 @@ seuratApp <- function(preset_project, filterTypes, appTitle, feature_types = "ge
 
       newintegrated_project <- purrr::set_names(integration_path, fs::path_file(integration_path))
 
-      projList <- c(projList, newintegrated_project)
+      newprojList <- c(projList(), newintegrated_project)
+      print(integration_path)
+      # print(newprojList)
 
       updateSelectizeInput(session, "setProject",
                         label = "Select input label",
-                        choices = projList,
+                        choices = newprojList,
       )
     })
 
@@ -555,6 +642,7 @@ seuratApp <- function(preset_project, filterTypes, appTitle, feature_types = "ge
     callModule(plotReadCount, "hello2", seu, plot_types)
     callModule(plotReadCount, "howdy2", seu, plot_types)
     callModule(plotViolin, "violinPlot", seu, featureType)
+    callModule(plotClustree, "clustreePlot", seu)
     callModule(tableSelected, "hello", seu)
     diffex_selected_cells <- callModule(tableSelected, "diffex", seu)
 
@@ -659,7 +747,13 @@ seuratApp <- function(preset_project, filterTypes, appTitle, feature_types = "ge
 
     diffex_results <- callModule(diffex, "hello", seu, featureType, diffex_selected_cells)
 
-    callModule(geneEnrichment, "hello", seu, diffex_results)
+    enrichment_report <- callModule(geneEnrichment, "hello", seu, diffex_results)
+
+    observe({
+      req(enrichment_report())
+      callModule(downloadTable, "hello", enrichment_report)
+    })
+
     observeEvent(input$plotTrx, {
       showModal(modalDialog(
         title = "Plotting Transcripts",
@@ -671,7 +765,7 @@ seuratApp <- function(preset_project, filterTypes, appTitle, feature_types = "ge
     })
 
     # callModule(rnaVelocity, "arrow", seu, featureType, "arrow")
-    # callModule(rnaVelocity, "grid", seu, featureType, "grid")
+    callModule(rnaVelocity, "grid", seu, featureType, "grid")
 
     observe({
       updateSelectizeInput(session,
@@ -706,12 +800,12 @@ seuratApp <- function(preset_project, filterTypes, appTitle, feature_types = "ge
     })
 
     observe({
-      shinyFiles::shinyFileChoose(input, "loadCDS", roots = volumes(), session = session)
+      shinyFiles::shinyFileChoose(input, "loadCDS", roots = dataset_volumes(), session = session)
     })
 
 
     cdsLoadPath <- eventReactive(input$loadCDS, {
-      file <- shinyFiles::parseFilePaths(volumes(), input$loadCDS)
+      file <- shinyFiles::parseFilePaths(dataset_volumes(), input$loadCDS)
       file$datapath
     })
 
@@ -745,7 +839,7 @@ seuratApp <- function(preset_project, filterTypes, appTitle, feature_types = "ge
     callModule(monocle, "arrow", cds, seu, featureType, resolution = reactive(input$cdsResolution))
 
     observe({
-      shinyFiles::shinyFileSave(input, "saveCDS", roots = volumes(), session = session, restrictions = system.file(package = "base"))
+      shinyFiles::shinyFileSave(input, "saveCDS", roots = dataset_volumes(), session = session, restrictions = system.file(package = "base"))
     })
 
 

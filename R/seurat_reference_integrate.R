@@ -1,49 +1,60 @@
 
-#' Predict One Seurat Object on another merged set
+#' Transfer Labels Between Seurat Objects
 #'
-#' @param ref_seu_list
+#' @param ref_seu
 #' @param query_seu
+#' @param ref_name
+#' @param query_name
+#' @param ...
 #'
 #' @return
 #' @export
 #'
 #' @examples
-seurat_reference_integrate <- function(ref_seu_list, query_seu) {
-  #browser()
-  ## To construct a reference, we will identify ‘anchors’ between the individual datasets. First, we split the combined object into a list, with each dataset as an element.
+label_transfer <- function(ref_seu, query_seu, ref_name = NULL, query_name = NULL, ...){
+  label_transerred <- purrr::map2(organoid_seu, seu, reference_integrate, query_name = query_name, ref_name = ref_name)
+}
 
-  ## Prior to finding anchors, we perform standard preprocessing (log-normalization), and identify variable features individually for each. Note that Seurat v3 implements an improved method for variable feature selection based on a variance stabilizing transformation ("vst")
+#' Transfer labels between gene or transcript objects
+#'
+#' @param ref_seu
+#' @param query_seu
+#' @param query_name
+#' @param ref_name
+#' @param ...
+#'
+#' @return
+#' @export
+#'
+#' @examples
+reference_integrate <- function(ref_seu, query_seu, query_name = 'fetal', ref_name = "organoid", ...) {
 
-  for (i in 1:length(x = seu_list)) {
-  	seu_list[[i]] <- Seurat::NormalizeData(object = seu_list[[i]], verbose = FALSE)
-  	seu_list[[i]] <- Seurat::FindVariableFeatures(object = seu_list[[i]],
-  																							selection.method = "vst", nfeatures = 2000, verbose = FALSE)
-  }
+  seu.anchors <- FindTransferAnchors(reference = ref_seu, query = query_seu, dims = 1:30, project.query = TRUE)
 
-  ## Next, we identify anchors using the FindIntegrationAnchors function, which takes a list of Seurat objects as input.
+  reference_clusters <- colnames(ref_seu[[]])[grepl(paste0("RNA", "_snn_res."), colnames(ref_seu[[]]))]
 
-  seu_list.anchors <- Seurat::FindIntegrationAnchors(object.list = seu_list, dims = 1:30, k.filter = 50)
+  refdata = t(ref_seu[[reference_clusters]])
 
+  cellids <- colnames(refdata)
+  refdata <- setNames(split(refdata, seq(nrow(refdata))), rownames(refdata)) %>%
+    purrr::map(purrr::set_names, cellids)
 
-  ## We then pass these anchors to the IntegrateData function, which returns a Seurat object.
+  ref_names = stringr::str_replace(reference_clusters, ".*snn_res", ref_name)
 
-  ## The returned object will contain a new Assay, which holds an integrated (or ‘batch-corrected’) expression matrix for all cells, enabling them to be jointly analyzed.
+  predictions <- purrr::map(refdata, ~TransferData(anchorset = seu.anchors, refdata = .x,
+                                                   dims = 1:30))
+  predictions0 <-
+    predictions %>%
+    purrr::map(as_tibble, rownames = "sample_id") %>%
+    purrr::map(~dplyr::select(.x, sample_id, predicted.id)) %>%
+    dplyr::bind_rows(.id = "resolution") %>%
+    tidyr::spread(resolution, predicted.id) %>%
+    purrr::set_names(c("sample_id", ref_names)) %>%
+    tibble::column_to_rownames("sample_id") %>%
+    identity()
 
+  query_seu <- AddMetaData(query_seu, predictions0)
 
-  seu_list.integrated <- Seurat::IntegrateData(anchorset = seu_list.anchors, dims = 1:30)
-
-  ## switch to integrated assay. The variable features of this assay are
-  ## automatically set during IntegrateData
-  DefaultAssay(object = seu_list.integrated) <- "integrated"
-
-  ## Run the standard workflow for visualization and clustering
-  seu_list.integrated <- Seurat::ScaleData(object = seu_list.integrated, verbose = FALSE)
-  seu_list.integrated <- Seurat::RunPCA(object = seu_list.integrated, npcs = 30, verbose = FALSE)
-  seu_list.integrated <- Seurat::RunUMAP(object = seu_list.integrated, reduction = "pca",
-  																dims = 1:30)
-  seu_list.integrated <- Seurat::RunTSNE(object = seu_list.integrated, reduction = "pca", dims = 1:30)
-
-  return(seu_list.integrated)
 }
 
 

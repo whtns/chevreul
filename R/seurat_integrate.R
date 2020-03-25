@@ -137,10 +137,17 @@ load_seurat_path <- function(proj_dir = getwd(), prefix = "unfiltered"){
   seu_regex <- paste0(paste0(".*/", prefix, "_seu.rds"))
 
   seu_path <- fs::path(proj_dir, "output", "seurat") %>%
-    fs::dir_ls() %>%
-    fs::path_filter(regexp = seu_regex) %>%
-    identity()
-  return(seu_path)
+    fs::dir_ls(regexp = seu_regex)
+
+  if (!rlang::is_empty(seu_path))
+    return(seu_path)
+
+  stop("'", seu_path, "' does not exist",
+         paste0(" in current working directory ('", getwd(), "')"),
+       ".",
+       call. = FALSE
+  )
+
 }
 
 
@@ -349,11 +356,13 @@ filter_merged_seu <- function(seu, filter_var, filter_val, .drop = .drop) {
 #' @examples
 reintegrate_seu <- function(seu, feature = "gene", suffix = "", reduction = "pca", ...){
 
+
+
   DefaultAssay(seu) <- "RNA"
 
   seus <- Seurat::SplitObject(seu, split.by = "batch")
 
-  seu <- seurat_integration_pipeline(seus, suffix = suffix, ...)
+  seu <- seurat_integration_pipeline(seus, feature = feature, suffix = suffix, ...)
 
 
 }

@@ -36,13 +36,15 @@ Imports:
     Biobase,
     EnrichmentBrowser,
     tximport,
-    flexmix (<= 2.3.13),
-    scde (<= 1.99.2)
+    flexmix,
+    scde,
+    loomR,
+    clustree
 Suggests: 
     dplyr,
     tidyr,
     ggplot2,
-    testthat,
+    testthat (>= 2.1.0),
     knitr,
     rmarkdown
 URL: https://github.com/cobriniklab/seuratTools
