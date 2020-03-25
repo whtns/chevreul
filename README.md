@@ -32,3 +32,6 @@ This is a basic example which shows you how to solve a common problem:
 ## basic example code
 ```
 
+# flexmix (<= 2.3.13),
+# scde (<= 1.99.2),
+

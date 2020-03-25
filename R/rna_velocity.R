@@ -1,14 +1,24 @@
+compile_loom_files <- function(loom_paths, ...){
+  args = list(...)
+
+
+}
+
 #' run velocyto on a gene or transcript level seurat object
 #'
-#' @param ldat loom matrices
 #' @param seu a seurat object
+#' @param loom_paths one or more paths to loom files as a list
 #' @param fit.quantile
 #'
 #' @return
 #' @export
 #'
 #' @examples
-velocyto_assay <- function(seu, ldat, fit.quantile = 0.05){
+velocyto_assay <- function(seu, loom_paths, fit.quantile = 0.05){
+
+  loom_paths <- loomR::combine(loom_paths)
+
+  ldat <- read.loom.matrices(loom_path)
   # subset ldat by seurat object.size
   ldat <- purrr::map(ldat, ~.x[,colnames(.x) %in% colnames(seu)])
 

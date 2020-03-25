@@ -9,7 +9,7 @@ seuratApp(
   filterTypes,
   appTitle,
   feature_types = "gene",
-  futureMb = 849
+  futureMb = 1000
 )
 }
 \arguments{
