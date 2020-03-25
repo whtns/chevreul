@@ -13,6 +13,19 @@ rename_from_x_notation <- function(cell_ids, batch_id){
   cell_ids <- paste0(batch_id, str_pad(cell_ids, width = max(nchar(cell_ids)), pad = "0"))
 }
 
+#' delete seurat path
+#'
+#' @param seu_path
+#'
+#' @return
+#' @export
+#'
+#' @examples
+delete_seurat <- function(seu_path){
+  print(seu_path)
+  fs::file_delete(seu_path)
+}
+
 #' Reformat Seurat Object Metadata
 #'
 #'

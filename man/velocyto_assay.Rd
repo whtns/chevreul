@@ -4,12 +4,12 @@
 \alias{velocyto_assay}
 \title{run velocyto on a gene or transcript level seurat object}
 \usage{
-velocyto_assay(seu, ldat, fit.quantile = 0.05)
+velocyto_assay(seu, loom_paths, fit.quantile = 0.05)
 }
 \arguments{
 \item{seu}{a seurat object}
 
-\item{ldat}{loom matrices}
+\item{loom_paths}{one or more paths to loom files as a list}
 
 \item{fit.quantile}{}
 }

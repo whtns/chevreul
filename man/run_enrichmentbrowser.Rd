@@ -4,10 +4,16 @@
 \alias{run_enrichmentbrowser}
 \title{Run Enrichment Browser on Differentially Expressed Genes}
 \usage{
-run_enrichmentbrowser(seu, cluster1_cells, cluster2_cells, ...)
+run_enrichmentbrowser(
+  seu,
+  cluster_list,
+  de_results,
+  enrichment_method = c("ora"),
+  ...
+)
 }
 \arguments{
-\item{cluster2_cells}{}
+\item{de_results}{}
 }
 \value{
 

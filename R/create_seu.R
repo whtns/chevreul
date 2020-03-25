@@ -108,7 +108,7 @@ seu_from_tibbles <- function(exp_tbl, meta_tbl, census_counts=NULL){
   rownames(featuredata) <- featuredata[,1]
 
   meta_tbl <- data.frame(meta_tbl)
-  rownames(meta_tbl) <- meta_tbl[,grepl("sample_id", colnames(meta_tbl), ignore.case = TRUE)]
+  rownames(meta_tbl) <- meta_tbl[,grepl("^sample_id$", colnames(meta_tbl), ignore.case = TRUE)]
 
   # exp_tbl[1:3] <- purrr::map(exp_tbl[1:3], ~ .x[,(colnames(.x) %in% rownames(meta_tbl))])
 
@@ -193,7 +193,7 @@ save_seurat <- function(..., prefix = "unfiltered", proj_dir = getwd()){
   message(paste0("saving to ", fs::path_file(seu_path)))
   saveRDS(seu_list, seu_path)
   if(prefix == "unfiltered"){
-    Sys.chmod(seu_path, "755")
+    Sys.chmod(seu_path, "775")
   }
 
   return(seu_list)

@@ -334,11 +334,12 @@ plot_violin <- function(seu, plot_var = "batch", plot_vals = NULL, features = "R
   seu <- seu[,seu[[]][[plot_var]] %in% plot_vals]
 
   vln_plot <- Seurat::VlnPlot(seu, features = features, group.by = plot_var, ...) +
-    labs(title = "Expression Values for each cell are normalized by that cell's total expression then multiplied by 10,000 and natural-log transformed")
+    labs(title = "Expression Values for each cell are normalized by that cell's total expression then multiplied by 10,000 and natural-log transformed")+
+    stat_summary(fun.y = mean, geom='line', size = 4, colour = "black")
 
-  vln_plot <- plotly::ggplotly(vln_plot, tooltip = "cellid", height = 750) %>%
-    plotly::layout(dragmode = "lasso") %>%
-    identity()
+  # vln_plot <- plotly::ggplotly(vln_plot, tooltip = "cellid", height = 750) %>%
+  #   plotly::layout(dragmode = "lasso") %>%
+  #   identity()
 
   # plot(vln_plot)
   return(vln_plot)
