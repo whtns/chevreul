@@ -206,7 +206,7 @@ prep_slider_values <- function(default_val){
 #' @export
 #'
 #' @examples
-seuratApp <- function(preset_project, filterTypes, appTitle, feature_types = "gene", futureMb = 1000){
+seuratApp <- function(preset_project, filterTypes, appTitle, feature_types = "gene", futureMb = 3000){
 
   print(feature_types)
 

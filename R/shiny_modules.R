@@ -557,6 +557,11 @@ plotDimRedui <- function(id) {
 plotDimRed <- function(input, output, session, seu, plot_types, featureType, organism_type) {
   ns <- session$ns
 
+  # activeSeu <- reactive({
+  #   req(seu$active)
+  #   seu$active
+  # })
+
   selected_plot <- reactiveVal()
 
   output$dplottype <- renderUI({
