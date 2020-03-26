@@ -783,7 +783,8 @@ seuratApp <- function(preset_project, filterTypes, appTitle, feature_types = "ge
       seu$gene <- seuratTools::regress_by_features(seu$gene, feature_set = list(input$geneSet), set_name = janitor::make_clean_names(input$geneSetName))
       # seu$gene <- regressed_seu$gene
       # seu$transcript <- regressed_seu$transcript
-      seu$active <- seu[[input$featureType]]
+      # print(names(seu))
+      seu$active <- seu[[input$feature_type]]
       removeModal()
     })
 

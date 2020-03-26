@@ -20,8 +20,14 @@ regress_by_features <- function(seu, feature_set, set_name, ...) {
 
   seu <- AddModuleScore(seu, feature_set, name = set_name)
 
+  if (any(grepl("integrated", names(seu[[]])))){
+    default_assay = "integrated"
+  } else {
+    default_assay = "RNA"
+  }
+
   #revert default assay to "integrated"
-  DefaultAssay(seu) <- "integrated"
+  DefaultAssay(seu) <- default_assay
 
   #regress out feature set
   seu <- ScaleData(seu, vars.to.regress = paste0(set_name, "1"))
