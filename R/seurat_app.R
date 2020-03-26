@@ -206,7 +206,7 @@ prep_slider_values <- function(default_val){
 #' @export
 #'
 #' @examples
-seuratApp <- function(preset_project, filterTypes, appTitle, feature_types = "gene", futureMb = 3000){
+seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_types = "gene", futureMb = 3000){
 
   print(feature_types)
 
@@ -230,7 +230,7 @@ seuratApp <- function(preset_project, filterTypes, appTitle, feature_types = "ge
                             language = list(search = "Filter:")))
 
   # header ------------------------
-  header <- shinydashboard::dashboardHeader()
+  header <- shinydashboard::dashboardHeader(title = appTitle)
 
   # sidebar ------------------------
  sidebar <- shinydashboard::dashboardSidebar(
@@ -482,7 +482,6 @@ seuratApp <- function(preset_project, filterTypes, appTitle, feature_types = "ge
       dataset_volumes <- c(Home = fs::path(proj_dir(), "output", "seurat"), "R Installation" = R.home(), shinyFiles::getVolumes())
       })
 
-
     observe({
       req(dataset_volumes())
       shinyFiles::shinyFileChoose(input, "seuratUpload", roots = dataset_volumes(), session = session)
@@ -504,6 +503,8 @@ seuratApp <- function(preset_project, filterTypes, appTitle, feature_types = "ge
       file <- shinyFiles::parseDirPath(project_volumes(), input$deleteProject)
       # file$datapath
     })
+
+    # load data
 
     observeEvent(input$seuratUpload, {
       req(uploadSeuratPath())
@@ -536,6 +537,9 @@ seuratApp <- function(preset_project, filterTypes, appTitle, feature_types = "ge
             seu[[i]] <- dataset[[i]]
           }
 
+          seu$active <- seu[["gene"]]
+
+          print(uploadSeuratPath())
           print(names(seu))
 
           shiny::incProgress(8/10)
@@ -634,15 +638,20 @@ seuratApp <- function(preset_project, filterTypes, appTitle, feature_types = "ge
     })
 
     seu <- callModule(reformatMetadata, "hello", seu)
+
     callModule(plotDimRed, "hello", seu, plot_types, featureType, organism_type = organism_type)
     callModule(plotDimRed, "howdy", seu, plot_types, featureType, organism_type = organism_type)
     callModule(plotDimRed, "diffex", seu, plot_types, featureType, organism_type = organism_type)
     callModule(plotDimRed, "subset", seu, plot_types, featureType, organism_type = organism_type)
     callModule(plotDimRed, "markerScatter", seu, plot_types, featureType, organism_type = organism_type)
+
     callModule(plotReadCount, "hello2", seu, plot_types)
     callModule(plotReadCount, "howdy2", seu, plot_types)
+
     callModule(plotViolin, "violinPlot", seu, featureType)
+
     callModule(plotClustree, "clustreePlot", seu)
+
     callModule(tableSelected, "hello", seu)
     diffex_selected_cells <- callModule(tableSelected, "diffex", seu)
 
