@@ -45,9 +45,9 @@ create_proj_matrix <- function(proj_list){
 #' @examples
 create_proj_db <- function(projects_dir = "/dataVolume/storage/single_cell_projects/"){
 
-  projects_db <- paste0(projects_dir, "single_cell_projects.db")
-
-  system(paste0("updatedb -l 0 -U ", projects_dir, " -o ", projects_db))
+  system_command <- "updatedb -l 0 -U /dataVolume/storage/single_cell_projects/ -o /dataVolume/storage/single_cell_projects/single_cell_projects.db"
+  system(system_command, wait = TRUE)
+  print(system_command)
 
 }
 

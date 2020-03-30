@@ -279,8 +279,8 @@ reformatMetadata <- function(input, output, session, seu) {
   output$seuTable <- renderDT({
     # req(meta$old)
 
-    DT::datatable(meta$old, extensions = 'Buttons', options = list(dom = "Bft", buttons = c("copy", "csv"),
-                                                                  scrollX = "100px", scrollY = "800px"))
+    DT::datatable(meta$old, extensions = 'Buttons', options = list(buttons = c("copy", "csv"),
+                                                                   paging = TRUE, pageLength = 15, scrollX = "100px"))
 
 
   })
@@ -391,7 +391,6 @@ integrateProj <- function(input, output, session, proj_matrices, seu, proj_dir){
       }
 
       newProjName <- paste0(purrr::map(fs::path_file(selectedProjects()), ~gsub("_proj", "", .x)), collapse = "_")
-      newProjName <- paste0(newProjName, "_proj")
       integrated_proj_dir <- "/dataVolume/storage/single_cell_projects/integrated_projects/"
       newProjDir <- fs::path(integrated_proj_dir, newProjName)
 
@@ -446,10 +445,13 @@ integrateProj <- function(input, output, session, proj_matrices, seu, proj_dir){
             # myseuratpath <- fs::path(myseuratdir, "unfiltered_seu.rds")
             # saveRDS(mergedSeus(), myseuratpath)
             # Sys.chmod(myseuratpath)
-            save_seurat(mergedSeus(), proj_dir = paste0(integratedProjectSavePath(), "_proj"))
+            save_seurat(mergedSeus(), proj_dir = integratedProjectSavePath())
             set_permissions_call <- paste0("chmod -R 775 ", integratedProjectSavePath(), "_proj")
-            # print(set_permissions_call)
             system(set_permissions_call)
+            writeLines(character(), fs::path(integratedProjectSavePath(), ".here"))
+            # create_proj_db()
+            system("updatedb -l 0 -U /dataVolume/storage/single_cell_projects/ -o /dataVolume/storage/single_cell_projects/single_cell_projects.db", wait = TRUE)
+            # # print(set_permissions_call)
             shiny::incProgress(8/10)
           })
 

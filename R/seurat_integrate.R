@@ -97,11 +97,11 @@ seurat_cluster <- function(seu = seu, resolution = 0.6, custom_clust = NULL, red
     for (i in resolution){
       # browser()
       message(paste0("clustering at ", i, " resolution"))
-      seu <- Seurat::FindClusters(object = seu, resolution = i)
+      seu <- Seurat::FindClusters(object = seu, resolution = i, algorithm = 3, ...)
     }
   } else if (length(resolution) == 1){
     message(paste0("clustering at ", resolution, " resolution"))
-    seu <- Seurat::FindClusters(object = seu, resolution = resolution, ...)
+    seu <- Seurat::FindClusters(object = seu, resolution = resolution, algorithm = 3, ...)
   }
 
   if (!is.null(custom_clust)){
