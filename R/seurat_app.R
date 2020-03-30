@@ -423,10 +423,33 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
   server <- function(input, output, session) {
     options(warn = -1)
 
-    projList <- reactive({
-      system("locate -d /dataVolume/storage/single_cell_projects/single_cell_projects.db '*_proj'", intern = TRUE) %>%
-      purrr::set_names(fs::path_file(.))
-    })
+    projects_db <- "/dataVolume/storage/single_cell_projects/single_cell_projects.db"
+
+    projList <- reactivePoll(4000, session,
+                             # This function returns the time that the logfile was last
+                             # modified
+                             checkFunc = function() {
+                               if (file.exists(projects_db))
+                                 system("locate -d /dataVolume/storage/single_cell_projects/single_cell_projects.db '*.here'", intern = TRUE) %>%
+                                 fs::path_dir() %>%
+                                 purrr::set_names(fs::path_file(.))
+                               else
+                                 ""
+                             },
+                             # This function returns the content of the logfile
+                             valueFunc = function() {
+                               system("locate -d /dataVolume/storage/single_cell_projects/single_cell_projects.db '*.here'", intern = TRUE) %>%
+                               fs::path_dir() %>%
+                               purrr::set_names(fs::path_file(.))
+                             }
+    )
+
+
+    # projList <- reactive({
+    #   system("locate -d /dataVolume/storage/single_cell_projects/single_cell_projects.db '*.here'", intern = TRUE) %>%
+    #     fs::path_dir() %>%
+    #     purrr::set_names(fs::path_file(.))
+    # })
 
     # presetProject <- reactive({
     #   pc_projList <- fs::path(fs::path_file(fs::path_dir(projList())), fs::path_file(projList()))
@@ -619,22 +642,24 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
     # for debugging
     # integrationResults <- proj_dir
 
-    observe({
+    newprojList <- reactive({
       req(integrationResults())
-      create_proj_db()
-      integration_path <- paste0(integrationResults(), "_proj")
+      integration_path <- paste0(integrationResults())
       proj_dir(integration_path)
 
       newintegrated_project <- purrr::set_names(integration_path, fs::path_file(integration_path))
-
       newprojList <- c(projList(), newintegrated_project)
-      print(integration_path)
-      # print(newprojList)
+    })
+
+    observe({
+      # print(integration_path)
+      print(newprojList())
 
       updateSelectizeInput(session, "setProject",
                         label = "Select input label",
-                        choices = newprojList,
+                        choices = newprojList(),
       )
+
     })
 
     seu <- callModule(reformatMetadata, "hello", seu)

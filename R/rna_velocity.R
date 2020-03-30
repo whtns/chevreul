@@ -105,7 +105,7 @@ velocyto_seurat_from_loom <- function(loom_path) {
   bm <- Seurat::SCTransform(object = bm, assay = "spliced")
   bm <- Seurat::RunPCA(object = bm, verbose = FALSE)
   bm <- Seurat::FindNeighbors(object = bm, dims = 1:20)
-  bm <- Seurat::FindClusters(object = bm)
+  bm <- Seurat::FindClusters(object = bm, algorithm = 3)
   bm <- Seurat::RunUMAP(object = bm, dims = 1:20)
   bm <-
     SeuratWrappers::RunVelocity(
