@@ -30,6 +30,10 @@ You can view documentation on the [seuratTools website](https://whtns.github.io/
 
 ![subset by csv](README_docs/subset_by_csv.gif)
 
+### add custom metadata
+
+![add custom metadata](README_docs/add_arbitrary_metadata.gif)
+
 This is a basic example which shows you how to solve a common problem:
 
 ``` r
