@@ -164,7 +164,7 @@ convert_seuv3_to_monoclev2 <- function(seu, return_census = FALSE, sig_slice = 1
 #'
 #' @examples
 process_monocle_child <- function(ptime, monocle_cds) {
-  monocle_cds <- monocle_cds[, ptime$Sample_ID]
+  monocle_cds <- monocle_cds[, ptime$sample_id]
 
   old_ptime <- phenoData(monocle_cds)$Pseudotime
 

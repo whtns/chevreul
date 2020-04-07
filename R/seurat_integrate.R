@@ -356,12 +356,10 @@ filter_merged_seu <- function(seu, filter_var, filter_val, .drop = .drop) {
 #' @examples
 reintegrate_seu <- function(seu, feature = "gene", suffix = "", reduction = "pca", ...){
 
-
-
   DefaultAssay(seu) <- "RNA"
 
+  seu <- Seurat::DietSeurat(seu, counts = TRUE, data = TRUE, scale.data = FALSE)
   seus <- Seurat::SplitObject(seu, split.by = "batch")
-
   seu <- seurat_integration_pipeline(seus, feature = feature, suffix = suffix, ...)
 
 

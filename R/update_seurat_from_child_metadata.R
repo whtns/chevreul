@@ -20,7 +20,7 @@ update_seu_meta <- function(seu, proj_dir, numcols) {
 
 	common_cols <- intersect(colnames(seu_meta), colnames(project_meta))
   seu_meta <- mutate_at(seu_meta, .vars = vars(one_of(numcols)), .funs = funs(as.numeric))
-  updated_seu_meta <- dplyr::left_join(seu_meta, project_meta, by = "Sample_ID")
+  updated_seu_meta <- dplyr::left_join(seu_meta, project_meta, by = "sample_id")
 
   left_side_common <- paste0(common_cols, ".y")
   right_side_common <- paste0(common_cols, ".x")
@@ -47,7 +47,7 @@ update_seu_meta <- function(seu, proj_dir, numcols) {
 #' @examples
 reset_seu_meta <- function(seu, new_meta){
 	# browser()
-	seu@meta.data <- as.data.frame(new_meta, row.names = new_meta$Sample_ID)
+	seu@meta.data <- as.data.frame(new_meta, row.names = new_meta$sample_id)
 	return(seu)
 }
 

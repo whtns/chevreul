@@ -239,3 +239,39 @@ prep_armor_meta <- function(proj_dir){
   readr::write_tsv(meta, fs::path(proj_dir, "data", "metadata.txt"))
 }
 
+#' Title
+#'
+#' @param cds
+#' @param mygenes
+#' @param resolution
+#'
+#' @return
+#' @export
+#'
+#' @examples
+prep_plot_genes_in_pseudotime <- function(cds, mygenes, resolution, partition = FALSE) {
+  if (partition){
+    partition_cells <- monocle3::partitions(cds)
+    # partition_cells <-  split(names(partition_cells), partition_cells)[[input$partitions]]
+    partition_cells <-  split(names(partition_cells), partition_cells)[[1]]
+
+    cds = cds[, colnames(cds) %in% partition_cells]
+
+  }
+
+  cds <- cds[rownames(cds) %in% mygenes,]
+
+  if (any(grepl("integrated", colnames(colData(cds))))){
+    default_assay = "integrated"
+  } else {
+    default_assay = "RNA"
+  }
+
+  color_cells_by = paste0(default_assay, "_snn_res.", resolution)
+
+  gene_ptime_plot <- monocle3::plot_genes_in_pseudotime(cds,
+                                                        color_cells_by=color_cells_by,
+                                                        min_expr=0.5)
+
+  return(gene_ptime_plot)
+}

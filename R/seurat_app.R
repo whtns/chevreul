@@ -206,7 +206,7 @@ prep_slider_values <- function(default_val){
 #' @export
 #'
 #' @examples
-seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_types = "gene", futureMb = 3000){
+seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_types = "gene", futureMb = 1e4){
 
   print(feature_types)
 
@@ -225,6 +225,7 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
   future::plan(strategy = "multicore", workers = 6)
   future_size = futureMb*1024^2
   options(future.globals.maxSize= future_size)
+  options(shiny.maxRequestSize=40*1024^2)
   options(DT.options = list(pageLength = 2000, paging = FALSE,
                             info = TRUE, searching = TRUE, autoWidth = F, ordering = TRUE, scrollX = TRUE,
                             language = list(search = "Filter:")))
@@ -243,7 +244,7 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
   # shinyWidgets::prettyRadioButtons("featureType", "Feature for Display", choices = featureTypes, selected = "gene"),
   shinyWidgets::prettyRadioButtons("organism_type", "Organism", choices = c("human", "mouse"), selected = "human"),
   shinyFiles::shinyFilesButton("seuratUpload", "Load a Seurat Dataset", "Please select a .rds file", multiple = FALSE),
-  shinyFiles::shinySaveButton("saveSeurat", "Save current Dataset", "Save file as...", filetype = list(rds = "rds")),
+  shinyFiles::shinySaveButton("saveSeurat", "Save Current Dataset", "Save file as...", filetype = list(rds = "rds")),
   verbatimTextOutput("savefile"),
   actionButton("changeEmbedAction", label = "Change Embedding Parameters"),
   changeEmbedParamsui("changeembed"),
@@ -385,6 +386,10 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
     fluidRow(
       actionButton("regressAction", "Regress Seurat Objects By Genes"),
       box(
+        checkboxInput("runRegression", "Run Regression?", value = FALSE),
+        checkboxGroupInput("priorGeneSet", "Choose a marker gene set:",
+                    choices = c("Apoptosis", "Cell Cycle")
+        ),
         selectizeInput("geneSet", "List of genes", choices = NULL, multiple = TRUE),
         textInput("geneSetName", "Name for Gene Set"),
         width = 12
@@ -422,6 +427,8 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
 # shinydashboard server ------------------------
   server <- function(input, output, session) {
     options(warn = -1)
+
+    shinylogs::track_usage(storage_mode = shinylogs::store_json(path = "logs/"))
 
     projects_db <- "/dataVolume/storage/single_cell_projects/single_cell_projects.db"
 
@@ -617,10 +624,9 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
 
       return(savefile$datapath)
 
-
     })
 
-    observe({
+    observeEvent(input$saveSeurat, {
       req(seu$active)
       req(subSeuratPath())
       shiny::withProgress(
@@ -682,13 +688,8 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
 
     subset_selected_cells <- callModule(tableSelected, "subset", seu)
 
-    upload_cells <- reactive({
-      req(input$uploadCsv)
-      upload_cells <- readr::read_csv(input$uploadCsv$datapath) %>%
-        dplyr::pull(X1)
-    })
-
     observeEvent(input$subsetAction, {
+      req(subset_selected_cells())
 
       withCallingHandlers({
         shinyjs::html("subsetMessages", "")
@@ -725,15 +726,36 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
       })
     })
 
+    # upload_cells <- reactive({
+    #   req(input$uploadCsv)
+    #   upload_cells <- read.csv(input$uploadCsv$datapath) %>%
+    #     .[,1]
+    # })
+
+
     observeEvent(input$subsetCsv, {
+      req(input$subsetCsv)
+      req(input$uploadCsv)
+
+      # validate(
+      #   need(upload_cells() != "", "Please upload a csv")
+      # )
+
 
       withCallingHandlers({
         shinyjs::html("subsetMessages", "")
         message("Beginning")
 
         for (i in names(seu)[!(names(seu) == "active")]){
-          seu[[i]] <- seu[[i]][, upload_cells()]
+          # print(upload_cells)
+          seu[[i]] <- subset_by_meta(input$uploadCsv$datapath, seu[[i]])
+          # seu[[i]] <- seu[[i]][, upload_cells]
+          # seu[[i]]@meta.data <- upload_meta
+          # seu[[i]] <- Seurat::AddMetaData(seu[[i]], upload_meta)
         }
+
+
+
 
         if(length(unique(seu$gene[[]]$batch)) > 1){
 
@@ -801,10 +823,29 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
     # callModule(rnaVelocity, "arrow", seu, featureType, "arrow")
     callModule(rnaVelocity, "grid", seu, featureType, "grid")
 
+    # mymarker
+    prior_gene_set <- reactive({
+      req(input$priorGeneSet)
+
+      if(input$priorGeneSet == "Apoptosis"){
+        c("CASP3", "CASP7", "BAX", "BAK1", "BID", "BBC3", "BCL2", "MCL1")
+      } else if (input$priorGeneSet == "Cell Cycle"){
+        c("MCM5", "PCNA", "TYMS", "FEN1", "MCM2", "MCM4", "RRM1", "UNG",
+          "GINS2", "MCM6", "CDCA7", "DTL", "PRIM1", "UHRF1", "MLF1IP",
+          "HELLS", "RFC2", "RPA2", "NASP", "RAD51AP1", "GMNN", "WDR76",
+          "SLBP", "CCNE2", "UBR7", "POLD3", "MSH2", "ATAD2", "RAD51", "RRM2",
+          "CDC45", "CDC6", "EXO1", "TIPIN", "DSCC1", "BLM", "CASP8AP2",
+          "USP1", "CLSPN", "POLA1", "CHAF1B", "BRIP1", "E2F8")
+        } else if (is.null(input$priorGeneSet)){
+        c("")
+      }
+    })
+
     observe({
       updateSelectizeInput(session,
                            'geneSet',
                            choices = annotables::grch38$symbol,
+                           selected = prior_gene_set(),
                            server = TRUE)
     })
 
@@ -814,10 +855,7 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
         title = "Regressing out provided list of features",
         "This process may take a minute or two!"
       ))
-      seu$gene <- seuratTools::regress_by_features(seu$gene, feature_set = list(input$geneSet), set_name = janitor::make_clean_names(input$geneSetName))
-      # seu$gene <- regressed_seu$gene
-      # seu$transcript <- regressed_seu$transcript
-      # print(names(seu))
+      seu$gene <- seuratTools::regress_by_features(seu$gene, feature_set = list(input$geneSet), set_name = janitor::make_clean_names(input$geneSetName), regress = input$runRegression)
       seu$active <- seu[[input$feature_type]]
       removeModal()
     })
@@ -918,6 +956,6 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
 
 
   }
-  shinyApp(ui, server, enableBookmarking = "server")
+    shinyApp(ui, server, enableBookmarking = "server")
 
 }
