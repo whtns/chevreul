@@ -24,7 +24,15 @@ devtools::install_package("whtns/seuratTools")
 
 You can view documentation on the [seuratTools website](https://whtns.github.io/seuratTools)
 
-## Example
+## How To 
+
+### subset by csv
+
+![subset by csv](README_docs/subset_by_csv.gif)
+
+### add custom metadata
+
+![add custom metadata](README_docs/add_arbitrary_metadata.gif)
 
 This is a basic example which shows you how to solve a common problem:
 
@@ -32,6 +40,4 @@ This is a basic example which shows you how to solve a common problem:
 ## basic example code
 ```
 
-# flexmix (<= 2.3.13),
-# scde (<= 1.99.2),
 
