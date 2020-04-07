@@ -200,6 +200,7 @@ reformatMetadataui <- function(id) {
                 "text/comma-separated-values,text/plain",
                 ".csv")
     ),
+    downloadLink(ns("downloadMetadata"), "Download Metadata"),
     DTOutput(ns("seuTable")),
     width = 12
     )
@@ -284,6 +285,14 @@ reformatMetadata <- function(input, output, session, seu) {
 
 
   })
+
+  output$downloadMetadata <- downloadHandler(
+    filename = function() {
+      paste("data-", Sys.Date(), ".csv", sep="")
+    },
+    content = function(file) {
+      write.csv(meta$old, file)
+    })
 
   return(seu)
 
@@ -446,7 +455,7 @@ integrateProj <- function(input, output, session, proj_matrices, seu, proj_dir){
             # saveRDS(mergedSeus(), myseuratpath)
             # Sys.chmod(myseuratpath)
             save_seurat(mergedSeus(), proj_dir = integratedProjectSavePath())
-            set_permissions_call <- paste0("chmod -R 775 ", integratedProjectSavePath(), "_proj")
+            set_permissions_call <- paste0("chmod -R 775 ", integratedProjectSavePath())
             system(set_permissions_call)
             writeLines(character(), fs::path(integratedProjectSavePath(), ".here"))
             # create_proj_db()
@@ -536,7 +545,8 @@ plotDimRedui <- function(id) {
       column(2, selectizeInput(ns("dim1"), "Dimension 1", choices = seq(1,99), selected = 1)),
       column(2, selectizeInput(ns("dim2"), "Dimension 2", choices = seq(1,99), selected = 2))
     ),
-    uiOutput(ns("featuretext")),
+    selectizeInput(ns("customFeature"), "gene or transcript on which to color the plot; eg. 'RXRG' or 'ENST00000488147'", choices = NULL, multiple = TRUE),
+    # uiOutput(ns("featuretext")),
     sliderInput(ns("resolution"), "Resolution of clustering algorithm (affects number of clusters)", min = 0.2, max = 2, step = 0.2, value = 0.6),
     plotly::plotlyOutput(ns("dplot"), height = 750)
   )
@@ -576,6 +586,7 @@ plotDimRed <- function(input, output, session, seu, plot_types, featureType, org
   })
 
   prefill_feature <- reactive({
+    req(featureType())
     if (featureType() == "transcript") {
       if (organism_type() == "human"){
         "ENST00000488147"
@@ -591,9 +602,29 @@ plotDimRed <- function(input, output, session, seu, plot_types, featureType, org
       }
     }
   })
-  output$featuretext <- renderUI({
-    textInput(ns("customFeature"), "gene or transcript on which to color the plot; eg. 'RXRG' or 'ENST00000488147'",
-              value = prefill_feature())
+  # output$featuretext <- renderUI({
+  #
+  #   # selectizeInput(ns("customFeature"), "gene or transcript on which to color the plot; eg. 'RXRG' or 'ENST00000488147'",
+  #   #                choices = annotables::grch38$symbol, selected = prefill_feature())
+  #
+  #   textInput(ns("customFeature"), "gene or transcript on which to color the plot; eg. 'RXRG' or 'ENST00000488147'",
+  #             value = prefill_feature())
+  # })
+
+  observe({
+    req(prefill_feature())
+    if (organism_type() == "mouse"){
+      gene_choices = annotables::grcm38$symbol
+    } else if (organism_type() == "human"){
+      gene_choices = annotables::grch38$symbol
+    }
+
+
+    updateSelectizeInput(session,
+                         'customFeature',
+                         choices = gene_choices,
+                         selected = prefill_feature(),
+                         server = TRUE)
   })
 
   output$dplot <- plotly::renderPlotly({
@@ -605,12 +636,11 @@ plotDimRed <- function(input, output, session, seu, plot_types, featureType, org
       mycols = input$plottype
 
       louvain_resolution = paste0(DefaultAssay(seu$active), "_snn_res.", input$resolution)
-      leiden_resolution = paste0("leiden_clusters_", input$resolution)
       mycols <- gsub("^seurat$", louvain_resolution,
                      mycols)
 
       newcolname = paste(mycols, collapse = "_")
-      newdata = as_tibble(seu$active[[mycols]], rownames = "Sample_ID") %>%
+      newdata = as_tibble(seu$active[[mycols]], rownames = "sample_id") %>%
         tidyr::unite(!!newcolname, mycols) %>% deframe() %>%
         identity()
       seu$active <- AddMetaData(seu$active, metadata = newdata,
@@ -641,11 +671,6 @@ plotDimRed <- function(input, output, session, seu, plot_types, featureType, org
         louvain_resolution = paste0(active_assay, "_snn_res.", input$resolution)
         plot_var(seu$active, dims = c(input$dim1, input$dim2), embedding = input$embedding,
                  group = louvain_resolution)
-      }
-      else if (input$plottype == "leiden") {
-        leiden_resolution = paste0("leiden_clusters_", input$resolution)
-        plot_var(seu$active, dims = c(input$dim1, input$dim2), embedding = input$embedding,
-                 group = leiden_resolution)
       }
       else if (input$plottype %in% plot_types()$category_vars) {
         plot_var(seu$active, dims = c(input$dim1, input$dim2), embedding = input$embedding,
@@ -1481,25 +1506,9 @@ monocle <- function(input, output, session, cds, seu, input_type, resolution){
 
       output$ptimeGenesLinePlot <- renderPlot({
 
-        partition_cells <- monocle3::partitions(cds$ptime)
-        partition_cells = split(names(partition_cells), partition_cells)
-        partition_cells <- partition_cells[[input$partitions]]
+        genes_in_pseudotime <- prep_plot_genes_in_pseudotime(cds$ptime, input$genePlotQuery1, resolution())
 
-        cds_subset = cds$ptime[rownames(cds$ptime) %in% input$genePlotQuery1, colnames(cds$ptime) %in% partition_cells]
-
-        if (any(grepl("integrated", colnames(colData(cds_subset))))){
-          default_assay = "integrated"
-        } else {
-          default_assay = "RNA"
-        }
-
-        color_cells_by = paste0(default_assay, "_snn_res.", resolution())
-
-        gene_ptime_plot <- monocle3::plot_genes_in_pseudotime(cds_subset,
-                                 color_cells_by=color_cells_by,
-                                 min_expr=0.5)
-
-        print(gene_ptime_plot)
+        print(genes_in_pseudotime)
 
       })
 
@@ -1509,13 +1518,15 @@ monocle <- function(input, output, session, cds, seu, input_type, resolution){
       })
 
       output$ptimeGenes <- renderUI({
-        shinycssloaders::withSpinner(tagList(
+        tagList(
           box(plotOutput(ns("ptimeGenesRedPlot")),
               width = 6),
           box(plotOutput(ns("ptimeGenesLinePlot")),
               width = 6),
           DTOutput(ns("ptimeGenesDT"))
-                ))
+                ) %>%
+          # shinycssloaders::withSpinner() %>%
+          identity()
       })
 
     })

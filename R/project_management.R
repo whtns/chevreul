@@ -52,5 +52,23 @@ create_proj_db <- function(projects_dir = "/dataVolume/storage/single_cell_proje
 }
 
 
+#' subset by new metadata
+#'
+#' @param meta_path
+#' @param seu
+#'
+#' @return
+#' @export
+#'
+#' @examples
+subset_by_meta <- function(meta_path, seu){
+  upload_meta <- read.csv(meta_path, row.names = 1, header = TRUE)
 
+  upload_cells <- rownames(upload_meta)
+
+  seu <- seu[, upload_cells]
+  seu@meta.data <- upload_meta
+  return(seu)
+
+}
 

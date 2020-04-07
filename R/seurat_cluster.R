@@ -8,7 +8,7 @@
 #' @return
 #' @export
 #'
-#' @examplesse
+#' @examples
 
 seurat_preprocess <- function(seu, scale=TRUE, normalize = TRUE, ...){
   # Normalize data

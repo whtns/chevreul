@@ -31,7 +31,7 @@ update_exp_meta <- function(original_meta, corrected_meta) {
 	# browser()
 	common_cols <- intersect(colnames(original_meta), colnames(corrected_meta))
   original_meta <- mutate_at(original_meta, .vars = vars(one_of(numcols)), .funs = funs(as.numeric))
-  updated_meta <- dplyr::left_join(original_meta, corrected_meta, by = "Sample_ID")
+  updated_meta <- dplyr::left_join(original_meta, corrected_meta, by = "sample_id")
 
   left_side_common <- paste0(common_cols, ".x")
   right_side_common <- paste0(common_cols, ".y")
@@ -42,7 +42,7 @@ update_exp_meta <- function(original_meta, corrected_meta) {
   updated_meta <- cbind(updated_meta, right_side_columns) %>%
   	dplyr::select(-one_of(left_side_common)) %>%
   	dplyr::select(-one_of(right_side_common)) %>%
-  	dplyr::select(Sample_ID, everything()) %>%
+  	dplyr::select(sample_id, everything()) %>%
     # dplyr::select(common_cols) %>%
     identity()
 }
