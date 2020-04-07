@@ -302,7 +302,7 @@ plot_var <- function(seu, embedding = "umap", group = "batch", dims = c(1,2)){
 
   dims <- as.numeric(dims)
 
-  d <- Seurat::DimPlot(object = seu, dims = dims, reduction = embedding, group.by = group, pt.size = 0.5) +
+  d <- Seurat::DimPlot(object = seu, dims = dims, reduction = embedding, group.by = group, pt.size = 1.0) +
     aes(key = key, cellid = cellid)
 
   plotly_plot <- plotly::ggplotly(d, tooltip = "cellid", height  = 750) %>%
@@ -373,8 +373,8 @@ plot_feature <- function(seu, embedding, features, dims = c(1,2), return_plotly 
 
   dims <- as.numeric(dims)
 
-  fp <- Seurat::FeaturePlot(object = seu, features = features, dims = dims, reduction = embedding, pt.size = 0.5)	+
-    aes(key = key, cellid = cellid)
+  fp <- Seurat::FeaturePlot(object = seu, features = features, dims = dims, reduction = embedding, pt.size = 1.0, blend = FALSE)	+
+    aes(key = key, cellid = cellid, alpha = 0.3)
 
   if (return_plotly == FALSE) return(fp)
 
@@ -430,6 +430,7 @@ plot_markers <- function(seu, resolution, num_markers = 5){
 
   markerplot <- DotPlot(seu, features = unique(markers), group.by = resolution, dot.scale = 4) +
     theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
+    scale_y_discrete(position = "right") +
     coord_flip() +
     NULL
 

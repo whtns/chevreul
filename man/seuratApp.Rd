@@ -7,9 +7,9 @@
 seuratApp(
   preset_project,
   filterTypes,
-  appTitle,
+  appTitle = NULL,
   feature_types = "gene",
-  futureMb = 1000
+  futureMb = 10000
 )
 }
 \arguments{

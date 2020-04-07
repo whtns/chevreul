@@ -78,9 +78,6 @@ clustering_workflow <- function(proj_dir, feature_seus = NULL, excluded_cells, c
     feature_seus <- purrr::imap(feature_seus, seuratTools::annotate_cell_cycle, ...)
   }
 
-  # add marker genes to seurat objects
-  feature_seus <- purrr::map(feature_seus, seuratTools::find_all_markers)
-
   # annotate low read count category in seurat metadata
   feature_seus <- purrr::map(feature_seus, seuratTools::add_read_count_col)
 

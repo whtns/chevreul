@@ -108,7 +108,7 @@ annotate_excluded <- function(seu, ...){
   excluded_cells <- purrr::map2(excluded_cells, names(excluded_cells), ~rep(.y, length(.x))) %>%
     unlist() %>%
     purrr::set_names(unlist(excluded_cells)) %>%
-    tibble::enframe("Sample_ID", "excluded_because")
+    tibble::enframe("sample_id", "excluded_because")
 
   excluded_because <- as_tibble(seu[["nCount_RNA"]], rownames = "sample_id") %>%
     dplyr::full_join(excluded_cells, by = "sample_id")
