@@ -2,24 +2,16 @@
 % Please edit documentation in R/plotting.R
 \name{plot_violin}
 \alias{plot_violin}
-\title{Make Violin Plots Based on Metadata and Feature Expression}
+\title{plot Violin plot}
 \usage{
 plot_violin(seu, plot_var = "batch", plot_vals = NULL, features = "RXRG", ...)
 }
 \arguments{
-\item{seu}{a seurat object}
-
-\item{plot_var}{a metadata value}
-
-\item{plot_vals}{set of values to subset on}
-
-\item{features}{vector of gene or transcript names}
-
-\item{...}{additional arguments to \link[Seurat]{VlnPlot}}
+\item{...}{}
 }
 \value{
 
 }
 \description{
-Make Violin Plots Based on Metadata and Feature Expression
+plot Violin plot
 }

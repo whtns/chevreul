@@ -11,10 +11,8 @@
 #'
 #' @examples
 run_seurat_de <- function(seu, cluster1, cluster2, resolution, diffex_scheme = "seurat", featureType, tests = c("t", "wilcox", "bimod")) {
-
-  if (diffex_scheme == "seurat"){
-
-    if ("integrated" %in% names(seu@assays)){
+  if (diffex_scheme == "seurat") {
+    if ("integrated" %in% names(seu@assays)) {
       active_assay <- "integrated"
     } else {
       active_assay <- "RNA"
@@ -23,32 +21,32 @@ run_seurat_de <- function(seu, cluster1, cluster2, resolution, diffex_scheme = "
 
     Idents(seu) <- paste0(active_assay, "_snn_res.", resolution)
     seu <- subset(seu, idents = c(cluster1, cluster2))
-  } else if (diffex_scheme == "custom"){
+  } else if (diffex_scheme == "custom") {
     # subset by supplied cell ids
     #
-    seu <- seu[,c(cluster1, cluster2)]
+    seu <- seu[, c(cluster1, cluster2)]
 
     keep_cells <- c(cluster1, cluster2)
     new_idents <- c(rep(1, length(cluster1)), rep(2, length(cluster2)))
     names(new_idents) <- keep_cells
     new_idents <- new_idents[colnames(seu)]
     Idents(seu) <- new_idents
-    cluster1 = 1
-    cluster2 = 2
-
+    cluster1 <- 1
+    cluster2 <- 2
   }
 
   test_list <- vector("list", length(tests))
 
-  for (test in tests){
+  for (test in tests) {
     print(test)
     de <- FindMarkers(seu,
-                      ident.1 = cluster1,
-                      ident.2 = cluster2,
-                      test.use = test)
+      ident.1 = cluster1,
+      ident.2 = cluster2,
+      test.use = test
+    )
 
 
-    if (featureType() == "transcript"){
+    if (featureType() == "transcript") {
       de_cols <- c("enstxp", "ensgene", "symbol", "p_val", "avg_logFC", "pct.1", "pct.2", "p_val_adj")
 
       de <-
@@ -57,8 +55,7 @@ run_seurat_de <- function(seu, cluster1, cluster2, resolution, diffex_scheme = "
         dplyr::left_join(annotables::grch38_tx2gene, by = "enstxp") %>%
         dplyr::left_join(annotables::grch38, by = "ensgene") %>%
         dplyr::select(one_of(de_cols))
-
-    } else if (featureType() == "gene"){
+    } else if (featureType() == "gene") {
       de_cols <- c("ensgene", "symbol", "p_val", "avg_logFC", "pct.1", "pct.2", "p_val_adj")
 
       de <-
@@ -68,12 +65,10 @@ run_seurat_de <- function(seu, cluster1, cluster2, resolution, diffex_scheme = "
         dplyr::select(one_of(de_cols))
     }
 
-    test_list[[match(test, tests)]] = de
-
+    test_list[[match(test, tests)]] <- de
   }
   names(test_list) <- tests
   return(test_list)
-
 }
 
 
@@ -89,8 +84,7 @@ run_seurat_de <- function(seu, cluster1, cluster2, resolution, diffex_scheme = "
 #' @export
 #'
 #' @examples
-run_enrichmentbrowser <- function(seu, cluster_list, de_results, enrichment_method = c("ora"), ...){
-
+run_enrichmentbrowser <- function(seu, cluster_list, de_results, enrichment_method = c("ora"), ...) {
   cluster1_cells <- cluster_list$cluster1
   cluster2_cells <- cluster_list$cluster2
 
@@ -103,8 +97,8 @@ run_enrichmentbrowser <- function(seu, cluster_list, de_results, enrichment_meth
 
   # subset by supplied cell ids
   #
-  seu <- seu[,c(cluster1_cells, cluster2_cells)]
-  seu <- seu[rownames(seu) %in% de_results$t$symbol,]
+  seu <- seu[, c(cluster1_cells, cluster2_cells)]
+  seu <- seu[rownames(seu) %in% de_results$t$symbol, ]
 
   seu[["RNA"]]@meta.features <- test_diffex_results
 
@@ -118,14 +112,18 @@ run_enrichmentbrowser <- function(seu, cluster_list, de_results, enrichment_meth
   counts <- as.matrix(counts)
   mode(counts) <- "integer"
 
-  rowData <- data.frame(FC = seu[["RNA"]][[]]$FC,
-                        ADJ.PVAL = seu[["RNA"]][[]]$ADJ.PVAL,
-                        row.names = rownames(seu@assays$RNA))
+  rowData <- data.frame(
+    FC = seu[["RNA"]][[]]$FC,
+    ADJ.PVAL = seu[["RNA"]][[]]$ADJ.PVAL,
+    row.names = rownames(seu@assays$RNA)
+  )
 
   colData <- as.data.frame(seu[[]])
 
-  se <- SummarizedExperiment::SummarizedExperiment(assays=list(counts=counts),
-                                                   rowData=rowData, colData=colData)
+  se <- SummarizedExperiment::SummarizedExperiment(
+    assays = list(counts = counts),
+    rowData = rowData, colData = colData
+  )
 
   se$GROUP <- forcats::fct_inseq(Idents(seu))
 
@@ -143,34 +141,41 @@ run_enrichmentbrowser <- function(seu, cluster_list, de_results, enrichment_meth
 
   enrichment.res <- list()
 
-  if("ora" %in% enrichment_method){
-  enrichment.res$ora <- EnrichmentBrowser::sbea(method = "ora", se = se, gs = go.gs, perm = 0,
-                                      alpha = 0.1)
-  results <- enrichment.res$ora
-  report.name = "ora.html"
-  EnrichmentBrowser::eaBrowse(results, html.only = TRUE, out.dir = outdir, graph.view=hsa.grn,
-                              report.name = report.name)
-
+  if ("ora" %in% enrichment_method) {
+    enrichment.res$ora <- EnrichmentBrowser::sbea(
+      method = "ora", se = se, gs = go.gs, perm = 0,
+      alpha = 0.1
+    )
+    results <- enrichment.res$ora
+    report.name <- "ora.html"
+    EnrichmentBrowser::eaBrowse(results,
+      html.only = TRUE, out.dir = outdir, graph.view = hsa.grn,
+      report.name = report.name
+    )
   }
 
-  if ("gsea" %in% enrichment_method){
-  enrichment.res$gsea <- EnrichmentBrowser::sbea(method = "gsea", se = se, gs = msigdb.gs, perm = 100,
-                                     alpha = 0.1)
-  results <- enrichment.res$gsea
-  report.name = "gsea.html"
-  EnrichmentBrowser::eaBrowse(results, html.only = TRUE, out.dir = outdir, graph.view=hsa.grn,
-                              report.name = report.name)
-
+  if ("gsea" %in% enrichment_method) {
+    enrichment.res$gsea <- EnrichmentBrowser::sbea(
+      method = "gsea", se = se, gs = msigdb.gs, perm = 100,
+      alpha = 0.1
+    )
+    results <- enrichment.res$gsea
+    report.name <- "gsea.html"
+    EnrichmentBrowser::eaBrowse(results,
+      html.only = TRUE, out.dir = outdir, graph.view = hsa.grn,
+      report.name = report.name
+    )
   }
 
-  if ("nbea" %in% enrichment_method){
-  enrichment.res$nbea <- EnrichmentBrowser::nbea(method="ggea", se=se, gs=go.gs, grn=hsa.grn)
+  if ("nbea" %in% enrichment_method) {
+    enrichment.res$nbea <- EnrichmentBrowser::nbea(method = "ggea", se = se, gs = go.gs, grn = hsa.grn)
 
-  results <- enrichment.res$nbea
-  report.name = "nbea.html"
-  EnrichmentBrowser::eaBrowse(results, html.only = TRUE, out.dir = outdir, graph.view=hsa.grn,
-                              report.name = report.name)
-
+    results <- enrichment.res$nbea
+    report.name <- "nbea.html"
+    EnrichmentBrowser::eaBrowse(results,
+      html.only = TRUE, out.dir = outdir, graph.view = hsa.grn,
+      report.name = report.name
+    )
   }
 
   return(list(report = fs::path("enrichmentbrowser", report.name), results = results$res.tbl))
@@ -184,11 +189,11 @@ run_enrichmentbrowser <- function(seu, cluster_list, de_results, enrichment_meth
 #' @export
 #'
 #' @examples
-prep_slider_values <- function(default_val){
-  min <- round(default_val*0.25, digits = 1)
-  max <- round(default_val*2.0, digits = 1)
-  step = 10^((ceiling(log10(default_val)))-1)
-  value = default_val
+prep_slider_values <- function(default_val) {
+  min <- round(default_val * 0.25, digits = 1)
+  max <- round(default_val * 2.0, digits = 1)
+  step <- 10^((ceiling(log10(default_val))) - 1)
+  value <- default_val
   return(list(min = min, max = max, value = value, step = step))
 }
 
@@ -199,433 +204,364 @@ prep_slider_values <- function(default_val){
 #' @param filterTypes A named vector of file suffixes corresponding to subsets of the data
 #' @param appTitle A title of the App
 #' @param futureMb amount of Mb allocated to future package
-#' @param featureTypes
 #' @param preset_project
+#' @param feature_types
+#' @param organism_type
 #'
 #' @return
 #' @export
 #'
 #' @examples
-seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_types = "gene", futureMb = 1e4){
-
+seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_types = "gene",
+                      organism_type = "human", futureMb = 13000) {
   print(feature_types)
-
-  # projList <- system("locate -d /dataVolume/storage/single_cell_projects/single_cell_projects.db '*_proj'", intern = TRUE) %>%
-  #   purrr::set_names(fs::path_file(.)) %>%
-  #   identity()
-  #
-  # pc_projList <- fs::path(fs::path_file(fs::path_dir(projList)), fs::path_file(projList))
-  # pc_preset <- fs::path(fs::path_file(fs::path_dir(preset_project)), fs::path_file(preset_project))
-  #
-  # preset_project <- projList[match(pc_preset, pc_projList)]
-  #
-  # print(projList)
-  # print(preset_project)
-
   future::plan(strategy = "multicore", workers = 6)
-  future_size = futureMb*1024^2
-  options(future.globals.maxSize= future_size)
-  options(shiny.maxRequestSize=40*1024^2)
-  options(DT.options = list(pageLength = 2000, paging = FALSE,
-                            info = TRUE, searching = TRUE, autoWidth = F, ordering = TRUE, scrollX = TRUE,
-                            language = list(search = "Filter:")))
-
-  # header ------------------------
+  future_size <- futureMb * 1024^2
+  options(future.globals.maxSize = future_size)
+  options(shiny.maxRequestSize = 40 * 1024^2)
+  options(DT.options = list(
+    pageLength = 2000, paging = FALSE,
+    info = TRUE, searching = TRUE, autoWidth = F, ordering = TRUE,
+    scrollX = TRUE, language = list(search = "Filter:")
+  ))
   header <- shinydashboard::dashboardHeader(title = appTitle)
-
-  # sidebar ------------------------
- sidebar <- shinydashboard::dashboardSidebar(
-  # selectizeInput("setProject", "Select Project to Load", choices = projList, selected = preset_project, multiple = F),
-  uiOutput("projInput"),
-  actionButton("loadProject", "Load Selected Project"),
-  shinyFiles::shinyDirButton("deleteProject", "Delete an Integrated Project or Dataset", "Please select a file or directory to delete"),
-  textOutput("appTitle"),
-  uiOutput("featureType"),
-  # shinyWidgets::prettyRadioButtons("featureType", "Feature for Display", choices = featureTypes, selected = "gene"),
-  shinyWidgets::prettyRadioButtons("organism_type", "Organism", choices = c("human", "mouse"), selected = "human"),
-  shinyFiles::shinyFilesButton("seuratUpload", "Load a Seurat Dataset", "Please select a .rds file", multiple = FALSE),
-  shinyFiles::shinySaveButton("saveSeurat", "Save Current Dataset", "Save file as...", filetype = list(rds = "rds")),
-  verbatimTextOutput("savefile"),
-  actionButton("changeEmbedAction", label = "Change Embedding Parameters"),
-  changeEmbedParamsui("changeembed"),
-  # bookmarkButton(),
-  shinydashboard::sidebarMenu(
-    shinydashboard::menuItem("Integrate Projects", tabName = "integrateProjects"),
-    shinydashboard::menuItem("Reformat Metadata", tabName = "reformatMetadata"),
-    shinydashboard::menuItem("Compare Scatter Plots", tabName = "comparePlots"),
-    shinydashboard::menuItem("Compare Read Counts", tabName = "compareReadCount"),
-    shinydashboard::menuItem("Violin Plots", tabName = "violinPlots"),
-    shinydashboard::menuItem("Differential Expression", tabName = "diffex"),
-    shinydashboard::menuItem("Gene Enrichment Analysis", tabName = "geneEnrichment"),
-    shinydashboard::menuItem("Find Markers", tabName = "findMarkers"),
-    shinydashboard::menuItem("Subset Seurat Input", tabName = "subsetSeurat"),
-    shinydashboard::menuItem("All Transcripts", tabName = "allTranscripts"),
-    shinydashboard::menuItem("RNA Velocity", tabName = "rnaVelocity"),
-    shinydashboard::menuItem("Monocle", tabName = "monocle"),
-    # shinydashboard::menuItem("cellAlign", tabName = "cellAlign"),
-    shinydashboard::menuItem("Regress Features", tabName = "regressFeatures")
-  ),
-  width = 450
-)
-
-# body ------------------------
+  sidebar <- shinydashboard::dashboardSidebar(uiOutput("projInput"),
+    actionButton("loadProject", "Load Selected Project"),
+    shinyFiles::shinyDirButton(
+      "deleteProject", "Delete an Integrated Project or Dataset",
+      "Please select a file or directory to delete"
+    ),
+    textOutput("appTitle"), uiOutput("featureType"), shinyWidgets::prettyRadioButtons("organism_type",
+      "Organism",
+      choices = c("human", "mouse"), selected = organism_type
+    ),
+    shinyFiles::shinyFilesButton("seuratUpload", "Load a Seurat Dataset",
+      "Please select a .rds file",
+      multiple = FALSE
+    ),
+    shinyFiles::shinySaveButton("saveSeurat", "Save Current Dataset",
+      "Save file as...",
+      filetype = list(rds = "rds")
+    ),
+    verbatimTextOutput("savefile"), actionButton("changeEmbedAction",
+      label = "Change Embedding Parameters"
+    ), changeEmbedParamsui("changeembed"),
+    shinydashboard::sidebarMenu(shinydashboard::menuItem("Integrate Projects",
+      tabName = "integrateProjects"
+    ), shinydashboard::menuItem("Reformat Metadata",
+      tabName = "reformatMetadata"
+    ), shinydashboard::menuItem("Compare Scatter Plots",
+      tabName = "comparePlots"
+    ), shinydashboard::menuItem("Compare Read Counts",
+      tabName = "compareReadCount"
+    ), shinydashboard::menuItem("Violin/Heatmap Plots",
+      tabName = "violinPlots"
+    ), shinydashboard::menuItem("Differential Expression",
+      tabName = "diffex"
+    ), shinydashboard::menuItem("Gene Enrichment Analysis",
+      tabName = "geneEnrichment"
+    ), shinydashboard::menuItem("Find Markers",
+      tabName = "findMarkers"
+    ), shinydashboard::menuItem("Subset Seurat Input",
+      tabName = "subsetSeurat"
+    ), shinydashboard::menuItem("All Transcripts",
+      tabName = "allTranscripts"
+    ), shinydashboard::menuItem("RNA Velocity",
+      tabName = "plotVelocity"
+    ), shinydashboard::menuItem("Monocle",
+      tabName = "monocle"
+    ), shinydashboard::menuItem("Regress Features",
+      tabName = "regressFeatures"
+    )),
+    width = 450
+  )
   body <- shinydashboard::dashboardBody(shinydashboard::tabItems(
     shinydashboard::tabItem(
       tabName = "violinPlots",
-      h2("Violin Plots"),
-      fluidRow(
-        box(
-          plotViolinui("violinPlot")
-        )
+      h2("Violin Plots"), fluidRow(
+        box(plotViolinui("violinPlot")),
+        box(plotHeatmapui("heatMap"))
       )
+    ), shinydashboard::tabItem(
+      tabName = "comparePlots",
+      h2("Compare Plots"), fluidRow(
+        box(plotDimRedui("hello")),
+        box(plotDimRedui("howdy"))
+      ), fluidRow(box(
+        title = "Selected Cells",
+        tableSelectedui("hello"), width = 6
+      ), box(plotClustree_UI("clustreePlot")))
     ),
-  shinydashboard::tabItem(
-    tabName = "comparePlots",
-    h2("Compare Plots"), fluidRow(
-      box(plotDimRedui(
-        "hello"
-      )), box(plotDimRedui(
-        "howdy"
-      ))
-    ), fluidRow(
-      box(
-      title = "Selected Cells",
-      tableSelectedui("hello"), width = 6
+    shinydashboard::tabItem(
+      tabName = "integrateProjects",
+      h2("Integrate Projects"), fluidRow((integrateProjui("hello")))
     ),
-    box(
-      plotClustree_UI("clustreePlot")
-    )
-    )
-  ),
-  shinydashboard::tabItem(
-    tabName = "integrateProjects",
-    h2("Integrate Projects"), fluidRow(
-      (integrateProjui(
-        "hello"
-      )))
-  ), shinydashboard::tabItem(
-    tabName = "reformatMetadata",
-    h2("Reformat Metadata"), fluidRow(
-      (reformatMetadataui(
-        "hello"
-      )))
-  ), shinydashboard::tabItem(
-    tabName = "compareReadCount",
-    h2("Compare Read Counts"), fluidRow(box(plotReadCountui(
-      "hello2"
-    )), box(plotReadCountui(
-      "howdy2"
-    )))
-  ), shinydashboard::tabItem(
-    tabName = "subsetSeurat",
-    h2("Subset Seurat Input"), column(box(plotDimRedui(
-      "subset"
-    ), width = 12), width = 6),
-    column(
-      box(shinyWidgets::actionBttn(
+    shinydashboard::tabItem(
+      tabName = "reformatMetadata",
+      h2("Reformat Metadata"), fluidRow((reformatMetadataui("hello")))
+    ),
+    shinydashboard::tabItem(
+      tabName = "compareReadCount",
+      h2("Compare Read Counts"), fluidRow(
+        box(plotReadCountui("hello2")),
+        box(plotReadCountui("howdy2"))
+      )
+    ), shinydashboard::tabItem(
+      tabName = "subsetSeurat",
+      h2("Subset Seurat Input"), column(box(plotDimRedui("subset"),
+        width = 12
+      ), width = 6), column(box(shinyWidgets::actionBttn(
         "subsetAction",
         "subset seurat by selected cells"
-      ),
-      shinyWidgets::actionBttn(
+      ), shinyWidgets::actionBttn(
         "subsetCsv",
         "subset seurat by uploaded csv"
+      ), fileInput("uploadCsv",
+        "Upload .csv file with cells to include",
+        accept = c(".csv")
       ),
-      fileInput("uploadCsv", "Upload .csv file with cells to include", accept = c(".csv")),
-      shinyjs::useShinyjs(),
-      textOutput("subsetMessages"),
+      shinyjs::useShinyjs(), textOutput("subsetMessages"),
       width = 12
-      ),
-      box(
-        title = "Selected Cells",
-        tableSelectedui("subset"), width = 12
-      ),
-      width = 6
-    )
-  ),
-  shinydashboard::tabItem(
-    tabName = "findMarkers", h2("Find Markers"),
-    fluidRow(
-      box(findMarkersui("hello")),
-      box(plotDimRedui("markerScatter"))
-      )
-  ), shinydashboard::tabItem(
-    tabName = "allTranscripts",
-    h2("All Transcripts"), fluidRow(shinyWidgets::actionBttn(
-      "plotTrx",
-      "Plot all transcripts"
-    )), fluidRow(column(allTranscriptsui("hello"),
-      width = 6
-    ), column(allTranscriptsui("howdy"),
-      width = 6
-    ))
-  ), shinydashboard::tabItem(
-    tabName = "diffex",
-    h2("Differential Expression"), column(box(plotDimRedui(
-      "diffex"
-    ), width = 12),
-      box(
-        tableSelectedui("diffex"), width = 12
-      ), width = 6),
-    column(
-      box(
-        diffexui("hello"),
+      ), box(
+        title = "Selected Cells", tableSelectedui("subset"),
         width = 12
-      ),
-      width = 6
-    )
-  ),
-  shinydashboard::tabItem(
-    tabName = "geneEnrichment",
-    h2("Gene Enrichment"),
-    geneEnrichmentui("hello"),
-    downloadTable_UI("hello")
-  ),
-  shinydashboard::tabItem(
-    tabName = "regressFeatures",
-    h2("Regress Features"),
-    fluidRow(
-      actionButton("regressAction", "Regress Seurat Objects By Genes"),
-      box(
-        checkboxInput("runRegression", "Run Regression?", value = FALSE),
-        checkboxGroupInput("priorGeneSet", "Choose a marker gene set:",
-                    choices = c("Apoptosis", "Cell Cycle")
-        ),
-        selectizeInput("geneSet", "List of genes", choices = NULL, multiple = TRUE),
-        textInput("geneSetName", "Name for Gene Set"),
-        width = 12
+      ), width = 6)
+    ), shinydashboard::tabItem(
+      tabName = "findMarkers",
+      h2("Find Markers"), fluidRow(
+        box(findMarkersui("hello")),
+        box(plotDimRedui("markerScatter"))
       )
-    )
-  ),
-  shinydashboard::tabItem(
-    tabName = "monocle",
-    h2("Monocle"),
-    fluidRow(
-      box(
-      actionButton("calcCDS", "Calculate Pseudotime"),
-      shinyFiles::shinySaveButton("saveCDS", "Save Existing Pseudotime to File", "Save file as...", filetype = list(rds = "rds")),
-      shinyFiles::shinyFilesButton("loadCDS", "Load Pseudotime from File", "Load Pseudotime File", multiple = FALSE),
-      sliderInput("cdsResolution", "Resolution of clustering algorithm (affects number of clusters)", min = 0.2, max = 2, step = 0.2, value = 0.6)
-      ),
-      fluidRow(
-        box(monocleui("arrow"),
-            width = 12
+    ), shinydashboard::tabItem(
+      tabName = "allTranscripts",
+      h2("All Transcripts"), fluidRow(shinyWidgets::actionBttn(
+        "plotTrx",
+        "Plot all transcripts"
+      )), fluidRow(column(allTranscriptsui("hello"),
+        width = 6
+      ), column(allTranscriptsui("howdy"),
+        width = 6
+      ))
+    ),
+    shinydashboard::tabItem(
+      tabName = "plotVelocity",
+      h2("Plot Velocity"), plotVelocityui("howdy")
+    ),
+    shinydashboard::tabItem(
+      tabName = "diffex",
+      h2("Differential Expression"), column(box(plotDimRedui("diffex"),
+        width = 12
+      ), box(tableSelectedui("diffex"),
+        width = 12
+      ), width = 6), column(box(diffexui("hello"),
+        width = 12
+      ), width = 6)
+    ), shinydashboard::tabItem(
+      tabName = "geneEnrichment",
+      h2("Gene Enrichment"), geneEnrichmentui("hello"),
+      downloadTable_UI("hello")
+    ), shinydashboard::tabItem(
+      tabName = "regressFeatures",
+      h2("Regress Features"), fluidRow(actionButton(
+        "regressAction",
+        "Regress Seurat Objects By Genes"
+      ), box(checkboxInput("runRegression",
+        "Run Regression?",
+        value = FALSE
+      ), checkboxGroupInput("priorGeneSet",
+        "Choose a marker gene set:",
+        choices = c(
+          "Apoptosis",
+          "Cell Cycle"
         )
+      ), selectizeInput("geneSet",
+        "List of genes",
+        choices = NULL, multiple = TRUE
+      ),
+      textInput("geneSetName", "Name for Gene Set"),
+      width = 12
+      ))
+    ), shinydashboard::tabItem(
+      tabName = "monocle",
+      h2("Monocle"), fluidRow(
+        box(actionButton(
+          "calcCDS",
+          "Calculate Pseudotime"
+        ), shinyFiles::shinySaveButton("saveCDS",
+          "Save Existing Pseudotime to File", "Save file as...",
+          filetype = list(rds = "rds")
+        ), shinyFiles::shinyFilesButton("loadCDS",
+          "Load Pseudotime from File", "Load Pseudotime File",
+          multiple = FALSE
+        ), sliderInput("cdsResolution",
+          "Resolution of clustering algorithm (affects number of clusters)",
+          min = 0.2, max = 2, step = 0.2, value = 0.6
+        )),
+        fluidRow(box(monocleui("arrow"), width = 12))
       )
     )
-  )
-))
-
-  # shinydashboard ui ------------------------
-  ui <- function(request){
+  ))
+  ui <- function(request) {
     ui <- dashboardPage(
-      header = header,
-      sidebar = sidebar,
+      header = header, sidebar = sidebar,
       body = body
     )
   }
-
-# shinydashboard server ------------------------
   server <- function(input, output, session) {
     options(warn = -1)
-
     shinylogs::track_usage(storage_mode = shinylogs::store_json(path = "logs/"))
-
     projects_db <- "/dataVolume/storage/single_cell_projects/single_cell_projects.db"
-
-    projList <- reactivePoll(4000, session,
-                             # This function returns the time that the logfile was last
-                             # modified
-                             checkFunc = function() {
-                               if (file.exists(projects_db))
-                                 system("locate -d /dataVolume/storage/single_cell_projects/single_cell_projects.db '*.here'", intern = TRUE) %>%
-                                 fs::path_dir() %>%
-                                 purrr::set_names(fs::path_file(.))
-                               else
-                                 ""
-                             },
-                             # This function returns the content of the logfile
-                             valueFunc = function() {
-                               system("locate -d /dataVolume/storage/single_cell_projects/single_cell_projects.db '*.here'", intern = TRUE) %>%
-                               fs::path_dir() %>%
-                               purrr::set_names(fs::path_file(.))
-                             }
-    )
-
-
-    # projList <- reactive({
-    #   system("locate -d /dataVolume/storage/single_cell_projects/single_cell_projects.db '*.here'", intern = TRUE) %>%
-    #     fs::path_dir() %>%
-    #     purrr::set_names(fs::path_file(.))
-    # })
-
-    # presetProject <- reactive({
-    #   pc_projList <- fs::path(fs::path_file(fs::path_dir(projList())), fs::path_file(projList()))
-    #   pc_preset <- fs::path(fs::path_file(fs::path_dir(preset_project)), fs::path_file(preset_project))
-    #
-    #   projList()[match(pc_preset, pc_projList())]
-    # })
-
-    output$projInput = renderUI({
-      selectizeInput("setProject", "Select Project to Load", choices = projList(), selected = preset_project, multiple = F)
+    projList <- reactivePoll(4000, session, checkFunc = function() {
+      if (file.exists(projects_db)) {
+        system("locate -d /dataVolume/storage/single_cell_projects/single_cell_projects.db '*.here'",
+          intern = TRUE
+        ) %>%
+          fs::path_dir() %>%
+          purrr::set_names(fs::path_file(.))
+      } else {
+        ""
+      }
+    }, valueFunc = function() {
+      system("locate -d /dataVolume/storage/single_cell_projects/single_cell_projects.db '*.here'",
+        intern = TRUE
+      ) %>%
+        fs::path_dir() %>%
+        purrr::set_names(fs::path_file(.))
     })
-
+    output$projInput <- renderUI({
+      selectizeInput("setProject", "Select Project to Load",
+        choices = projList(), selected = preset_project,
+        multiple = F
+      )
+    })
     proj_matrices <- reactive({
       create_proj_matrix(projList())
     })
-
-# sidebar ------------------------
     seu <- reactiveValues()
     proj_dir <- reactiveVal()
-
-    if(!is.null(preset_project)){
+    if (!is.null(preset_project)) {
       proj_dir(preset_project)
     }
-
     organism_type <- reactive({
       input$organism_type
     })
-
     plot_types <- reactive({
       list_plot_types(seu$active)
     })
-
-    # upload seurat object
-
     observeEvent(input$loadProject, {
       proj_dir(input$setProject)
     })
-
     output$appTitle <- renderText({
       req(proj_dir())
       paste0("Loaded Project: ", fs::path_file(proj_dir()))
     })
-
-    # list project volumes
     project_volumes <- reactive({
       print(proj_dir())
-      project_volumes <- c(Home = fs::path("/dataVolume/storage/single_cell_projects/integrated_projects"), "R Installation" = R.home(), shinyFiles::getVolumes())
+      project_volumes <- c(
+        Home = fs::path("/dataVolume/storage/single_cell_projects/integrated_projects"),
+        `R Installation` = R.home(), shinyFiles::getVolumes()
+      )
     })
-
-    # list dataset_volumes
     dataset_volumes <- reactive({
       print(proj_dir())
-      dataset_volumes <- c(Home = fs::path(proj_dir(), "output", "seurat"), "R Installation" = R.home(), shinyFiles::getVolumes())
-      })
-
+      dataset_volumes <- c(
+        Home = fs::path(
+          proj_dir(),
+          "output", "seurat"
+        ), `R Installation` = R.home(),
+        shinyFiles::getVolumes()
+      )
+    })
     observe({
       req(dataset_volumes())
-      shinyFiles::shinyFileChoose(input, "seuratUpload", roots = dataset_volumes(), session = session)
+      shinyFiles::shinyFileChoose(input, "seuratUpload",
+        roots = dataset_volumes(), session = session
+      )
     })
-
     observe({
       req(project_volumes())
-      shinyFiles::shinyDirChoose(input, "deleteProject", roots = project_volumes(), session = session, restrictions = system.file(package = "base"))
+      shinyFiles::shinyDirChoose(input, "deleteProject",
+        roots = project_volumes(), session = session,
+        restrictions = system.file(package = "base")
+      )
     })
-
     uploadSeuratPath <- eventReactive(input$seuratUpload, {
       req(dataset_volumes())
-      file <- shinyFiles::parseFilePaths(dataset_volumes(), input$seuratUpload)
+      file <- shinyFiles::parseFilePaths(
+        dataset_volumes(),
+        input$seuratUpload
+      )
       file$datapath
     })
-
     deleteSeuratPath <- eventReactive(input$deleteProject, {
       req(project_volumes())
-      file <- shinyFiles::parseDirPath(project_volumes(), input$deleteProject)
-      # file$datapath
+      file <- shinyFiles::parseDirPath(
+        project_volumes(),
+        input$deleteProject
+      )
     })
-
-    # load data
-
     observeEvent(input$seuratUpload, {
       req(uploadSeuratPath())
-
       shiny::withProgress(
         message = paste0("Uploading Data"),
         value = 0,
         {
-          # Sys.sleep(6)
-          shiny::incProgress(2/10)
-          # Sys.sleep(12)
-          # shiny::incProgress(4/10)
-          # Sys.sleep(18)
-          # shiny::incProgress(6/10)
+          shiny::incProgress(2 / 10)
           print(uploadSeuratPath())
           dataset <- readRDS(uploadSeuratPath())
-
-          if(!typeof(dataset[[1]]@misc$markers[[1]]) == "list"){
-            dataset <- purrr::map(dataset, find_all_markers)
-            saveRDS(dataset, uploadSeuratPath())
-          }
-
-          shiny::incProgress(6/10)
-          # dataset$gene <- find_all_markers(dataset$gene)
-          # dataset$transcript <- find_all_markers(dataset$transcript)
-
-          seu_names <- names(dataset)[!names(dataset) == "active"]
-
-          for (i in seu_names){
+          shiny::incProgress(6 / 10)
+          seu_names <- names(dataset)[!names(dataset) ==
+            "active"]
+          for (i in seu_names) {
             seu[[i]] <- dataset[[i]]
           }
-
           seu$active <- seu[["gene"]]
-
           print(uploadSeuratPath())
           print(names(seu))
-
-          shiny::incProgress(8/10)
+          shiny::incProgress(8 / 10)
         }
       )
-
     })
-
     observeEvent(input$deleteProject, {
       req(deleteSeuratPath())
-
-      message = paste0("Deleting Project")
+      message <- paste0("Deleting Project")
       print(deleteSeuratPath())
-      # delete_seurat(deleteSeuratPath())
       fs::file_delete(deleteSeuratPath())
       showModal(modalDialog(
         title = "Project Deleted",
         paste0("You successfully deleted: ", deleteSeuratPath()),
-        easyClose = TRUE,
-        footer = NULL
+        easyClose = TRUE, footer = NULL
       ))
-
     })
-
     output$featureType <- renderUI({
       req(seu)
-
       seu_names <- names(seu)[!(names(seu) == "active")]
-
-      shinyWidgets::prettyRadioButtons("feature_type", "Feature for Display", choices = seu_names, selected = "gene", inline = T)
+      shinyWidgets::prettyRadioButtons("feature_type",
+        "Feature for Display",
+        choices = seu_names,
+        selected = "gene", inline = T
+      )
     })
-
     observeEvent(input$feature_type, {
       seu$active <- seu[[input$feature_type]]
     })
-
     featureType <- reactive({
       featureType <- input$feature_type
-      # "gene"
     })
-
-    # save seurat object
     observe({
-      shinyFiles::shinyFileSave(input, "saveSeurat", roots = dataset_volumes(), session = session, restrictions = system.file(package = "base"))
+      shinyFiles::shinyFileSave(input, "saveSeurat",
+        roots = dataset_volumes(),
+        session = session, restrictions = system.file(package = "base")
+      )
     })
-
-
     subSeuratPath <- eventReactive(input$saveSeurat, {
-
       req(seu$active)
-      savefile <- shinyFiles::parseSavePath(dataset_volumes(), input$saveSeurat)
-
+      savefile <- shinyFiles::parseSavePath(
+        dataset_volumes(),
+        input$saveSeurat
+      )
       return(savefile$datapath)
-
     })
-
     observeEvent(input$saveSeurat, {
       req(seu$active)
       req(subSeuratPath())
@@ -634,177 +570,172 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
         value = 0,
         {
           Sys.sleep(6)
-          shiny::incProgress(2/10)
-          saveRDS(shiny::reactiveValuesToList(seu), subSeuratPath())
-          shiny::incProgress(10/10)
-
+          shiny::incProgress(2 / 10)
+          saveRDS(
+            shiny::reactiveValuesToList(seu),
+            subSeuratPath()
+          )
+          shiny::incProgress(10 / 10)
         }
       )
     })
-
-# body ------------------------
-
-    integrationResults <- callModule(integrateProj, "hello", proj_matrices, seu, proj_dir)
-    # for debugging
-    # integrationResults <- proj_dir
-
+    integrationResults <- callModule(
+      integrateProj, "hello",
+      proj_matrices, seu, proj_dir
+    )
     newprojList <- reactive({
       req(integrationResults())
       integration_path <- paste0(integrationResults())
       proj_dir(integration_path)
-
-      newintegrated_project <- purrr::set_names(integration_path, fs::path_file(integration_path))
+      newintegrated_project <- purrr::set_names(
+        integration_path,
+        fs::path_file(integration_path)
+      )
       newprojList <- c(projList(), newintegrated_project)
     })
-
     observe({
-      # print(integration_path)
       print(newprojList())
-
       updateSelectizeInput(session, "setProject",
-                        label = "Select input label",
-                        choices = newprojList(),
+        label = "Select input label",
+        choices = newprojList(),
       )
-
     })
-
     seu <- callModule(reformatMetadata, "hello", seu)
-
-    callModule(plotDimRed, "hello", seu, plot_types, featureType, organism_type = organism_type)
-    callModule(plotDimRed, "howdy", seu, plot_types, featureType, organism_type = organism_type)
-    callModule(plotDimRed, "diffex", seu, plot_types, featureType, organism_type = organism_type)
-    callModule(plotDimRed, "subset", seu, plot_types, featureType, organism_type = organism_type)
-    callModule(plotDimRed, "markerScatter", seu, plot_types, featureType, organism_type = organism_type)
-
+    callModule(plotDimRed, "hello", seu, plot_types, featureType,
+      organism_type = organism_type
+    )
+    callModule(plotDimRed, "howdy", seu, plot_types, featureType,
+      organism_type = organism_type
+    )
+    callModule(plotDimRed, "diffex", seu, plot_types, featureType,
+      organism_type = organism_type
+    )
+    callModule(plotDimRed, "subset", seu, plot_types, featureType,
+      organism_type = organism_type
+    )
+    callModule(plotDimRed, "markerScatter", seu, plot_types,
+      featureType,
+      organism_type = organism_type
+    )
     callModule(plotReadCount, "hello2", seu, plot_types)
     callModule(plotReadCount, "howdy2", seu, plot_types)
-
-    callModule(plotViolin, "violinPlot", seu, featureType)
-
+    callModule(
+      plotViolin, "violinPlot", seu, featureType,
+      organism_type
+    )
+    callModule(
+      plotHeatmap, "heatMap", seu, featureType,
+      organism_type
+    )
     callModule(plotClustree, "clustreePlot", seu)
-
     callModule(tableSelected, "hello", seu)
-    diffex_selected_cells <- callModule(tableSelected, "diffex", seu)
-
-    subset_selected_cells <- callModule(tableSelected, "subset", seu)
-
+    diffex_selected_cells <- callModule(
+      tableSelected, "diffex",
+      seu
+    )
+    subset_selected_cells <- callModule(
+      tableSelected, "subset",
+      seu
+    )
     observeEvent(input$subsetAction, {
       req(subset_selected_cells())
-
-      withCallingHandlers({
-        shinyjs::html("subsetMessages", "")
-        message("Beginning")
-
-        for (i in names(seu)[!(names(seu) == "active")]){
-          seu[[i]] <- seu[[i]][, subset_selected_cells()]
-        }
-
-        if(length(unique(seu$gene[[]]$batch)) > 1){
-          print(names(seu)[!(names(seu) == "active")])
-          for (i in names(seu)[!(names(seu) == "active")]){
-            message(paste0("reintegrating ", i, " expression"))
-            # harmony
-            # seu[[i]] <- seurat_pipeline(seu[[i]], reduction = "harmony", resolution = seq(0.2, 2.0, by = 0.2))
-            # seurat cca
-            seu[[i]] <- reintegrate_seu(seu[[i]], feature = i, resolution = seq(0.2, 2.0, by = 0.2))
+      withCallingHandlers(
+        {
+          shinyjs::html("subsetMessages", "")
+          message("Beginning")
+          for (i in names(seu)[!(names(seu) == "active")]) {
+            seu[[i]] <- seu[[i]][, subset_selected_cells()]
           }
-
-        } else {
-
-          for (i in names(seu)[!(names(seu) == "active")]){
-            seu[[i]] <- seurat_pipeline(seu[[i]], resolution = seq(0.2, 2.0, by = 0.2))
+          if (length(unique(seu$gene[[]]$batch)) > 1) {
+            print(names(seu)[!(names(seu) == "active")])
+            for (i in names(seu)[!(names(seu) == "active")]) {
+              message(paste0("reintegrating ", i, " expression"))
+              seu[[i]] <- reintegrate_seu(seu[[i]],
+                feature = i,
+                resolution = seq(0.2, 2, by = 0.2)
+              )
+            }
           }
-
+          else {
+            for (i in names(seu)[!(names(seu) == "active")]) {
+              seu[[i]] <- seurat_pipeline(seu[[i]], resolution = seq(0.2,
+                2,
+                by = 0.2
+              ))
+            }
+          }
+          seu$active <- seu[[input$feature_type]]
+          message("Complete!")
+        },
+        message = function(m) {
+          shinyjs::html(id = "subsetMessages", html = paste0(
+            "Subsetting Seurat Object: ",
+            m$message
+          ), add = FALSE)
         }
-        seu$active <- seu[[input$feature_type]]
-
-        message("Complete!")
-
-      },
-      message = function(m) {
-        shinyjs::html(id = "subsetMessages", html = paste0("Subsetting Seurat Object: ", m$message), add = FALSE)
-      })
+      )
     })
-
-    # upload_cells <- reactive({
-    #   req(input$uploadCsv)
-    #   upload_cells <- read.csv(input$uploadCsv$datapath) %>%
-    #     .[,1]
-    # })
-
-
     observeEvent(input$subsetCsv, {
       req(input$subsetCsv)
       req(input$uploadCsv)
-
-      # validate(
-      #   need(upload_cells() != "", "Please upload a csv")
-      # )
-
-
-      withCallingHandlers({
-        shinyjs::html("subsetMessages", "")
-        message("Beginning")
-
-        for (i in names(seu)[!(names(seu) == "active")]){
-          # print(upload_cells)
-          seu[[i]] <- subset_by_meta(input$uploadCsv$datapath, seu[[i]])
-          # seu[[i]] <- seu[[i]][, upload_cells]
-          # seu[[i]]@meta.data <- upload_meta
-          # seu[[i]] <- Seurat::AddMetaData(seu[[i]], upload_meta)
-        }
-
-
-
-
-        if(length(unique(seu$gene[[]]$batch)) > 1){
-
-          for (i in names(seu)[!(names(seu) == "active")]){
-            message(paste0("reintegrating ", i, " expression"))
-            # harmony
-            # seu[[i]] <- seurat_pipeline(seu[[i]], reduction = "harmony", resolution = seq(0.2, 2.0, by = 0.2))
-            # seurat cca
-            seu[[i]] <- reintegrate_seu(seu[[i]], feature = i, resolution = seq(0.2, 2.0, by = 0.2))
+      withCallingHandlers(
+        {
+          shinyjs::html("subsetMessages", "")
+          message("Beginning")
+          for (i in names(seu)[!(names(seu) == "active")]) {
+            seu[[i]] <- subset_by_meta(
+              input$uploadCsv$datapath,
+              seu[[i]]
+            )
           }
-
-        } else {
-
-          for (i in names(seu)[!(names(seu) == "active")]){
-            seu[[i]] <- seurat_pipeline(seu[[i]], resolution = seq(0.2, 2.0, by = 0.2))
+          if (length(unique(seu$gene[[]]$batch)) > 1) {
+            for (i in names(seu)[!(names(seu) == "active")]) {
+              message(paste0("reintegrating ", i, " expression"))
+              seu[[i]] <- reintegrate_seu(seu[[i]],
+                feature = i,
+                resolution = seq(0.2, 2, by = 0.2)
+              )
+            }
           }
-
+          else {
+            for (i in names(seu)[!(names(seu) == "active")]) {
+              seu[[i]] <- seurat_pipeline(seu[[i]], resolution = seq(0.2,
+                2,
+                by = 0.2
+              ))
+            }
+          }
+          seu$active <- seu[[input$feature_type]]
+          message("Complete!")
+        },
+        message = function(m) {
+          shinyjs::html(id = "subsetMessages", html = paste0(
+            "Subsetting Seurat Object: ",
+            m$message
+          ), add = FALSE)
         }
-        seu$active <- seu[[input$feature_type]]
-
-        message("Complete!")
-
-      },
-      message = function(m) {
-        shinyjs::html(id = "subsetMessages", html = paste0("Subsetting Seurat Object: ", m$message), add = FALSE)
-      })
+      )
     })
-
-    observeEvent(input$changeEmbedAction,{
-
+    observeEvent(input$changeEmbedAction, {
       showModal(modalDialog(
         title = "Recalculating Embedding",
         "This process may take a minute or two!"
       ))
-
-      seu <- callModule(changeEmbedParams, "changeembed", seu)
-
-      # seu$active <- callModule(embedParam, "minDist", seu$active)
-      # seu$active <- callModule(embedParam, "negativeSampleRate", seu$active)
+      seu <- callModule(
+        changeEmbedParams, "changeembed",
+        seu
+      )
       removeModal()
     })
-
-
     callModule(findMarkers, "hello", seu)
-
-    diffex_results <- callModule(diffex, "hello", seu, featureType, diffex_selected_cells)
-
-    enrichment_report <- callModule(geneEnrichment, "hello", seu, diffex_results)
-
+    diffex_results <- callModule(
+      diffex, "hello", seu, featureType,
+      diffex_selected_cells
+    )
+    enrichment_report <- callModule(
+      geneEnrichment, "hello",
+      seu, diffex_results
+    )
     observe({
       req(enrichment_report())
       callModule(downloadTable, "hello", enrichment_report)
@@ -815,147 +746,145 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
         title = "Plotting Transcripts",
         "This process may take a minute or two!"
       ))
-      callModule(allTranscripts, "hello", seu, featureType, organism_type)
-      callModule(allTranscripts, "howdy", seu, featureType, organism_type)
+      callModule(
+        allTranscripts, "hello", seu, featureType,
+        organism_type
+      )
+      callModule(
+        allTranscripts, "howdy", seu, featureType,
+        organism_type
+      )
       removeModal()
     })
 
-    # callModule(rnaVelocity, "arrow", seu, featureType, "arrow")
-    callModule(rnaVelocity, "grid", seu, featureType, "grid")
-
-    # mymarker
     prior_gene_set <- reactive({
       req(input$priorGeneSet)
-
-      if(input$priorGeneSet == "Apoptosis"){
-        c("CASP3", "CASP7", "BAX", "BAK1", "BID", "BBC3", "BCL2", "MCL1")
-      } else if (input$priorGeneSet == "Cell Cycle"){
-        c("MCM5", "PCNA", "TYMS", "FEN1", "MCM2", "MCM4", "RRM1", "UNG",
-          "GINS2", "MCM6", "CDCA7", "DTL", "PRIM1", "UHRF1", "MLF1IP",
-          "HELLS", "RFC2", "RPA2", "NASP", "RAD51AP1", "GMNN", "WDR76",
-          "SLBP", "CCNE2", "UBR7", "POLD3", "MSH2", "ATAD2", "RAD51", "RRM2",
-          "CDC45", "CDC6", "EXO1", "TIPIN", "DSCC1", "BLM", "CASP8AP2",
-          "USP1", "CLSPN", "POLA1", "CHAF1B", "BRIP1", "E2F8")
-        } else if (is.null(input$priorGeneSet)){
+      if (input$priorGeneSet == "Apoptosis") {
+        c(
+          "CASP3", "CASP7", "BAX", "BAK1", "BID", "BBC3",
+          "BCL2", "MCL1"
+        )
+      }
+      else if (input$priorGeneSet == "Cell Cycle") {
+        c(
+          "MCM5", "PCNA", "TYMS", "FEN1", "MCM2", "MCM4",
+          "RRM1", "UNG", "GINS2", "MCM6", "CDCA7", "DTL",
+          "PRIM1", "UHRF1", "MLF1IP", "HELLS", "RFC2",
+          "RPA2", "NASP", "RAD51AP1", "GMNN", "WDR76",
+          "SLBP", "CCNE2", "UBR7", "POLD3", "MSH2",
+          "ATAD2", "RAD51", "RRM2", "CDC45", "CDC6",
+          "EXO1", "TIPIN", "DSCC1", "BLM", "CASP8AP2",
+          "USP1", "CLSPN", "POLA1", "CHAF1B", "BRIP1",
+          "E2F8"
+        )
+      }
+      else if (is.null(input$priorGeneSet)) {
         c("")
       }
     })
-
     observe({
-      updateSelectizeInput(session,
-                           'geneSet',
-                           choices = annotables::grch38$symbol,
-                           selected = prior_gene_set(),
-                           server = TRUE)
+      updateSelectizeInput(session, "geneSet",
+        choices = annotables::grch38$symbol,
+        selected = prior_gene_set(), server = TRUE
+      )
     })
-
-    observeEvent(input$regressAction,{
+    observeEvent(input$regressAction, {
       req(seu$active)
       showModal(modalDialog(
         title = "Regressing out provided list of features",
         "This process may take a minute or two!"
       ))
-      seu$gene <- seuratTools::regress_by_features(seu$gene, feature_set = list(input$geneSet), set_name = janitor::make_clean_names(input$geneSetName), regress = input$runRegression)
+      seu$gene <- seuratTools::regress_by_features(seu$gene,
+        feature_set = list(input$geneSet), set_name = janitor::make_clean_names(input$geneSetName),
+        regress = input$runRegression
+      )
       seu$active <- seu[[input$feature_type]]
       removeModal()
     })
-
     cds <- reactiveValues()
-
     observeEvent(input$calcCDS, {
       req(seu$active)
       cds$traj <- convert_seu_to_cds(seu$active, resolution = input$cdsResolution)
     })
-
     observeEvent(input$calCDS, {
       req(cds$traj)
-      cds$traj <- learn_graph_by_resolution(cds$traj, seu$active, resolution = input$cdsResolution)
+      cds$traj <- learn_graph_by_resolution(cds$traj,
+        seu$active,
+        resolution = input$cdsResolution
+      )
     })
-
     observe({
-      shinyFiles::shinyFileChoose(input, "loadCDS", roots = dataset_volumes(), session = session)
+      shinyFiles::shinyFileChoose(input, "loadCDS",
+        roots = dataset_volumes(),
+        session = session
+      )
     })
-
-
     cdsLoadPath <- eventReactive(input$loadCDS, {
-      file <- shinyFiles::parseFilePaths(dataset_volumes(), input$loadCDS)
+      file <- shinyFiles::parseFilePaths(
+        dataset_volumes(),
+        input$loadCDS
+      )
       file$datapath
     })
-
-      observeEvent(input$loadCDS, {
-        req(cdsLoadPath())
-        shiny::withProgress(
-          message = paste0("Uploading Data"),
-          value = 0,
-          {
-            Sys.sleep(6)
-            shiny::incProgress(2/10)
-            # Sys.sleep(12)
-            # shiny::incProgress(4/10)
-            # Sys.sleep(18)
-            # shiny::incProgress(6/10)
-            # Sys.sleep(24)
-            # shiny::incProgress(8/10)
-            # browser()
-            dataset <- readRDS(cdsLoadPath())
-            shiny::incProgress(10/10)
-
-            for (i in names(dataset)){
-              cds[[i]] <- dataset[[i]]
-            }
-
-            # cds$traj <- dataset$traj
+    observeEvent(input$loadCDS, {
+      req(cdsLoadPath())
+      shiny::withProgress(
+        message = paste0("Uploading Data"),
+        value = 0,
+        {
+          Sys.sleep(6)
+          shiny::incProgress(2 / 10)
+          dataset <- readRDS(cdsLoadPath())
+          shiny::incProgress(10 / 10)
+          for (i in names(dataset)) {
+            cds[[i]] <- dataset[[i]]
           }
-        )
+        }
+      )
     })
 
-    callModule(monocle, "arrow", cds, seu, featureType, resolution = reactive(input$cdsResolution))
+    callModule(monocle, "arrow", cds, seu, featureType,
+      resolution = reactive(input$cdsResolution)
+    )
 
     observe({
-      shinyFiles::shinyFileSave(input, "saveCDS", roots = dataset_volumes(), session = session, restrictions = system.file(package = "base"))
+      req(proj_dir())
+      req(seu)
+      callModule(plotVelocity, "howdy", seu)
     })
 
 
+    observe({
+      shinyFiles::shinyFileSave(input, "saveCDS",
+        roots = dataset_volumes(),
+        session = session, restrictions = system.file(package = "base")
+      )
+    })
     cdsSavePath <- eventReactive(input$saveCDS, {
-      savefile <- shinyFiles::parseSavePath(volumes(), input$saveCDS)
-
+      savefile <- shinyFiles::parseSavePath(
+        volumes(),
+        input$saveCDS
+      )
       savefile$datapath
     })
-
     observeEvent(input$saveCDS, {
-
       req(cds$traj)
       req(cdsSavePath())
-
-      if (!is.null(cdsSavePath())){
+      if (!is.null(cdsSavePath())) {
         shiny::withProgress(
           message = paste0("Saving Data"),
           value = 0,
           {
             Sys.sleep(6)
-            shiny::incProgress(2/10)
-            # Sys.sleep(12)
-            # shiny::incProgress(4/10)
-            # Sys.sleep(18)
-            # shiny::incProgress(6/10)
-            # Sys.sleep(24)
-            # shiny::incProgress(8/10)
-
+            shiny::incProgress(2 / 10)
             cdsList <- reactiveValuesToList(cds)
             names(cdsList) <- names(cds)
-
-
             saveRDS(cdsList, cdsSavePath())
-            shiny::incProgress(10/10)
-
+            shiny::incProgress(10 / 10)
           }
         )
       }
-
     })
-
-
   }
-    shinyApp(ui, server, enableBookmarking = "server")
-
+  shinyApp(ui, server, enableBookmarking = "server")
 }

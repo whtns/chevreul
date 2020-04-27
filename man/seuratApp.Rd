@@ -9,15 +9,18 @@ seuratApp(
   filterTypes,
   appTitle = NULL,
   feature_types = "gene",
-  futureMb = 10000
+  organism_type = "human",
+  futureMb = 13000
 )
 }
 \arguments{
-\item{preset_project}{}
+\item{preset_project}{A preloaded project to start the app with}
 
 \item{filterTypes}{A named vector of file suffixes corresponding to subsets of the data}
 
 \item{appTitle}{A title of the App}
+
+\item{organism_type}{}
 
 \item{futureMb}{amount of Mb allocated to future package}
 }
