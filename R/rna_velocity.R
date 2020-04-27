@@ -1,24 +1,17 @@
-compile_loom_files <- function(loom_paths, ...){
-  args = list(...)
-
-
-}
 
 #' run velocyto on a gene or transcript level seurat object
 #'
 #' @param seu a seurat object
-#' @param loom_paths one or more paths to loom files as a list
+#' @param loom_path path to matching loom file
 #' @param fit.quantile
 #'
 #' @return
 #' @export
 #'
 #' @examples
-velocyto_assay <- function(seu, loom_paths, fit.quantile = 0.05){
+velocyto_assay <- function(seu, loom_path, fit.quantile = 0.05){
 
-  loom_paths <- loomR::combine(loom_paths)
-
-  ldat <- read.loom.matrices(loom_path)
+  ldat <- velocyto.R::read.loom.matrices(loom_path)
   # subset ldat by seurat object.size
   ldat <- purrr::map(ldat, ~.x[,colnames(.x) %in% colnames(seu)])
 
@@ -48,9 +41,9 @@ velocyto_assay <- function(seu, loom_paths, fit.quantile = 0.05){
   # spanning read (intron+exon) expression matrix
   smat <- ldat$spanning;
   # filter expression matrices based on some minimum max-cluster averages
-  emat <- filter.genes.by.cluster.expression(emat,cell.colors,min.max.cluster.average = 0.5)
-  nmat <- filter.genes.by.cluster.expression(nmat,cell.colors,min.max.cluster.average = 1)
-  smat <- filter.genes.by.cluster.expression(smat,cell.colors,min.max.cluster.average = 0.5)
+  emat <- velocyto.R::filter.genes.by.cluster.expression(emat,cell.colors,min.max.cluster.average = 0.5)
+  nmat <- velocyto.R::filter.genes.by.cluster.expression(nmat,cell.colors,min.max.cluster.average = 1)
+  smat <- velocyto.R::filter.genes.by.cluster.expression(smat,cell.colors,min.max.cluster.average = 0.5)
   # look at the resulting gene set
   length(intersect(rownames(emat),rownames(nmat)))
 
@@ -67,9 +60,8 @@ velocyto_assay <- function(seu, loom_paths, fit.quantile = 0.05){
   # plot_spliced_mag(ldat)
   # dev.off()
 
-  #
   # ## calculate velocity------------------------------------------------------------------------
-  rvel.qf <- gene.relative.velocity.estimates(emat, nmat, deltaT=1, kCells = 5, fit.quantile = fit.quantile)
+  rvel.qf <- velocyto.R::gene.relative.velocity.estimates(emat, nmat, deltaT=1, kCells = 5, fit.quantile = fit.quantile)
 
   # save velocity to seurat object in slot @misc$vel
   seu@misc$vel <- rvel.qf
@@ -80,14 +72,14 @@ velocyto_assay <- function(seu, loom_paths, fit.quantile = 0.05){
 #' run velocyto on a seurat object
 #'
 #' @param seu
-#' @param ldat
+#' @param loom_path
 #'
 #' @return
 #' @export
 #'
 #' @examples
-velocyto_seu <- function(seu, ldat, fit.quantile = 0.05){
-  seu <- purrr::map(seu, velocyto_assay, ldat, fit.quantile = fit.quantile)
+velocyto_seu <- function(seu, loom_path, fit.quantile = 0.05){
+  seu <- purrr::map(seu, velocyto_assay, loom_path, fit.quantile = fit.quantile)
   return(seu)
 }
 

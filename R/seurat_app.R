@@ -345,7 +345,12 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
     ),
     shinydashboard::tabItem(
       tabName = "plotVelocity",
-      h2("Plot Velocity"), plotVelocityui("howdy")
+      h2("RNA Velocity"),
+      fluidRow(
+        box(
+          plotVelocityui("howdy")
+        )
+      )
     ),
     shinydashboard::tabItem(
       tabName = "diffex",
@@ -848,9 +853,18 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
     )
 
     observe({
-      req(proj_dir())
+      req(uploadSeuratPath())
       req(seu)
-      callModule(plotVelocity, "howdy", seu)
+
+      proj_path <- stringr::str_replace(uploadSeuratPath(), "output.*", "")
+
+      proj_name <- fs::path_file(proj_path)
+
+      loom_path <- fs::path(proj_path, "output", "velocyto", paste0(proj_name, ".loom"))
+
+      print(loom_path)
+
+      callModule(plotVelocity, "howdy", seu, loom_path, featureType)
     })
 
 
