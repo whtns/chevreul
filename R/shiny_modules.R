@@ -1387,6 +1387,8 @@ plotVelocityui <- function(id){
                                      "dimensional reduction method", choices = c("pca", "tsne", "umap"),
                                      selected = "umap", inline = TRUE),
     sliderInput(ns("resolution"), "Resolution of clustering algorithm (affects number of clusters)", min = 0.2, max = 2, step = 0.2, value = 0.6),
+    actionButton(ns("calc_velocity"), "calculate velocity"),
+    textOutput(ns("velocityFlag")),
     actionButton(ns("plot_velocity"), "plot velocity"),
     plotOutput(ns("velocityPlot"), height = "800px")
   )
@@ -1398,28 +1400,80 @@ plotVelocityui <- function(id){
 #' @param output
 #' @param session
 #' @param seu
+#' @param loom_path
+#' @param featureType
 #'
 #' @return
 #' @export
 #'
 #' @examples
-plotVelocity <- function(input, output, session, seu){
+plotVelocity <- function(input, output, session, seu, loom_path, featureType){
   ns <- session$ns
+
+  observeEvent(input$calc_velocity, {
+    req(seu$active)
+    print(loom_path)
+
+    if(is.null(seu$active@misc$vel)){
+      if(is.null(seu[[featureType()]]@misc$vel)){
+        showModal(modalDialog("calculating velocity", footer=NULL))
+        seu$active <- velocyto_assay(seu$active, loom_path)
+        removeModal()
+      } else if (!is.null(seu[[featureType()]]@misc$vel)) {
+        seu$active@misc$vel <- seu[[featureType()]]@misc$vel
+      }
+
+    }
+  })
+
+  velocity_flag <- eventReactive(input$calc_velocity, {
+    req(seu$active)
+    if(!is.null(seu$active@misc$vel)){
+      "Velocity Calculated for this dataset"
+    }
+  })
+
+  output$velocityFlag <- renderText({
+    velocity_flag()
+  })
+
+
+
+  velocity <- reactive({
+    req(seu$active)
+
+    if(!is.null(seu$active@misc$vel)){
+      return(seu$active@misc$vel)
+    } else {
+      FALSE
+    }
+
+  })
 
   velocityPlot <- eventReactive(input$plot_velocity, {
     req(seu$active)
 
+    validate(
+      need(velocity(), "Please calculate velocity")
+    )
+
     showModal(modalDialog("Loading Plots", footer=NULL))
 
-    louvain_resolution = paste0(DefaultAssay(seu$active), "_snn_res.", input$resolution)
+    if (any(grepl("integrated", names(seu$active[[]])))){
+      default_assay = "integrated"
+    } else {
+      default_assay = "RNA"
+    }
 
-    cell.colors <- as_tibble(seu$active[[louvain_resolution]], rownames = "cellid") %>%
+    cluster_resolution = paste0(default_assay, "_snn_res.", input$resolution)
+
+    cell.colors <- as_tibble(seu$active[[cluster_resolution]], rownames = "cellid") %>%
       tibble::deframe() %>%
       as.factor()
 
     levels(cell.colors) <- scales::hue_pal()(length(levels(cell.colors)))
 
-    plot_velocity_arrows(seu$active, reduction = input$embedding, cell.colors, plot_format = "arrow")
+    plot_velocity_arrows(seu$active, velocity(), reduction = input$embedding, cell.colors, plot_format = "arrow")
     removeModal()
   })
 
