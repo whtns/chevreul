@@ -220,25 +220,25 @@ plot_multiple_branches_heatmap <- function(cds,
 #' @param arrow.scale
 #' @param cell.colors
 #' @param plot_format
+#' @param velocity
 #'
 #' @return
 #' @export
 #'
 #' @examples
-plot_velocity_arrows <- function(seu, reduction = "umap", cell.colors, plot_format = "arrow", arrow.scale = 3){
+plot_velocity_arrows <- function(seu, velocity, reduction = "umap", cell.colors, plot_format = "arrow", arrow.scale = 3){
 
-  vel <- seu@misc$vel
   emb <- Embeddings(object = seu, reduction = reduction)
 
   cell.alpha=1.0; cell.cex=1; fig.height=4; fig.width=4.5;
 
   if (plot_format == "arrow") {
-    velocyto.R::show.velocity.on.embedding.cor(emb, vel, n=100, scale='sqrt',
+    velocyto.R::show.velocity.on.embedding.cor(emb, velocity, n=100, scale='sqrt',
                                                cell.colors=velocyto.R::ac(cell.colors, alpha=cell.alpha),
                                                cex=cell.cex, arrow.scale=arrow.scale, arrow.lwd=1)
   } else if (plot_format == "grid"){
     #Alternatively, the same function can be used to calculate a velocity vector field:
-    velocyto.R::show.velocity.on.embedding.cor(emb, vel, n=100, scale='sqrt',
+    velocyto.R::show.velocity.on.embedding.cor(emb, velocity, n=100, scale='sqrt',
                                                cell.colors=velocyto.R::ac(cell.colors, alpha=cell.alpha),
                                                cex=cell.cex, arrow.scale=arrow.scale,
                                                show.grid.flow=TRUE, min.grid.cell.mass=0.5,

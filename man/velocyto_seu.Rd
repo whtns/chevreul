@@ -4,10 +4,10 @@
 \alias{velocyto_seu}
 \title{run velocyto on a seurat object}
 \usage{
-velocyto_seu(seu, ldat, fit.quantile = 0.05)
+velocyto_seu(seu, loom_path, fit.quantile = 0.05)
 }
 \arguments{
-\item{ldat}{}
+\item{loom_path}{}
 }
 \value{
 

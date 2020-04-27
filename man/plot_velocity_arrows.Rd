@@ -6,16 +6,15 @@
 \usage{
 plot_velocity_arrows(
   seu,
+  velocity,
   reduction = "umap",
   cell.colors,
-  format = "arrow",
+  plot_format = "arrow",
   arrow.scale = 3
 )
 }
 \arguments{
-\item{cell.colors}{}
-
-\item{format}{either an arrow or grid format}
+\item{velocity}{}
 }
 \value{
 
