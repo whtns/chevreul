@@ -779,6 +779,7 @@ tableSelected <- function(input, output, session, seu) {
       selected_cells <- colnames(seu$active)[as.numeric(d$key)]
     }
   })
+
   output$brushtable <- DT::renderDT({
     req(seu$active)
     req(brush())
@@ -1497,6 +1498,7 @@ monocleui <- function(id){
       fluidRow(
         box(
           # sliderInput(ns("resolution"), "Resolution of clustering algorithm (affects number of clusters)", min = 0.2, max = 2, step = 0.2, value = 0.6),
+          actionButton(ns("subsetCells"), "subset cells"),
           shinycssloaders::withSpinner(plotly::plotlyOutput(ns("monoclePlot"))),
           width = 6
         ),
@@ -1537,8 +1539,28 @@ monocle <- function(input, output, session, cds, seu, input_type, resolution){
 
     output$monoclePlot <- plotly::renderPlotly({
       req(cds$traj)
-
       plot_cds(cds$traj, resolution = resolution())
+    })
+
+    brush <- reactive({
+      req(cds$traj)
+      d <- plotly::event_data("plotly_selected")
+      if (is.null(d)) {
+        msg <- "Click and drag events (i.e. select/lasso) appear here (double-click to clear)"
+        return(d)
+      }
+      else {
+        selected_cells <- colnames(cds$traj)[as.numeric(d$key)]
+      }
+    })
+
+    observeEvent(input$subsetCells, {
+      req(cds$traj)
+      print(brush())
+      cds$traj <- cds$traj[,brush()]
+      # cds$traj <- learn_graph_by_resolution(cds$traj,
+      #                           seu$active,
+      #                           resolution = resolution())
     })
 
     output$rootCellsui <- renderUI({
@@ -1548,9 +1570,7 @@ monocle <- function(input, output, session, cds, seu, input_type, resolution){
     observeEvent(input$plotPseudotime, {
 
       req(cds$traj)
-
       cds$ptime <- monocle3::order_cells(cds$traj, root_cells = input$rootCells)
-
       # plot_pseudotime(cds$ptime, color_cells_by = "pseudotime", resolution = input$resolution)
 
     })
@@ -1560,8 +1580,6 @@ monocle <- function(input, output, session, cds, seu, input_type, resolution){
       plot_pseudotime(cds$ptime, color_cells_by = "pseudotime", resolution = resolution())
 
     })
-
-
 
     observeEvent(input$calcPtimeGenes, {
       req(cds$ptime)
@@ -1627,9 +1645,12 @@ monocle <- function(input, output, session, cds, seu, input_type, resolution){
 
       })
 
+      # mymarker
+
       output$ptimeGenesDT <- DT::renderDT({
         DT::datatable(cds_pr_test_res,
-                      options = list(paging  = TRUE, pageLength = 15))
+                      options = list(dom = "Bft", buttons = c("copy", "csv"), scrollX = "100px", scrollY = "800px"))
+
       })
 
       output$ptimeGenes <- renderUI({
