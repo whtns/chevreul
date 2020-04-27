@@ -23,7 +23,7 @@ create_proj_matrix <- function(proj_list){
   primary_projects <-
     proj_matrix %>%
     dplyr::filter(!grepl("integrated_projects", project_path)) %>%
-    dplyr::filter(str_count(project_name, "_") == 1) %>%
+    dplyr::filter(stringr::str_count(project_name, "_") == 1) %>%
   identity()
 
   integrated_projects <-

@@ -4,7 +4,7 @@
 \alias{prep_plot_genes_in_pseudotime}
 \title{Title}
 \usage{
-prep_plot_genes_in_pseudotime(cds, mygenes, resolution)
+prep_plot_genes_in_pseudotime(cds, mygenes, resolution, partition = FALSE)
 }
 \arguments{
 \item{resolution}{}

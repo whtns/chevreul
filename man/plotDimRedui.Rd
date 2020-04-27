@@ -2,7 +2,7 @@
 % Please edit documentation in R/shiny_modules.R
 \name{plotDimRedui}
 \alias{plotDimRedui}
-\title{Plot Dimensionally Reduced Data UI}
+\title{Plot Dimensional Reduduction UI}
 \usage{
 plotDimRedui(id)
 }
@@ -13,5 +13,5 @@ plotDimRedui(id)
 
 }
 \description{
-Plot Dimensionally Reduced Data UI
+Plot Dimensional Reduduction UI
 }
