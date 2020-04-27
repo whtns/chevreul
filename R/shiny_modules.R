@@ -95,7 +95,8 @@ plotClustree <- function(input, output, session, seu) {
 
 }
 
-#' Plot Violin plots UI
+
+#' Title
 #'
 #' @param id
 #'
@@ -103,79 +104,162 @@ plotClustree <- function(input, output, session, seu) {
 #' @export
 #'
 #' @examples
-#'
 plotViolinui <- function(id){
   ns <- NS(id)
-  tagList(
-    uiOutput(ns("vln_split")),
-    uiOutput(ns("split_val")),
-    uiOutput(ns("vln_group")),
-    uiOutput(ns("featuretext")),
-    plotOutput(ns("vplot"), height = 750)
-
-  )
+  tagList(uiOutput(ns("vln_split")), uiOutput(ns("split_val")),
+          uiOutput(ns("vln_group")), selectizeInput(ns("customFeature"),
+                                                    "gene or transcript on which to color the plot; eg. 'RXRG' or 'ENST00000488147'",
+                                                    choices = NULL, multiple = TRUE), plotOutput(ns("vplot"),
+                                                                                                 height = 750))
 }
 
 
-#' Plot Violin server
+#' Plot Violin Server
 #'
 #' @param input
 #' @param output
 #' @param session
 #' @param seu
-#' @param feature_type
+#' @param featureType
+#' @param organism_type
 #'
 #' @return
 #' @export
 #'
 #' @examples
-#'
-plotViolin <- function(input, output, session, seu, feature_type){
+plotViolin <- function(input, output, session, seu, featureType, organism_type){
   ns <- session$ns
   prefill_feature <- reactive({
-    if (feature_type() == "transcript") {
-      "ENST00000488147"
+    req(featureType())
+    if (featureType() == "transcript") {
+      if (organism_type() == "human") {
+        "ENST00000488147"
+      }
+      else if (organism_type() == "mouse") {
+        "ENSG00000488147"
+      }
     }
-    else if (feature_type() == "gene") {
-      "RXRG"
+    else if (featureType() == "gene") {
+      if (organism_type() == "human") {
+        "RXRG"
+      }
+      else if (organism_type() == "mouse") {
+        "Rxrg"
+      }
     }
   })
-
+  observe({
+    req(prefill_feature())
+    req(seu$active)
+    updateSelectizeInput(session, "customFeature", choices = rownames(seu$active),
+                         selected = prefill_feature(), server = TRUE)
+  })
   output$featuretext <- renderUI({
     textInput(ns("customFeature"), "gene or transcript on which to color the plot; eg. 'RXRG' or 'ENST00000488147'",
               value = prefill_feature())
   })
-
   output$vln_split <- renderUI({
     req(seu$active)
-    selectizeInput(ns("vlnSplit"), "choose variable filter by", choices = colnames(seu$active[[]]), selected = "batch")
+    selectizeInput(ns("vlnSplit"), "choose variable filter by",
+                   choices = c("None", colnames(seu$active[[]])), selected = "batch")
   })
-
   output$split_val <- renderUI({
     req(seu$active)
     req(input$vlnSplit)
-    selectizeInput(ns("splitVal"), "choose value to filter by", choices = unique(seu$active[[input$vlnSplit]][,1]))
+    if (input$vlnSplit == "None") {
+      choices = "None"
+    }
+    else {
+      choices = c("None", unique(seu$active[[input$vlnSplit]][,
+                                                              1]))
+    }
+    selectizeInput(ns("splitVal"), "choose value to filter by",
+                   choices = choices)
   })
-
   output$vln_group <- renderUI({
     req(seu$active)
-    selectizeInput(ns("vlnGroup"), "choose variable to group by", choices = colnames(seu$active[[]]), selected = "batch")
+    selectizeInput(ns("vlnGroup"), "choose variable to group by",
+                   choices = colnames(seu$active[[]]), selected = "batch")
   })
-
   output$vplot <- renderPlot({
     req(input$customFeature)
     req(input$vlnGroup)
     req(input$vlnSplit)
-
-    selected_cells <- as_tibble(seu$active[[input$vlnSplit]], rownames= "sample_id") %>%
-      dplyr::filter(!!sym(input$vlnSplit) == input$splitVal) %>%
-      dplyr::pull(sample_id)
-
-    sub_seu <- seu$active[,selected_cells]
-
+    if (!("None" %in% c(input$vlnSplit, input$splitVal))) {
+      selected_cells <- tibble::as_tibble(seu$active[[input$vlnSplit]],
+                                          rownames = "sample_id") %>% dplyr::filter(!!sym(input$vlnSplit) ==
+                                                                                      input$splitVal) %>% dplyr::pull(sample_id)
+      sub_seu <- seu$active[, selected_cells]
+    }
+    else {
+      sub_seu <- seu$active
+    }
     plot_violin(sub_seu, plot_var = input$vlnGroup, features = input$customFeature)
   })
 }
+
+
+#' Plot Heatmap ui
+#'
+#' @param id
+#'
+#' @return
+#' @export
+#'
+#' @examples
+plotHeatmapui <- function(id){
+  ns <- NS(id)
+  tagList(uiOutput(ns("hm_group")), selectizeInput(ns("customFeature"),
+                                                   "gene or transcript on which to color the plot; eg. 'RXRG' or 'ENST00000488147'",
+                                                   choices = NULL, multiple = TRUE), plotOutput(ns("heatmap"),
+                                                                                                height = 750))
+}
+
+#' Plot Heatmap
+#'
+#' @param input
+#' @param output
+#' @param session
+#' @param seu
+#' @param featureType
+#' @param organism_type
+#'
+#' @return
+#' @export
+#'
+#' @examples
+plotHeatmap <- function(input, output, session, seu, featureType, organism_type){
+  ns <- session$ns
+
+  observe({
+    req(seu$active)
+
+    if (any(grepl("integrated", names(seu$active[[]])))){
+      default_assay = "integrated"
+    } else {
+      default_assay = "RNA"
+    }
+
+    preset_features <- VariableFeatures(seu$active, assay = default_assay)[1:50]
+
+    updateSelectizeInput(session, "customFeature", choices = rownames(seu$active),
+                         selected = preset_features, server = TRUE)
+  })
+  output$hm_group <- renderUI({
+    req(seu$active)
+    selectizeInput(ns("hmGroup"), "choose variable to group by",
+                   choices = colnames(seu$active[[]]), selected = "batch")
+  })
+  output$heatmap <- renderPlot({
+    req(input$customFeature)
+    req(input$hmGroup)
+
+    plot_heatmap(seu$active, group.by = input$hmGroup, features = input$customFeature)
+  })
+}
+
+
+
 
 
 #' Reformat Seurat Object Metadata UI
@@ -201,7 +285,7 @@ reformatMetadataui <- function(id) {
                 ".csv")
     ),
     downloadLink(ns("downloadMetadata"), "Download Metadata"),
-    DTOutput(ns("seuTable")),
+    DT::DTOutput(ns("seuTable")),
     width = 12
     )
 
@@ -277,7 +361,7 @@ reformatMetadata <- function(input, output, session, seu) {
 
   })
 
-  output$seuTable <- renderDT({
+  output$seuTable <- DT::renderDT({
     # req(meta$old)
 
     DT::datatable(meta$old, extensions = 'Buttons', options = list(buttons = c("copy", "csv"),
@@ -525,7 +609,7 @@ changeEmbedParams <- function(input, output, session, seu){
 
 }
 
-#' Plot Dimensionally Reduced Data UI
+#' Plot Dimensional Reduduction UI
 #'
 #' @param id
 #'
@@ -533,26 +617,26 @@ changeEmbedParams <- function(input, output, session, seu){
 #' @export
 #'
 #' @examples
-plotDimRedui <- function(id) {
+plotDimRedui <- function(id){
   ns <- NS(id)
-  tagList(
-    uiOutput(ns("dplottype")),
-    shinyWidgets::prettyRadioButtons(ns("embedding"),
-      "dimensional reduction method",
-      choices = c("pca", "harmony", "tsne", "umap"), selected = "umap", inline = TRUE
-    ),
-    fluidRow(
-      column(2, selectizeInput(ns("dim1"), "Dimension 1", choices = seq(1,99), selected = 1)),
-      column(2, selectizeInput(ns("dim2"), "Dimension 2", choices = seq(1,99), selected = 2))
-    ),
-    selectizeInput(ns("customFeature"), "gene or transcript on which to color the plot; eg. 'RXRG' or 'ENST00000488147'", choices = NULL, multiple = TRUE),
-    # uiOutput(ns("featuretext")),
-    sliderInput(ns("resolution"), "Resolution of clustering algorithm (affects number of clusters)", min = 0.2, max = 2, step = 0.2, value = 0.6),
-    plotly::plotlyOutput(ns("dplot"), height = 750)
-  )
+  tagList(uiOutput(ns("dplottype")),
+          uiOutput(ns("embeddings")),
+          fluidRow(
+            column(2,
+                   selectizeInput(ns("dim1"), "Dimension 1", choices = seq(1, 99), selected = 1)
+                   ),
+            column(2,
+                   selectizeInput(ns("dim2"), "Dimension 2", choices = seq(1, 99), selected = 2)
+                   )
+            ),
+          selectizeInput(ns("customFeature"), "gene or transcript on which to color the plot; eg. 'RXRG' or 'ENST00000488147'",
+                                                                                                                                                                                      choices = NULL, multiple = TRUE), sliderInput(ns("resolution"),
+                                                                                                                                                                                                                                    "Resolution of clustering algorithm (affects number of clusters)",
+                                                                                                                                                                                                                                    min = 0.2, max = 2, step = 0.2, value = 0.6), plotly::plotlyOutput(ns("dplot"),
+                                                                                                                                                                                                                                                                                                       height = 750))
 }
 
-#' Plot Dimensionally Reduced Data
+#' Plot Dimensional Reduduction
 #'
 #' @param input
 #' @param output
@@ -566,124 +650,97 @@ plotDimRedui <- function(id) {
 #' @export
 #'
 #' @examples
-plotDimRed <- function(input, output, session, seu, plot_types, featureType, organism_type) {
+plotDimRed <- function(input, output, session, seu, plot_types, featureType,
+                       organism_type){
   ns <- session$ns
-
-  # activeSeu <- reactive({
-  #   req(seu$active)
-  #   seu$active
-  # })
-
+  output$embeddings <- renderUI({
+    req(seu$active)
+    tagList(shinyWidgets::prettyRadioButtons(ns("embedding"),
+                                             "dimensional reduction method", choices = names(seu$active@reductions),
+                                             selected = names(seu$active@reductions)[1], inline = TRUE))
+  })
   selected_plot <- reactiveVal()
-
   output$dplottype <- renderUI({
     req(seu$active)
-
-    selected_plot <- ifelse(is.null(selected_plot()), "custom", selected_plot())
-
-    selectizeInput(ns("plottype"), "Variable to Plot",
-                   choices = purrr::flatten_chr(plot_types()), selected = selected_plot, multiple = TRUE)
+    selected_plot <- ifelse(is.null(selected_plot()), "seurat",
+                            selected_plot())
+    selectizeInput(ns("plottype"), "Variable to Plot", choices = purrr::flatten_chr(plot_types()),
+                   selected = selected_plot, multiple = TRUE)
   })
-
   prefill_feature <- reactive({
     req(featureType())
     if (featureType() == "transcript") {
-      if (organism_type() == "human"){
+      if (organism_type() == "human") {
         "ENST00000488147"
-      } else if (organism_type() == "mouse"){
+      }
+      else if (organism_type() == "mouse") {
         "ENSG00000488147"
       }
-
-    } else if (featureType() == "gene") {
-      if (organism_type() == "human"){
+    }
+    else if (featureType() == "gene") {
+      if (organism_type() == "human") {
         "RXRG"
-      } else if (organism_type() == "mouse"){
+      }
+      else if (organism_type() == "mouse") {
         "Rxrg"
       }
     }
   })
-  # output$featuretext <- renderUI({
-  #
-  #   # selectizeInput(ns("customFeature"), "gene or transcript on which to color the plot; eg. 'RXRG' or 'ENST00000488147'",
-  #   #                choices = annotables::grch38$symbol, selected = prefill_feature())
-  #
-  #   textInput(ns("customFeature"), "gene or transcript on which to color the plot; eg. 'RXRG' or 'ENST00000488147'",
-  #             value = prefill_feature())
-  # })
-
   observe({
     req(prefill_feature())
-    if (organism_type() == "mouse"){
-      gene_choices = annotables::grcm38$symbol
-    } else if (organism_type() == "human"){
-      gene_choices = annotables::grch38$symbol
-    }
-
-
-    updateSelectizeInput(session,
-                         'customFeature',
-                         choices = gene_choices,
-                         selected = prefill_feature(),
-                         server = TRUE)
+    req(seu$active)
+    updateSelectizeInput(session, "customFeature", choices = rownames(seu$active),
+                         selected = prefill_feature(), server = TRUE)
   })
-
   output$dplot <- plotly::renderPlotly({
     req(input$plottype)
     req(seu$active)
-    req(input$customFeature)
-
     if (length(input$plottype) > 1) {
       mycols = input$plottype
-
-      louvain_resolution = paste0(DefaultAssay(seu$active), "_snn_res.", input$resolution)
-      mycols <- gsub("^seurat$", louvain_resolution,
-                     mycols)
-
+      louvain_resolution = paste0(DefaultAssay(seu$active),
+                                  "_snn_res.", input$resolution)
+      mycols <- gsub("^seurat$", louvain_resolution, mycols)
       newcolname = paste(mycols, collapse = "_")
-      newdata = as_tibble(seu$active[[mycols]], rownames = "sample_id") %>%
-        tidyr::unite(!!newcolname, mycols) %>% deframe() %>%
-        identity()
+      newdata = tibble::as_tibble(seu$active[[mycols]],
+                                  rownames = "sample_id") %>% tidyr::unite(!!newcolname,
+                                                                           mycols) %>% deframe() %>% identity()
       seu$active <- AddMetaData(seu$active, metadata = newdata,
-                         col.name = newcolname)
-
+                                col.name = newcolname)
       selected_plot(newcolname)
-
-      plot_var(seu$active, dims = c(input$dim1, input$dim2), embedding = input$embedding,
-               group = newcolname)
+      plot_var(seu$active, dims = c(input$dim1, input$dim2),
+               embedding = input$embedding, group = newcolname)
     }
     else {
       if (input$plottype == "custom") {
-        plot_feature(seu$active, dims = c(input$dim1, input$dim2), embedding = input$embedding,
+        plot_feature(seu$active, dims = c(input$dim1,
+                                          input$dim2), embedding = input$embedding,
                      features = input$customFeature)
       }
       else if (input$plottype %in% plot_types()$continuous_vars) {
-        plot_feature(seu$active, dims = c(input$dim1, input$dim2), embedding = input$embedding,
+        plot_feature(seu$active, dims = c(input$dim1,
+                                          input$dim2), embedding = input$embedding,
                      features = input$plottype)
       }
       else if (input$plottype == "seurat") {
-
-        if ("integrated" %in% names(seu$active@assays)){
+        if ("integrated" %in% names(seu$active@assays)) {
           active_assay <- "integrated"
-        } else {
+        }
+        else {
           active_assay <- "RNA"
         }
-
-        louvain_resolution = paste0(active_assay, "_snn_res.", input$resolution)
-        plot_var(seu$active, dims = c(input$dim1, input$dim2), embedding = input$embedding,
-                 group = louvain_resolution)
+        louvain_resolution = paste0(active_assay, "_snn_res.",
+                                    input$resolution)
+        plot_var(seu$active, dims = c(input$dim1, input$dim2),
+                 embedding = input$embedding, group = louvain_resolution)
       }
       else if (input$plottype %in% plot_types()$category_vars) {
-        plot_var(seu$active, dims = c(input$dim1, input$dim2), embedding = input$embedding,
-                 group = input$plottype)
+        plot_var(seu$active, dims = c(input$dim1, input$dim2),
+                 embedding = input$embedding, group = input$plottype)
       }
     }
-
-    # if ("integrated" %in% names(seu$active@assays)){
-    #   DefaultAssay(seu$active) <- "RNA"
-    # }
-
   })
 }
+
 
 #' Create Table of Selected Cells UI
 #'
@@ -1323,12 +1380,15 @@ allTranscripts <- function(input, output, session, seu,
 #' @export
 #'
 #' @examples
-rnaVelocityui <- function(id){
+plotVelocityui <- function(id){
   ns <- NS(id)
   tagList(
-    shinyWidgets::prettyRadioButtons(ns("embedding"), "dimensional reduction method", choices = c("pca", "tsne", "umap"), selected = "umap", inline = TRUE),
+    shinyWidgets::prettyRadioButtons(ns("embedding"),
+                                     "dimensional reduction method", choices = c("pca", "tsne", "umap"),
+                                     selected = "umap", inline = TRUE),
     sliderInput(ns("resolution"), "Resolution of clustering algorithm (affects number of clusters)", min = 0.2, max = 2, step = 0.2, value = 0.6),
-    plotOutput(ns("vel_plot"), height = "800px")
+    actionButton(ns("plot_velocity"), "plot velocity"),
+    plotOutput(ns("velocityPlot"), height = "800px")
   )
 }
 
@@ -1338,21 +1398,18 @@ rnaVelocityui <- function(id){
 #' @param output
 #' @param session
 #' @param seu
-#' @param featureType
-#' @param format
 #'
 #' @return
 #' @export
 #'
 #' @examples
-rnaVelocity <- function(input, output, session, seu, featureType, format = "grid"){
+plotVelocity <- function(input, output, session, seu){
   ns <- session$ns
-  output$vel_plot <- renderPlot({
+
+  velocityPlot <- eventReactive(input$plot_velocity, {
     req(seu$active)
 
     showModal(modalDialog("Loading Plots", footer=NULL))
-    vel <- seu$active@misc$vel
-    emb <- Embeddings(seu$active, reduction = input$embedding)
 
     louvain_resolution = paste0(DefaultAssay(seu$active), "_snn_res.", input$resolution)
 
@@ -1362,8 +1419,12 @@ rnaVelocity <- function(input, output, session, seu, featureType, format = "grid
 
     levels(cell.colors) <- scales::hue_pal()(length(levels(cell.colors)))
 
-    plot_velocity(vel, emb, cell.colors, format = format)
+    plot_velocity_arrows(seu$active, reduction = input$embedding, cell.colors, plot_format = "arrow")
     removeModal()
+  })
+
+  output$velocityPlot <- renderPlot({
+    velocityPlot()
   })
 }
 
@@ -1382,7 +1443,7 @@ monocleui <- function(id){
       fluidRow(
         box(
           # sliderInput(ns("resolution"), "Resolution of clustering algorithm (affects number of clusters)", min = 0.2, max = 2, step = 0.2, value = 0.6),
-          shinycssloaders::withSpinner(plotlyOutput(ns("monoclePlot"))),
+          shinycssloaders::withSpinner(plotly::plotlyOutput(ns("monoclePlot"))),
           width = 6
         ),
         box(
@@ -1420,7 +1481,7 @@ monocleui <- function(id){
 monocle <- function(input, output, session, cds, seu, input_type, resolution){
     ns <- session$ns
 
-    output$monoclePlot <- renderPlotly({
+    output$monoclePlot <- plotly::renderPlotly({
       req(cds$traj)
 
       plot_cds(cds$traj, resolution = resolution())
@@ -1512,7 +1573,7 @@ monocle <- function(input, output, session, cds, seu, input_type, resolution){
 
       })
 
-      output$ptimeGenesDT <- renderDT({
+      output$ptimeGenesDT <- DT::renderDT({
         DT::datatable(cds_pr_test_res,
                       options = list(paging  = TRUE, pageLength = 15))
       })
@@ -1523,7 +1584,7 @@ monocle <- function(input, output, session, cds, seu, input_type, resolution){
               width = 6),
           box(plotOutput(ns("ptimeGenesLinePlot")),
               width = 6),
-          DTOutput(ns("ptimeGenesDT"))
+          DT::DTOutput(ns("ptimeGenesDT"))
                 ) %>%
           # shinycssloaders::withSpinner() %>%
           identity()

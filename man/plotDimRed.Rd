@@ -2,7 +2,7 @@
 % Please edit documentation in R/shiny_modules.R
 \name{plotDimRed}
 \alias{plotDimRed}
-\title{Plot Dimensionally Reduced Data}
+\title{Plot Dimensional Reduduction}
 \usage{
 plotDimRed(input, output, session, seu, plot_types, featureType, organism_type)
 }
@@ -13,5 +13,5 @@ plotDimRed(input, output, session, seu, plot_types, featureType, organism_type)
 
 }
 \description{
-Plot Dimensionally Reduced Data
+Plot Dimensional Reduduction
 }

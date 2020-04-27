@@ -217,30 +217,28 @@ plot_multiple_branches_heatmap <- function(cds,
 #'
 #' @param seu
 #' @param reduction
-#' @param format either an arrow or grid format
 #' @param arrow.scale
+#' @param cell.colors
+#' @param plot_format
 #'
 #' @return
 #' @export
 #'
 #' @examples
-plot_velocity_arrows <- function(seu, reduction = "umap", format = "arrow", arrow.scale = 3){
+plot_velocity_arrows <- function(seu, reduction = "umap", cell.colors, plot_format = "arrow", arrow.scale = 3){
 
+  vel <- seu@misc$vel
   emb <- Embeddings(object = seu, reduction = reduction)
-  ident.colors <- (scales::hue_pal())(n = length(x = levels(x = seu)))
-  names(x = ident.colors) <- levels(x = seu)
-  cell.colors <- ident.colors[Idents(object = seu)]
-  names(x = cell.colors) <- colnames(x = seu)
 
   cell.alpha=1.0; cell.cex=1; fig.height=4; fig.width=4.5;
 
-  if (format == "arrow") {
-    velocyto.R::show.velocity.on.embedding.cor(emb, seu@misc$vel, n=100, scale='sqrt',
+  if (plot_format == "arrow") {
+    velocyto.R::show.velocity.on.embedding.cor(emb, vel, n=100, scale='sqrt',
                                                cell.colors=velocyto.R::ac(cell.colors, alpha=cell.alpha),
                                                cex=cell.cex, arrow.scale=arrow.scale, arrow.lwd=1)
-  } else if (format == "grid"){
+  } else if (plot_format == "grid"){
     #Alternatively, the same function can be used to calculate a velocity vector field:
-    velocyto.R::show.velocity.on.embedding.cor(emb, seu@misc$vel, n=100, scale='sqrt',
+    velocyto.R::show.velocity.on.embedding.cor(emb, vel, n=100, scale='sqrt',
                                                cell.colors=velocyto.R::ac(cell.colors, alpha=cell.alpha),
                                                cex=cell.cex, arrow.scale=arrow.scale,
                                                show.grid.flow=TRUE, min.grid.cell.mass=0.5,
@@ -313,38 +311,58 @@ plot_var <- function(seu, embedding = "umap", group = "batch", dims = c(1,2)){
 
 }
 
-#' Make Violin Plots Based on Metadata and Feature Expression
+
+#' plot Violin plot
 #'
-#' @param seu a seurat object
-#' @param plot_var a metadata value
-#' @param plot_vals set of values to subset on
-#' @param features vector of gene or transcript names
-#' @param ... additional arguments to \link[Seurat]{VlnPlot}
+#' @param seu
+#' @param plot_var
+#' @param plot_vals
+#' @param features
+#' @param ...
 #'
 #' @return
 #' @export
 #'
-plot_violin <- function(seu, plot_var = "batch", plot_vals = NULL, features = "RXRG", ...) {
-  if (is.null(plot_vals)){
+#' @examples
+plot_violin <- function(seu, plot_var = "batch", plot_vals = NULL, features = "RXRG",
+                        ...){
+  if (is.null(plot_vals)) {
     plot_vals = unique(seu[[]][[plot_var]])
-
     plot_vals <- plot_vals[!is.na(plot_vals)]
   }
-
-  seu <- seu[,seu[[]][[plot_var]] %in% plot_vals]
-
-  vln_plot <- Seurat::VlnPlot(seu, features = features, group.by = plot_var, ...) +
-    labs(title = "Expression Values for each cell are normalized by that cell's total expression then multiplied by 10,000 and natural-log transformed")+
-    stat_summary(fun.y = mean, geom='line', size = 4, colour = "black")
-
-  # vln_plot <- plotly::ggplotly(vln_plot, tooltip = "cellid", height = 750) %>%
-  #   plotly::layout(dragmode = "lasso") %>%
-  #   identity()
-
-  # plot(vln_plot)
+  seu <- seu[, seu[[]][[plot_var]] %in% plot_vals]
+  vln_plot <- Seurat::VlnPlot(seu, features = features, group.by = plot_var,
+                              ...) + labs(title = "Expression Values for each cell are normalized by that cell's total expression then multiplied by 10,000 and natural-log transformed") +
+    stat_summary(fun.y = mean, geom = "line", size = 4,
+                 colour = "black")
   return(vln_plot)
-
 }
+
+#' plot heatmap
+#'
+#' @param seu
+#' @param features
+#' @param ...
+#'
+#' @return
+#' @export
+#'
+#' @examples
+plot_heatmap <- function(seu, features = "RXRG", ...){
+
+  if (any(grepl("integrated", names(seu[[]])))){
+    default_assay = "integrated"
+  } else {
+    default_assay = "RNA"
+  }
+
+  hm <- Seurat::DoHeatmap(seu, features = features, assay = default_assay, ...) +
+    labs(title = "Expression Values for each cell are normalized by that cell's total expression then multiplied by 10,000 and natural-log transformed") +
+    NULL
+
+  return(hm)
+}
+
 
 
 #' Plot Features
