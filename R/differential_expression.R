@@ -155,7 +155,12 @@ FindMarkers.default <- function(
   pseudocount.use = 1,
   ...
 ) {
-  features <- features %||% rownames(x = object)
+  features <-
+    if (is.null(features)){
+      rownames(x = object)
+    } else {
+      features
+    }
   methods.noprefiliter <- c("DESeq2", "scde")
   if (test.use %in% methods.noprefiliter) {
     features <- rownames(x = object)
@@ -381,7 +386,12 @@ FindMarkers.Seurat <- function(
     no = slot
   )
   if (is.null(x = reduction)) {
-    assay <- assay %||% DefaultAssay(object = object)
+    assay <-
+      if (is.null(assay)){
+        DefaultAssay(object = object)
+      } else {
+        assay
+      }
     data.use <-  GetAssayData(object = object[[assay]], slot = data.slot)
   } else {
     if (data.slot == "counts") {
