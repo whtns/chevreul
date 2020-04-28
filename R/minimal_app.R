@@ -26,10 +26,7 @@ viewSeurat <- function(seurat_object, feature_type = "gene",
                                               shinyWidgets::prettyRadioButtons("organism_type",
                                                                                "Organism",
                                                                                choices = c("human", "mouse"), selected = organism_type),
-  shinyFiles::shinySaveButton("saveSeurat", "Save Current Dataset",
-    "Save file as...",
-    filetype = list(rds = "rds")
-  ),
+  actionButton("stopApp", "Return to Rstudio"),
   verbatimTextOutput("savefile"), actionButton("changeEmbedAction",
     label = "Change Embedding Parameters"
   ), changeEmbedParamsui("changeembed"),
@@ -44,8 +41,6 @@ viewSeurat <- function(seurat_object, feature_type = "gene",
     tabName = "violinPlots"
   ), shinydashboard::menuItem("Differential Expression",
     tabName = "diffex"
-  ), shinydashboard::menuItem("Gene Enrichment Analysis",
-    tabName = "geneEnrichment"
   ), shinydashboard::menuItem("Find Markers",
     tabName = "findMarkers"
   ), shinydashboard::menuItem("Subset Seurat Input",
@@ -120,10 +115,6 @@ viewSeurat <- function(seurat_object, feature_type = "gene",
         width = 12
       ), width = 6)
     ), shinydashboard::tabItem(
-      tabName = "geneEnrichment",
-      h2("Gene Enrichment"), geneEnrichmentui("hello"),
-      downloadTable_UI("hello")
-    ), shinydashboard::tabItem(
       tabName = "regressFeatures",
       h2("Regress Features"), fluidRow(actionButton(
         "regressAction",
@@ -170,8 +161,15 @@ viewSeurat <- function(seurat_object, feature_type = "gene",
       body = body
     )
   }
-  server <- function(input, output, session) {
+  myserver <- function(input, output, session) {
     # options(warn = -1)
+
+    observe({
+      if(input$stopApp > 0){
+        stopApp(seu[[feature_type]])
+      }
+    })
+
     seu <- reactiveValues()
     observe({
       seu[[feature_type]] <- seurat_object
@@ -340,35 +338,45 @@ viewSeurat <- function(seurat_object, feature_type = "gene",
       diffex, "hello", seu, featureType,
       diffex_selected_cells
     )
-    enrichment_report <- callModule(
-      geneEnrichment, "hello",
-      seu, diffex_results
-    )
-    observe({
-      req(enrichment_report())
-      callModule(downloadTable, "hello", enrichment_report)
-    })
 
     prior_gene_set <- reactive({
       req(input$priorGeneSet)
       if (input$priorGeneSet == "Apoptosis") {
-        c(
-          "CASP3", "CASP7", "BAX", "BAK1", "BID", "BBC3",
-          "BCL2", "MCL1"
-        )
+        if (organism_type == "human"){
+          c(
+            "CASP3", "CASP7", "BAX", "BAK1", "BID", "BBC3",
+            "BCL2", "MCL1"
+          )
+        } else if (organism_type == "mouse"){
+          c("Casp3", "Casp7", "Bax", "Bak1", "Bid", "Bbc3", "Bcl2",
+            "Mcl1")
+
+        }
       }
       else if (input$priorGeneSet == "Cell Cycle") {
-        c(
-          "MCM5", "PCNA", "TYMS", "FEN1", "MCM2", "MCM4",
-          "RRM1", "UNG", "GINS2", "MCM6", "CDCA7", "DTL",
-          "PRIM1", "UHRF1", "MLF1IP", "HELLS", "RFC2",
-          "RPA2", "NASP", "RAD51AP1", "GMNN", "WDR76",
-          "SLBP", "CCNE2", "UBR7", "POLD3", "MSH2",
-          "ATAD2", "RAD51", "RRM2", "CDC45", "CDC6",
-          "EXO1", "TIPIN", "DSCC1", "BLM", "CASP8AP2",
-          "USP1", "CLSPN", "POLA1", "CHAF1B", "BRIP1",
-          "E2F8"
-        )
+        if (organism_type == "human"){
+          c(
+            "MCM5", "PCNA", "TYMS", "FEN1", "MCM2", "MCM4",
+            "RRM1", "UNG", "GINS2", "MCM6", "CDCA7", "DTL",
+            "PRIM1", "UHRF1", "MLF1IP", "HELLS", "RFC2",
+            "RPA2", "NASP", "RAD51AP1", "GMNN", "WDR76",
+            "SLBP", "CCNE2", "UBR7", "POLD3", "MSH2",
+            "ATAD2", "RAD51", "RRM2", "CDC45", "CDC6",
+            "EXO1", "TIPIN", "DSCC1", "BLM", "CASP8AP2",
+            "USP1", "CLSPN", "POLA1", "CHAF1B", "BRIP1",
+            "E2F8"
+          )
+        } else if (organism_type == "mouse") {
+          c("Mcm5", "Pcna", "Tyms", "Fen1", "Mcm2", "Mcm4", "Rrm1",
+            "Ung", "Gins2", "Mcm6", "Cdca7", "Dtl", "Prim1", "Uhrf1",
+            "Mlf1ip", "Hells", "Rfc2", "Rpa2", "Nasp", "Rad51ap1",
+            "Gmnn", "Wdr76", "Slbp", "Ccne2", "Ubr7", "Pold3", "Msh2",
+            "Atad2", "Rad51", "Rrm2", "Cdc45", "Cdc6", "Exo1", "Tipin",
+            "Dscc1", "Blm", "Casp8ap2", "Usp1", "Clspn", "Pola1", "Chaf1b",
+            "Brip1", "E2f8")
+
+        }
+
       }
       else if (is.null(input$priorGeneSet)) {
         c("")
@@ -376,7 +384,7 @@ viewSeurat <- function(seurat_object, feature_type = "gene",
     })
     observe({
       updateSelectizeInput(session, "geneSet",
-        choices = annotables::grch38$symbol,
+        choices = rownames(seu$active),
         selected = prior_gene_set(), server = TRUE
       )
     })
@@ -386,7 +394,7 @@ viewSeurat <- function(seurat_object, feature_type = "gene",
         title = "Regressing out provided list of features",
         "This process may take a minute or two!"
       ))
-      seu$gene <- seuratTools::regress_by_features(seu$gene,
+      seu[[feature_type]] <- seuratTools::regress_by_features(seu[[feature_type]],
         feature_set = list(input$geneSet), set_name = janitor::make_clean_names(input$geneSetName),
         regress = input$runRegression
       )
@@ -440,5 +448,5 @@ viewSeurat <- function(seurat_object, feature_type = "gene",
     )
 
   }
-  shinyApp(ui, server, enableBookmarking = "server")
+  runApp(shinyApp(ui, myserver))
 }

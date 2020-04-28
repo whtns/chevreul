@@ -2,11 +2,12 @@
 [![Travis build status](https://travis-ci.org/whtns/seuratTools.svg?branch=master)](https://travis-ci.org/whtns/seuratTools)
 <!-- badges: end -->
 
-# seuratTools
+# Seurat Tools
 
-Howdy y'all! this is a set of convenience functions for interacting with [Seurat](https://github.com/satijalab/seurat) objects. There are functions for:
-1. Creating Seurat objects from Stringtie files
-2. [Integration and Labe lTransfer](https://satijalab.org/seurat/v3.0/pancreas_integration_label_transfer.html)
+This is a set of convenience functions for interacting with [Seurat](https://github.com/satijalab/seurat) objects. 
+There are functions for:
+1. Clustering and Dimensional Reduction of Raw Sequencing Data
+2. [Integration and Label Transfer](https://satijalab.org/seurat/v3.0/pancreas_integration_label_transfer.html)
 3. Louvain Clustering at a Range of Resolutions 
 4. Cell cycle state regression and labeling 
 5. RNA velocity calculation with [Velocyto.R](https://velocyto.org/)
