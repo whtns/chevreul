@@ -1468,7 +1468,7 @@ plotVelocity <- function(input, output, session, seu, loom_path, featureType){
 
     cluster_resolution = paste0(default_assay, "_snn_res.", input$resolution)
 
-    cell.colors <- as_tibble(seu$active[[cluster_resolution]], rownames = "cellid") %>%
+    cell.colors <- tibble::as_tibble(seu$active[[cluster_resolution]], rownames = "cellid") %>%
       tibble::deframe() %>%
       as.factor()
 

@@ -92,7 +92,7 @@ filter_rows_to_top <- function(df, column, values){
 #' @examples
 list_plot_types <- function(seu){
 
-  meta_types <- tibble(
+  meta_types <- tibble::tibble(
     vars = colnames(seu[[]]),
     var_type = unlist(purrr::map(seu[[]], class)),
     num_levels = unlist(purrr::map(seu[[]], ~length(unique(.x))))

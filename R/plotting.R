@@ -288,7 +288,7 @@ plot_velocity_trajectory <- function(seu, reduction = "umap", format = "arrow", 
 #' @examples
 plot_var <- function(seu, embedding = "umap", group = "batch", dims = c(1,2)){
   #
-  metadata <- as_tibble(seu[[]][Seurat::Cells(seu),], rownames = "sID")
+  metadata <- tibble::as_tibble(seu[[]][Seurat::Cells(seu),], rownames = "sID")
   cellid <- metadata[["sID"]]
   key <- rownames(metadata)
 
@@ -378,7 +378,7 @@ plot_heatmap <- function(seu, features = "RXRG", ...){
 #' @examples
 plot_feature <- function(seu, embedding, features, dims = c(1,2), return_plotly = TRUE){
 
-  metadata <- as_tibble(seu[[]][Seurat::Cells(seu),], rownames = "sID")
+  metadata <- tibble::as_tibble(seu[[]][Seurat::Cells(seu),], rownames = "sID")
 
   cellid <- metadata[["sID"]]
   key <- rownames(metadata)
