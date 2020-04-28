@@ -293,7 +293,7 @@ cross_check_heatmaps <- function(monocle_list, query_name, set_row_order = F, cl
   #
   mod_diff_test_res <- filter_rows_to_top(monocle_list[[query_name]]$diff_test_res, "gene_short_name", heatmap_gene_order)
   #
-  annotation_row <- tibble(feature = heatmap_gene_order)
+  annotation_row <- tibble::tibble(feature = heatmap_gene_order)
   #
   mod_diff_test_res <- dplyr::left_join(mod_diff_test_res, annotation_row, by = c("gene_short_name" = "feature"))
   #
