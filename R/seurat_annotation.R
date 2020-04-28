@@ -76,7 +76,7 @@ genes_to_transcripts <- function(genes, organism = "human") {
 #'
 #' @examples
 add_read_count_col <- function(seu, thresh = 1e5){
-  rc <- dplyr::as_tibble(seu[["nCount_RNA"]], rownames = "sample_id") %>%
+  rc <- tibble::as_tibble(seu[["nCount_RNA"]], rownames = "sample_id") %>%
     dplyr::mutate(read_count = ifelse(nCount_RNA > thresh, NA, "low_read_count")) %>%
     dplyr::select(-nCount_RNA) %>%
     tibble::deframe()
@@ -110,7 +110,7 @@ annotate_excluded <- function(seu, ...){
     purrr::set_names(unlist(excluded_cells)) %>%
     tibble::enframe("sample_id", "excluded_because")
 
-  excluded_because <- as_tibble(seu[["nCount_RNA"]], rownames = "sample_id") %>%
+  excluded_because <- tibble::as_tibble(seu[["nCount_RNA"]], rownames = "sample_id") %>%
     dplyr::full_join(excluded_cells, by = "sample_id")
 
   if ("excluded_because.x" %in% colnames(excluded_because)){
