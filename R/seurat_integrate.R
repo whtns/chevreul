@@ -237,9 +237,8 @@ seurat_reduce_dimensions <- function(seu, reduction = "pca", ...) {
 
   if ((ncol(seu) -1) > 3*30){
     seu <- Seurat::RunTSNE(object = seu, reduction = reduction, dims = 1:30, ...)
+    seu <- Seurat::RunUMAP(object = seu, reduction = reduction, dims = 1:30, ...)
   }
-
-  seu <- Seurat::RunUMAP(object = seu, reduction = reduction, dims = 1:30)
 
 }
 

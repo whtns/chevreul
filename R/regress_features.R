@@ -33,8 +33,11 @@ regress_by_features <- function(seu, feature_set, set_name, regress = TRUE, ...)
   if (regress){
     seu <- ScaleData(seu, vars.to.regress = paste0(set_name, "1"))
     # rerun dimensional reduction
+    reductions <- names(seu@reductions)
+    resolutions <- stringr::str_extract(names(seu[[]])[grepl("snn", names(seu[[]]))], "[0-9].*$")
+
     seu <- seurat_reduce_dimensions(seu)
-    seu <- seurat_cluster(seu, resolution = seq(0.2, 2.0, 0.2))
+    seu <- seurat_cluster(seu, resolution = resolutions)
   }
 
   return(seu)
