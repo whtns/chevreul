@@ -58,18 +58,17 @@ integration_workflow <- function(child_proj_dirs, excluded_cells, resolution = s
 #'
 #' Integrate multiple seurat objects and save to file
 #'
-#' @param proj_dir home directory of current project
-#' @param feature_seus
+#' @param feature_seus list of seurat objects named according to feature of interest ("gene" or "transcript")
 #' @param excluded_cells named list of cells to exclude
-#' @param cell_cycle
-#' @param resolution
+#' @param cell_cycle whether to score and regress cell cycle related features
+#' @param resolution resolution(s) to use for clustering cells
 #' @param ...
 #'
 #' @return
 #' @export
 #'
 #' @examples
-clustering_workflow <- function(proj_dir, feature_seus = NULL, excluded_cells, cell_cycle = T, resolution = seq(0.2, 2.0, by = 0.2), ...) {
+clustering_workflow <- function(feature_seus = NULL, excluded_cells, cell_cycle = FALSE, resolution = seq(0.2, 2.0, by = 0.2), ...) {
 
   feature_seus <- purrr::map(feature_seus, seuratTools::seurat_pipeline, resolution = resolution, ...)
 

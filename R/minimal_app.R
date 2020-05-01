@@ -1,7 +1,7 @@
 #' Create Seurat App
 #'
 #' @param seurat_object a seurat object
-#' @param feature_type "gene" or "transcript"
+#' @param feature "gene" or "transcript"
 #' @param organism_type "human" or "mouse"
 #' @param futureMb amount of Mb allocated to future package
 #'
@@ -9,9 +9,9 @@
 #' @export
 #'
 #' @examples
-viewSeurat <- function(seurat_object, feature_type = "gene",
+viewSeurat <- function(seurat_object, feature = "gene",
                        organism_type = "human", futureMb = 13000) {
-  print(feature_type)
+  print(feature)
   future::plan(strategy = "multicore", workers = 6)
   future_size <- futureMb * 1024^2
   options(future.globals.maxSize = future_size)
@@ -166,18 +166,18 @@ viewSeurat <- function(seurat_object, feature_type = "gene",
 
     observe({
       if(input$stopApp > 0){
-        stopApp(seu[[feature_type]])
+        stopApp(seu[[feature]])
       }
     })
 
     seu <- reactiveValues()
     observe({
-      seu[[feature_type]] <- seurat_object
+      seu[[feature]] <- seurat_object
       seu$active <- seurat_object
       print(names(seu))
     })
     featureType <- reactive({
-      feature_type
+      feature
     })
     organismType <- reactive({
       organism_type
@@ -261,22 +261,22 @@ viewSeurat <- function(seurat_object, feature_type = "gene",
         {
           shinyjs::html("subsetMessages", "")
           message("Beginning")
-            seu[[feature_type]] <- seu[[feature_type]][, subset_selected_cells()]
+            seu[[feature]] <- seu[[feature]][, subset_selected_cells()]
           if (length(unique(seu$gene[[]]$batch)) > 1) {
             print(names(seu))
-              message(paste0("reintegrating ", feature_type, " expression"))
-              seu[[feature_type]] <- reintegrate_seu(seu[[feature_type]],
-                feature = feature_type,
+              message(paste0("reintegrating ", feature, " expression"))
+              seu[[feature]] <- reintegrate_seu(seu[[feature]],
+                feature = feature,
                 resolution = seq(0.2, 2, by = 0.2)
               )
           }
           else {
-              seu[[feature_tyupe]] <- seurat_pipeline(seu[[feature_type]], resolution = seq(0.2,
+              seu[[feature_tyupe]] <- seurat_pipeline(seu[[feature]], resolution = seq(0.2,
                 2,
                 by = 0.2
               ))
           }
-          seu$active <- seu[[feature_type]]
+          seu$active <- seu[[feature]]
           message("Complete!")
         },
         message = function(m) {
@@ -294,24 +294,24 @@ viewSeurat <- function(seurat_object, feature_type = "gene",
         {
           shinyjs::html("subsetMessages", "")
           message("Beginning")
-            seu[[feature_type]] <- subset_by_meta(
+            seu[[feature]] <- subset_by_meta(
               input$uploadCsv$datapath,
-              seu[[feature_type]]
+              seu[[feature]]
             )
           if (length(unique(seu$gene[[]]$batch)) > 1) {
-              message(paste0("reintegrating ", feature_type, " expression"))
-              seu[[feature_type]] <- reintegrate_seu(seu[[feature_type]],
-                feature = feature_type,
+              message(paste0("reintegrating ", feature, " expression"))
+              seu[[feature]] <- reintegrate_seu(seu[[feature]],
+                feature = feature,
                 resolution = seq(0.2, 2, by = 0.2)
               )
           }
           else {
-              seu[[feature_type]] <- seurat_pipeline(seu[[feature_type]], resolution = seq(0.2,
+              seu[[feature]] <- seurat_pipeline(seu[[feature]], resolution = seq(0.2,
                 2,
                 by = 0.2
               ))
           }
-          seu$active <- seu[[feature_type]]
+          seu$active <- seu[[feature]]
           message("Complete!")
         },
         message = function(m) {
@@ -394,11 +394,11 @@ viewSeurat <- function(seurat_object, feature_type = "gene",
         title = "Regressing out provided list of features",
         "This process may take a minute or two!"
       ))
-      seu[[feature_type]] <- seuratTools::regress_by_features(seu[[feature_type]],
+      seu[[feature]] <- seuratTools::regress_by_features(seu[[feature]],
         feature_set = list(input$geneSet), set_name = janitor::make_clean_names(input$geneSetName),
         regress = input$runRegression
       )
-      seu$active <- seu[[feature_type]]
+      seu$active <- seu[[feature]]
       removeModal()
     })
     cds <- reactiveValues()
