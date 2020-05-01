@@ -17,15 +17,13 @@ Imports:
     rlang,
     magrittr,
     furrr,
-    velocyto.R,
+    velocyto.R (>= 0.6),
     future,
     DT,
     plotly,
-    annotables,
     shinycssloaders,
     shinydashboard,
     shiny,
-    presto (>= 1.0.0),
     shinyFiles,
     janitor,
     SeuratWrappers (>= 0.1.0),
@@ -38,9 +36,11 @@ Imports:
     tximport,
     flexmix,
     scde,
-    loomR,
     clustree,
-    shinylogs
+    shinylogs,
+    annotables (>= 0.1.91),
+    loomR (>= 0.2.1.9000),
+    presto (>= 1.0.0)
 Suggests: 
     dplyr,
     tidyr,
@@ -54,8 +54,13 @@ Remotes:
     immunogenomics/presto,
     satijalab/seurat-wrappers,
     cole-trapnell-lab/monocle3,
-    shenorrLab/cellAlign
+    shenorrLab/cellAlign,
+    velocyto-team/velocyto.R,
+    stephenturner/annotables,
+    mojaveazure/loomR
 Depends: 
     Rcpp,
-    Seurat
+    Seurat,
+    R (>= 2.10),
+    SingleCellExperiment
 VignetteBuilder: knitr

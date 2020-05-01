@@ -649,7 +649,7 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
           shinyjs::html("subsetMessages", "")
           message("Beginning")
           for (i in names(seu)[!(names(seu) == "active")]) {
-            seu[[i]] <- seu[[i]][, subset_selected_cells()]
+            seu[[i]] <- seu[[i]][, colnames(seu[[i]] %in% subset_selected_cells())]
           }
           if (length(unique(seu$gene[[]]$batch)) > 1) {
             print(names(seu)[!(names(seu) == "active")])
@@ -789,7 +789,7 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
     })
     observe({
       updateSelectizeInput(session, "geneSet",
-        choices = annotables::grch38$symbol,
+        choices = rownames(seu$active),
         selected = prior_gene_set(), server = TRUE
       )
     })
