@@ -66,8 +66,11 @@ subset_by_meta <- function(meta_path, seu){
 
   upload_cells <- rownames(upload_meta)
 
-  seu <- seu[, upload_cells]
-  seu@meta.data <- upload_meta
+  seu <- seu[, colnames(seu) %in% upload_cells]
+
+  seu <- AddMetaData(seu, upload_meta)
+
+  # seu@meta.data <- upload_meta
   return(seu)
 
 }

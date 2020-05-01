@@ -6,7 +6,7 @@
 \usage{
 viewSeurat(
   seurat_object,
-  feature_type = "gene",
+  feature = "gene",
   organism_type = "human",
   futureMb = 13000
 )
@@ -14,7 +14,7 @@ viewSeurat(
 \arguments{
 \item{seurat_object}{a seurat object}
 
-\item{feature_type}{"gene" or "transcript"}
+\item{feature}{"gene" or "transcript"}
 
 \item{organism_type}{"human" or "mouse"}
 

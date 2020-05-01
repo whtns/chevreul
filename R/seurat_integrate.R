@@ -240,6 +240,8 @@ seurat_reduce_dimensions <- function(seu, reduction = "pca", ...) {
     seu <- Seurat::RunUMAP(object = seu, reduction = reduction, dims = 1:30, ...)
   }
 
+  return(seu)
+
 }
 
 

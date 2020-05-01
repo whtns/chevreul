@@ -5,18 +5,21 @@
 \title{Clustering Workflow}
 \usage{
 clustering_workflow(
-  proj_dir,
   feature_seus = NULL,
   excluded_cells,
-  cell_cycle = T,
+  cell_cycle = FALSE,
   resolution = seq(0.2, 2, by = 0.2),
   ...
 )
 }
 \arguments{
-\item{proj_dir}{home directory of current project}
+\item{feature_seus}{list of seurat objects named according to feature of interest ("gene" or "transcript")}
 
 \item{excluded_cells}{named list of cells to exclude}
+
+\item{cell_cycle}{whether to score and regress cell cycle related features}
+
+\item{resolution}{resolution(s) to use for clustering cells}
 
 \item{...}{}
 }
