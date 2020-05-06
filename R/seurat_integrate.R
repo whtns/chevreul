@@ -201,6 +201,9 @@ seurat_integration_pipeline <- function(seus, feature, resolution, suffix = '', 
 
   corrected_seu <- annotate_cell_cycle(corrected_seu, feature, ...)
 
+  # annotate mitochondrial percentage in seurat metadata
+  corrected_seu <- add_percent_mito(corrected_seu, feature, ...)
+
   #annotate excluded cells
 
   # corrected_seu <- annotate_excluded(corrected_seu, excluded_cells)

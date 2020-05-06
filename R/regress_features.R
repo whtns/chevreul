@@ -46,5 +46,7 @@ regress_by_features <- function(seu, feature_set, set_name, regress = TRUE, ...)
     seu <- seurat_cluster(seu, resolution = resolutions)
   }
 
+  DefaultAssay(seu) <- "RNA"
+
   return(seu)
 }
