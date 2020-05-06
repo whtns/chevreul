@@ -88,6 +88,53 @@ add_read_count_col <- function(seu, thresh = 1e5){
   )
 }
 
+#' Annotate Low Read Count Category
+#'
+#'  Add a Read Count Categorical Variable to Seurat Object (based on nCount_RNA)
+#'
+#' @param seu A seurat object
+#'
+#' @return
+#' @export
+#'
+#' @examples
+add_percent_mito <- function(seu, feature, organism = "human"){
+
+  # mito_features = list()
+  # if (organism == "human"){
+  #   mito_regex = c(mt = "^MT-", mt_pseudo = "^MT.*P.*")
+  #   mito_features$gene <- annotables::grch38 %>%
+  #     dplyr::filter(stringr::str_detect(symbol, paste(mito_regex, collapse = "|"))) %>%
+  #     dplyr::pull(symbol)
+  #
+  #   mito_features$transcript <-
+  #     annotables::grch38 %>%
+  #     dplyr::filter(symbol %in% mito_features$gene) %>%
+  #     dplyr::left_join(annotables::grch38_tx2gene, by = "ensgene") %>%
+  #     dplyr::pull(enstxp)
+  # } else if (organism == "mouse"){
+  #   mito_regex = c(mt = "^Mt-", mt_pseudo = "^Mt.*p.*")
+  #   mito_features$gene <- annotables::grcm38 %>%
+  #     dplyr::filter(stringr::str_detect(symbol, paste(mito_regex, collapse = "|"))) %>%
+  #     dplyr::pull(symbol)
+  #
+  #   mito_features$transcript <-
+  #     annotables::grcm38 %>%
+  #     dplyr::filter(symbol %in% mito_features$gene) %>%
+  #     dplyr::left_join(annotables::grcm38_tx2gene, by = "ensgene") %>%
+  #     dplyr::pull(enstxp)
+  # }
+
+  mito_features <- mito_features[[organism]][[feature]]
+
+  mito_features <- mito_features[mito_features %in% rownames(seu)]
+
+  seu[["percent.mt"]] <- PercentageFeatureSet(seu, features = mito_features)
+
+  return(seu)
+
+}
+
 
 #' Annotate Exclusion Criteria
 #'

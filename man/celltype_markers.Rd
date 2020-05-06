@@ -5,11 +5,11 @@
 \alias{celltype_markers}
 \title{Retinal Cell Type Marker Genes}
 \format{
-A dataframe with 3 columns and 99 rows
+A data frame with 99 rows and 3 variables:
 \describe{
-\item{gene}
-\item{cell_type}
-\item{species}
+\item{\code{gene}}{character COLUMN_DESCRIPTION}
+\item{\code{cell_type}}{character COLUMN_DESCRIPTION}
+\item{\code{species}}{character COLUMN_DESCRIPTION}
 }
 }
 \source{

@@ -27,7 +27,7 @@ Imports:
     shinyFiles,
     janitor,
     SeuratWrappers (>= 0.1.0),
-    monocle3 (>= 0.1.2),
+    monocle3 (>= 0.2.1.5),
     cellAlign (>= 0.1.0),
     unglue,
     shinyjqui,
@@ -39,7 +39,7 @@ Imports:
     clustree,
     shinylogs,
     annotables (>= 0.1.91),
-    loomR (>= 0.2.1.9000),
+    loomR (>= 0.2.0),
     presto (>= 1.0.0)
 Suggests: 
     dplyr,

@@ -373,11 +373,13 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
       ), box(checkboxInput("runRegression",
         "Run Regression?",
         value = FALSE
-      ), checkboxGroupInput("priorGeneSet",
+      ), radioButtons("priorGeneSet",
         "Choose a marker gene set:",
         choices = c(
           "Apoptosis",
-          "Cell Cycle"
+          "Cell Cycle",
+          "Mitochondrial",
+          "Ribosomal"
         )
       ), selectizeInput("geneSet",
         "List of genes",
@@ -603,6 +605,7 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
       updateSelectizeInput(session, "setProject",
         label = "Select input label",
         choices = newprojList(),
+        server = TRUE
       )
     })
     seu <- callModule(reformatMetadata, "hello", seu)
@@ -763,15 +766,21 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
     })
 
     prior_gene_set <- reactive({
-      req(input$priorGeneSet)
-      if (input$priorGeneSet == "Apoptosis") {
-        c(
+      # req(input$priorGeneSet)
+      req(seu$active)
+
+      if (is.null(input$priorGeneSet)){
+        ""
+      } else if (input$priorGeneSet == "Apoptosis") {
+        marker_genes <- c(
           "CASP3", "CASP7", "BAX", "BAK1", "BID", "BBC3",
           "BCL2", "MCL1"
         )
+
+        marker_genes[marker_genes %in% rownames(seu$active)]
       }
       else if (input$priorGeneSet == "Cell Cycle") {
-        c(
+        marker_genes <- c(
           "MCM5", "PCNA", "TYMS", "FEN1", "MCM2", "MCM4",
           "RRM1", "UNG", "GINS2", "MCM6", "CDCA7", "DTL",
           "PRIM1", "UHRF1", "MLF1IP", "HELLS", "RFC2",
@@ -780,17 +789,26 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
           "ATAD2", "RAD51", "RRM2", "CDC45", "CDC6",
           "EXO1", "TIPIN", "DSCC1", "BLM", "CASP8AP2",
           "USP1", "CLSPN", "POLA1", "CHAF1B", "BRIP1",
-          "E2F8"
-        )
-      }
-      else if (is.null(input$priorGeneSet)) {
-        c("")
+          "E2F8")
+
+          marker_genes[marker_genes %in% rownames(seu$active)]
+      }  else if (input$priorGeneSet == "Mitochondrial") {
+        marker_genes <- mito_features[[organism_type()]][["gene"]]
+
+        marker_genes[marker_genes %in% rownames(seu$active)]
+      } else if (input$priorGeneSet == "Ribosomal") {
+        marker_genes <- ribo_features[[organism_type()]][["gene"]]
+
+        marker_genes[marker_genes %in% rownames(seu$active)]
       }
     })
+
     observe({
+
       updateSelectizeInput(session, "geneSet",
         choices = rownames(seu$active),
-        selected = prior_gene_set(), server = TRUE
+        selected = prior_gene_set(),
+        server = TRUE
       )
     })
     observeEvent(input$regressAction, {
@@ -859,6 +877,7 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
       proj_path <- stringr::str_replace(uploadSeuratPath(), "output.*", "")
 
       proj_name <- fs::path_file(proj_path)
+      print(proj_name)
 
       loom_path <- fs::path(proj_path, "output", "velocyto", paste0(proj_name, ".loom"))
 
