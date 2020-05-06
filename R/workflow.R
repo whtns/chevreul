@@ -80,6 +80,9 @@ clustering_workflow <- function(feature_seus = NULL, excluded_cells, cell_cycle 
   # annotate low read count category in seurat metadata
   feature_seus <- purrr::map(feature_seus, seuratTools::add_read_count_col)
 
+  # annotate mitochondrial percentage in seurat metadata
+  feature_seus <- purrr::imap(feature_seus, seuratTools::add_percent_mito)
+
   # save_seurat(feature_seus, proj_dir = proj_dir, ...)
 
 }
