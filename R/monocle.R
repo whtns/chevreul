@@ -208,7 +208,17 @@ plot_pseudotime <- function(cds, resolution, color_cells_by = "louvain_cluster")
     # aes(key = key, cellid = cellid) +
     NULL
 
-  print(cds_plot)
+
+  cds_plot <-
+    cds_plot %>%
+    plotly::ggplotly(height = 400) %>%
+    plotly::layout(dragmode = "lasso") %>%
+    plotly::toWebGL() %>%
+    # plotly::partial_bundle() %>%
+    identity()
+
+
+  # print(cds_plot)
 
 }
 
