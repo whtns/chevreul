@@ -285,26 +285,26 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
     ), shinydashboard::tabItem(
       tabName = "comparePlots",
       h2("Compare Plots"), fluidRow(
-        box(plotDimRedui("hello")),
-        box(plotDimRedui("hello3"))
+        box(plotDimRedui("dimred1")),
+        box(plotDimRedui("dimred13"))
       ), fluidRow(box(
         title = "Selected Cells",
-        tableSelectedui("hello"), width = 6
+        tableSelectedui("tableselected"), width = 6
       ), box(plotClustree_UI("clustreePlot")))
     ),
     shinydashboard::tabItem(
       tabName = "integrateProjects",
-      h2("Integrate Projects"), fluidRow((integrateProjui("hello")))
+      h2("Integrate Projects"), fluidRow((integrateProjui("integrateproj")))
     ),
     shinydashboard::tabItem(
       tabName = "reformatMetadata",
-      h2("Reformat Metadata"), fluidRow((reformatMetadataui("hello")))
+      h2("Reformat Metadata"), fluidRow((reformatMetadataui("reformatmetadata")))
     ),
     shinydashboard::tabItem(
       tabName = "compareReadCount",
       h2("Compare Read Counts"), fluidRow(
-        box(plotReadCountui("hello2")),
-        box(plotReadCountui("howdy2"))
+        box(plotReadCountui("plotreadcount1")),
+        box(plotReadCountui("plotreadcount2"))
       )
     ), shinydashboard::tabItem(
       tabName = "subsetSeurat",
@@ -329,7 +329,7 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
     ), shinydashboard::tabItem(
       tabName = "findMarkers",
       h2("Find Markers"), fluidRow(
-        box(findMarkersui("hello")),
+        box(findMarkersui("findmarkers")),
         box(plotDimRedui("markerScatter"))
       )
     ), shinydashboard::tabItem(
@@ -348,7 +348,7 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
       h2("RNA Velocity"),
       fluidRow(
         box(
-          plotVelocityui("howdy")
+          plotVelocityui("plotvelocity")
         )
       )
     ),
@@ -358,13 +358,13 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
         width = 12
       ), box(tableSelectedui("diffex"),
         width = 12
-      ), width = 6), column(box(diffexui("hello"),
+      ), width = 6), column(box(diffexui("diffex"),
         width = 12
       ), width = 6)
     ), shinydashboard::tabItem(
       tabName = "geneEnrichment",
-      h2("Gene Enrichment"), geneEnrichmentui("hello"),
-      downloadTable_UI("hello")
+      h2("Gene Enrichment"), geneEnrichmentui("geneenrichment"),
+      downloadTable_UI("downloadtable")
     ), shinydashboard::tabItem(
       tabName = "regressFeatures",
       h2("Regress Features"), fluidRow(actionButton(
@@ -598,7 +598,7 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
       )
     })
     integrationResults <- callModule(
-      integrateProj, "hello",
+      integrateProj, "integrateproj",
       proj_matrices, seu, proj_dir, con
     )
     newprojList <- reactive({
@@ -619,7 +619,7 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
         server = TRUE
       )
     })
-    seu <- callModule(reformatMetadata, "hello", seu)
+    seu <- callModule(reformatMetadata, "reformatmetadata", seu)
 
     observe({
       req(seu$active)
@@ -629,11 +629,11 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
         c("pca", "tsne", "umap")
       })
 
-      callModule(plotDimRed, "hello", seu, plot_types, featureType,
+      callModule(plotDimRed, "plotdimred", seu, plot_types, featureType,
                  organism_type = organism_type, reductions)
-      callModule(plotDimRed, "hello3", seu, plot_types, featureType,
+      callModule(plotDimRed, "plotdimred3", seu, plot_types, featureType,
                  organism_type = organism_type, reductions)
-      # callModule(plotDimRed, "howdy", seu, plot_types, featureType,
+      # callModule(plotDimRed, "plotdimred", seu, plot_types, featureType,
       #            organism_type = organism_type, reductions)
       callModule(plotDimRed, "diffex", seu, plot_types, featureType,
                  organism_type = organism_type, reductions)
@@ -643,8 +643,8 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
                  organism_type = organism_type, reductions)
     })
 
-    callModule(plotReadCount, "hello2", seu, plot_types)
-    callModule(plotReadCount, "howdy2", seu, plot_types)
+    callModule(plotReadCount, "plotreadcount1", seu, plot_types)
+    callModule(plotReadCount, "plotreadcount2", seu, plot_types)
     callModule(
       plotViolin, "violinPlot", seu, featureType,
       organism_type
@@ -654,7 +654,7 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
       organism_type
     )
     callModule(plotClustree, "clustreePlot", seu)
-    callModule(tableSelected, "hello", seu)
+    callModule(tableSelected, "tableselected", seu)
     diffex_selected_cells <- callModule(
       tableSelected, "diffex",
       seu
@@ -753,18 +753,18 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
       )
       removeModal()
     })
-    callModule(findMarkers, "hello", seu)
+    callModule(findMarkers, "findmarkers", seu)
     diffex_results <- callModule(
-      diffex, "hello", seu, featureType,
+      diffex, "diffex", seu, featureType,
       diffex_selected_cells
     )
     enrichment_report <- callModule(
-      geneEnrichment, "hello",
+      geneEnrichment, "geneenrichment",
       seu, diffex_results
     )
     observe({
       req(enrichment_report())
-      callModule(downloadTable, "hello", enrichment_report)
+      callModule(downloadTable, "downloadtable", enrichment_report)
     })
 
     observeEvent(input$plotTrx, {
@@ -901,7 +901,7 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
 
       print(loom_path)
 
-      callModule(plotVelocity, "howdy", seu, loom_path, featureType)
+      callModule(plotVelocity, "plotvelocity", seu, loom_path, featureType)
     })
 
 

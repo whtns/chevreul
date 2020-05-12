@@ -1525,7 +1525,7 @@ monocleui <- function(id){
         box(
           uiOutput(ns("rootCellsui")),
           actionButton(ns("plotPseudotime"), "Calculate Pseudotime With Root Cells"),
-          plotOutput(ns("ptimePlot")),
+          plotly::plotlyOutput(ns("ptimePlot")),
           width = 6
         )
       ),
@@ -1595,7 +1595,7 @@ monocle <- function(input, output, session, cds, seu, input_type, resolution){
 
     })
 
-    output$ptimePlot <- renderPlot({
+    output$ptimePlot <- plotly::renderPlotly({
       req(cds$ptime)
       plot_pseudotime(cds$ptime, color_cells_by = "pseudotime", resolution = resolution())
 
@@ -1622,31 +1622,45 @@ monocle <- function(input, output, session, cds, seu, input_type, resolution){
       cds_pr_test_res <- cds$diff_genes@metadata$diff_genes
       pr_deg_ids = row.names(subset(cds_pr_test_res, q_value < 0.05))
 
-      output$genePlotQuery1 <- renderPlot({
-        req(cds$diff_genes)
-
-        gene_ptime_plot <- monocle3::plot_cells(cds$ptime, genes=pr_deg_ids,
-                                                show_trajectory_graph=FALSE,
-                                                label_cell_groups=FALSE,
-                                                label_leaves=FALSE)
-
-        print(gene_ptime_plot)
-
-
-      })
+      # output$genePlotQuery1 <- renderPlot({
+      #   req(cds$diff_genes)
+      #
+      #   gene_ptime_plot <- monocle3::plot_cells(cds$ptime, genes=pr_deg_ids,
+      #                                           show_trajectory_graph=FALSE,
+      #                                           label_cell_groups=FALSE,
+      #                                           label_leaves=FALSE)
+      #
+      #   gene_ptime_plot <-
+      #     gene_ptime_plot %>%
+      #     plotly::ggplotly(height = 400) %>%
+      #     plotly::layout(dragmode = "lasso") %>%
+      #     plotly::toWebGL() %>%
+      #     # plotly::partial_bundle() %>%
+      #     identity()
+      #
+      #   print(gene_ptime_plot)
+      #
+      #
+      # })
 
       output$genePlotQuery2 <- renderUI({
         selectizeInput(ns("genePlotQuery1"), "Pick Gene to Plot on Pseudotime", choices = pr_deg_ids, multiple = TRUE, selected = pr_deg_ids[1])
       })
 
-      output$ptimeGenesRedPlot <- renderPlot({
+      output$ptimeGenesRedPlot <- plotly::renderPlotly({
 
         gene_ptime_plot <- monocle3::plot_cells(cds$ptime, genes=input$genePlotQuery1,
                                                 show_trajectory_graph=FALSE,
                                                 label_cell_groups=FALSE,
                                                 label_leaves=FALSE)
 
-        print(gene_ptime_plot)
+        gene_ptime_plot <-
+          gene_ptime_plot %>%
+          plotly::ggplotly(height = 400) %>%
+          plotly::layout(dragmode = "lasso") %>%
+          plotly::toWebGL() %>%
+          # plotly::partial_bundle() %>%
+          identity()
 
 
       })
@@ -1657,11 +1671,19 @@ monocle <- function(input, output, session, cds, seu, input_type, resolution){
         selectizeInput(ns("partitions"), "Select a Partition to Plot", choices = available_partitions, multiple = FALSE, selected = available_partitions[1])
       })
 
-      output$ptimeGenesLinePlot <- renderPlot({
+      output$ptimeGenesLinePlot <- plotly::renderPlotly({
 
         genes_in_pseudotime <- prep_plot_genes_in_pseudotime(cds$ptime, input$genePlotQuery1, resolution())
 
-        print(genes_in_pseudotime)
+        genes_in_pseudotime <-
+          genes_in_pseudotime %>%
+          plotly::ggplotly(height = 400) %>%
+          plotly::layout(dragmode = "lasso") %>%
+          plotly::toWebGL() %>%
+          # plotly::partial_bundle() %>%
+          identity()
+
+        # print(genes_in_pseudotime)
 
       })
 
@@ -1675,9 +1697,9 @@ monocle <- function(input, output, session, cds, seu, input_type, resolution){
 
       output$ptimeGenes <- renderUI({
         tagList(
-          box(plotOutput(ns("ptimeGenesRedPlot")),
+          box(plotly::plotlyOutput(ns("ptimeGenesRedPlot")),
               width = 6),
-          box(plotOutput(ns("ptimeGenesLinePlot")),
+          box(plotly::plotlyOutput(ns("ptimeGenesLinePlot")),
               width = 6),
           DT::DTOutput(ns("ptimeGenesDT"))
                 ) %>%
