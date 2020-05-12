@@ -305,7 +305,14 @@ plot_var <- function(seu, embedding = "umap", group = "batch", dims = c(1,2)){
 
   plotly_plot <- plotly::ggplotly(d, tooltip = "cellid", height  = 750) %>%
     plotly::layout(dragmode = "lasso") %>%
-    plotly::toWebGL() %>%
+    plotly::config(
+      toImageButtonOptions = list(
+        format = "png",
+        filename = "myplot",
+        width = 1200,
+        height = 1400
+      )) %>%
+    # plotly::toWebGL() %>%
     # plotly::partial_bundle() %>%
     identity()
 
@@ -383,9 +390,7 @@ plot_feature <- function(seu, embedding, features, dims = c(1,2), return_plotly 
   cellid <- metadata[["sID"]]
   key <- rownames(metadata)
 
-  if (embedding == "umap"){
-    dims = c(1,2)
-  } else if (embedding == "tsne"){
+  if (embedding %in% c("tsne", "umap")){
     dims = c(1,2)
   }
 

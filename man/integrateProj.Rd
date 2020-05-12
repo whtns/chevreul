@@ -4,7 +4,7 @@
 \alias{integrateProj}
 \title{Integrate Projects Server Function}
 \usage{
-integrateProj(input, output, session, proj_matrices, seu, proj_dir)
+integrateProj(input, output, session, proj_matrices, seu, proj_dir, con)
 }
 \arguments{
 \item{session}{}
