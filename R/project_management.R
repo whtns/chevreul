@@ -75,3 +75,22 @@ subset_by_meta <- function(meta_path, seu){
 
 }
 
+#' Title
+#'
+#' @param projectPaths
+#' @param newProjectPath
+#'
+#' @return
+#' @export
+#'
+#' @examples
+combine_looms <- function(projectPaths, newProjectPath){
+  #loom combine
+  loompy <- reticulate::import("loompy")
+
+  loom_filenames <- stringr::str_replace(fs::path_file(projectPaths), "_proj", ".loom")
+
+  selected_looms <- fs::path(projectPaths, "output", "velocyto", loom_filenames)
+  loompy$combine(selected_looms, newProjectPath)
+}
+

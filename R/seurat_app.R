@@ -213,7 +213,7 @@ prep_slider_values <- function(default_val) {
 #'
 #' @examples
 seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_types = "gene",
-                      organism_type = "human", futureMb = 13000) {
+                      organism_type = "human", db_path = "~/single_cell_projects/rsqlite/single-cell-projects.db", futureMb = 13000) {
   print(feature_types)
   future::plan(strategy = "multicore", workers = 6)
   future_size <- futureMb * 1024^2
@@ -286,7 +286,7 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
       tabName = "comparePlots",
       h2("Compare Plots"), fluidRow(
         box(plotDimRedui("hello")),
-        box(plotDimRedui("howdy"))
+        box(plotDimRedui("hello3"))
       ), fluidRow(box(
         title = "Selected Cells",
         tableSelectedui("hello"), width = 6
@@ -418,22 +418,33 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
     options(warn = -1)
     shinylogs::track_usage(storage_mode = shinylogs::store_json(path = "logs/"))
     projects_db <- "/dataVolume/storage/single_cell_projects/single_cell_projects.db"
+    rsqlite_db <- db_path
+
+    con <- DBI::dbConnect(
+      RSQLite::SQLite(),
+      rsqlite_db
+    )
+
     projList <- reactivePoll(4000, session, checkFunc = function() {
-      if (file.exists(projects_db)) {
-        system("locate -d /dataVolume/storage/single_cell_projects/single_cell_projects.db '*.here'",
-          intern = TRUE
-        ) %>%
-          fs::path_dir() %>%
-          purrr::set_names(fs::path_file(.))
+      if (file.exists(rsqlite_db)) {
+        # system("locate -d /dataVolume/storage/single_cell_projects/single_cell_projects.db '*.here'",
+        #   intern = TRUE
+        # ) %>%
+        #   fs::path_dir() %>%
+        #   purrr::set_names(fs::path_file(.))
+        DBI::dbReadTable(con, "projects") %>%
+          tibble::deframe()
       } else {
         ""
       }
     }, valueFunc = function() {
-      system("locate -d /dataVolume/storage/single_cell_projects/single_cell_projects.db '*.here'",
-        intern = TRUE
-      ) %>%
-        fs::path_dir() %>%
-        purrr::set_names(fs::path_file(.))
+      # system("locate -d /dataVolume/storage/single_cell_projects/single_cell_projects.db '*.here'",
+      #   intern = TRUE
+      # ) %>%
+      #   fs::path_dir() %>%
+      #   purrr::set_names(fs::path_file(.))
+      DBI::dbReadTable(con, "projects") %>%
+        tibble::deframe()
     })
     output$projInput <- renderUI({
       selectizeInput("setProject", "Select Project to Load",
@@ -588,7 +599,7 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
     })
     integrationResults <- callModule(
       integrateProj, "hello",
-      proj_matrices, seu, proj_dir
+      proj_matrices, seu, proj_dir, con
     )
     newprojList <- reactive({
       req(integrationResults())
@@ -609,22 +620,29 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
       )
     })
     seu <- callModule(reformatMetadata, "hello", seu)
-    callModule(plotDimRed, "hello", seu, plot_types, featureType,
-      organism_type = organism_type
-    )
-    callModule(plotDimRed, "howdy", seu, plot_types, featureType,
-      organism_type = organism_type
-    )
-    callModule(plotDimRed, "diffex", seu, plot_types, featureType,
-      organism_type = organism_type
-    )
-    callModule(plotDimRed, "subset", seu, plot_types, featureType,
-      organism_type = organism_type
-    )
-    callModule(plotDimRed, "markerScatter", seu, plot_types,
-      featureType,
-      organism_type = organism_type
-    )
+
+    observe({
+      req(seu$active)
+
+      reductions <- reactive({
+        # names(seu$active@reductions)
+        c("pca", "tsne", "umap")
+      })
+
+      callModule(plotDimRed, "hello", seu, plot_types, featureType,
+                 organism_type = organism_type, reductions)
+      callModule(plotDimRed, "hello3", seu, plot_types, featureType,
+                 organism_type = organism_type, reductions)
+      # callModule(plotDimRed, "howdy", seu, plot_types, featureType,
+      #            organism_type = organism_type, reductions)
+      callModule(plotDimRed, "diffex", seu, plot_types, featureType,
+                 organism_type = organism_type, reductions)
+      callModule(plotDimRed, "subset", seu, plot_types, featureType,
+                 organism_type = organism_type, reductions)
+      callModule(plotDimRed, "markerScatter", seu, plot_types, featureType,
+                 organism_type = organism_type, reductions)
+    })
+
     callModule(plotReadCount, "hello2", seu, plot_types)
     callModule(plotReadCount, "howdy2", seu, plot_types)
     callModule(
@@ -829,7 +847,7 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
       req(seu$active)
       cds$traj <- convert_seu_to_cds(seu$active, resolution = input$cdsResolution)
     })
-    observeEvent(input$calCDS, {
+    observeEvent(input$calcCDS, {
       req(cds$traj)
       cds$traj <- learn_graph_by_resolution(cds$traj,
         seu$active,

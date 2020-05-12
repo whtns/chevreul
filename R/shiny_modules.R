@@ -419,7 +419,7 @@ integrateProjui <- function(id){
 #' @export
 #'
 #' @examples
-integrateProj <- function(input, output, session, proj_matrices, seu, proj_dir){
+integrateProj <- function(input, output, session, proj_matrices, seu, proj_dir, con){
     ns <- session$ns
 
     proj_matrix <- reactive({
@@ -543,9 +543,16 @@ integrateProj <- function(input, output, session, proj_matrices, seu, proj_dir){
             system(set_permissions_call)
             writeLines(character(), fs::path(integratedProjectSavePath(), ".here"))
             # create_proj_db()
-            system("updatedb -l 0 -U /dataVolume/storage/single_cell_projects/ -o /dataVolume/storage/single_cell_projects/single_cell_projects.db", wait = TRUE)
+            DBI::dbAppendTable(con, "projects", data.frame(project_name = fs::path_file(integratedProjectSavePath()), project_path = integratedProjectSavePath()))
+            # system("updatedb -l 0 -U /dataVolume/storage/single_cell_projects/ -o /dataVolume/storage/single_cell_projects/single_cell_projects.db", wait = TRUE)
             # # print(set_permissions_call)
             shiny::incProgress(8/10)
+
+            velocyto_dir <- fs::path(integratedProjectSavePath(), "output", "velocyto")
+            fs::dir_create(velocyto_dir)
+            new_loom_path <- fs::path(velocyto_dir, fs::path_file(integratedProjectSavePath()))
+            combine_looms(selectedProjects(), new_loom_path)
+
           })
 
       }
@@ -631,9 +638,8 @@ plotDimRedui <- function(id){
             ),
           selectizeInput(ns("customFeature"), "gene or transcript on which to color the plot; eg. 'RXRG' or 'ENST00000488147'",
                                                                                                                                                                                       choices = NULL, multiple = TRUE), sliderInput(ns("resolution"),
-                                                                                                                                                                                                                                    "Resolution of clustering algorithm (affects number of clusters)",
-                                                                                                                                                                                                                                    min = 0.2, max = 2, step = 0.2, value = 0.6), plotly::plotlyOutput(ns("dplot"),
-                                                                                                                                                                                                                                                                                                       height = 750))
+                                                                                                                                                                                                                                    "Resolution of clustering algorithm (affects number of clusters)", min = 0.2, max = 2, step = 0.2, value = 0.6),
+          plotly::plotlyOutput(ns("dplot"), height = 750))
 }
 
 #' Plot Dimensional Reduduction
@@ -645,27 +651,28 @@ plotDimRedui <- function(id){
 #' @param plot_types
 #' @param featureType
 #' @param organism_type
+#' @param reductions
 #'
 #' @return
 #' @export
 #'
 #' @examples
 plotDimRed <- function(input, output, session, seu, plot_types, featureType,
-                       organism_type){
+                       organism_type, reductions){
   ns <- session$ns
+
   output$embeddings <- renderUI({
     req(seu$active)
-    tagList(shinyWidgets::prettyRadioButtons(ns("embedding"),
-                                             "dimensional reduction method", choices = names(seu$active@reductions),
-                                             selected = names(seu$active@reductions)[1], inline = TRUE))
+    radioButtons(ns("embedding"), "dimensional reduction method", choices = reductions(), inline = TRUE)
   })
+
   selected_plot <- reactiveVal()
   output$dplottype <- renderUI({
     req(seu$active)
-    selected_plot <- ifelse(is.null(selected_plot()), "seurat",
-                            selected_plot())
+    # selected_plot <- ifelse(is.null(selected_plot()), "seurat",
+    #                         selected_plot())
     selectizeInput(ns("plottype"), "Variable to Plot", choices = purrr::flatten_chr(plot_types()),
-                   selected = selected_plot, multiple = TRUE)
+                   selected = "seurat", multiple = TRUE)
   })
   prefill_feature <- reactive({
     req(featureType())
@@ -695,6 +702,7 @@ plotDimRed <- function(input, output, session, seu, plot_types, featureType,
   output$dplot <- plotly::renderPlotly({
     req(input$plottype)
     req(seu$active)
+    req(input$embedding)
     if (length(input$plottype) > 1) {
       mycols = input$plottype
       louvain_resolution = paste0(DefaultAssay(seu$active),
@@ -728,10 +736,13 @@ plotDimRed <- function(input, output, session, seu, plot_types, featureType,
         else {
           active_assay <- "RNA"
         }
-        louvain_resolution = paste0(active_assay, "_snn_res.",
-                                    input$resolution)
+
+        louvain_resolution = reactive({
+          paste0(active_assay, "_snn_res.", input$resolution)
+        })
+
         plot_var(seu$active, dims = c(input$dim1, input$dim2),
-                 embedding = input$embedding, group = louvain_resolution)
+                 embedding = input$embedding, group = louvain_resolution())
       }
       else if (input$plottype %in% plot_types()$category_vars) {
         plot_var(seu$active, dims = c(input$dim1, input$dim2),
@@ -1258,7 +1269,8 @@ ccScore <- function(input, output, session) {
 #' @examples
 allTranscriptsui <- function(id) {
   ns <- NS(id)
-  tagList(fluidRow(box(textInput(ns("feature"), "gene on which to color the plot; eg. 'RXRG'"),
+  tagList(fluidRow(box(uiOutput(ns("embeddings")),
+                       textInput(ns("feature"), "gene on which to color the plot; eg. 'RXRG'"),
                        # uiOutput(ns("outfile")),
                        # uiOutput(ns("downloadPlot")),
                        width = 12)), fluidRow(uiOutput(ns("plotlys"))))
@@ -1279,6 +1291,12 @@ allTranscriptsui <- function(id) {
 allTranscripts <- function(input, output, session, seu,
                            featureType, organism_type) {
   ns <- session$ns
+
+  output$embeddings <- renderUI({
+    req(seu$active)
+    radioButtons(ns("embedding"), "dimensional reduction method", choices = c("pca", "tsne", "umap"), inline = TRUE)
+  })
+
   transcripts <- reactiveValues()
   transcripts <- reactive({
     req(featureType())
