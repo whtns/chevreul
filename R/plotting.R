@@ -304,6 +304,23 @@ plot_var <- function(seu, embedding = "umap", group = "batch", dims = c(1,2)){
     aes(key = key, cellid = cellid)
 
   plotly_plot <- plotly::ggplotly(d, tooltip = "cellid", height  = 750) %>%
+    plotly_settings() %>%
+    plotly::toWebGL() %>%
+    # plotly::partial_bundle() %>%
+    identity()
+
+}
+
+#' Plotly settings
+#'
+#' @param plotly_plot
+#'
+#' @return
+#' @export
+#'
+#' @examples
+plotly_settings <- function(plotly_plot){
+  plotly_plot %>%
     plotly::layout(dragmode = "lasso") %>%
     plotly::config(
       toImageButtonOptions = list(
@@ -312,10 +329,7 @@ plot_var <- function(seu, embedding = "umap", group = "batch", dims = c(1,2)){
         width = 1200,
         height = 1400
       )) %>%
-    # plotly::toWebGL() %>%
-    # plotly::partial_bundle() %>%
     identity()
-
 }
 
 
@@ -402,7 +416,7 @@ plot_feature <- function(seu, embedding, features, dims = c(1,2), return_plotly 
   if (return_plotly == FALSE) return(fp)
 
   plotly_plot <- plotly::ggplotly(fp, tooltip = "cellid", height = 750) %>%
-    plotly::layout(dragmode = "lasso") %>%
+    plotly_settings() %>%
     plotly::toWebGL() %>%
     # plotly::partial_bundle() %>%
     identity()
@@ -460,7 +474,7 @@ plot_markers <- function(seu, resolution, num_markers = 5){
   plot_height = (300*num_markers)
 
   plotly_plot <- plotly::ggplotly(markerplot, height = plot_height, width = 600) %>%
-    plotly::layout(dragmode = "lasso") %>%
+    plotly_settings() %>%
     plotly::toWebGL() %>%
     # plotly::partial_bundle() %>%
     identity()

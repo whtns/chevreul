@@ -163,7 +163,7 @@ plot_cds <- function(cds, resolution, color_cells_by = "louvain_cluster"){
   cds_plot <-
     cds_plot %>%
     plotly::ggplotly(height = 400) %>%
-    plotly::layout(dragmode = "lasso") %>%
+    plotly_settings() %>%
     plotly::toWebGL() %>%
     # plotly::partial_bundle() %>%
     identity()
@@ -212,7 +212,8 @@ plot_pseudotime <- function(cds, resolution, color_cells_by = "louvain_cluster")
   cds_plot <-
     cds_plot %>%
     plotly::ggplotly(height = 400) %>%
-    plotly::layout(dragmode = "lasso") %>%
+    plotly::ggplotly(height = 400) %>%
+    plotly_settings() %>%
     plotly::toWebGL() %>%
     # plotly::partial_bundle() %>%
     identity()

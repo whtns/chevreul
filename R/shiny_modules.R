@@ -1622,27 +1622,6 @@ monocle <- function(input, output, session, cds, seu, input_type, resolution){
       cds_pr_test_res <- cds$diff_genes@metadata$diff_genes
       pr_deg_ids = row.names(subset(cds_pr_test_res, q_value < 0.05))
 
-      # output$genePlotQuery1 <- renderPlot({
-      #   req(cds$diff_genes)
-      #
-      #   gene_ptime_plot <- monocle3::plot_cells(cds$ptime, genes=pr_deg_ids,
-      #                                           show_trajectory_graph=FALSE,
-      #                                           label_cell_groups=FALSE,
-      #                                           label_leaves=FALSE)
-      #
-      #   gene_ptime_plot <-
-      #     gene_ptime_plot %>%
-      #     plotly::ggplotly(height = 400) %>%
-      #     plotly::layout(dragmode = "lasso") %>%
-      #     plotly::toWebGL() %>%
-      #     # plotly::partial_bundle() %>%
-      #     identity()
-      #
-      #   print(gene_ptime_plot)
-      #
-      #
-      # })
-
       output$genePlotQuery2 <- renderUI({
         selectizeInput(ns("genePlotQuery1"), "Pick Gene to Plot on Pseudotime", choices = pr_deg_ids, multiple = TRUE, selected = pr_deg_ids[1])
       })
@@ -1657,7 +1636,7 @@ monocle <- function(input, output, session, cds, seu, input_type, resolution){
         gene_ptime_plot <-
           gene_ptime_plot %>%
           plotly::ggplotly(height = 400) %>%
-          plotly::layout(dragmode = "lasso") %>%
+          plotly_settings() %>%
           plotly::toWebGL() %>%
           # plotly::partial_bundle() %>%
           identity()
@@ -1678,7 +1657,7 @@ monocle <- function(input, output, session, cds, seu, input_type, resolution){
         genes_in_pseudotime <-
           genes_in_pseudotime %>%
           plotly::ggplotly(height = 400) %>%
-          plotly::layout(dragmode = "lasso") %>%
+          plotly_settings() %>%
           plotly::toWebGL() %>%
           # plotly::partial_bundle() %>%
           identity()
@@ -1690,7 +1669,7 @@ monocle <- function(input, output, session, cds, seu, input_type, resolution){
       # mymarker
 
       output$ptimeGenesDT <- DT::renderDT({
-        DT::datatable(cds_pr_test_res,
+        DT::datatable(cds_pr_test_res, extensions = 'Buttons',
                       options = list(dom = "Bft", buttons = c("copy", "csv"), scrollX = "100px", scrollY = "800px"))
 
       })
