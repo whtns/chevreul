@@ -285,8 +285,8 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
     ), shinydashboard::tabItem(
       tabName = "comparePlots",
       h2("Compare Plots"), fluidRow(
-        box(plotDimRedui("dimred1")),
-        box(plotDimRedui("dimred13"))
+        box(plotDimRedui("plotdimred1")),
+        box(plotDimRedui("plotdimred2"))
       ), fluidRow(box(
         title = "Selected Cells",
         tableSelectedui("tableselected"), width = 6
@@ -629,9 +629,9 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
         c("pca", "tsne", "umap")
       })
 
-      callModule(plotDimRed, "plotdimred", seu, plot_types, featureType,
+      callModule(plotDimRed, "plotdimred1", seu, plot_types, featureType,
                  organism_type = organism_type, reductions)
-      callModule(plotDimRed, "plotdimred3", seu, plot_types, featureType,
+      callModule(plotDimRed, "plotdimred2", seu, plot_types, featureType,
                  organism_type = organism_type, reductions)
       # callModule(plotDimRed, "plotdimred", seu, plot_types, featureType,
       #            organism_type = organism_type, reductions)

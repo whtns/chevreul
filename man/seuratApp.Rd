@@ -10,7 +10,7 @@ seuratApp(
   appTitle = NULL,
   feature_types = "gene",
   organism_type = "human",
-  db_path = "~/single_cell_projects/rsqlite/single-cell-projects.db",
+  db_path = "/dataVolume/storage/single_cell_projects/rsqlite/single-cell-projects.db",
   futureMb = 13000
 )
 }
