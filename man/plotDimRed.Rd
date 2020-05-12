@@ -4,10 +4,19 @@
 \alias{plotDimRed}
 \title{Plot Dimensional Reduduction}
 \usage{
-plotDimRed(input, output, session, seu, plot_types, featureType, organism_type)
+plotDimRed(
+  input,
+  output,
+  session,
+  seu,
+  plot_types,
+  featureType,
+  organism_type,
+  reductions
+)
 }
 \arguments{
-\item{organism_type}{}
+\item{reductions}{}
 }
 \value{
 
