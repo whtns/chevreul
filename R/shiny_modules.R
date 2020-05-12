@@ -154,10 +154,12 @@ plotViolin <- function(input, output, session, seu, featureType, organism_type){
     updateSelectizeInput(session, "customFeature", choices = rownames(seu$active),
                          selected = prefill_feature(), server = TRUE)
   })
+
   output$featuretext <- renderUI({
     textInput(ns("customFeature"), "gene or transcript on which to color the plot; eg. 'RXRG' or 'ENST00000488147'",
               value = prefill_feature())
   })
+
   output$vln_split <- renderUI({
     req(seu$active)
     selectizeInput(ns("vlnSplit"), "choose variable filter by",
@@ -1269,8 +1271,8 @@ ccScore <- function(input, output, session) {
 #' @examples
 allTranscriptsui <- function(id) {
   ns <- NS(id)
-  tagList(fluidRow(box(uiOutput(ns("embeddings")),
-                       textInput(ns("feature"), "gene on which to color the plot; eg. 'RXRG'"),
+  tagList(fluidRow(box(radioButtons(ns("embedding"), "dimensional reduction method", choices = c("pca", "tsne", "umap"), inline = TRUE),
+                       textInput(ns("feature"), "gene on which to colour the plot; eg. 'RXRG'"),
                        # uiOutput(ns("outfile")),
                        # uiOutput(ns("downloadPlot")),
                        width = 12)), fluidRow(uiOutput(ns("plotlys"))))

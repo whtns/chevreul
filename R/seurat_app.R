@@ -213,7 +213,7 @@ prep_slider_values <- function(default_val) {
 #'
 #' @examples
 seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_types = "gene",
-                      organism_type = "human", db_path = "~/single_cell_projects/rsqlite/single-cell-projects.db", futureMb = 13000) {
+                      organism_type = "human", db_path = "/dataVolume/storage/single_cell_projects/rsqlite/single-cell-projects.db", futureMb = 13000) {
   print(feature_types)
   future::plan(strategy = "multicore", workers = 6)
   future_size <- futureMb * 1024^2
@@ -337,9 +337,9 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
       h2("All Transcripts"), fluidRow(shinyWidgets::actionBttn(
         "plotTrx",
         "Plot all transcripts"
-      )), fluidRow(column(allTranscriptsui("hello"),
+      )), fluidRow(column(allTranscriptsui("alltranscripts1"),
         width = 6
-      ), column(allTranscriptsui("howdy"),
+      ), column(allTranscriptsui("alltranscripts2"),
         width = 6
       ))
     ),
@@ -417,7 +417,7 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
   server <- function(input, output, session) {
     options(warn = -1)
     shinylogs::track_usage(storage_mode = shinylogs::store_json(path = "logs/"))
-    projects_db <- "/dataVolume/storage/single_cell_projects/single_cell_projects.db"
+    # projects_db <- "/dataVolume/storage/single_cell_projects/single_cell_projects.db"
     rsqlite_db <- db_path
 
     con <- DBI::dbConnect(
@@ -773,11 +773,11 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
         "This process may take a minute or two!"
       ))
       callModule(
-        allTranscripts, "hello", seu, featureType,
+        allTranscripts, "alltranscripts1", seu, featureType,
         organism_type
       )
       callModule(
-        allTranscripts, "howdy", seu, featureType,
+        allTranscripts, "alltranscripts2", seu, featureType,
         organism_type
       )
       removeModal()
