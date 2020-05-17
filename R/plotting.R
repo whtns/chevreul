@@ -1,4 +1,37 @@
 
+#' Cross plot vars
+#'
+#' @param seu
+#' @param resolution
+#' @param mycols
+#'
+#' @return
+#' @export
+#'
+#' @examples
+cross_plot_vars <- function(seu, resolution, mycols) {
+
+  if ("integrated" %in% names(seu@assays)) {
+    active_assay <- "integrated"
+  }
+  else {
+    active_assay <- "RNA"
+  }
+
+  cluster_resolution = paste0(active_assay,
+                              "_snn_res.", resolution)
+  mycols <- gsub("^seurat$", cluster_resolution, mycols)
+  newcolname = paste(mycols, collapse = "_by_")
+
+  newdata <- seu[[mycols]] %>%
+    tidyr::unite(!!newcolname, mycols)
+
+  Idents(seu) <- newdata
+
+  return(seu)
+
+}
+
 #' Plot pseudotime over multiple branches
 #'
 #' @param cds
@@ -228,6 +261,8 @@ plot_multiple_branches_heatmap <- function(cds,
 #' @examples
 plot_velocity_arrows <- function(seu, velocity, reduction = "umap", cell.colors, plot_format = "arrow", arrow.scale = 3){
 
+  velocity <- seu@misc$vel
+
   emb <- Embeddings(object = seu, reduction = reduction)
 
   cell.alpha=1.0; cell.cex=1; fig.height=4; fig.width=4.5;
@@ -281,12 +316,13 @@ plot_velocity_trajectory <- function(seu, reduction = "umap", format = "arrow", 
 #' @param seu
 #' @param embedding
 #' @param group
+#' @param ...
 #'
 #' @return
 #' @export
 #'
 #' @examples
-plot_var <- function(seu, embedding = "umap", group = "batch", dims = c(1,2)){
+plot_var <- function(seu, embedding = "umap", group = "batch", dims = c(1,2), ...){
   #
   metadata <- tibble::as_tibble(seu[[]][Seurat::Cells(seu),], rownames = "sID")
   cellid <- metadata[["sID"]]
@@ -300,8 +336,9 @@ plot_var <- function(seu, embedding = "umap", group = "batch", dims = c(1,2)){
 
   dims <- as.numeric(dims)
 
-  d <- Seurat::DimPlot(object = seu, dims = dims, reduction = embedding, group.by = group, pt.size = 1.0) +
-    aes(key = key, cellid = cellid)
+  d <- Seurat::DimPlot(object = seu, dims = dims, reduction = embedding, group.by = group, pt.size = 1.0, ...) +
+    aes(key = key, cellid = cellid) +
+    theme(legend.text=element_text(size=6))
 
   plotly_plot <- plotly::ggplotly(d, tooltip = "cellid", height  = 750) %>%
     plotly_settings() %>%
@@ -326,8 +363,8 @@ plotly_settings <- function(plotly_plot){
       toImageButtonOptions = list(
         format = "png",
         filename = "myplot",
-        width = 1200,
-        height = 1400
+        width = 600,
+        height = 700
       )) %>%
     identity()
 }
@@ -453,17 +490,28 @@ plot_ridge <- function(seu, features){
 #'
 #' @param seu
 #' @param resolution
+#' @param selected_clusters
+#' @param ...
 #'
 #' @return
 #' @export
 #'
 #' @examples
-plot_markers <- function(seu, resolution, num_markers = 5){
+plot_markers <- function(seu, resolution, num_markers = 5, selected_clusters = NULL, ...){
 
   markers <- seu@misc$markers[[resolution]] %>%
     dplyr::top_n(n = num_markers, wt = logFC) %>%
-    dplyr::pull(feature) %>%
     identity()
+
+  if(!is.null(selected_clusters)){
+    markers <- markers %>%
+      dplyr::filter(group %in% selected_clusters)
+  }
+
+  markers <- dplyr::pull(markers, feature)
+
+  Idents(seu) <- seu[[resolution]]
+  seu <- seu[,Idents(seu) %in% selected_clusters]
 
   markerplot <- DotPlot(seu, features = unique(markers), group.by = resolution, dot.scale = 4) +
     theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +

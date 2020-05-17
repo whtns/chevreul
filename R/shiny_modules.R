@@ -329,7 +329,7 @@ reformatMetadata <- function(input, output, session, seu) {
   })
 
   output$colNames <- renderUI({
-    selectizeInput(ns("col_names"), "Seurat Object Metdata Columns", choices = seuColNames(), multiple = TRUE)
+    selectizeInput(ns("col_names"), "Seurat Object Metadata Columns", choices = seuColNames(), multiple = TRUE)
   })
 
   observeEvent(input$mergeCol, {
@@ -352,7 +352,9 @@ reformatMetadata <- function(input, output, session, seu) {
     if (is.null(inFile))
       return(NULL)
 
-    meta$new <- read.csv(inFile$datapath, header = input$header, row.names = 1)
+    meta$new <- format_new_metadata(inFile$datapath, header = input$header, row.names = 1)
+
+    # meta$new <- read.csv(inFile$datapath, header = input$header, row.names = 1)
 
     for (i in names(seu)){
       seu[[i]] <- Seurat::AddMetaData(seu[[i]], meta$new)
@@ -701,24 +703,22 @@ plotDimRed <- function(input, output, session, seu, plot_types, featureType,
     updateSelectizeInput(session, "customFeature", choices = rownames(seu$active),
                          selected = prefill_feature(), server = TRUE)
   })
+
   output$dplot <- plotly::renderPlotly({
     req(input$plottype)
     req(seu$active)
     req(input$embedding)
     if (length(input$plottype) > 1) {
-      mycols = input$plottype
-      louvain_resolution = paste0(DefaultAssay(seu$active),
-                                  "_snn_res.", input$resolution)
-      mycols <- gsub("^seurat$", louvain_resolution, mycols)
-      newcolname = paste(mycols, collapse = "_")
-      newdata = tibble::as_tibble(seu$active[[mycols]],
-                                  rownames = "sample_id") %>% tidyr::unite(!!newcolname,
-                                                                           mycols) %>% deframe() %>% identity()
-      seu$active <- AddMetaData(seu$active, metadata = newdata,
-                                col.name = newcolname)
+
+      seu$active <- cross_plot_vars(seu$active, input$resolution, input$plottype)
+
+      newcolname <- paste(input$plottype, collapse = "_")
+      seu$active[[newcolname]] <- Idents(seu$active)
+
       selected_plot(newcolname)
+
       plot_var(seu$active, dims = c(input$dim1, input$dim2),
-               embedding = input$embedding, group = newcolname)
+               embedding = input$embedding, group = NULL)
     }
     else {
       if (input$plottype == "custom") {
@@ -1131,7 +1131,8 @@ findMarkersui <- function(id) {
   tagList(
       sliderInput(ns("resolution2"), label = "Resolution of clustering algorithm (affects number of clusters)", min = 0.2, max = 2, step = 0.2, value = 0.6),
       numericInput(ns("num_markers"), "Select Number of Markers to Plot for Each Cluster", value = 5, min = 2, max = 20),
-      # actionButton(ns("plotDots"), "Plot Markers!"),
+      uiOutput(ns("clusterSelect")),
+      actionButton(ns("plotDots"), "Plot Markers!"),
       plotly::plotlyOutput(ns("markerplot"), height = 800)
   )
 }
@@ -1161,8 +1162,22 @@ findMarkers <- function(input, output, session, seu) {
 
     })
 
+  output$clusterSelect <- renderUI({
+    req(seu$active)
+    req(resolution())
+
+    choices = levels(seu$active[[]][[resolution()]])
+
+    selectizeInput(ns("displayClusters"), "Clusters to display", multiple = TRUE, choices = choices)
+  })
+
+  marker_plot <- eventReactive(input$plotDots, {
+    plot_markers(seu = seu$active, resolution = resolution(), num_markers = input$num_markers, selected_clusters = input$displayClusters)
+  })
+
   output$markerplot <- plotly::renderPlotly({
-    plot_markers(seu = seu$active, resolution = resolution(), num_markers = input$num_markers)
+    # req(input$displayClusters)
+    marker_plot()
   })
 }
 
@@ -1620,7 +1635,13 @@ monocle <- function(input, output, session, cds, seu, input_type, resolution){
       req(cds$diff_genes)
 
       cds_pr_test_res <- cds$diff_genes@metadata$diff_genes
-      pr_deg_ids = row.names(subset(cds_pr_test_res, q_value < 0.05))
+
+      cds_pr_test_res <- subset(cds_pr_test_res, q_value < 0.05) %>%
+        dplyr::arrange(q_value)
+
+      pr_deg_ids = row.names(cds_pr_test_res)
+
+      # pr_deg_ids = row.names(subset(cds_pr_test_res, q_value < 0.05))
 
       output$genePlotQuery2 <- renderUI({
         selectizeInput(ns("genePlotQuery1"), "Pick Gene to Plot on Pseudotime", choices = pr_deg_ids, multiple = TRUE, selected = pr_deg_ids[1])
@@ -1631,7 +1652,8 @@ monocle <- function(input, output, session, cds, seu, input_type, resolution){
         gene_ptime_plot <- monocle3::plot_cells(cds$ptime, genes=input$genePlotQuery1,
                                                 show_trajectory_graph=FALSE,
                                                 label_cell_groups=FALSE,
-                                                label_leaves=FALSE)
+                                                label_leaves=FALSE,
+                                                cell_size = 0.75)
 
         gene_ptime_plot <-
           gene_ptime_plot %>%
@@ -1669,6 +1691,7 @@ monocle <- function(input, output, session, cds, seu, input_type, resolution){
       # mymarker
 
       output$ptimeGenesDT <- DT::renderDT({
+
         DT::datatable(cds_pr_test_res, extensions = 'Buttons',
                       options = list(dom = "Bft", buttons = c("copy", "csv"), scrollX = "100px", scrollY = "800px"))
 

@@ -4,10 +4,10 @@
 \alias{plot_markers}
 \title{Plot Cluster Marker Genes}
 \usage{
-plot_markers(seu, resolution, num_markers = 5)
+plot_markers(seu, resolution, num_markers = 5, ...)
 }
 \arguments{
-\item{resolution}{}
+\item{...}{}
 }
 \value{
 

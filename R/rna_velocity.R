@@ -4,12 +4,13 @@
 #' @param seu a seurat object
 #' @param loom_path path to matching loom file
 #' @param fit.quantile
+#' @param ...
 #'
 #' @return
 #' @export
 #'
 #' @examples
-velocyto_assay <- function(seu, loom_path, fit.quantile = 0.05){
+velocyto_assay <- function(seu, loom_path, fit.quantile = 0.05, ...){
 
   ldat <- velocyto.R::read.loom.matrices(loom_path)
   # subset ldat by seurat object.size
@@ -20,10 +21,10 @@ velocyto_assay <- function(seu, loom_path, fit.quantile = 0.05){
 
   ## grab cell colors ------------------------------------------------------------------------
 
-  p <- DimPlot(sub_seu, reduction = "umap")
-  col_vec <- unique(ggplot_build(p)$data[[1]]) %>%
-    arrange(group) %>%
-    pull(colour) %>%
+  p <- DimPlot(sub_seu, ...)
+  col_vec <- unique(ggplot2::ggplot_build(p)$data[[1]]) %>%
+    dplyr::arrange(group) %>%
+    dplyr::pull(colour) %>%
     unique()
 
   ## format cell colors------------------------------------------------------------------------
@@ -73,12 +74,13 @@ velocyto_assay <- function(seu, loom_path, fit.quantile = 0.05){
 #'
 #' @param seu
 #' @param loom_path
+#' @param ...
 #'
 #' @return
 #' @export
 #'
 #' @examples
-velocyto_seu <- function(seu, loom_path, fit.quantile = 0.05){
+velocyto_seu <- function(seu, loom_path, fit.quantile = 0.05, ...){
   seu <- purrr::map(seu, velocyto_assay, loom_path, fit.quantile = fit.quantile)
   return(seu)
 }
