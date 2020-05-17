@@ -156,7 +156,8 @@ plot_cds <- function(cds, resolution, color_cells_by = "louvain_cluster"){
                                    label_groups_by_cluster = FALSE,
                                    label_leaves = FALSE,
                                    label_branch_points = FALSE,
-                                   color_cells_by = color_cells_by, key = key, cellid = cellid)
+                                   color_cells_by = color_cells_by, key = key, cellid = cellid,
+                         cell_size = 0.75)
     NULL
 
 
@@ -204,7 +205,8 @@ plot_pseudotime <- function(cds, resolution, color_cells_by = "louvain_cluster")
                                    label_groups_by_cluster = FALSE,
                                    label_leaves = FALSE,
                                    label_branch_points = FALSE,
-                                   color_cells_by = color_cells_by) +
+                                   color_cells_by = color_cells_by,
+                                   cell_size = 0.75) +
     # aes(key = key, cellid = cellid) +
     NULL
 

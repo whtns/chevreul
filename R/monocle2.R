@@ -348,7 +348,7 @@ arrange_ptime_heatmaps <- function(cds_list, cds_name) {
 #' @examples
 plot_feature_in_ref_query_ptime <- function(cds_list, features = c("RXRG"), color_by = "State", relative_expr = FALSE, min_expr = 0.5, ...){
   sub_cds_list <- purrr::map(cds_list, ~.x$monocle_cds[features,])
-  feature_plots_in_ptime <- purrr::map(sub_cds_list, ~monocle::plot_genes_in_pseudotime(.x, color_by = color_by, relative_expr = relative_expr, min_expr = min_expr))
+  feature_plots_in_ptime <- purrr::map(sub_cds_list, monocle::plot_genes_in_pseudotime, trend_formula = "~sm.ns(Pseudotime, df=12)", color_by = color_by, relative_expr = relative_expr, min_expr = min_expr)
   refquery_ptime_plot <- cowplot::plot_grid(plotlist = feature_plots_in_ptime, ncol = 2, labels = names(feature_plots_in_ptime))
   plot(refquery_ptime_plot)
 
@@ -505,7 +505,7 @@ calc_pseudotime_heatmap <- function(cds_subset, cluster_rows = TRUE, dend_k = 6,
                                              num_clusters = 6, hmcols = NULL, add_annotation_row = NULL,
                                              add_annotation_col = NULL, show_rownames = FALSE, use_gene_short_name = TRUE,
                                              norm_method = c("log", "vstExprs"), scale_max = 3, scale_min = -3,
-                                             trend_formula = "~sm.ns(Pseudotime, df=3)", return_heatmap = FALSE,
+                                             trend_formula = "~sm.ns(Pseudotime, df=12)", return_heatmap = FALSE,
                                              cores = 1, ...)
 {
 
@@ -515,7 +515,7 @@ calc_pseudotime_heatmap <- function(cds_subset, cluster_rows = TRUE, dend_k = 6,
   pseudocount <- 1
   newdata <- data.frame(Pseudotime = seq(min(Biobase::pData(cds_subset)$Pseudotime),
                                          max(Biobase::pData(cds_subset)$Pseudotime), length.out = 100))
-  m <- genSmoothCurves(cds_subset, cores = cores, trend_formula = trend_formula,
+  m <- monocle::genSmoothCurves(cds_subset, cores = cores, trend_formula = trend_formula,
                        relative_expr = T, new_data = newdata)
   m = m[!apply(m, 1, sum) == 0, ]
   norm_method <- match.arg(norm_method)

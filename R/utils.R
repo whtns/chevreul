@@ -1,4 +1,19 @@
 
+#' Title
+#'
+#' @param datapath
+#' @param header
+#' @param row.names
+#'
+#' @return
+#' @export
+#'
+#' @examples
+format_new_metadata <- function(datapath, header, row.names = 1){
+  new_meta <- read.csv(datapath, header = header, row.names = row.names) %>%
+    dplyr::mutate(across(contains("snn"), as.factor) )
+}
+
 #' Rename cell ids from annoying old notation
 #'
 #' @param cell_ids
