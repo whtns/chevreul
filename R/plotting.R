@@ -259,7 +259,7 @@ plot_multiple_branches_heatmap <- function(cds,
 #' @export
 #'
 #' @examples
-plot_velocity_arrows <- function(seu, velocity, reduction = "umap", cell.colors, plot_format = "arrow", arrow.scale = 3){
+plot_velocity_arrows <- function(seu, velocity, reduction = "umap", cell.colors, plot_format = "grid", arrow.scale = 3){
 
   velocity <- seu@misc$vel
 
@@ -499,29 +499,31 @@ plot_ridge <- function(seu, features){
 #' @examples
 plot_markers <- function(seu, resolution, num_markers = 5, selected_clusters = NULL, ...){
 
+  Idents(seu) <- seu[[resolution]]
+
   markers <- seu@misc$markers[[resolution]] %>%
     dplyr::top_n(n = num_markers, wt = logFC) %>%
     identity()
 
   if(!is.null(selected_clusters)){
+    seu <- seu[,Idents(seu) %in% selected_clusters]
     markers <- markers %>%
       dplyr::filter(group %in% selected_clusters)
   }
 
   markers <- dplyr::pull(markers, feature)
 
-  Idents(seu) <- seu[[resolution]]
-  seu <- seu[,Idents(seu) %in% selected_clusters]
-
-  markerplot <- DotPlot(seu, features = unique(markers), group.by = resolution, dot.scale = 4) +
-    theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
+  markerplot <- DotPlot(seu, features = unique(markers), group.by = resolution, dot.scale = 3) +
+    theme(axis.text.x = element_text(size = 10, angle = 45, vjust = 1, hjust=1),
+          axis.text.y = element_text(size = 10)) +
     scale_y_discrete(position = "right") +
     coord_flip() +
     NULL
 
-  plot_height = (300*num_markers)
+  plot_height = (150*num_markers)
+  plot_width = (50*length(levels(Idents(seu))))
 
-  plotly_plot <- plotly::ggplotly(markerplot, height = plot_height, width = 600) %>%
+  plotly_plot <- plotly::ggplotly(markerplot, height = plot_height, width = plot_width) %>%
     plotly_settings() %>%
     plotly::toWebGL() %>%
     # plotly::partial_bundle() %>%
