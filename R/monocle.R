@@ -615,3 +615,26 @@ plot_cells <- function(cds, x = 1, y = 2, reduction_method = c("UMAP", "tSNE",
   g
 }
 
+#' Title
+#'
+#' @param cds
+#' @param seu_resolution
+#'
+#' @return
+#' @export
+#'
+#' @examples
+monocle_module_heatmap <- function(cds, seu_resolution) {
+
+  gene_module_df <- find_gene_modules(cds, resolution=10^seq(-6,-1))
+
+  cell_group_df <- tibble::tibble(cell=row.names(colData(cds)),
+                                  cell_group=colData(cds)[[seu_resolution]])
+
+  agg_mat <- aggregate_gene_expression(cds, gene_module_df, cell_group_df)
+
+  row.names(agg_mat) <- stringr::str_c("Module ", row.names(agg_mat))
+
+  iheatmap(as.matrix(agg_mat), col_labels = TRUE, row_labels = TRUE)
+
+}

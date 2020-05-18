@@ -583,6 +583,9 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
     observeEvent(input$saveSeurat, {
       req(seu$active)
       req(subSeuratPath())
+
+      save_seu <- shiny::reactiveValuesToList(seu)
+      save_seu <- save_seu[names(save_seu) != "active"]
       shiny::withProgress(
         message = paste0("Saving Data"),
         value = 0,
@@ -590,7 +593,7 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
           Sys.sleep(6)
           shiny::incProgress(2 / 10)
           saveRDS(
-            shiny::reactiveValuesToList(seu),
+            save_seu,
             subSeuratPath()
           )
           shiny::incProgress(10 / 10)
@@ -901,7 +904,7 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
 
       print(loom_path)
 
-      callModule(plotVelocity, "plotvelocity", seu, loom_path, featureType)
+      seu <- callModule(plotVelocity, "plotvelocity", seu, loom_path, featureType)
     })
 
 

@@ -1453,7 +1453,8 @@ plotVelocity <- function(input, output, session, seu, loom_path, featureType){
     if(is.null(seu$active@misc$vel)){
       if(is.null(seu[[featureType()]]@misc$vel)){
         showModal(modalDialog("calculating velocity", footer=NULL))
-        seu$active <- velocyto_assay(seu$active, loom_path)
+        seu[[featureType()]]@misc$vel <- velocyto_assay(seu[[featureType()]], loom_path)
+        seu$active@misc$vel <- seu[[featureType()]]@misc$vel
         removeModal()
       } else if (!is.null(seu[[featureType()]]@misc$vel)) {
         seu$active@misc$vel <- seu[[featureType()]]@misc$vel
@@ -1509,13 +1510,15 @@ plotVelocity <- function(input, output, session, seu, loom_path, featureType){
 
     levels(cell.colors) <- scales::hue_pal()(length(levels(cell.colors)))
 
-    plot_velocity_arrows(seu$active, velocity(), reduction = input$embedding, cell.colors, plot_format = "arrow")
+    plot_velocity_arrows(seu$active, velocity(), reduction = input$embedding, cell.colors)
     removeModal()
   })
 
   output$velocityPlot <- renderPlot({
     velocityPlot()
   })
+
+  return(seu)
 }
 
 
