@@ -618,23 +618,35 @@ plot_cells <- function(cds, x = 1, y = 2, reduction_method = c("UMAP", "tSNE",
 #' Title
 #'
 #' @param cds
+#' @param pr_deg_ids
 #' @param seu_resolution
 #'
 #' @return
 #' @export
 #'
 #' @examples
-monocle_module_heatmap <- function(cds, seu_resolution) {
+monocle_module_heatmap <- function(cds, pr_deg_ids, seu_resolution) {
 
-  gene_module_df <- find_gene_modules(cds, resolution=10^seq(-6,-1))
+  cds <- cds[pr_deg_ids,]
+  gene_module_df <- monocle3::find_gene_modules(cds, resolution=10^seq(-6,-1)) %>%
+    dplyr::arrange(module)
+
+  if (any(grepl("integrated", colnames(cds@colData)))){
+    default_assay = "integrated"
+  } else {
+    default_assay = "RNA"
+  }
+
+  seu_resolution = paste0(default_assay, "_snn_res.", seu_resolution)
 
   cell_group_df <- tibble::tibble(cell=row.names(colData(cds)),
                                   cell_group=colData(cds)[[seu_resolution]])
 
-  agg_mat <- aggregate_gene_expression(cds, gene_module_df, cell_group_df)
+  agg_mat <- monocle3::aggregate_gene_expression(cds, gene_module_df, cell_group_df)
 
   row.names(agg_mat) <- stringr::str_c("Module ", row.names(agg_mat))
 
-  iheatmap(as.matrix(agg_mat), col_labels = TRUE, row_labels = TRUE)
+  module_heatmap <- iheatmapr::iheatmap(as.matrix(agg_mat), col_labels = TRUE, row_labels = TRUE, cluster_rows = "hclust", cluster_cols = "hclust")
 
+  return(list(module_table = gene_module_df, module_heatmap = module_heatmap))
 }

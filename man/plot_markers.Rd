@@ -4,7 +4,14 @@
 \alias{plot_markers}
 \title{Plot Cluster Marker Genes}
 \usage{
-plot_markers(seu, resolution, num_markers = 5, selected_clusters = NULL, ...)
+plot_markers(
+  seu,
+  resolution,
+  num_markers = 5,
+  selected_clusters = NULL,
+  return_plot = FALSE,
+  ...
+)
 }
 \arguments{
 \item{...}{}

@@ -1453,7 +1453,7 @@ plotVelocity <- function(input, output, session, seu, loom_path, featureType){
     if(is.null(seu$active@misc$vel)){
       if(is.null(seu[[featureType()]]@misc$vel)){
         showModal(modalDialog("calculating velocity", footer=NULL))
-        seu[[featureType()]]@misc$vel <- velocyto_assay(seu[[featureType()]], loom_path)
+        seu[[featureType()]] <- velocyto_assay(seu[[featureType()]], loom_path)
         seu$active@misc$vel <- seu[[featureType()]]@misc$vel
         removeModal()
       } else if (!is.null(seu[[featureType()]]@misc$vel)) {
@@ -1518,7 +1518,7 @@ plotVelocity <- function(input, output, session, seu, loom_path, featureType){
     velocityPlot()
   })
 
-  return(seu)
+  return(seu[[featureType()]])
 }
 
 
@@ -1554,6 +1554,14 @@ monocleui <- function(id){
             uiOutput(ns("ptimeGenes")),
             width = 12
             )
+      ),
+      fluidRow(
+        box(
+          iheatmapr::iheatmaprOutput(ns("monocleHeatmap"), width = "600px", height = "600px")
+        ),
+        box(
+          DT::dataTableOutput(ns("moduleTable"))
+        )
       )
       )
 }
@@ -1639,7 +1647,9 @@ monocle <- function(input, output, session, cds, seu, input_type, resolution){
 
       cds_pr_test_res <- cds$diff_genes@metadata$diff_genes
 
-      cds_pr_test_res <- subset(cds_pr_test_res, q_value < 0.05) %>%
+      cds_pr_test_res <-
+        cds_pr_test_res %>%
+        subset(q_value < 0.05) %>%
         dplyr::arrange(q_value)
 
       pr_deg_ids = row.names(cds_pr_test_res)
@@ -1696,7 +1706,7 @@ monocle <- function(input, output, session, cds, seu, input_type, resolution){
       output$ptimeGenesDT <- DT::renderDT({
 
         DT::datatable(cds_pr_test_res, extensions = 'Buttons',
-                      options = list(dom = "Bft", buttons = c("copy", "csv"), scrollX = "100px", scrollY = "800px"))
+                      options = list(dom = "Bft", buttons = c("copy", "csv"), scrollX = "100px", scrollY = "600px"))
 
       })
 
@@ -1710,6 +1720,21 @@ monocle <- function(input, output, session, cds, seu, input_type, resolution){
                 ) %>%
           # shinycssloaders::withSpinner() %>%
           identity()
+      })
+
+      monocle_heatmap <- reactive({
+        monocle_module_heatmap(cds$diff_genes, pr_deg_ids, resolution())
+      })
+
+      output$monocleHeatmap <- iheatmapr::renderIheatmap({
+        monocle_heatmap()$module_heatmap
+      })
+
+      output$moduleTable <- DT::renderDataTable({
+        DT::datatable(monocle_heatmap()$module_table,
+        extensions = "Buttons",
+        options = list(dom = "Bft", buttons = c("copy",
+                                                "csv"), scrollX = "100px", scrollY = "400px"))
       })
 
     })
