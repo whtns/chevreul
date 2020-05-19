@@ -448,7 +448,7 @@ plot_feature <- function(seu, embedding, features, dims = c(1,2), return_plotly 
   dims <- as.numeric(dims)
 
   fp <- Seurat::FeaturePlot(object = seu, features = features, dims = dims, reduction = embedding, pt.size = 1.0, blend = FALSE)	+
-    aes(key = key, cellid = cellid, alpha = 0.3)
+    aes(key = key, cellid = cellid, alpha = 0.7)
 
   if (return_plotly == FALSE) return(fp)
 
@@ -497,7 +497,7 @@ plot_ridge <- function(seu, features){
 #' @export
 #'
 #' @examples
-plot_markers <- function(seu, resolution, num_markers = 5, selected_clusters = NULL, ...){
+plot_markers <- function(seu, resolution, num_markers = 5, selected_clusters = NULL, return_plot = FALSE, ...){
 
   Idents(seu) <- seu[[resolution]]
 
@@ -520,8 +520,10 @@ plot_markers <- function(seu, resolution, num_markers = 5, selected_clusters = N
     coord_flip() +
     NULL
 
+  if (return_plot) return(markerplot)
+
   plot_height = (150*num_markers)
-  plot_width = (50*length(levels(Idents(seu))))
+  plot_width = (100*length(levels(Idents(seu))))
 
   plotly_plot <- plotly::ggplotly(markerplot, height = plot_height, width = plot_width) %>%
     plotly_settings() %>%
