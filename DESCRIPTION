@@ -43,7 +43,6 @@ Imports:
     presto (>= 1.0.0),
     DBI,
     RSQLite,
-    reticulate,
     iheatmapr
 Suggests: 
     dplyr,
