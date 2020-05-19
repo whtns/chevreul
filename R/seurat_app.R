@@ -894,6 +894,7 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
     observe({
       req(uploadSeuratPath())
       req(seu)
+      req(input$feature_type)
 
       proj_path <- stringr::str_replace(uploadSeuratPath(), "output.*", "")
 
@@ -904,7 +905,7 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
 
       print(loom_path)
 
-      seu <- callModule(plotVelocity, "plotvelocity", seu, loom_path, featureType)
+      seu$active <- callModule(plotVelocity, "plotvelocity", seu, loom_path, featureType)
     })
 
 

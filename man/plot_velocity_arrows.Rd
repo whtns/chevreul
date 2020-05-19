@@ -9,7 +9,7 @@ plot_velocity_arrows(
   velocity,
   reduction = "umap",
   cell.colors,
-  plot_format = "arrow",
+  plot_format = "grid",
   arrow.scale = 3
 )
 }
