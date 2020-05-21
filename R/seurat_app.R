@@ -390,23 +390,9 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
       ))
     ), shinydashboard::tabItem(
       tabName = "monocle",
-      h2("Monocle"), fluidRow(
-        box(actionButton(
-          "calcCDS",
-          "Calculate Pseudotime"
-        ), shinyFiles::shinySaveButton("saveCDS",
-          "Save Existing Pseudotime to File", "Save file as...",
-          filetype = list(rds = "rds")
-        ), shinyFiles::shinyFilesButton("loadCDS",
-          "Load Pseudotime from File", "Load Pseudotime File",
-          multiple = FALSE
-        ), sliderInput("cdsResolution",
-          "Resolution of clustering algorithm (affects number of clusters)",
-          min = 0.2, max = 2, step = 0.2, value = 0.6
-        )),
-        fluidRow(box(monocleui("arrow"), width = 12))
+      h2("Monocle"),
+        fluidRow(box(monocleui("monocle"), width = 12))
       )
-    )
   ))
   ui <- function(request) {
     ui <- dashboardPage(
@@ -845,51 +831,9 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
       seu$active <- seu[[input$feature_type]]
       removeModal()
     })
-    cds <- reactiveValues()
-    observeEvent(input$calcCDS, {
-      req(seu$active)
-      cds$traj <- convert_seu_to_cds(seu$active, resolution = input$cdsResolution)
-    })
-    observeEvent(input$calcCDS, {
-      req(cds$traj)
-      cds$traj <- learn_graph_by_resolution(cds$traj,
-        seu$active,
-        resolution = input$cdsResolution
-      )
-    })
-    observe({
-      shinyFiles::shinyFileChoose(input, "loadCDS",
-        roots = dataset_volumes(),
-        session = session
-      )
-    })
-    cdsLoadPath <- eventReactive(input$loadCDS, {
-      file <- shinyFiles::parseFilePaths(
-        dataset_volumes(),
-        input$loadCDS
-      )
-      file$datapath
-    })
-    observeEvent(input$loadCDS, {
-      req(cdsLoadPath())
-      shiny::withProgress(
-        message = paste0("Uploading Data"),
-        value = 0,
-        {
-          Sys.sleep(6)
-          shiny::incProgress(2 / 10)
-          dataset <- readRDS(cdsLoadPath())
-          shiny::incProgress(10 / 10)
-          for (i in names(dataset)) {
-            cds[[i]] <- dataset[[i]]
-          }
-        }
-      )
-    })
 
-    callModule(monocle, "arrow", cds, seu, featureType,
-      resolution = reactive(input$cdsResolution)
-    )
+
+    callModule(monocle, "monocle", seu, plot_types)
 
     observe({
       req(uploadSeuratPath())

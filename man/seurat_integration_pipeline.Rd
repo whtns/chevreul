@@ -4,7 +4,14 @@
 \alias{seurat_integration_pipeline}
 \title{Run Seurat Integration}
 \usage{
-seurat_integration_pipeline(seus, feature, resolution, suffix = "", ...)
+seurat_integration_pipeline(
+  seus,
+  feature,
+  resolution,
+  suffix = "",
+  algorithm = 1,
+  ...
+)
 }
 \arguments{
 \item{feature}{}

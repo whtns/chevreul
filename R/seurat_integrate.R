@@ -88,7 +88,7 @@ seurat_integrate <- function(seu_list, method = "cca", ...) {
 #' @export
 #'
 #' @examples
-seurat_cluster <- function(seu = seu, resolution = 0.6, custom_clust = NULL, reduction = "pca", ...){
+seurat_cluster <- function(seu = seu, resolution = 0.6, custom_clust = NULL, reduction = "pca", algorithm = 1, ...){
   # browser()
 
   seu <- FindNeighbors(object = seu, dims = 1:10, reduction = reduction)
@@ -97,11 +97,11 @@ seurat_cluster <- function(seu = seu, resolution = 0.6, custom_clust = NULL, red
     for (i in resolution){
       # browser()
       message(paste0("clustering at ", i, " resolution"))
-      seu <- Seurat::FindClusters(object = seu, resolution = i, algorithm = 1, ...)
+      seu <- Seurat::FindClusters(object = seu, resolution = i, algorithm = algorithm, ...)
     }
   } else if (length(resolution) == 1){
     message(paste0("clustering at ", resolution, " resolution"))
-    seu <- Seurat::FindClusters(object = seu, resolution = resolution, algorithm = 1, ...)
+    seu <- Seurat::FindClusters(object = seu, resolution = resolution, ...)
   }
 
   if (!is.null(custom_clust)){
@@ -185,12 +185,12 @@ load_seurat_from_proj <- function(proj_dir, ...){
 #'
 #'
 #' @examples
-seurat_integration_pipeline <- function(seus, feature, resolution, suffix = '', ...) {
+seurat_integration_pipeline <- function(seus, feature, resolution, suffix = '', algorithm = 1, ...) {
 
   corrected_seu <- seurat_integrate(seus, ...)
 
   # cluster merged seurat objects
-  corrected_seu <- seurat_cluster(corrected_seu, resolution = resolution, ...)
+  corrected_seu <- seurat_cluster(corrected_seu, resolution = resolution, algorithm = algorithm, ...)
 
   corrected_seu <- find_all_markers(corrected_seu)
 
@@ -358,13 +358,13 @@ filter_merged_seu <- function(seu, filter_var, filter_val, .drop = .drop) {
 #' @export
 #'
 #' @examples
-reintegrate_seu <- function(seu, feature = "gene", suffix = "", reduction = "pca", ...){
+reintegrate_seu <- function(seu, feature = "gene", suffix = "", reduction = "pca", algorithm = 1, ...){
 
   DefaultAssay(seu) <- "RNA"
 
   seu <- Seurat::DietSeurat(seu, counts = TRUE, data = TRUE, scale.data = FALSE)
   seus <- Seurat::SplitObject(seu, split.by = "batch")
-  seu <- seurat_integration_pipeline(seus, feature = feature, suffix = suffix, ...)
+  seu <- seurat_integration_pipeline(seus, feature = feature, suffix = suffix, algorithm = algorithm, ...)
 
 
 }
