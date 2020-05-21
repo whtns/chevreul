@@ -1536,15 +1536,21 @@ monocleui <- function(id){
       fluidRow(
         box(
           # sliderInput(ns("resolution"), "Resolution of clustering algorithm (affects number of clusters)", min = 0.2, max = 2, step = 0.2, value = 0.6),
+          actionButton(ns("calcCDS"), "Calculate Pseudotime"),
+          sliderInput(ns("cdsResolution"), "Resolution of clustering algorithm (affects number of clusters)",
+                      min = 0.2, max = 2, step = 0.2, value = 0.6),
+          selectizeInput(ns("plottype"), "Variable to Plot", choices = c(Seurat = "seurat"), selected = "Seurat", multiple = TRUE),
+          selectizeInput(ns("customFeature"), "gene or transcript on which to color the plot; eg. 'RXRG' or 'ENST00000488147'",
+                         choices = NULL, multiple = FALSE),
+          selectizeInput(ns("plotModule"), "gene module to plot (if computed)", choices = NULL, multiple = TRUE),
           actionButton(ns("subsetCells"), "subset cells"),
-          shinycssloaders::withSpinner(plotly::plotlyOutput(ns("monoclePlot"))),
-          width = 6
+          width = 4
         ),
         box(
           uiOutput(ns("rootCellsui")),
           actionButton(ns("plotPseudotime"), "Calculate Pseudotime With Root Cells"),
-          plotly::plotlyOutput(ns("ptimePlot")),
-          width = 6
+          plotly::plotlyOutput(ns("monoclePlot")),
+          width = 8
         )
       ),
       fluidRow(
@@ -1573,19 +1579,58 @@ monocleui <- function(id){
 #' @param session
 #' @param cds
 #' @param seu
-#' @param input_type
+#' @param plot_types
 #' @param resolution
 #'
 #' @return
 #' @export
 #'
 #' @examples
-monocle <- function(input, output, session, cds, seu, input_type, resolution){
+#'
+#'
+#'
+monocle <- function(input, output, session, seu, plot_types){
     ns <- session$ns
 
+    cds <- reactiveValues(selected = "traj")
+    cds_plot_types <- reactiveVal(c(Pseudotime = "pseudotime", Module = "module"))
+    myplot_types <- reactive({
+      c(purrr::flatten_chr(plot_types()), cds_plot_types())
+    })
+
+    observeEvent(input$calcCDS, {
+      req(seu$active)
+      cds$traj <- convert_seu_to_cds(seu$active, resolution = input$cdsResolution)
+      cds$traj <- learn_graph_by_resolution(cds$traj,
+                                            seu$active,
+                                            resolution = input$cdsResolution)
+      updateSelectizeInput(session, "plottype", selected = "seurat", choices = myplot_types())
+      updateSelectizeInput(session, "customFeature", choices = rownames(cds$traj), server = TRUE)
+    })
+
+    selected_plot <- reactiveVal()
+
     output$monoclePlot <- plotly::renderPlotly({
+      req(input$plottype)
       req(cds$traj)
-      plot_cds(cds$traj, resolution = resolution())
+      print(cds$selected)
+      if (input$plottype == "seurat") {
+        cluster_resolution = reactive({
+          paste0("integrated", "_snn_res.", input$cdsResolution)
+        })
+        plot_cds(cds$traj, color_cells_by = cluster_resolution())
+      } else if (input$plottype == "pseudotime"){
+        plot_pseudotime(cds$traj, color_cells_by = "pseudotime", resolution = input$cdsResolution)
+      } else if (input$plottype == "custom") {
+        plot_monocle_features(cds$traj, genes = input$customFeature, monocle_heatmap()$agg_mat)
+      } else if (input$plottype == "module") {
+        print(monocle_heatmap()$module_table)
+        print(input$plotModule)
+        genes = monocle_heatmap()$module_table %>% filter(module %in% input$plotModule)
+        plot_monocle_features(cds$traj, genes = genes, monocle_heatmap()$agg_mat)
+      } else {
+        plot_cds(cds$traj, color_cells_by = input$plottype)
+      }
     })
 
     brush <- reactive({
@@ -1614,80 +1659,80 @@ monocle <- function(input, output, session, cds, seu, input_type, resolution){
     })
 
     observeEvent(input$plotPseudotime, {
-
       req(cds$traj)
-      cds$ptime <- monocle3::order_cells(cds$traj, root_cells = input$rootCells)
-      # plot_pseudotime(cds$ptime, color_cells_by = "pseudotime", resolution = input$resolution)
-
+      cds$traj <- monocle3::order_cells(cds$traj, root_cells = input$rootCells)
+      updateSelectizeInput(session, "plottype", selected = "seurat", choices = myplot_types())
+      cds$selected = "ptime"
     })
 
-    output$ptimePlot <- plotly::renderPlotly({
-      req(cds$ptime)
-      plot_pseudotime(cds$ptime, color_cells_by = "pseudotime", resolution = resolution())
-
-    })
+    # output$ptimePlot <- plotly::renderPlotly({
+    #   req(cds$ptime)
+    #   plot_pseudotime(cds$traj, color_cells_by = "pseudotime", resolution = resolution())
+    #
+    # })
 
     observeEvent(input$calcPtimeGenes, {
-      req(cds$ptime)
-      showModal(modalDialog(
-        title = "Calculating features that vary over pseudotime",
-        "This process may take a minute or two!"
-      ))
+      if (req(cds$selected) == "ptime"){
+        showModal(modalDialog(
+          title = "Calculating features that vary over pseudotime",
+          "This process may take a minute or two!"
+        ))
 
-      cds_pr_test_res = monocle3::graph_test(cds$ptime, neighbor_graph="principal_graph", cores=4)
-      removeModal()
+        cds_pr_test_res = monocle3::graph_test(cds$traj, neighbor_graph="principal_graph", cores=4)
+        removeModal()
 
-      cds$ptime@metadata[["diff_genes"]] <- cds_pr_test_res
-      cds$diff_genes <- cds$ptime
+        cds$traj@metadata[["diff_genes"]] <- cds_pr_test_res
+        cds$selected = "diff_genes"
 
+      }
+    })
+    cds_pr_test_res <- reactive({
+      if (req(cds$selected) == "diff_genes"){
+        cds_pr_test_res <- cds$traj@metadata$diff_genes
+
+        cds_pr_test_res <-
+          cds_pr_test_res %>%
+          subset(q_value < 0.05) %>%
+          dplyr::arrange(q_value)
+
+      }
     })
 
     observe({
-      req(cds$diff_genes)
-
-      cds_pr_test_res <- cds$diff_genes@metadata$diff_genes
-
-      cds_pr_test_res <-
-        cds_pr_test_res %>%
-        subset(q_value < 0.05) %>%
-        dplyr::arrange(q_value)
-
-      pr_deg_ids = row.names(cds_pr_test_res)
+      if (req(cds$selected) == "diff_genes"){
 
       # pr_deg_ids = row.names(subset(cds_pr_test_res, q_value < 0.05))
 
       output$genePlotQuery2 <- renderUI({
-        selectizeInput(ns("genePlotQuery1"), "Pick Gene to Plot on Pseudotime", choices = pr_deg_ids, multiple = TRUE, selected = pr_deg_ids[1])
+        selectizeInput(ns("genePlotQuery1"), "Pick Gene to Plot on Pseudotime", choices = rownames(cds_pr_test_res()), multiple = TRUE, selected = rownames(cds_pr_test_res())[1])
       })
 
-      output$ptimeGenesRedPlot <- plotly::renderPlotly({
-
-        gene_ptime_plot <- monocle3::plot_cells(cds$ptime, genes=input$genePlotQuery1,
-                                                show_trajectory_graph=FALSE,
-                                                label_cell_groups=FALSE,
-                                                label_leaves=FALSE,
-                                                cell_size = 0.75)
-
-        gene_ptime_plot <-
-          gene_ptime_plot %>%
-          plotly::ggplotly(height = 400) %>%
-          plotly_settings() %>%
-          plotly::toWebGL() %>%
-          # plotly::partial_bundle() %>%
-          identity()
-
-
-      })
-
-      available_partitions <- levels(monocle3::partitions(cds$ptime))
+      # output$ptimeGenesRedPlot <- plotly::renderPlotly({
+      #
+      #   gene_ptime_plot <- monocle3::plot_cells(cds$traj, genes=input$genePlotQuery1,
+      #                                           show_trajectory_graph=FALSE,
+      #                                           label_cell_groups=FALSE,
+      #                                           label_leaves=FALSE,
+      #                                           cell_size = 0.75)
+      #
+      #   gene_ptime_plot <-
+      #     gene_ptime_plot %>%
+      #     plotly::ggplotly(height = 400) %>%
+      #     plotly_settings() %>%
+      #     plotly::toWebGL() %>%
+      #     # plotly::partial_bundle() %>%
+      #     identity()
+      #
+      #
+      # })
 
       output$partitionSelect <- renderUI({
-        selectizeInput(ns("partitions"), "Select a Partition to Plot", choices = available_partitions, multiple = FALSE, selected = available_partitions[1])
+        selectizeInput(ns("partitions"), "Select a Partition to Plot", choices = levels(monocle3::partitions(cds$traj)), multiple = FALSE)
       })
 
       output$ptimeGenesLinePlot <- plotly::renderPlotly({
 
-        genes_in_pseudotime <- prep_plot_genes_in_pseudotime(cds$ptime, input$genePlotQuery1, resolution())
+        genes_in_pseudotime <- prep_plot_genes_in_pseudotime(cds$traj, input$genePlotQuery1, input$cdsResolution)
 
         genes_in_pseudotime <-
           genes_in_pseudotime %>%
@@ -1705,39 +1750,54 @@ monocle <- function(input, output, session, cds, seu, input_type, resolution){
 
       output$ptimeGenesDT <- DT::renderDT({
 
-        DT::datatable(cds_pr_test_res, extensions = 'Buttons',
+        DT::datatable(cds_pr_test_res(), extensions = 'Buttons',
                       options = list(dom = "Bft", buttons = c("copy", "csv"), scrollX = "100px", scrollY = "600px"))
 
       })
 
       output$ptimeGenes <- renderUI({
         tagList(
-          box(plotly::plotlyOutput(ns("ptimeGenesRedPlot")),
+          box(DT::DTOutput(ns("ptimeGenesDT")),
               width = 6),
           box(plotly::plotlyOutput(ns("ptimeGenesLinePlot")),
-              width = 6),
-          DT::DTOutput(ns("ptimeGenesDT"))
-                ) %>%
-          # shinycssloaders::withSpinner() %>%
-          identity()
+              width = 6)
+                )
       })
-
-      monocle_heatmap <- reactive({
-        monocle_module_heatmap(cds$diff_genes, pr_deg_ids, resolution())
-      })
-
-      output$monocleHeatmap <- iheatmapr::renderIheatmap({
-        monocle_heatmap()$module_heatmap
-      })
-
-      output$moduleTable <- DT::renderDataTable({
-        DT::datatable(monocle_heatmap()$module_table,
-        extensions = "Buttons",
-        options = list(dom = "Bft", buttons = c("copy",
-                                                "csv"), scrollX = "100px", scrollY = "400px"))
-      })
-
+      }
     })
 
+      monocle_heatmap <- reactive({
+        req(cds$traj)
+        req(cds_pr_test_res())
+        monocle_module_heatmap(cds$traj, rownames(cds_pr_test_res()), input$cdsResolution)
+      })
+
+      module_choices <- reactive({
+        module_choices <- as.character(unique(monocle_heatmap()$module_table$module))
+        # names(module_choices) <- paste("Module", module_choices)
+      })
+
+      observe({
+        updateSelectizeInput(session, "plotModule", choices = module_choices())
+
+        output$monocleHeatmap <- iheatmapr::renderIheatmap({
+          monocle_heatmap()$module_heatmap
+        })
+
+        output$moduleTable <- DT::renderDataTable({
+          DT::datatable(monocle_heatmap()$module_table,
+                        extensions = "Buttons",
+                        options = list(dom = "Bft", buttons = c("copy",
+                                                                "csv"), scrollX = "100px", scrollY = "400px"))
+        })
+
+      })
+
 }
+
+# output$monoclePlot <- plotly::renderPlotly({
+#   req(cds$traj)
+#   req(seu$active)
+#   callModule(plotDimRedMonocle, "plotDimRedMonocle", cds$traj, resolution = resolution())
+# })
 

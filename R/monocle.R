@@ -125,14 +125,13 @@ learn_graph_by_resolution <- function(cds, seu, resolution = 1){
 #' Plot a Monocle Cell Data Set
 #'
 #' @param cds
-#' @param resolution
 #' @param color_cells_by
 #'
 #' @return
 #' @export
 #'
 #' @examples
-plot_cds <- function(cds, resolution, color_cells_by = "louvain_cluster"){
+plot_cds <- function(cds, color_cells_by = NULL, genes = NULL){
 
   key <- seq(1, length(colnames(cds)))
   cellid <- colnames(cds)
@@ -146,12 +145,13 @@ plot_cds <- function(cds, resolution, color_cells_by = "louvain_cluster"){
     default_assay = "RNA"
   }
 
-  if (color_cells_by == "louvain_cluster"){
-    color_cells_by = paste0(default_assay, "_snn_res.", resolution)
-  }
+  # if (color_cells_by == "louvain_cluster"){
+  #   color_cells_by = paste0(default_assay, "_snn_res.", resolution)
+  # }
 
 
   cds_plot <- plot_cells(cds,
+                         genes = genes,
                                    label_cell_groups = FALSE,
                                    label_groups_by_cluster = FALSE,
                                    label_leaves = FALSE,
@@ -169,7 +169,6 @@ plot_cds <- function(cds, resolution, color_cells_by = "louvain_cluster"){
     # plotly::partial_bundle() %>%
     identity()
 
-
 }
 
 #' Plot a Monocle Cell Data Set
@@ -182,7 +181,7 @@ plot_cds <- function(cds, resolution, color_cells_by = "louvain_cluster"){
 #' @export
 #'
 #' @examples
-plot_pseudotime <- function(cds, resolution, color_cells_by = "louvain_cluster"){
+plot_pseudotime <- function(cds, resolution, color_cells_by = NULL, genes = NULL){
 
   key <- seq(1, length(colnames(cds)))
   cellid <- colnames(cds)
@@ -196,11 +195,9 @@ plot_pseudotime <- function(cds, resolution, color_cells_by = "louvain_cluster")
     default_assay = "RNA"
   }
 
-  if (color_cells_by == "louvain_cluster"){
-    color_cells_by = paste0(default_assay, "_snn_res.", resolution)
-  }
 
   cds_plot <- monocle3::plot_cells(cds,
+                                   genes = genes,
                                    label_cell_groups = FALSE,
                                    label_groups_by_cluster = FALSE,
                                    label_leaves = FALSE,
@@ -209,7 +206,6 @@ plot_pseudotime <- function(cds, resolution, color_cells_by = "louvain_cluster")
                                    cell_size = 0.75) +
     # aes(key = key, cellid = cellid) +
     NULL
-
 
   cds_plot <-
     cds_plot %>%
@@ -220,6 +216,52 @@ plot_pseudotime <- function(cds, resolution, color_cells_by = "louvain_cluster")
     # plotly::partial_bundle() %>%
     identity()
 
+  # print(cds_plot)
+
+}
+
+#' Plot a Monocle Cell Data Set
+#'
+#' @param cds
+#' @param resolution
+#'
+#' @return
+#' @export
+#'
+#' @examples
+plot_monocle_features <- function(cds, resolution, genes = NULL, ...){
+
+  key <- seq(1, length(colnames(cds)))
+  cellid <- colnames(cds)
+
+  cds[['key']] = key
+  cds[['cellid']] = cellid
+
+  if (any(grepl("integrated", colnames(cds@colData)))){
+    default_assay = "integrated"
+  } else {
+    default_assay = "RNA"
+  }
+
+
+  cds_plot <- monocle3::plot_cells(cds,
+                                   genes = genes,
+                                   label_cell_groups = FALSE,
+                                   label_groups_by_cluster = FALSE,
+                                   label_leaves = FALSE,
+                                   label_branch_points = FALSE,
+                                   cell_size = 0.75) +
+    # aes(key = key, cellid = cellid) +
+    NULL
+
+  cds_plot <-
+    cds_plot %>%
+    plotly::ggplotly(height = 400) %>%
+    plotly::ggplotly(height = 400) %>%
+    plotly_settings() %>%
+    plotly::toWebGL() %>%
+    # plotly::partial_bundle() %>%
+    identity()
 
   # print(cds_plot)
 
@@ -648,5 +690,5 @@ monocle_module_heatmap <- function(cds, pr_deg_ids, seu_resolution) {
 
   module_heatmap <- iheatmapr::iheatmap(as.matrix(agg_mat), col_labels = TRUE, row_labels = TRUE, cluster_rows = "hclust", cluster_cols = "hclust")
 
-  return(list(module_table = gene_module_df, module_heatmap = module_heatmap))
+  return(list(module_table = gene_module_df, module_heatmap = module_heatmap, agg_mat = agg_mat))
 }

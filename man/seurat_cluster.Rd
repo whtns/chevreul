@@ -9,6 +9,7 @@ seurat_cluster(
   resolution = 0.6,
   custom_clust = NULL,
   reduction = "pca",
+  algorithm = 1,
   ...
 )
 }
