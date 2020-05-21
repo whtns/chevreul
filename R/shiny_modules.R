@@ -1540,9 +1540,9 @@ monocleui <- function(id){
           sliderInput(ns("cdsResolution"), "Resolution of clustering algorithm (affects number of clusters)",
                       min = 0.2, max = 2, step = 0.2, value = 0.6),
           selectizeInput(ns("plottype"), "Variable to Plot", choices = c(Seurat = "seurat"), selected = "Seurat", multiple = TRUE),
-          selectizeInput(ns("customFeature"), "gene or transcript on which to color the plot; eg. 'RXRG' or 'ENST00000488147'",
+          selectizeInput(ns("customFeature"), "gene or transcript on which to color the plot",
                          choices = NULL, multiple = FALSE),
-          selectizeInput(ns("plotModule"), "gene module to plot (if computed)", choices = NULL, multiple = TRUE),
+          uiOutput(ns("moduleSelect")),
           actionButton(ns("subsetCells"), "subset cells"),
           width = 4
         ),
@@ -1566,7 +1566,7 @@ monocleui <- function(id){
           iheatmapr::iheatmaprOutput(ns("monocleHeatmap"), width = "600px", height = "600px")
         ),
         box(
-          DT::dataTableOutput(ns("moduleTable"))
+          div(DT::dataTableOutput(ns("moduleTable")), style = "font-size: 75%")
         )
       )
       )
@@ -1626,7 +1626,12 @@ monocle <- function(input, output, session, seu, plot_types){
       } else if (input$plottype == "module") {
         print(monocle_heatmap()$module_table)
         print(input$plotModule)
-        genes = monocle_heatmap()$module_table %>% filter(module %in% input$plotModule)
+        if(length(input$plotModule) == 1){
+
+        }
+        genes = monocle_heatmap()$module_table %>%
+          filter(module %in% input$plotModule) %>%
+          dplyr::mutate(module = factor(module))
         plot_monocle_features(cds$traj, genes = genes, monocle_heatmap()$agg_mat)
       } else {
         plot_cds(cds$traj, color_cells_by = input$plottype)
@@ -1661,7 +1666,7 @@ monocle <- function(input, output, session, seu, plot_types){
     observeEvent(input$plotPseudotime, {
       req(cds$traj)
       cds$traj <- monocle3::order_cells(cds$traj, root_cells = input$rootCells)
-      updateSelectizeInput(session, "plottype", selected = "seurat", choices = myplot_types())
+      updateSelectizeInput(session, "plottype", selected = "pseudotime", choices = myplot_types())
       cds$selected = "ptime"
     })
 
@@ -1693,7 +1698,8 @@ monocle <- function(input, output, session, seu, plot_types){
         cds_pr_test_res <-
           cds_pr_test_res %>%
           subset(q_value < 0.05) %>%
-          dplyr::arrange(q_value)
+          dplyr::arrange(q_value) %>%
+          dplyr::select(-status)
 
       }
     })
@@ -1751,16 +1757,17 @@ monocle <- function(input, output, session, seu, plot_types){
       output$ptimeGenesDT <- DT::renderDT({
 
         DT::datatable(cds_pr_test_res(), extensions = 'Buttons',
-                      options = list(dom = "Bft", buttons = c("copy", "csv"), scrollX = "100px", scrollY = "600px"))
+                      options = list(dom = "Bft", buttons = c("copy", "csv"), scrollX = "100px", scrollY = "400px"))
 
       })
 
       output$ptimeGenes <- renderUI({
         tagList(
-          box(DT::DTOutput(ns("ptimeGenesDT")),
-              width = 6),
+          box(
+            div(DT::DTOutput(ns("ptimeGenesDT")), style = "font-size: 75%; width: 75%"),
+              width = 4),
           box(plotly::plotlyOutput(ns("ptimeGenesLinePlot")),
-              width = 6)
+              width = 8)
                 )
       })
       }
@@ -1777,8 +1784,11 @@ monocle <- function(input, output, session, seu, plot_types){
         # names(module_choices) <- paste("Module", module_choices)
       })
 
+      output$moduleSelect <- renderUI({
+        selectizeInput(ns("plotModule"), "gene module to plot (if computed)", choices = module_choices(), multiple = TRUE)
+      })
+
       observe({
-        updateSelectizeInput(session, "plotModule", choices = module_choices())
 
         output$monocleHeatmap <- iheatmapr::renderIheatmap({
           monocle_heatmap()$module_heatmap

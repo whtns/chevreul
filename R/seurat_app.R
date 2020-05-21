@@ -228,12 +228,12 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
   sidebar <- shinydashboard::dashboardSidebar(uiOutput("projInput"),
     actionButton("loadProject", "Load Selected Project"),
     shinyFiles::shinyDirButton(
-      "deleteProject", "Delete an Integrated Project or Dataset",
+      "deleteProject", "Delete an Integrated Project",
       "Please select a file or directory to delete"
     ),
-    textOutput("appTitle"), uiOutput("featureType"), shinyWidgets::prettyRadioButtons("organism_type",
-      "Organism",
-      choices = c("human", "mouse"), selected = organism_type
+    textOutput("appTitle"), uiOutput("featureType"),
+    shinyWidgets::prettyRadioButtons("organism_type", inline = TRUE,
+      "Organism", choices = c("human", "mouse"), selected = organism_type
     ),
     shinyFiles::shinyFilesButton("seuratUpload", "Load a Seurat Dataset",
       "Please select a .rds file",
@@ -273,7 +273,7 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
     ), shinydashboard::menuItem("Regress Features",
       tabName = "regressFeatures"
     )),
-    width = 450
+    width = 250
   )
   body <- shinydashboard::dashboardBody(shinydashboard::tabItems(
     shinydashboard::tabItem(
@@ -543,7 +543,7 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
       shinyWidgets::prettyRadioButtons("feature_type",
         "Feature for Display",
         choices = seu_names,
-        selected = "gene", inline = T
+        selected = "gene", inline = TRUE
       )
     })
     observeEvent(input$feature_type, {

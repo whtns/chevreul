@@ -244,7 +244,7 @@ plot_monocle_features <- function(cds, resolution, genes = NULL, ...){
   }
 
 
-  cds_plot <- monocle3::plot_cells(cds,
+  cds_plot <- plot_cells(cds,
                                    genes = genes,
                                    label_cell_groups = FALSE,
                                    label_groups_by_cluster = FALSE,
@@ -438,13 +438,15 @@ plot_cells <- function(cds, x = 1, y = 2, reduction_method = c("UMAP", "tSNE",
     if (nrow(markers_rowData) >= 1) {
       cds_exprs <- SingleCellExperiment::counts(cds)[row.names(markers_rowData),
                                                      , drop = FALSE]
-      cds_exprs <- Matrix::t(Matrix::t(cds_exprs)/size_factors(cds))
+      cds_exprs <- Matrix::t(Matrix::t(cds_exprs)/monocle3::size_factors(cds))
       if (!is.null(dim(genes)) && dim(genes) >= 2) {
         genes = as.data.frame(genes)
         row.names(genes) = genes[, 1]
         genes = genes[row.names(cds_exprs), ]
-        agg_mat = as.matrix(aggregate_gene_expression(cds,
+        agg_mat = as.matrix(monocle3::aggregate_gene_expression(cds,
                                                       genes, norm_method = norm_method, scale_agg_values = FALSE))
+        if(dim(agg_mat)[2] == 1) agg_mat <- t(agg_mat)
+
         markers_exprs = agg_mat
         markers_exprs <- reshape2::melt(markers_exprs)
         colnames(markers_exprs)[1:2] <- c("feature_id",
