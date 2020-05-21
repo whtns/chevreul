@@ -4,7 +4,7 @@
 \alias{monocle}
 \title{Title}
 \usage{
-monocle(input, output, session, cds, seu, input_type, resolution)
+monocle(input, output, session, seu, plot_types)
 }
 \arguments{
 \item{resolution}{}
@@ -14,4 +14,9 @@ monocle(input, output, session, cds, seu, input_type, resolution)
 }
 \description{
 Title
+}
+\examples{
+
+
+
 }

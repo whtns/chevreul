@@ -4,7 +4,7 @@
 \alias{plot_pseudotime}
 \title{Plot a Monocle Cell Data Set}
 \usage{
-plot_pseudotime(cds, resolution, color_cells_by = "louvain_cluster")
+plot_pseudotime(cds, resolution, color_cells_by = NULL, genes = NULL)
 }
 \arguments{
 \item{color_cells_by}{}
