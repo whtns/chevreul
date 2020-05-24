@@ -25,7 +25,7 @@ regress_by_features <- function(seu, feature_set, set_name, regress = TRUE, ...)
 
   seu <- AddModuleScore(seu, feature_set, name = set_name, ctrl = ctrl)
 
-  if (any(grepl("integrated", names(seu[[]])))){
+  if ("integrated" %in% names(seu@assays)) {
     default_assay = "integrated"
   } else {
     default_assay = "RNA"
