@@ -40,7 +40,7 @@ seurat_preprocess <- function(seu, scale=TRUE, normalize = TRUE, ...){
 find_all_markers <- function(seu, ...){
   # browser()
 
-  if (any(grepl("integrated", colnames(seu[[]])))){
+  if ("integrated" %in% names(seu@assays)) {
     default_assay = "integrated"
   } else {
     default_assay = "RNA"

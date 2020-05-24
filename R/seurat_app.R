@@ -610,20 +610,18 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
     })
     seu <- callModule(reformatMetadata, "reformatmetadata", seu)
 
+    reductions <- reactive({
+      # names(seu$active@reductions)
+      c("pca", "tsne", "umap")
+    })
+
     observe({
       req(seu$active)
-
-      reductions <- reactive({
-        # names(seu$active@reductions)
-        c("pca", "tsne", "umap")
-      })
 
       callModule(plotDimRed, "plotdimred1", seu, plot_types, featureType,
                  organism_type = organism_type, reductions)
       callModule(plotDimRed, "plotdimred2", seu, plot_types, featureType,
                  organism_type = organism_type, reductions)
-      # callModule(plotDimRed, "plotdimred", seu, plot_types, featureType,
-      #            organism_type = organism_type, reductions)
       callModule(plotDimRed, "diffex", seu, plot_types, featureType,
                  organism_type = organism_type, reductions)
       callModule(plotDimRed, "subset", seu, plot_types, featureType,
@@ -832,8 +830,12 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
       removeModal()
     })
 
+    observe({
+      req(reductions())
+      callModule(monocle, "monocle", seu, plot_types, featureType,
+                 organism_type, reductions)
+    })
 
-    callModule(monocle, "monocle", seu, plot_types)
 
     observe({
       req(uploadSeuratPath())

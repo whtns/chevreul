@@ -363,8 +363,8 @@ plotly_settings <- function(plotly_plot){
       toImageButtonOptions = list(
         format = "png",
         filename = "myplot",
-        width = 600,
-        height = 700
+        width = 500,
+        height = 450
       )) %>%
     identity()
 }
@@ -408,7 +408,7 @@ plot_violin <- function(seu, plot_var = "batch", plot_vals = NULL, features = "R
 #' @examples
 plot_heatmap <- function(seu, features = "RXRG", ...){
 
-  if (any(grepl("integrated", names(seu[[]])))){
+  if ("integrated" %in% names(seu@assays)) {
     default_assay = "integrated"
   } else {
     default_assay = "RNA"
