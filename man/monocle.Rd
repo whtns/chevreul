@@ -4,7 +4,16 @@
 \alias{monocle}
 \title{Title}
 \usage{
-monocle(input, output, session, seu, plot_types)
+monocle(
+  input,
+  output,
+  session,
+  seu,
+  plot_types,
+  featureType,
+  organism_type,
+  reductions
+)
 }
 \arguments{
 \item{resolution}{}

@@ -13,7 +13,7 @@ convert_seu_to_cds <- function(seu, resolution = 1) {
   # part two, counts sparse matrix
 
 
-  if (any(grepl("integrated", names(seu[[]])))){
+  if ("integrated" %in% names(seu@assays)) {
     default_assay = "integrated"
   } else {
     default_assay = "RNA"
@@ -663,17 +663,15 @@ plot_cells <- function(cds, x = 1, y = 2, reduction_method = c("UMAP", "tSNE",
 #'
 #' @param cds
 #' @param pr_deg_ids
+#' @param collapse_rows
+#' @param collapse_cols
 #' @param seu_resolution
 #'
 #' @return
 #' @export
 #'
 #' @examples
-monocle_module_heatmap <- function(cds, pr_deg_ids, seu_resolution) {
-
-  cds <- cds[pr_deg_ids,]
-  gene_module_df <- monocle3::find_gene_modules(cds, resolution=10^seq(-6,-1)) %>%
-    dplyr::arrange(module)
+monocle_module_heatmap <- function(cds, pr_deg_ids, seu_resolution, collapse_rows = TRUE, collapse_cols = TRUE) {
 
   if (any(grepl("integrated", colnames(cds@colData)))){
     default_assay = "integrated"
@@ -683,14 +681,41 @@ monocle_module_heatmap <- function(cds, pr_deg_ids, seu_resolution) {
 
   seu_resolution = paste0(default_assay, "_snn_res.", seu_resolution)
 
+  cds <- cds[pr_deg_ids,]
+  gene_module_df <- monocle3::find_gene_modules(cds, resolution=10^seq(-6,-1)) %>%
+    dplyr::arrange(module)
+
+  if(collapse_rows != TRUE){
+    gene_module_df <-
+      dplyr::select(gene_module_df, id) %>%
+      dplyr::mutate(module = id)
+  }
+
   cell_group_df <- tibble::tibble(cell=row.names(colData(cds)),
                                   cell_group=colData(cds)[[seu_resolution]])
 
+  if (collapse_cols != TRUE){
+    cell_group_df <- dplyr::mutate(cell_group_df, cell_group = cell)
+  }
+
   agg_mat <- monocle3::aggregate_gene_expression(cds, gene_module_df, cell_group_df)
 
-  row.names(agg_mat) <- stringr::str_c("Module ", row.names(agg_mat))
+  if (dim(agg_mat)[2] > 20){
+    col_order <- sort(monocle3::pseudotime(cds))
+    agg_mat <- agg_mat[,names(col_order)]
 
-  module_heatmap <- iheatmapr::iheatmap(as.matrix(agg_mat), col_labels = TRUE, row_labels = TRUE, cluster_rows = "hclust", cluster_cols = "hclust")
+    module_heatmap <- iheatmapr::iheatmap(as.matrix(agg_mat), col_labels = TRUE, row_labels = TRUE, cluster_rows = "hclust", cluster_cols = NULL) %>%
+      # add_col_annotation(data.frame("Groups" = patient_groups)) %>%
+      add_col_plot(y = col_order,
+                   tracename = "pseudotime",
+                   layout = list(title = "Pseudotime")) %>%
+      identity()
+
+  } else {
+    module_heatmap <- iheatmapr::iheatmap(as.matrix(agg_mat), col_labels = TRUE, row_labels = TRUE, cluster_rows = "hclust", cluster_cols = "hclust")
+  }
+
+
 
   return(list(module_table = gene_module_df, module_heatmap = module_heatmap, agg_mat = agg_mat))
 }

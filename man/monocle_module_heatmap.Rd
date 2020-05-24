@@ -4,7 +4,13 @@
 \alias{monocle_module_heatmap}
 \title{Title}
 \usage{
-monocle_module_heatmap(cds, pr_deg_ids, seu_resolution)
+monocle_module_heatmap(
+  cds,
+  pr_deg_ids,
+  seu_resolution,
+  collapse_rows = TRUE,
+  collapse_cols = TRUE
+)
 }
 \arguments{
 \item{seu_resolution}{}
