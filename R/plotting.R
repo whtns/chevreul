@@ -322,8 +322,8 @@ plot_velocity_trajectory <- function(seu, reduction = "umap", format = "arrow", 
 #' @export
 #'
 #' @examples
-plot_var <- function(seu, embedding = "umap", group = "batch", dims = c(1,2), ...){
-  #
+plot_var <- function(seu, embedding = "umap", group = "batch", dims = c(1,2), highlight = NULL, ...){
+
   metadata <- tibble::as_tibble(seu[[]][Seurat::Cells(seu),], rownames = "sID")
   cellid <- metadata[["sID"]]
   key <- rownames(metadata)
@@ -338,9 +338,13 @@ plot_var <- function(seu, embedding = "umap", group = "batch", dims = c(1,2), ..
 
   d <- Seurat::DimPlot(object = seu, dims = dims, reduction = embedding, group.by = group, pt.size = 1.0, ...) +
     aes(key = key, cellid = cellid) +
-    theme(legend.text=element_text(size=6))
+    # gghighlight()
+    # theme(legend.text=element_text(size=10)) +
+    NULL
 
-  plotly_plot <- plotly::ggplotly(d, tooltip = "cellid", height  = 750) %>%
+  plotly_plot <- plotly::ggplotly(d, tooltip = "cellid", height  = 500) %>%
+    # htmlwidgets::onRender(javascript) %>%
+    # plotly::highlight(on = "plotly_selected", off = "plotly_relayout") %>%
     plotly_settings() %>%
     plotly::toWebGL() %>%
     # plotly::partial_bundle() %>%
@@ -363,8 +367,8 @@ plotly_settings <- function(plotly_plot){
       toImageButtonOptions = list(
         format = "png",
         filename = "myplot",
-        width = 500,
-        height = 450
+        width = 600,
+        height = 700
       )) %>%
     identity()
 }
@@ -452,7 +456,7 @@ plot_feature <- function(seu, embedding, features, dims = c(1,2), return_plotly 
 
   if (return_plotly == FALSE) return(fp)
 
-  plotly_plot <- plotly::ggplotly(fp, tooltip = "cellid", height = 750) %>%
+  plotly_plot <- plotly::ggplotly(fp, tooltip = "cellid", height = 500) %>%
     plotly_settings() %>%
     plotly::toWebGL() %>%
     # plotly::partial_bundle() %>%
