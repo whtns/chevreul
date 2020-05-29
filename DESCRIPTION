@@ -43,7 +43,9 @@ Imports:
     presto (>= 1.0.0),
     DBI,
     RSQLite,
-    iheatmapr
+    iheatmapr,
+    gghighlight,
+    htmlwidgets
 Suggests: 
     dplyr,
     tidyr,

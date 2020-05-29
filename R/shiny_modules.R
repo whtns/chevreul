@@ -1548,18 +1548,19 @@ monocleui <- function(id){
     tagList(
       fluidRow(
         box(
-          plotDimRedui(ns("plotdimred"))
-        )
-      ),
-      fluidRow(
+          plotly::plotlyOutput(ns("seudimplot")),
+          width = 6
+          # plotDimRedui(ns("plotdimred"))
+        ),
         box(
-          actionButton(ns("subsetSeurat"), "subset Seurat before Pseudotime Calculation"),
+          actionButton(ns("subsetSeurat"), "Subset Seurat before Pseudotime Calculation"),
           actionButton(ns("calcCDS"), "Calculate Pseudotime"),
           sliderInput(ns("cdsResolution"), "Resolution of clustering algorithm (affects number of clusters)",
                       min = 0.2, max = 2, step = 0.2, value = 0.6),
           actionButton(ns("subsetCells"), "Subset Monocle Object After Pseudotime Calculation"),
           uiOutput(ns("rootCellsui")),
-          actionButton(ns("plotPseudotime"), "Calculate Pseudotime With Root Cells")
+          actionButton(ns("plotPseudotime"), "Calculate Pseudotime With Root Cells"),
+          width = 6
         )
       ),
       fluidRow(
@@ -1627,32 +1628,57 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
       c(purrr::flatten_chr(plot_types()), cds_plot_types())
     })
 
-    callModule(plotDimRed, "plotdimred", seu, plot_types, featureType,
-               organism_type, reductions)
+    observe({
+      seu$monocle <- seu$active
+    })
+
+    seudimplot <- reactive({
+      req(seu$monocle)
+      if ("integrated" %in% names(seu$active@assays)) {
+        active_assay <- "integrated"
+      }
+      else {
+        active_assay <- "RNA"
+      }
+
+      louvain_resolution = reactive({
+        paste0(active_assay, "_snn_res.", input$cdsResolution)
+      })
+
+      plot_var(seu$monocle, embedding = "umap", group = louvain_resolution())
+
+    })
+
+    output$seudimplot <- plotly::renderPlotly({
+      seudimplot()
+    })
+
+    # callModule(plotDimRed, "plotdimred", seu, plot_types, featureType,
+    #            organism_type, reductions)
 
     seubrush <- reactive({
-      req(seu$active)
+      req(seu$monocle)
       d <- plotly::event_data("plotly_selected")
       if (is.null(d)) {
         msg <- "Click and drag events (i.e. select/lasso) appear here (double-click to clear)"
         return(d)
       }
       else {
-        selected_cells <- colnames(seu$active)[as.numeric(d$key)]
+        selected_cells <- colnames(seu$monocle)[as.numeric(d$key)]
       }
     })
 
     observeEvent(input$subsetSeurat, {
-      req(seu$active)
+      req(seu$monocle)
       print(seubrush())
-      seu$active <- seu$active[,seubrush()]
+      seu$monocle <- seu$monocle[,seubrush()]
     })
 
     observeEvent(input$calcCDS, {
-      req(seu$active)
-        cds$traj <- convert_seu_to_cds(seu$active, resolution = input$cdsResolution)
+      req(seu$monocle)
+        cds$traj <- convert_seu_to_cds(seu$monocle, resolution = input$cdsResolution)
         cds$traj <- learn_graph_by_resolution(cds$traj,
-                                              seu$active,
+                                              seu$monocle,
                                               resolution = input$cdsResolution)
         updateSelectizeInput(session, "plottype1", selected = "seurat", choices = myplot_types())
         updateSelectizeInput(session, "customFeature1", choices = rownames(cds$traj), server = TRUE)
