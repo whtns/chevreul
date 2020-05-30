@@ -539,7 +539,7 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
     })
     output$featureType <- renderUI({
       req(seu)
-      seu_names <- names(seu)[!(names(seu) == "active")]
+      seu_names <- names(seu)[!(names(seu) %in% c("monocle", "active"))]
       shinyWidgets::prettyRadioButtons("feature_type",
         "Feature for Display",
         choices = seu_names,
@@ -571,7 +571,7 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
       req(subSeuratPath())
 
       save_seu <- shiny::reactiveValuesToList(seu)
-      save_seu <- save_seu[names(save_seu) != "active"]
+      save_seu <- save_seu[!names(save_seu) %in% c("monocle", "active")]
       shiny::withProgress(
         message = paste0("Saving Data"),
         value = 0,
@@ -656,12 +656,11 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
         {
           shinyjs::html("subsetMessages", "")
           message("Beginning")
-          for (i in names(seu)[!(names(seu) == "active")]) {
+          for (i in names(seu)[!(names(seu) %in% c("active", "monocle"))]) {
             seu[[i]] <- seu[[i]][, colnames(seu[[i]]) %in% subset_selected_cells()]
           }
           if (length(unique(seu$gene[[]]$batch)) > 1) {
-            print(names(seu)[!(names(seu) == "active")])
-            for (i in names(seu)[!(names(seu) == "active")]) {
+            for (i in names(seu)[!(names(seu) %in% c("monocle", "active"))]) {
               message(paste0("reintegrating ", i, " expression"))
               seu[[i]] <- reintegrate_seu(seu[[i]],
                 feature = i,
@@ -670,7 +669,7 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
             }
           }
           else {
-            for (i in names(seu)[!(names(seu) == "active")]) {
+            for (i in names(seu)[!(names(seu) %in% c("monocle", "active"))]) {
               seu[[i]] <- seurat_pipeline(seu[[i]], resolution = seq(0.2,
                 2,
                 by = 0.2
@@ -695,14 +694,14 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
         {
           shinyjs::html("subsetMessages", "")
           message("Beginning")
-          for (i in names(seu)[!(names(seu) == "active")]) {
+          for (i in names(seu)[!(names(seu) %in% c("monocle", "active"))]) {
             seu[[i]] <- subset_by_meta(
               input$uploadCsv$datapath,
               seu[[i]]
             )
           }
           if (length(unique(seu$gene[[]]$batch)) > 1) {
-            for (i in names(seu)[!(names(seu) == "active")]) {
+            for (i in names(seu)[!(names(seu) %in% c("monocle", "active"))]) {
               message(paste0("reintegrating ", i, " expression"))
               seu[[i]] <- reintegrate_seu(seu[[i]],
                 feature = i,
@@ -711,7 +710,7 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
             }
           }
           else {
-            for (i in names(seu)[!(names(seu) == "active")]) {
+            for (i in names(seu)[!(names(seu) %in% c("monocle", "active"))]) {
               seu[[i]] <- seurat_pipeline(seu[[i]], resolution = seq(0.2,
                 2,
                 by = 0.2
