@@ -28,18 +28,13 @@ Imports:
     janitor,
     SeuratWrappers (>= 0.1.0),
     monocle3 (>= 0.2.1),
-    cellAlign (>= 0.1.0),
     unglue,
     shinyjqui,
     Biobase,
-    EnrichmentBrowser,
     tximport,
-    flexmix,
-    scde,
     clustree,
     shinylogs,
     annotables (>= 0.1.91),
-    loomR (>= 0.2.0),
     presto (>= 1.0.0),
     DBI,
     RSQLite,
@@ -60,8 +55,7 @@ Remotes:
     satijalab/seurat-wrappers,
     cole-trapnell-lab/monocle3,
     velocyto-team/velocyto.R,
-    stephenturner/annotables,
-    mojaveazure/loomR
+    stephenturner/annotables
 Depends: 
     Rcpp,
     Seurat,
