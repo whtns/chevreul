@@ -59,7 +59,6 @@ Remotes:
     immunogenomics/presto,
     satijalab/seurat-wrappers,
     cole-trapnell-lab/monocle3,
-    shenorrLab/cellAlign,
     velocyto-team/velocyto.R,
     stephenturner/annotables,
     mojaveazure/loomR
