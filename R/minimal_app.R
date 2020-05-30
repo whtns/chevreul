@@ -178,7 +178,7 @@ ui <- function(request) {
 }
 server <- function(input, output, session) {
   options(warn = -1)
-  shinylogs::track_usage(storage_mode = shinylogs::store_json(path = "logs/"))
+  # shinylogs::track_usage(storage_mode = shinylogs::store_json(path = "logs/"))
   # projects_db <- "/dataVolume/storage/single_cell_projects/single_cell_projects.db"
 
   seu <- reactiveValues()
