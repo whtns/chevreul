@@ -12,7 +12,7 @@
 #' @export
 #'
 #' @examples
-minimalSeuratApp <- function(seurat_list, appTitle = NULL, feature_types = "gene",
+minimalSeuratApp <- function(seu_list, appTitle = NULL, feature_types = "gene",
                                 organism_type = "human", loom_path, futureMb = 13000) {
   print(feature_types)
   future::plan(strategy = "multicore", workers = 6)
@@ -185,8 +185,7 @@ server <- function(input, output, session) {
 
   observe({
 
-        seu_names <- names(seu_list)[!names(seu_list) ==
-                                      "active"]
+        seu_names <- names(seu_list)[!names(seu_list) %in%  c("monocle", "active")]
         for (i in seu_names) {
           seu[[i]] <- seu_list[[i]]
         }
