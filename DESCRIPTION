@@ -40,7 +40,9 @@ Imports:
     RSQLite,
     iheatmapr,
     gghighlight,
-    htmlwidgets
+    htmlwidgets,
+    shinyWidgets,
+    shinyjs
 Suggests: 
     dplyr,
     tidyr,
