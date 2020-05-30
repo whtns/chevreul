@@ -61,6 +61,13 @@ convert_seu_to_cds <- function(seu, resolution = 1) {
 
   ### Could be a space-holder, but essentially fills out louvain parameters
   cds_from_seurat@clusters@listData[["UMAP"]][["louvain_res"]] <- "NA"
+
+
+  # cds_from_seurat <- monocle3::preprocess_cds(cds_from_seurat)
+  # cds_from_seurat <- monocle3::reduce_dimension(cds_from_seurat, "UMAP")
+  #
+  # reducedDim(cds_from_seurat, "PCA") <- Embeddings(seu, "pca")
+  # reducedDim(cds_from_seurat, "UMAP") <- Embeddings(seu, "umap")
   cds_from_seurat@reducedDims@listData[["UMAP"]] <- Embeddings(seu, "umap")
   # cds_from_seurat@reducedDims@listData[["PCA"]] <- Embeddings(seu, "pca")
   cds_from_seurat@preprocess_aux$gene_loadings <- Loadings(seu, "pca")
