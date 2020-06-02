@@ -235,8 +235,9 @@ server <- function(input, output, session) {
   seu <- callModule(reformatMetadata, "reformatmetadata", seu)
 
   reductions <- reactive({
-    # names(seu$active@reductions)
-    c("pca", "tsne", "umap")
+    req(seu$active)
+    names(seu$active@reductions)
+    # c("pca", "tsne", "umap")
   })
 
   observe({
