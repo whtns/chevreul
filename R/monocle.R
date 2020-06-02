@@ -204,6 +204,7 @@ plot_pseudotime <- function(cds, resolution, color_cells_by = NULL, genes = NULL
 
 
   cds_plot <- monocle3::plot_cells(cds,
+                                   show_trajectory_graph = TRUE,
                                    genes = genes,
                                    label_cell_groups = FALSE,
                                    label_groups_by_cluster = FALSE,
@@ -249,7 +250,6 @@ plot_monocle_features <- function(cds, resolution, genes = NULL, ...){
   } else {
     default_assay = "RNA"
   }
-
 
   cds_plot <- plot_cells(cds,
                                    genes = genes,
@@ -563,7 +563,7 @@ plot_cells <- function(cds, x = 1, y = 2, reduction_method = c("UMAP", "tSNE",
                                                                            data_dim_2), size = I(cell_size), stroke = I(cell_stroke),
                                                                        color = "grey80", alpha = alpha, data = na_sub) +
         plotting_func(aes(color = value), size = I(cell_size),
-                      stroke = I(cell_stroke), na.rm = TRUE) + viridis::scale_color_viridis(option = "viridis",
+                      stroke = I(cell_stroke), na.rm = TRUE) + viridis::scale_color_viridis(option = "plasma",
                                                                                             name = expression_legend_label, na.value = "grey80",
                                                                                             end = 0.8, alpha = alpha) + guides(alpha = FALSE) +
         facet_wrap(~feature_label)
@@ -575,7 +575,7 @@ plot_cells <- function(cds, x = 1, y = 2, reduction_method = c("UMAP", "tSNE",
                                                                        color = "grey80", data = na_sub, alpha = alpha) +
         plotting_func(aes(color = log10(value + min_expr)),
                       size = I(cell_size), stroke = I(cell_stroke),
-                      na.rm = TRUE, alpha = alpha) + viridis::scale_color_viridis(option = "viridis",
+                      na.rm = TRUE, alpha = alpha) + viridis::scale_color_viridis(option = "plasma",
                                                                                   name = expression_legend_label, na.value = "grey80",
                                                                                   end = 0.8, alpha = alpha) + guides(alpha = FALSE) +
         facet_wrap(~feature_label)
