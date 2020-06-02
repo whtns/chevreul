@@ -5,7 +5,7 @@
 \title{Create Seurat App}
 \usage{
 minimalSeuratApp(
-  seurat_list,
+  seu_list,
   appTitle = NULL,
   feature_types = "gene",
   organism_type = "human",
