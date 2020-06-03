@@ -259,9 +259,9 @@ plot_multiple_branches_heatmap <- function(cds,
 #' @export
 #'
 #' @examples
-plot_velocity_arrows <- function(seu, velocity, reduction = "umap", cell.colors, plot_format = "grid", arrow.scale = 3){
+plot_velocity_arrows <- function(seu, velocity, reduction = "umap", cell.colors, plot_format = "grid", arrow.scale = 3, ...){
 
-  velocity <- seu@misc$vel
+  # velocity <- seu@misc$vel
 
   emb <- Embeddings(object = seu, reduction = reduction)
 
@@ -270,14 +270,14 @@ plot_velocity_arrows <- function(seu, velocity, reduction = "umap", cell.colors,
   if (plot_format == "arrow") {
     velocyto.R::show.velocity.on.embedding.cor(emb, velocity, n=100, scale='sqrt',
                                                cell.colors=velocyto.R::ac(cell.colors, alpha=cell.alpha),
-                                               cex=cell.cex, arrow.scale=arrow.scale, arrow.lwd=1)
+                                               cex=cell.cex, arrow.scale=arrow.scale, arrow.lwd=1, ...)
   } else if (plot_format == "grid"){
     #Alternatively, the same function can be used to calculate a velocity vector field:
     velocyto.R::show.velocity.on.embedding.cor(emb, velocity, n=100, scale='sqrt',
                                                cell.colors=velocyto.R::ac(cell.colors, alpha=cell.alpha),
                                                cex=cell.cex, arrow.scale=arrow.scale,
                                                show.grid.flow=TRUE, min.grid.cell.mass=0.5,
-                                               grid.n=20, arrow.lwd=2)
+                                               grid.n=20, arrow.lwd=2, ...)
   }
 
 
@@ -393,10 +393,21 @@ plot_violin <- function(seu, plot_var = "batch", plot_vals = NULL, features = "R
     plot_vals <- plot_vals[!is.na(plot_vals)]
   }
   seu <- seu[, seu[[]][[plot_var]] %in% plot_vals]
-  vln_plot <- Seurat::VlnPlot(seu, features = features, group.by = plot_var,
-                              ...) + labs(title = "Expression Values for each cell are normalized by that cell's total expression then multiplied by 10,000 and natural-log transformed") +
-    stat_summary(fun.y = mean, geom = "line", size = 4,
-                 colour = "black")
+  vln_plot <- Seurat::VlnPlot(seu, features = features, group.by = plot_var, pt.size = 0.1, ...) +
+    geom_boxplot() +
+    # labs(title = "Expression Values for each cell are normalized by that cell's total expression then multiplied by 10,000 and natural-log transformed") +
+    # stat_summary(fun.y = mean, geom = "line", size = 4, colour = "black") +
+    NULL
+
+  exclude_trace_number = length(unique(seu[[]][[plot_var]]))*2
+
+  vln_plot <- plotly::ggplotly(vln_plot, height = 700) %>%
+    plotly::style(opacity = 0.5) %>%
+    plotly::style(hoverinfo = "skip", traces = c(1:exclude_trace_number)) %>%
+    plotly_settings() %>%
+    plotly::toWebGL() %>%
+    identity()
+
   return(vln_plot)
 }
 

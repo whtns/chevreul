@@ -10,7 +10,8 @@ plot_velocity_arrows(
   reduction = "umap",
   cell.colors,
   plot_format = "grid",
-  arrow.scale = 3
+  arrow.scale = 3,
+  ...
 )
 }
 \arguments{

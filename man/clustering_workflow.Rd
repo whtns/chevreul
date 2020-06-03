@@ -9,6 +9,8 @@ clustering_workflow(
   excluded_cells,
   cell_cycle = FALSE,
   resolution = seq(0.2, 2, by = 0.2),
+  organism = "human",
+  experiment_name = "batch",
   ...
 )
 }

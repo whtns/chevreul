@@ -109,7 +109,7 @@ plotViolinui <- function(id){
   tagList(uiOutput(ns("vln_split")), uiOutput(ns("split_val")),
           uiOutput(ns("vln_group")), selectizeInput(ns("customFeature"),
                                                     "gene or transcript on which to color the plot; eg. 'RXRG' or 'ENST00000488147'",
-                                                    choices = NULL, multiple = TRUE), plotOutput(ns("vplot"),
+                                                    choices = NULL, multiple = TRUE), plotly::plotlyOutput(ns("vplot"),
                                                                                                  height = 750))
 }
 
@@ -183,7 +183,7 @@ plotViolin <- function(input, output, session, seu, featureType, organism_type){
     selectizeInput(ns("vlnGroup"), "choose variable to group by",
                    choices = colnames(seu$active[[]]), selected = "batch")
   })
-  output$vplot <- renderPlot({
+  output$vplot <- plotly::renderPlotly({
     req(input$customFeature)
     req(input$vlnGroup)
     req(input$vlnSplit)
@@ -643,7 +643,7 @@ plotDimRedui <- function(id){
           selectizeInput(ns("customFeature"), "gene or transcript on which to color the plot; eg. 'RXRG' or 'ENST00000488147'",
                                                                                                                                                                                       choices = NULL, multiple = TRUE), sliderInput(ns("resolution"),
                                                                                                                                                                                                                                     "Resolution of clustering algorithm (affects number of clusters)", min = 0.2, max = 2, step = 0.2, value = 0.6),
-          plotly::plotlyOutput(ns("dplot"), height = 750))
+          plotly::plotlyOutput(ns("dplot"), height = 500))
 }
 
 #' Plot Dimensional Reduduction
@@ -667,7 +667,7 @@ plotDimRed <- function(input, output, session, seu, plot_types, featureType,
 
   output$embeddings <- renderUI({
     req(seu$active)
-    radioButtons(ns("embedding"), "dimensional reduction method", choices = reductions(), inline = TRUE)
+    selectizeInput(ns("embedding"), "dimensional reduction method", choices = reductions(), selected = rev(reductions())[1])
   })
 
   selected_plot <- reactiveVal()
@@ -1484,7 +1484,6 @@ plotVelocity <- function(input, output, session, seu, loom_path, featureType){
     } else {
       FALSE
     }
-
   })
 
 
@@ -1506,7 +1505,12 @@ plotVelocity <- function(input, output, session, seu, loom_path, featureType){
 
     levels(cell.colors) <- scales::hue_pal()(length(levels(cell.colors)))
 
-    plot_velocity_arrows(seu$active, velocity(), reduction = input$embedding, cell.colors, plot_format = plot_format)
+    if (!is.null(seu$active@misc$cc)){
+      plot_velocity_arrows(seu$active, velocity(), reduction = input$embedding, cell.colors, plot_format = plot_format, cc = seu$active@misc$cc)
+    } else {
+      plot_velocity_arrows(seu$active, velocity(), reduction = input$embedding, cell.colors, plot_format = plot_format)
+    }
+
     removeModal()
   }
 
@@ -1520,9 +1524,9 @@ plotVelocity <- function(input, output, session, seu, loom_path, featureType){
   })
 
   output$downloadPlot <- downloadHandler(
-    filename = function() { paste("velocity", '.png', sep='') },
+    filename = function() { paste("velocity", '.pdf', sep='') },
     content = function(file) {
-      png(file)
+      pdf(file)
       plotInput(plot_format = input$plotFormat)
       dev.off()
     })
