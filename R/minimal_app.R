@@ -33,29 +33,27 @@ minimalSeuratApp <- function(seu_list, appTitle = NULL, feature_types = "gene",
                                                            label = "Change Embedding Parameters"
                                               ), changeEmbedParamsui("changeembed"),
                                               shinydashboard::sidebarMenu(
-                                              shinydashboard::menuItem("Reformat Metadata",
-                                                                       tabName = "reformatMetadata"
-                                              ), shinydashboard::menuItem("Compare Scatter Plots",
-                                                                          tabName = "comparePlots"
-                                              ), shinydashboard::menuItem("Compare Read Counts",
-                                                                          tabName = "compareReadCount"
-                                              ), shinydashboard::menuItem("Violin/Heatmap Plots",
-                                                                          tabName = "violinPlots"
-                                              ), shinydashboard::menuItem("Differential Expression",
-                                                                          tabName = "diffex"
-                                              ), shinydashboard::menuItem("Find Markers",
-                                                                          tabName = "findMarkers"
-                                              ), shinydashboard::menuItem("Subset Seurat Input",
-                                                                          tabName = "subsetSeurat"
-                                              ), shinydashboard::menuItem("All Transcripts",
-                                                                          tabName = "allTranscripts"
-                                              ), shinydashboard::menuItem("RNA Velocity",
-                                                                          tabName = "plotVelocity"
-                                              ), shinydashboard::menuItem("Monocle",
-                                                                          tabName = "monocle"
-                                              ), shinydashboard::menuItem("Regress Features",
-                                                                          tabName = "regressFeatures"
-                                              )),
+                                                  shinydashboard::menuItem("Compare Scatter Plots",
+                                                                              tabName = "comparePlots", icon = icon("circle"), selected = TRUE
+                                                  ), shinydashboard::menuItem("Compare Read Counts",
+                                                                              tabName = "compareReadCount", icon = icon("chart-bar")
+                                                  ), shinydashboard::menuItem("Violin/Heatmap Plots",
+                                                                              tabName = "violinPlots", icon = icon("sort")
+                                                  ), shinydashboard::menuItem("Differential Expression",
+                                                                              tabName = "diffex", icon = icon("magnet")
+                                                  ), shinydashboard::menuItem("Find Markers",
+                                                                              tabName = "findMarkers", icon = icon("bullhorn")
+                                                  ), shinydashboard::menuItem("Subset Seurat Input",
+                                                                              tabName = "subsetSeurat", icon = icon("filter")
+                                                  ), shinydashboard::menuItem("All Transcripts",
+                                                                              tabName = "allTranscripts", icon = icon("sliders-h")
+                                                  ), shinydashboard::menuItem("RNA Velocity",
+                                                                              tabName = "plotVelocity", icon = icon("tachometer-alt")
+                                                  ), shinydashboard::menuItem("Monocle",
+                                                                              tabName = "monocle", icon = icon("bullseye")
+                                                  ), shinydashboard::menuItem("Regress Features",
+                                                                              tabName = "regressFeatures", icon = icon("eraser")
+                                                  )),
   width = 250
   )
 body <- shinydashboard::dashboardBody(

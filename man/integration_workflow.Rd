@@ -8,6 +8,8 @@ integration_workflow(
   child_proj_dirs,
   excluded_cells,
   resolution = seq(0.2, 2, by = 0.2),
+  experiment_name,
+  organism,
   ...
 )
 }

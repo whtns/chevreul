@@ -246,32 +246,33 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
     verbatimTextOutput("savefile"), actionButton("changeEmbedAction",
       label = "Change Embedding Parameters"
     ), changeEmbedParamsui("changeembed"),
-    shinydashboard::sidebarMenu(shinydashboard::menuItem("Integrate Projects",
-      tabName = "integrateProjects"
+    shinydashboard::sidebarMenu(
+      shinydashboard::menuItem("Integrate Projects",
+      tabName = "integrateProjects", icon = icon("object-group")
     ), shinydashboard::menuItem("Reformat Metadata",
-      tabName = "reformatMetadata"
+      tabName = "reformatMetadata", icon = icon("columns")
     ), shinydashboard::menuItem("Compare Scatter Plots",
-      tabName = "comparePlots"
+      tabName = "comparePlots", icon = icon("circle"), selected = TRUE
     ), shinydashboard::menuItem("Compare Read Counts",
-      tabName = "compareReadCount"
+      tabName = "compareReadCount", icon = icon("chart-bar")
     ), shinydashboard::menuItem("Violin/Heatmap Plots",
-      tabName = "violinPlots"
+      tabName = "violinPlots", icon = icon("diamond-fill")
     ), shinydashboard::menuItem("Differential Expression",
-      tabName = "diffex"
+      tabName = "diffex", icon = icon("union", lib = "glyphicon")
     ), shinydashboard::menuItem("Gene Enrichment Analysis",
-      tabName = "geneEnrichment"
+      tabName = "geneEnrichment", icon = icon("sitemap")
     ), shinydashboard::menuItem("Find Markers",
-      tabName = "findMarkers"
+      tabName = "findMarkers", icon = icon("bullhorn")
     ), shinydashboard::menuItem("Subset Seurat Input",
-      tabName = "subsetSeurat"
+      tabName = "subsetSeurat", icon = icon("subtract", lib = "glyphicon")
     ), shinydashboard::menuItem("All Transcripts",
-      tabName = "allTranscripts"
+      tabName = "allTranscripts", icon = icon("sliders-h")
     ), shinydashboard::menuItem("RNA Velocity",
-      tabName = "plotVelocity"
+      tabName = "plotVelocity", icon = icon("tachometer-alt")
     ), shinydashboard::menuItem("Monocle",
-      tabName = "monocle"
+      tabName = "monocle", icon = icon("bullseye")
     ), shinydashboard::menuItem("Regress Features",
-      tabName = "regressFeatures"
+      tabName = "regressFeatures", icon = icon("eraser")
     )),
     width = 250
   )
@@ -611,8 +612,9 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
     seu <- callModule(reformatMetadata, "reformatmetadata", seu)
 
     reductions <- reactive({
-      # names(seu$active@reductions)
-      c("pca", "tsne", "umap")
+      req(seu$active)
+      names(seu$active@reductions)
+      # c("pca", "tsne", "umap")
     })
 
     observe({
