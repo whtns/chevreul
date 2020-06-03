@@ -12,7 +12,7 @@
 #' @export
 #'
 #' @examples
-integration_workflow <- function(child_proj_dirs, excluded_cells, resolution = seq(0.2, 2.0, by = 0.2), ...) {
+integration_workflow <- function(child_proj_dirs, excluded_cells, resolution = seq(0.2, 2.0, by = 0.2), experiment_name, organism, ...) {
 
   # return(list(gene = mtcars))
 
@@ -68,7 +68,7 @@ integration_workflow <- function(child_proj_dirs, excluded_cells, resolution = s
 #' @export
 #'
 #' @examples
-clustering_workflow <- function(feature_seus = NULL, excluded_cells, cell_cycle = FALSE, resolution = seq(0.2, 2.0, by = 0.2), ...) {
+clustering_workflow <- function(feature_seus = NULL, excluded_cells, cell_cycle = FALSE, resolution = seq(0.2, 2.0, by = 0.2), organism = "human", experiment_name = "batch", ...) {
 
   feature_seus <- purrr::map(feature_seus, seuratTools::seurat_pipeline, resolution = resolution, ...)
 
@@ -82,6 +82,9 @@ clustering_workflow <- function(feature_seus = NULL, excluded_cells, cell_cycle 
 
   # annotate mitochondrial percentage in seurat metadata
   feature_seus <- purrr::imap(feature_seus, seuratTools::add_percent_mito)
+
+  feature_seus <- purrr::map(seus, record_experiment_data, experiment_name, organism)
+
 
   # save_seurat(feature_seus, proj_dir = proj_dir, ...)
 

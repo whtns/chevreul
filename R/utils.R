@@ -290,3 +290,71 @@ prep_plot_genes_in_pseudotime <- function(cds, mygenes, resolution, partition = 
 
   return(gene_ptime_plot)
 }
+
+#' Record Experiment Metadata
+#'
+#' @param object
+#' @param experiment_name
+#' @param organism
+#' @param column_sample
+#' @param column_cluster
+#' @param column_nUMI
+#' @param column_nGene
+#' @param column_cell_cycle_seurat
+#' @param column_cell_cycle_cyclone
+#' @param add_all_meta_data
+#'
+#' @return
+#' @export
+#'
+#' @examples
+record_experiment_data <- function(object, experiment_name, organism){
+  if (!requireNamespace("Seurat", quietly = TRUE)) {
+    stop("Package 'Seurat' needed for this function to work. Please install it.",
+         call. = FALSE)
+  }
+
+
+  message(paste0("[", format(Sys.time(), "%H:%M:%S"), "] Initializing Cerebro object..."))
+  export <- list(experiment = list(experiment_name = experiment_name,
+                                   organism = organism))
+  export$experiment$date_of_analysis <- object@misc$experiment$date_of_analysis
+  export$experiment$date_of_export <- Sys.Date()
+
+  object@misc$experiment <- list(
+    experiment_name = experiment_name,
+    organism = organism,
+    date_of_analysis = Sys.Date()
+  )
+  object@misc$parameters <- list(
+    gene_nomenclature = 'gene_symbol',
+    discard_genes_expressed_in_fewer_cells_than = 10,
+    keep_mitochondrial_genes = TRUE,
+    variables_to_regress_out = 'ncount_RNA',
+    number_PCs = 30,
+    tSNE_perplexity = 30,
+    cluster_resolution = seq(0.2, 2.0, by = 0.2)
+  )
+  object@misc$parameters$filtering <- list(
+    UMI_min = 50,
+    UMI_max = Inf,
+    genes_min = 10,
+    genes_max = Inf
+  )
+  object@misc$technical_info <- list(
+    'R' = capture.output(session_info())
+  )
+
+  if (!is.null(object@version)) {
+    export$technical_info$seurat_version <- object@version
+  }
+
+  export$technical_info$seuratTools_version <- utils::packageVersion("seuratTools")
+
+
+
+  object@misc <- c(object@misc, export)
+
+  return(object)
+}
+

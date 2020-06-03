@@ -64,6 +64,11 @@ velocyto_assay <- function(seu, loom_path, fit.quantile = 0.05, ...){
   # ## calculate velocity------------------------------------------------------------------------
   rvel.qf <- velocyto.R::gene.relative.velocity.estimates(emat, nmat, deltaT=1, kCells = 5, fit.quantile = fit.quantile)
 
+  cc_umap <- plot_velocity_arrows(seu, rvel.qf, reduction = "umap", cell.colors = cell.colors, plot_format = "arrow")
+
+  # save graphical info to seurat object in slot @misc$cc
+  seu@misc$cc <- cc_umap$cc
+
   # save velocity to seurat object in slot @misc$vel
   seu@misc$vel <- rvel.qf
 
