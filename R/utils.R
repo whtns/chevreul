@@ -367,10 +367,21 @@ record_experiment_data <- function(object, experiment_name, organism){
 #' @export
 #'
 #' @examples
-plot_all_transcripts <- function(seu, features, embedding){
+plot_all_transcripts <- function(seu_transcript, seu_gene, features, embedding){
 
-  pList <- purrr::map(features, ~plot_feature(seu, embedding = embedding, features = .x))
+  # browser()
+  transcript_cols <- as.data.frame(t(as.matrix(seu_transcript[["RNA"]][features,])))
 
+  cells <- rownames(transcript_cols)
+  transcript_cols <- as.list(transcript_cols) %>%
+    purrr::map(~purrr::set_names(.x, cells))
+
+  seu_gene[[features]] <- transcript_cols
+
+  pList <- purrr::map(features, ~plot_feature(seu_gene,
+                                                   embedding = embedding, features = .x))
   names(pList) <- features
+
   return(pList)
+
 }

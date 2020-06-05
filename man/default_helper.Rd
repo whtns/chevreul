@@ -4,13 +4,7 @@
 \alias{default_helper}
 \title{Default Shiny Helper}
 \usage{
-default_helper(
-  ui_element,
-  title = "test",
-  content = "test",
-  type = "inline",
-  ...
-)
+default_helper(ui_element, title = "", content = "test", type = "inline", ...)
 }
 \arguments{
 \item{...}{}
