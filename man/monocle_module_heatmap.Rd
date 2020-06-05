@@ -9,7 +9,8 @@ monocle_module_heatmap(
   pr_deg_ids,
   seu_resolution,
   collapse_rows = TRUE,
-  collapse_cols = TRUE
+  collapse_cols = TRUE,
+  resolution = 10^seq(-6, -1)
 )
 }
 \arguments{

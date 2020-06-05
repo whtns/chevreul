@@ -211,7 +211,7 @@ get_transcripts_from_seu <- function(seu, gene, organism = "human") {
   transcripts <- genes_to_transcripts(gene, organism)
 
   transcripts <- transcripts[transcripts %in%
-                               rownames(GetAssay(seu$transcript, "RNA"))]
+                               rownames(GetAssay(seu, "RNA"))]
 }
 
 #' pad sample numbers to prep for armor
@@ -358,3 +358,19 @@ record_experiment_data <- function(object, experiment_name, organism){
   return(object)
 }
 
+#' Title
+#'
+#' @param seu
+#' @param transcripts
+#'
+#' @return
+#' @export
+#'
+#' @examples
+plot_all_transcripts <- function(seu, features, embedding){
+
+  pList <- purrr::map(features, ~plot_feature(seu, embedding = embedding, features = .x))
+
+  names(pList) <- features
+  return(pList)
+}
