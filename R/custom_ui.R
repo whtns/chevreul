@@ -10,12 +10,12 @@
 #' @export
 #'
 #' @examples
-default_helper <- function(ui_element, title = "test", content = "test", type = "inline", ...){
+default_helper <- function(ui_element, title = "", content = "test", type = "inline", ...){
   shinyhelper::helper(ui_element,
                       type = type,
                       title = title,
                       content = content,
-                      size = "s", ...)
+                      ...)
 }
 
 #' custom collapsible box

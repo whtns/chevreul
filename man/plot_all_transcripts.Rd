@@ -4,7 +4,7 @@
 \alias{plot_all_transcripts}
 \title{Title}
 \usage{
-plot_all_transcripts(seu, features, embedding)
+plot_all_transcripts(seu_transcript, seu_gene, features, embedding)
 }
 \arguments{
 \item{transcripts}{}
