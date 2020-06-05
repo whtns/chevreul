@@ -1356,7 +1356,7 @@ allTranscripts <- function(input, output, session, seu,
   pList <- eventReactive(input$plotTrx, {
 
     # browser()
-    pList <- plot_all_transcripts(seu$transcript, transcripts(), input$embedding)
+    pList <- plot_all_transcripts(seu$transcript, seu$gene, transcripts(), input$embedding)
 
   })
 

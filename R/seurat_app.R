@@ -226,7 +226,8 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
   ))
   header <- shinydashboard::dashboardHeader(title = appTitle)
   sidebar <- shinydashboard::dashboardSidebar(uiOutput("projInput"),
-    actionButton("loadProject", "Load Selected Project"),
+    actionButton("loadProject", "Load Selected Project") %>%
+      default_helper(type = "markdown", content = "overview"),
     textOutput("appTitle"),
     uiOutput("featureType"),
     shinyWidgets::prettyRadioButtons("organism_type", inline = TRUE,
@@ -273,7 +274,8 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
     changeEmbedParamsui("changeembed"),
     width = 250
   )
-  body <- shinydashboard::dashboardBody(shinydashboard::tabItems(
+  body <- shinydashboard::dashboardBody(
+    shinydashboard::tabItems(
     shinydashboard::tabItem(
       tabName = "comparePlots",
       h2("Compare Plots") %>%
