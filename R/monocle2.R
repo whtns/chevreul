@@ -14,6 +14,8 @@ convert_seuv3_to_monoclev2 <- function(seu, return_census = FALSE, sig_slice = 1
   # Extract data, phenotype data, and feature data from the SeuratObject
   data <- as(as.matrix(seu@assays$RNA@data), "sparseMatrix")
 
+  data <- floor(data)
+
   pd <- new("AnnotatedDataFrame", data = seu@meta.data)
 
   fData <- data.frame(gene_short_name = row.names(data), row.names = row.names(data))
@@ -163,11 +165,10 @@ convert_seuv3_to_monoclev2 <- function(seu, return_census = FALSE, sig_slice = 1
 #' @export
 #'
 #' @examples
-process_monocle_child <- function(ptime, monocle_cds) {
+process_monocle_child <- function(ptime, monocle_cds, trend_formula = "~sm.ns(Pseudotime, df=3)") {
   monocle_cds <- monocle_cds[, ptime$sample_id]
 
   old_ptime <- phenoData(monocle_cds)$Pseudotime
-
 
   ptime$ptime <- scales::rescale(ptime$ptime, range(old_ptime))
 
@@ -179,7 +180,7 @@ process_monocle_child <- function(ptime, monocle_cds) {
   tictoc::tic("finished differentiial expression with")
 
   diff_test_res <- differentialGeneTest(monocle_cds,
-                                        fullModelFormulaStr = "~sm.ns(Pseudotime)",
+                                        fullModelFormulaStr = trend_formula,
                                         cores = 6
   )
 
@@ -236,6 +237,7 @@ plot_all_ptimes <- function(monocle_list, query_name, sig_slice = 1000, ...) {
                                                                                         show_rownames = F,
                                                                                         return_heatmap = TRUE,
                                                                                         cluster_rows = F,
+                                                                                        trend_formula = "~sm.ns(Pseudotime, df=1)",
                                                                                         ...
     ))
 
@@ -348,7 +350,7 @@ arrange_ptime_heatmaps <- function(cds_list, cds_name) {
 #' @examples
 plot_feature_in_ref_query_ptime <- function(cds_list, features = c("RXRG"), color_by = "State", relative_expr = FALSE, min_expr = 0.5, ...){
   sub_cds_list <- purrr::map(cds_list, ~.x$monocle_cds[features,])
-  feature_plots_in_ptime <- purrr::map(sub_cds_list, monocle::plot_genes_in_pseudotime, trend_formula = "~sm.ns(Pseudotime, df=12)", color_by = color_by, relative_expr = relative_expr, min_expr = min_expr)
+  feature_plots_in_ptime <- purrr::map(sub_cds_list, monocle::plot_genes_in_pseudotime, trend_formula = "~sm.ns(Pseudotime, df=3)", color_by = color_by, relative_expr = relative_expr, min_expr = min_expr)
   refquery_ptime_plot <- cowplot::plot_grid(plotlist = feature_plots_in_ptime, ncol = 2, labels = names(feature_plots_in_ptime))
   plot(refquery_ptime_plot)
 
@@ -505,7 +507,7 @@ calc_pseudotime_heatmap <- function(cds_subset, cluster_rows = TRUE, dend_k = 6,
                                              num_clusters = 6, hmcols = NULL, add_annotation_row = NULL,
                                              add_annotation_col = NULL, show_rownames = FALSE, use_gene_short_name = TRUE,
                                              norm_method = c("log", "vstExprs"), scale_max = 3, scale_min = -3,
-                                             trend_formula = "~sm.ns(Pseudotime, df=12)", return_heatmap = FALSE,
+                                             trend_formula = "~sm.ns(Pseudotime, df=3)", return_heatmap = FALSE,
                                              cores = 1, ...)
 {
 

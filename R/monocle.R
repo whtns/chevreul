@@ -69,7 +69,7 @@ convert_seu_to_cds <- function(seu, resolution = 1) {
   # reducedDim(cds_from_seurat, "PCA") <- Embeddings(seu, "pca")
   # reducedDim(cds_from_seurat, "UMAP") <- Embeddings(seu, "umap")
   cds_from_seurat@reducedDims@listData[["UMAP"]] <- Embeddings(seu, "umap")
-  # cds_from_seurat@reducedDims@listData[["PCA"]] <- Embeddings(seu, "pca")
+  cds_from_seurat@reducedDims@listData[["PCA"]] <- Embeddings(seu, "pca")
   cds_from_seurat@preprocess_aux$gene_loadings <- Loadings(seu, "pca")
 
   cds_from_seurat <- learn_graph_by_resolution(cds_from_seurat, seu, resolution = resolution)
@@ -678,7 +678,7 @@ plot_cells <- function(cds, x = 1, y = 2, reduction_method = c("UMAP", "tSNE",
 #' @export
 #'
 #' @examples
-monocle_module_heatmap <- function(cds, pr_deg_ids, seu_resolution, collapse_rows = TRUE, collapse_cols = TRUE) {
+monocle_module_heatmap <- function(cds, pr_deg_ids, seu_resolution, collapse_rows = TRUE, collapse_cols = TRUE, resolution = 10^seq(-6,-1)) {
 
   if (any(grepl("integrated", colnames(cds@colData)))){
     default_assay = "integrated"
@@ -689,7 +689,7 @@ monocle_module_heatmap <- function(cds, pr_deg_ids, seu_resolution, collapse_row
   seu_resolution = paste0(default_assay, "_snn_res.", seu_resolution)
 
   cds <- cds[pr_deg_ids,]
-  gene_module_df <- monocle3::find_gene_modules(cds, resolution=10^seq(-6,-1)) %>%
+  gene_module_df <- monocle3::find_gene_modules(cds, resolution=resolution) %>%
     dplyr::arrange(module)
 
   if(collapse_rows != TRUE){
@@ -726,3 +726,4 @@ monocle_module_heatmap <- function(cds, pr_deg_ids, seu_resolution, collapse_row
 
   return(list(module_table = gene_module_df, module_heatmap = module_heatmap, agg_mat = agg_mat))
 }
+

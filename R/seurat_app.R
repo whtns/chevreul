@@ -227,11 +227,8 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
   header <- shinydashboard::dashboardHeader(title = appTitle)
   sidebar <- shinydashboard::dashboardSidebar(uiOutput("projInput"),
     actionButton("loadProject", "Load Selected Project"),
-    shinyFiles::shinyDirButton(
-      "deleteProject", "Delete an Integrated Project",
-      "Please select a file or directory to delete"
-    ),
-    textOutput("appTitle"), uiOutput("featureType"),
+    textOutput("appTitle"),
+    uiOutput("featureType"),
     shinyWidgets::prettyRadioButtons("organism_type", inline = TRUE,
       "Organism", choices = c("human", "mouse"), selected = organism_type
     ),
@@ -243,28 +240,24 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
       "Save file as...",
       filetype = list(rds = "rds")
     ),
-    verbatimTextOutput("savefile"), actionButton("changeEmbedAction",
-      label = "Change Embedding Parameters"
-    ), changeEmbedParamsui("changeembed"),
+    verbatimTextOutput("savefile"),
     shinydashboard::sidebarMenu(
       shinydashboard::menuItem("Integrate Projects",
       tabName = "integrateProjects", icon = icon("object-group")
     ), shinydashboard::menuItem("Reformat Metadata",
       tabName = "reformatMetadata", icon = icon("columns")
-    ), shinydashboard::menuItem("Compare Scatter Plots",
-      tabName = "comparePlots", icon = icon("circle"), selected = TRUE
-    ), shinydashboard::menuItem("Compare Read Counts",
-      tabName = "compareReadCount", icon = icon("chart-bar")
+    ), shinydashboard::menuItem("Plot Data",
+      tabName = "comparePlots", icon = icon("chart-bar"), selected = TRUE
     ), shinydashboard::menuItem("Violin/Heatmap Plots",
-      tabName = "violinPlots", icon = icon("diamond-fill")
+      tabName = "violinPlots", icon = icon("sort")
     ), shinydashboard::menuItem("Differential Expression",
-      tabName = "diffex", icon = icon("union", lib = "glyphicon")
+      tabName = "diffex", icon = icon("magnet")
     ), shinydashboard::menuItem("Gene Enrichment Analysis",
       tabName = "geneEnrichment", icon = icon("sitemap")
     ), shinydashboard::menuItem("Find Markers",
       tabName = "findMarkers", icon = icon("bullhorn")
     ), shinydashboard::menuItem("Subset Seurat Input",
-      tabName = "subsetSeurat", icon = icon("subtract", lib = "glyphicon")
+      tabName = "subsetSeurat", icon = icon("filter")
     ), shinydashboard::menuItem("All Transcripts",
       tabName = "allTranscripts", icon = icon("sliders-h")
     ), shinydashboard::menuItem("RNA Velocity",
@@ -274,73 +267,101 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
     ), shinydashboard::menuItem("Regress Features",
       tabName = "regressFeatures", icon = icon("eraser")
     )),
+    actionButton("changeEmbedAction",
+                 label = "Change Embedding Parameters"
+    ),
+    changeEmbedParamsui("changeembed"),
     width = 250
   )
   body <- shinydashboard::dashboardBody(shinydashboard::tabItems(
     shinydashboard::tabItem(
-      tabName = "violinPlots",
-      h2("Violin Plots"), fluidRow(
-        box(plotViolinui("violinPlot")),
-        box(plotHeatmapui("heatMap"))
-      )
-    ), shinydashboard::tabItem(
       tabName = "comparePlots",
-      h2("Compare Plots"), fluidRow(
-        box(plotDimRedui("plotdimred1")),
-        box(plotDimRedui("plotdimred2"))
-      ), fluidRow(box(
+      h2("Compare Plots") %>%
+        default_helper(type = "markdown", content = "comparePlots"),
+      fluidRow(
+        column(
+          plotDimRedui("plotdimred1"),
+          width = 6
+        ),
+        column(
+          plotDimRedui("plotdimred2"),
+          width = 6
+        )
+      ),
+      fluidRow(
+        plotReadCountui("plotreadcount1"),
+        plotReadCountui("plotreadcount2")
+      ),
+      fluidRow(seuratToolsBox(
         title = "Selected Cells",
         tableSelectedui("tableselected"), width = 6
-      ), box(plotClustree_UI("clustreePlot")))
+      ), seuratToolsBox(plotClustree_UI("clustreePlot")))
+    ),
+    shinydashboard::tabItem(
+      tabName = "violinPlots",
+      fluidRow(
+        title = "Violin Plot", plotViolinui("violinPlot"),
+        tite = "Heatmap", plotHeatmapui("heatMap")
+      )
     ),
     shinydashboard::tabItem(
       tabName = "integrateProjects",
-      h2("Integrate Projects"), fluidRow((integrateProjui("integrateproj")))
+      fluidRow(
+        integrateProjui("integrateproj"),
+         width = 12
+        )
     ),
     shinydashboard::tabItem(
       tabName = "reformatMetadata",
-      h2("Reformat Metadata"), fluidRow((reformatMetadataui("reformatmetadata")))
+      fluidRow(
+        reformatMetadataui("reformatmetadata")
+        )
     ),
     shinydashboard::tabItem(
-      tabName = "compareReadCount",
-      h2("Compare Read Counts"), fluidRow(
-        box(plotReadCountui("plotreadcount1")),
-        box(plotReadCountui("plotreadcount2"))
-      )
-    ), shinydashboard::tabItem(
       tabName = "subsetSeurat",
-      h2("Subset Seurat Input"), column(box(plotDimRedui("subset"),
-        width = 12
-      ), width = 6), column(box(shinyWidgets::actionBttn(
-        "subsetAction",
-        "subset seurat by selected cells"
-      ), shinyWidgets::actionBttn(
-        "subsetCsv",
-        "subset seurat by uploaded csv"
-      ), fileInput("uploadCsv",
-        "Upload .csv file with cells to include",
-        accept = c(".csv")
-      ),
-      shinyjs::useShinyjs(), textOutput("subsetMessages"),
-      width = 12
-      ), box(
-        title = "Selected Cells", tableSelectedui("subset"),
-        width = 12
-      ), width = 6)
-    ), shinydashboard::tabItem(
+      h2("Subset Seurat Input") %>%
+        default_helper(type = "markdown", content = "subsetSeurat"),
+      fluidRow(
+        column(
+          plotDimRedui("subset"),
+          width = 6),
+        column(
+          seuratToolsBox(
+            title = "Subset Settings",
+            shinyWidgets::actionBttn(
+              "subsetAction",
+              "subset seurat by selected cells"
+            ), shinyWidgets::actionBttn(
+              "subsetCsv",
+              "subset seurat by uploaded csv"
+            ), fileInput("uploadCsv",
+                         "Upload .csv file with cells to include",
+                         accept = c(".csv")),
+            shinyjs::useShinyjs(),
+            textOutput("subsetMessages"),
+            width = 12
+          ),
+          seuratToolsBox(
+            title = "Selected Cells", tableSelectedui("subset"),
+            width = 12
+          ),
+          width = 6)
+        )
+      ), shinydashboard::tabItem(
       tabName = "findMarkers",
       h2("Find Markers"), fluidRow(
-        box(findMarkersui("findmarkers")),
-        box(plotDimRedui("markerScatter"))
+        column(
+          findMarkersui("findmarkers"),
+          width = 6),
+        column(
+          plotDimRedui("markerScatter"),
+          width = 6)
       )
     ), shinydashboard::tabItem(
       tabName = "allTranscripts",
-      h2("All Transcripts"), fluidRow(shinyWidgets::actionBttn(
-        "plotTrx",
-        "Plot all transcripts"
-      )), fluidRow(column(allTranscriptsui("alltranscripts1"),
-        width = 6
-      ), column(allTranscriptsui("alltranscripts2"),
+      h2("All Transcripts"), fluidRow(column(allTranscriptsui("alltranscripts1"),
+        width = 6),
+        column(allTranscriptsui("alltranscripts2"),
         width = 6
       ))
     ),
@@ -348,30 +369,38 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
       tabName = "plotVelocity",
       h2("RNA Velocity"),
       fluidRow(
-        box(
-          plotVelocityui("plotvelocity")
+        seuratToolsBox(
+          plotVelocityui("plotvelocity"),
+          width = 12
         )
       )
     ),
     shinydashboard::tabItem(
       tabName = "diffex",
-      h2("Differential Expression"), column(box(plotDimRedui("diffex"),
-        width = 12
-      ), box(tableSelectedui("diffex"),
-        width = 12
-      ), width = 6), column(box(diffexui("diffex"),
-        width = 12
-      ), width = 6)
+      h2("Differential Expression") %>%
+        default_helper(type = "markdown", content = "diffex"),
+      column(
+        plotDimRedui("diffex"),
+        seuratToolsBox(tableSelectedui("diffex"), width = 12),
+        width = 6),
+      column(
+        diffexui("diffex"),
+        width = 6)
     ), shinydashboard::tabItem(
       tabName = "geneEnrichment",
-      h2("Gene Enrichment"), geneEnrichmentui("geneenrichment"),
+      h2("Gene Enrichment"),
+      geneEnrichmentui("geneenrichment"),
       downloadTable_UI("downloadtable")
     ), shinydashboard::tabItem(
       tabName = "regressFeatures",
-      h2("Regress Features"), fluidRow(actionButton(
+      fluidRow(
+        seuratToolsBox(
+          title = "Regress Features",
+        actionButton(
         "regressAction",
         "Regress Seurat Objects By Genes"
-      ), box(checkboxInput("runRegression",
+      ),
+      checkboxInput("runRegression",
         "Run Regression?",
         value = FALSE
       ), radioButtons("priorGeneSet",
@@ -388,13 +417,16 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
       ),
       textInput("geneSetName", "Name for Gene Set"),
       width = 12
-      ))
+      ) %>%
+        default_helper(type = "markdown", content = "regressFeatures")
+      )
     ), shinydashboard::tabItem(
       tabName = "monocle",
       h2("Monocle"),
-        fluidRow(box(monocleui("monocle"), width = 12))
+      monocleui("monocle")
       )
   ))
+
   ui <- function(request) {
     ui <- dashboardPage(
       header = header, sidebar = sidebar,
@@ -402,6 +434,8 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
     )
   }
   server <- function(input, output, session) {
+    # lib.loc = "/dataVolume/storage/rpkgs/devel_install/"
+    shinyhelper::observe_helpers(help_dir = system.file("helpers", package = "seuratTools"))
     options(warn = -1)
     shinylogs::track_usage(storage_mode = shinylogs::store_json(path = "logs/"))
     # projects_db <- "/dataVolume/storage/single_cell_projects/single_cell_projects.db"
@@ -483,13 +517,6 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
         roots = dataset_volumes(), session = session
       )
     })
-    observe({
-      req(project_volumes())
-      shinyFiles::shinyDirChoose(input, "deleteProject",
-        roots = project_volumes(), session = session,
-        restrictions = system.file(package = "base")
-      )
-    })
     uploadSeuratPath <- eventReactive(input$seuratUpload, {
       req(dataset_volumes())
       file <- shinyFiles::parseFilePaths(
@@ -497,13 +524,6 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
         input$seuratUpload
       )
       file$datapath
-    })
-    deleteSeuratPath <- eventReactive(input$deleteProject, {
-      req(project_volumes())
-      file <- shinyFiles::parseDirPath(
-        project_volumes(),
-        input$deleteProject
-      )
     })
     observeEvent(input$seuratUpload, {
       req(uploadSeuratPath())
@@ -526,17 +546,6 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
           shiny::incProgress(8 / 10)
         }
       )
-    })
-    observeEvent(input$deleteProject, {
-      req(deleteSeuratPath())
-      message <- paste0("Deleting Project")
-      print(deleteSeuratPath())
-      fs::file_delete(deleteSeuratPath())
-      showModal(modalDialog(
-        title = "Project Deleted",
-        paste0("You successfully deleted: ", deleteSeuratPath()),
-        easyClose = TRUE, footer = NULL
-      ))
     })
     output$featureType <- renderUI({
       req(seu)
@@ -750,25 +759,23 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
       geneEnrichment, "geneenrichment",
       seu, diffex_results
     )
+
     observe({
       req(enrichment_report())
       callModule(downloadTable, "downloadtable", enrichment_report)
     })
 
-    observeEvent(input$plotTrx, {
-      showModal(modalDialog(
-        title = "Plotting Transcripts",
-        "This process may take a minute or two!"
-      ))
-      callModule(
-        allTranscripts, "alltranscripts1", seu, featureType,
-        organism_type
-      )
-      callModule(
-        allTranscripts, "alltranscripts2", seu, featureType,
-        organism_type
-      )
-      removeModal()
+    observe({
+      req(featureType())
+        callModule(
+          allTranscripts, "alltranscripts1", seu, featureType,
+          organism_type
+        )
+
+        callModule(
+          allTranscripts, "alltranscripts2", seu, featureType,
+          organism_type
+        )
     })
 
     prior_gene_set <- reactive({
