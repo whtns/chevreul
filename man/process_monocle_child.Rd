@@ -4,7 +4,11 @@
 \alias{process_monocle_child}
 \title{Preprocess a Monocle v2 object for heatmap based on provided pseudotime}
 \usage{
-process_monocle_child(ptime, monocle_cds)
+process_monocle_child(
+  ptime,
+  monocle_cds,
+  trend_formula = "~sm.ns(Pseudotime, df=3)"
+)
 }
 \arguments{
 \item{monocle_cds}{}
