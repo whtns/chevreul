@@ -24,8 +24,6 @@ Imports:
     DT,
     plotly,
     shinycssloaders,
-    shinydashboard,
-    shiny,
     shinyFiles,
     janitor,
     SeuratWrappers (>= 0.1.0),
@@ -44,7 +42,8 @@ Imports:
     gghighlight,
     htmlwidgets,
     shinyWidgets,
-    shinyjs
+    shinyjs,
+    waiter
 Suggests: 
     dplyr,
     tidyr,
@@ -64,5 +63,7 @@ Depends:
     Rcpp,
     Seurat,
     R (>= 2.10),
-    SingleCellExperiment
+    SingleCellExperiment,
+    shiny,
+    shinydashboard
 VignetteBuilder: knitr

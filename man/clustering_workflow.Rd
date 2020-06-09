@@ -7,10 +7,9 @@
 clustering_workflow(
   feature_seus = NULL,
   excluded_cells,
-  cell_cycle = FALSE,
   resolution = seq(0.2, 2, by = 0.2),
   organism = "human",
-  experiment_name = "batch",
+  experiment_name = "default_experiment",
   ...
 )
 }
@@ -19,15 +18,16 @@ clustering_workflow(
 
 \item{excluded_cells}{named list of cells to exclude}
 
-\item{cell_cycle}{whether to score and regress cell cycle related features}
-
 \item{resolution}{resolution(s) to use for clustering cells}
 
-\item{...}{}
+\item{experiment_name}{...}
 }
 \value{
 
 }
 \description{
-Integrate multiple seurat objects and save to file
+Cluster and Reduce Dimensions of a seurat object
+}
+\examples{
+clustered_seu <- clustering_workflow(seurat_pancrease_reduced)
 }

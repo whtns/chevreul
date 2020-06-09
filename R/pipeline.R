@@ -6,42 +6,46 @@
 #' 3) saving to <proj_dir>/output/sce/<feature>_seu_<suffix>.rds
 #'
 #' @param suffix a suffix to be appended to a file save in output dir
-#' @param seus
+#' @param seu_list
 #' @param resolution
-#' @param ...
 #' @param feature
+#' @param algorithm
+#' @param organism
+#' @param ...
 #'
 #' @return
 #' @export
 #'
 #'
 #' @examples
-seurat_integration_pipeline <- function(seus, feature, resolution, suffix = '', algorithm = 1, experiment_name, organism, ...) {
+seurat_integration_pipeline <- function(seu_list, feature, resolution, suffix = '', algorithm = 1, organism, annotate_cell_cycle = FALSE, annotate_percent_mito = FALSE, ...) {
 
-  corrected_seu <- seurat_integrate(seus, ...)
+  integrated_seu <- seurat_integrate(seu_list, ...)
 
   # cluster merged seurat objects
-  corrected_seu <- seurat_cluster(corrected_seu, resolution = resolution, algorithm = algorithm, ...)
+  integrated_seu <- seurat_cluster(integrated_seu, resolution = resolution, algorithm = algorithm, ...)
 
-  corrected_seu <- find_all_markers(corrected_seu)
+  integrated_seu <- find_all_markers(integrated_seu)
+
+  integrated_seu <- getEnrichedPathways(integrated_seu)
 
   # add read count column
-  corrected_seu <- add_read_count_col(corrected_seu)
+  integrated_seu <- add_read_count_col(integrated_seu)
 
   # annotate cell cycle scoring to seurat objects
-
-  corrected_seu <- annotate_cell_cycle(corrected_seu, feature, ...)
+  if (annotate_cell_cycle){
+    integrated_seu <- annotate_cell_cycle(integrated_seu, feature, ...)
+  }
 
   # annotate mitochondrial percentage in seurat metadata
-  corrected_seu <- add_percent_mito(corrected_seu, feature, ...)
+  if (annotate_percent_mito){
+    integrated_seu <- add_percent_mito(integrated_seu, feature, ...)
+  }
 
   #annotate excluded cells
+  # integrated_seu <- annotate_excluded(integrated_seu, excluded_cells)
 
-  # corrected_seu <- annotate_excluded(corrected_seu, excluded_cells)
-
-  # corrected_seu <- save_seurat(corrected_seu, feature = feature, suffix = suffix, ...)
-
-  corrected_seu <- record_experiment_data(corrected_seu, experiment_name, organism)
+  return(integrated_seu)
 
 }
 
@@ -56,7 +60,7 @@ seurat_integration_pipeline <- function(seus, feature, resolution, suffix = '', 
 #' @export
 #'
 #' @examples
-seurat_pipeline <- function(seu = seu, resolution=0.6, reduction = "pca", ...){
+seurat_pipeline <- function(seu, feature = "gene", resolution=0.6, reduction = "pca", annotate_cell_cycle = TRUE, annotate_percent_mito = TRUE, ...){
 
   seu <- seurat_preprocess(seu, scale = T, ...)
 
@@ -66,6 +70,21 @@ seurat_pipeline <- function(seu = seu, resolution=0.6, reduction = "pca", ...){
   seu <- seurat_cluster(seu = seu, resolution = resolution, reduction = reduction, ...)
 
   seu <- find_all_markers(seu, resolution = resolution, reduction = reduction)
+
+  seu <- getEnrichedPathways(seu)
+
+  # annotate low read count category in seurat metadata
+  seu <- seuratTools::add_read_count_col(seu)
+
+  # annotate cell cycle scoring to seurat objects
+  if (annotate_cell_cycle){
+    seu <- annotate_cell_cycle(seu, feature, ...)
+  }
+
+  # annotate mitochondrial percentage in seurat metadata
+  if (annotate_percent_mito){
+    seu <- add_percent_mito(seu, feature, ...)
+  }
 
   return(seu)
 }

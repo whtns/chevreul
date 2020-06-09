@@ -5,24 +5,37 @@
 \title{Integration Workflow}
 \usage{
 integration_workflow(
-  child_proj_dirs,
+  batches,
   excluded_cells,
   resolution = seq(0.2, 2, by = 0.2),
-  experiment_name,
-  organism,
+  experiment_name = "default_experiment",
+  organism = "human",
   ...
 )
 }
 \arguments{
-\item{child_proj_dirs}{child projects to be integrated}
+\item{batches}{seurat objects for each all batches provided as a list. If named, the resulting integrated object will be identified with corresponding values in 'batch' metadata}
 
 \item{excluded_cells}{named list of cells to exclude}
 
-\item{resolution}{}
+\item{resolution}{value(s) to control the clustering resolution via \code{Seurat::FindMarkers}}
+
+\item{experiment_name}{arbitrary name to identify experiment}
+
+\item{organism}{either "human" or "mouse"}
+
+\item{...}{}
 }
 \value{
 
 }
 \description{
 Integrate multiple seurat objects and save to file
+}
+\examples{
+batches <- seurat_pancreas_reduced \%>\%
+  purrr::map(Seurat::SplitObject, split.by = "dataset") \%>\%
+  purrr::transpose()
+
+inegrated_seu <- integration_workflow(batches)
 }

@@ -4,7 +4,7 @@
 \alias{record_experiment_data}
 \title{Record Experiment Metadata}
 \usage{
-record_experiment_data(object, experiment_name, organism)
+record_experiment_data(object, experiment_name = NULL, organism = NULL)
 }
 \arguments{
 \item{add_all_meta_data}{}

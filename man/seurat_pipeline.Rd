@@ -4,7 +4,15 @@
 \alias{seurat_pipeline}
 \title{Run Seurat Pipeline}
 \usage{
-seurat_pipeline(seu = seu, resolution = 0.6, reduction = "pca", ...)
+seurat_pipeline(
+  seu = seu,
+  feature = "gene",
+  resolution = 0.6,
+  reduction = "pca",
+  annotate_cell_cycle = TRUE,
+  annotate_percent_mito = TRUE,
+  ...
+)
 }
 \arguments{
 \item{resolution}{}

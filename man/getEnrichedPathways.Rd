@@ -6,8 +6,7 @@
 \usage{
 getEnrichedPathways(
   object,
-  column_sample = "sample",
-  column_cluster = "cluster",
+  column_cluster = "group",
   databases = c("GO_Biological_Process_2018", "GO_Cellular_Component_2018",
     "GO_Molecular_Function_2018", "KEGG_2016", "WikiPathways_2016", "Reactome_2016",
     "Panther_2016", "Human_Gene_Atlas", "Mouse_Gene_Atlas"),
@@ -17,9 +16,7 @@ getEnrichedPathways(
 )
 }
 \arguments{
-\item{object}{Seurat object.}
-
-\item{column_sample}{Column in object@meta.data that contains information
+\item{object}{Seurat object.
 about sample; defaults to 'sample'.}
 
 \item{column_cluster}{Column in object@meta.data that contains information
@@ -61,6 +58,9 @@ pbmc <- getEnrichedPathways(
   max_terms = 100,
   URL_API = 'http://amp.pharm.mssm.edu/Enrichr/enrich'
 )
+}
+\author{
+Roman Hillje, modified by Kevin Stachelek
 }
 \keyword{Cerebro}
 \keyword{Enrichr}

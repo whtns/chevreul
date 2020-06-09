@@ -13,7 +13,7 @@
 #'
 #' @examples
 minimalSeuratApp <- function(seu_list, appTitle = NULL, feature_types = "gene",
-                             organism_type = "human", loom_path, futureMb = 13000) {
+                             organism_type = "human", loom_path = NULL, futureMb = 13000) {
   print(feature_types)
   future::plan(strategy = "multicore", workers = 6)
   future_size <- futureMb * 1024^2
@@ -25,14 +25,12 @@ minimalSeuratApp <- function(seu_list, appTitle = NULL, feature_types = "gene",
     scrollX = TRUE, language = list(search = "Filter:")
   ))
   header <- shinydashboard::dashboardHeader(title = appTitle)
-  sidebar <- shinydashboard::dashboardSidebar(uiOutput("featureType"),
+  sidebar <- shinydashboard::dashboardSidebar(
+    uiOutput("featureType"),
     shinyWidgets::prettyRadioButtons("organism_type",
       inline = TRUE,
       "Organism", choices = c("human", "mouse"), selected = organism_type
     ),
-    actionButton("changeEmbedAction",
-      label = "Change Embedding Parameters"
-    ), changeEmbedParamsui("changeembed"),
     shinydashboard::sidebarMenu(
       shinydashboard::menuItem("Plot Data",
         tabName = "comparePlots", icon = icon("chart-bar"), selected = TRUE
@@ -42,6 +40,8 @@ minimalSeuratApp <- function(seu_list, appTitle = NULL, feature_types = "gene",
         tabName = "diffex", icon = icon("magnet")
       ), shinydashboard::menuItem("Find Markers",
         tabName = "findMarkers", icon = icon("bullhorn")
+      ),  shinydashboard::menuItem("Pathway Enrichment Analysis",
+        tabName = "pathwayEnrichment", icon = icon("sitemap")
       ), shinydashboard::menuItem("Subset Seurat Input",
         tabName = "subsetSeurat", icon = icon("filter")
       ), shinydashboard::menuItem("All Transcripts",
@@ -54,33 +54,43 @@ minimalSeuratApp <- function(seu_list, appTitle = NULL, feature_types = "gene",
         tabName = "regressFeatures", icon = icon("eraser")
       )
     ),
+    actionButton("changeEmbedAction",
+                 label = "Change Embedding Parameters"
+    ), changeEmbedParamsui("changeembed"),
     width = 250
   )
   body <- shinydashboard::dashboardBody(
+    waiter::use_waiter(),
+    waiter::waiter_show_on_load(),
+    waiter::waiter_hide_on_render("plotreadcount1-rcplot"),
     shinydashboard::tabItems(
       shinydashboard::tabItem(
         tabName = "violinPlots",
         fluidRow(
-          seuratToolsBox(plotViolinui("violinPlot"), title = "Violin Plot") %>%
-            default_helper(type = "markdown", content = "violinPlot"),
-          seuratToolsBox(plotHeatmapui("heatMap"), title = "Heatmap") %>%
-            default_helper(type = "markdown", content = "heatMap")
+          plotViolinui("violinPlot"),
+          plotHeatmapui("heatMap")
         )
       ), shinydashboard::tabItem(
         tabName = "comparePlots",
         h2("Compare Plots") %>%
           default_helper(type = "markdown", content = "comparePlots"),
         fluidRow(
-          plotDimRedui("plotdimred1"),
-          plotDimRedui("plotdimred2")
+          column(
+            plotDimRedui("plotdimred1"),
+            width = 6
+          ),
+          column(
+            plotDimRedui("plotdimred2"),
+            width = 6
+          )
         ),
         fluidRow(
-          seuratToolsBox(plotReadCountui("plotreadcount1")),
-          seuratToolsBox(plotReadCountui("plotreadcount2"))
+          plotReadCountui("plotreadcount1"),
+          plotReadCountui("plotreadcount2")
         ), fluidRow(seuratToolsBox(
           title = "Selected Cells",
           tableSelectedui("tableselected"), width = 6
-        ), seuratToolsBox(plotClustree_UI("clustreePlot")))
+        ), plotClustree_UI("clustreePlot"))
       ),
       shinydashboard::tabItem(
         tabName = "reformatMetadata",
@@ -122,18 +132,25 @@ minimalSeuratApp <- function(seu_list, appTitle = NULL, feature_types = "gene",
         h2("Find Markers") %>%
           default_helper(type = "markdown", content = "findMarkers"),
         fluidRow(
-          seuratToolsBox(findMarkersui("findmarkers")),
-          plotDimRedui("markerScatter")
+          column(
+            findMarkersui("findmarkers"),
+            width = 6
+          ),
+          column(
+            plotDimRedui("markerScatter"),
+            width = 6
+          )
+        )
+      ),  shinydashboard::tabItem(
+        tabName = "pathwayEnrichment",
+        h2("Pathway Enrichment"),
+        fluidRow(
+          pathwayEnrichmentui("pathwayEnrichment")
         )
       ), shinydashboard::tabItem(
         tabName = "allTranscripts",
         h2("All Transcripts") %>%
           default_helper(type = "markdown", content = "allTranscripts"),
-        fluidRow(
-          seuratToolsBox(
-            shinyWidgets::actionBttn("plotTrx", "Plot all transcripts")
-            )
-          ),
         fluidRow(column(allTranscriptsui("alltranscripts1"),
           width = 6
         ), column(allTranscriptsui("alltranscripts2"),
@@ -155,11 +172,13 @@ minimalSeuratApp <- function(seu_list, appTitle = NULL, feature_types = "gene",
         tabName = "diffex",
         h2("Differential Expression") %>%
           default_helper(type = "markdown", content = "diffex"),
-        column(plotDimRedui("diffex"),
-          seuratToolsBox(tableSelectedui("diffex"),
-          width = 12
-        ), width = 6),
-        column(diffexui("diffex"), width = 6)
+        fluidRow(
+          column(plotDimRedui("diffex"),
+                 seuratToolsBox(tableSelectedui("diffex"),
+                                width = 12
+                 ), width = 6),
+          column(diffexui("diffex"), width = 6)
+        )
       ), shinydashboard::tabItem(
         tabName = "regressFeatures",
         fluidRow(
@@ -203,6 +222,8 @@ minimalSeuratApp <- function(seu_list, appTitle = NULL, feature_types = "gene",
     )
   }
   server <- function(input, output, session) {
+    w <- waiter::Waiter$new()
+
     shinyhelper::observe_helpers(help_dir = system.file("helpers", package = "seuratTools", lib.loc = "/dataVolume/storage/rpkgs/devel_install/"))
     options(warn = -1)
     # shinylogs::track_usage(storage_mode = shinylogs::store_json(path = "logs/"))
@@ -220,6 +241,10 @@ minimalSeuratApp <- function(seu_list, appTitle = NULL, feature_types = "gene",
 
     organism_type <- reactive({
       input$organism_type
+    })
+
+    loom_path <- reactive({
+      loom_path
     })
 
     plot_types <- reactive({
@@ -396,33 +421,26 @@ minimalSeuratApp <- function(seu_list, appTitle = NULL, feature_types = "gene",
       removeModal()
     })
     callModule(findMarkers, "findmarkers", seu)
+
+    callModule(pathwayEnrichment, "pathwayEnrichment", seu)
+
     diffex_results <- callModule(
       diffex, "diffex", seu, featureType,
       diffex_selected_cells
     )
-    enrichment_report <- callModule(
-      geneEnrichment, "geneenrichment",
-      seu, diffex_results
-    )
-    observe({
-      req(enrichment_report())
-      callModule(downloadTable, "downloadtable", enrichment_report)
-    })
 
-    observeEvent(input$plotTrx, {
-      showModal(modalDialog(
-        title = "Plotting Transcripts",
-        "This process may take a minute or two!"
-      ))
-      callModule(
-        allTranscripts, "alltranscripts1", seu, featureType,
-        organism_type
-      )
-      callModule(
-        allTranscripts, "alltranscripts2", seu, featureType,
-        organism_type
-      )
-      removeModal()
+    observe({
+      req(featureType())
+      if("transcript" %in% req(featureType())){
+        callModule(
+          allTranscripts, "alltranscripts1", seu, featureType,
+          organism_type
+        )
+        callModule(
+          allTranscripts, "alltranscripts2", seu, featureType,
+          organism_type
+        )
+      }
     })
 
     prior_gene_set <- reactive({
@@ -497,10 +515,9 @@ minimalSeuratApp <- function(seu_list, appTitle = NULL, feature_types = "gene",
     observe({
       req(seu)
       req(input$feature_type)
+      req(loom_path())
 
-      print(loom_path)
-
-      seu$active <- callModule(plotVelocity, "plotvelocity", seu, loom_path, featureType)
+      seu$active <- callModule(plotVelocity, "plotvelocity", seu, loom_path(), featureType)
     })
   }
   shinyApp(ui, server, enableBookmarking = "server")
