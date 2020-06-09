@@ -5,3 +5,5 @@ Available methods are:
 2. Wilcoxon rank-sum test
 3. Likelihood-ratio test
 4. [MAST](https://github.com/RGLab/MAST)
+
+diffex are cool
