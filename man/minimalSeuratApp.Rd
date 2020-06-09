@@ -9,7 +9,7 @@ minimalSeuratApp(
   appTitle = NULL,
   feature_types = "gene",
   organism_type = "human",
-  loom_path,
+  loom_path = NULL,
   futureMb = 13000
 )
 }

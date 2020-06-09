@@ -308,25 +308,27 @@ prep_plot_genes_in_pseudotime <- function(cds, mygenes, resolution, partition = 
 #' @export
 #'
 #' @examples
-record_experiment_data <- function(object, experiment_name, organism){
+record_experiment_data <- function(object, experiment_name = NULL, organism = NULL){
   if (!requireNamespace("Seurat", quietly = TRUE)) {
     stop("Package 'Seurat' needed for this function to work. Please install it.",
          call. = FALSE)
   }
 
+  organism = ifelse(!is.null(object@misc$experiment$organism), object@misc$experiment$organism, organism)
 
-  message(paste0("[", format(Sys.time(), "%H:%M:%S"), "] Initializing Cerebro object..."))
+  experiment_name = ifelse(!is.null(object@misc$experiment$experiment_name), object@misc$experiment$experiment_name, experiment_name)
+
+  message(paste0("[", format(Sys.time(), "%H:%M:%S"), "] Initializing seuratTools object..."))
   export <- list(experiment = list(experiment_name = experiment_name,
                                    organism = organism))
   export$experiment$date_of_analysis <- object@misc$experiment$date_of_analysis
   export$experiment$date_of_export <- Sys.Date()
 
-  object@misc$experiment <- list(
-    experiment_name = experiment_name,
-    organism = organism,
-    date_of_analysis = Sys.Date()
-  )
-  object@misc$parameters <- list(
+  export$experiment$experiment_name <- experiment_name
+  export$experiment$organism <- organism
+  export$experiment$date_of_analysis <- Sys.Date()
+
+  export$experiment$parameters <- list(
     gene_nomenclature = 'gene_symbol',
     discard_genes_expressed_in_fewer_cells_than = 10,
     keep_mitochondrial_genes = TRUE,
@@ -335,23 +337,21 @@ record_experiment_data <- function(object, experiment_name, organism){
     tSNE_perplexity = 30,
     cluster_resolution = seq(0.2, 2.0, by = 0.2)
   )
-  object@misc$parameters$filtering <- list(
+  export$experiment$filtering <- list(
     UMI_min = 50,
     UMI_max = Inf,
     genes_min = 10,
     genes_max = Inf
   )
-  object@misc$technical_info <- list(
+  export$experiment$technical_info <- list(
     'R' = capture.output(session_info())
   )
 
   if (!is.null(object@version)) {
-    export$technical_info$seurat_version <- object@version
+    export$experiment$technical_info$seurat_version <- object@version
   }
 
-  export$technical_info$seuratTools_version <- utils::packageVersion("seuratTools")
-
-
+  export$experiment$technical_info$seuratTools_version <- utils::packageVersion("seuratTools")
 
   object@misc <- c(object@misc, export)
 

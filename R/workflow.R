@@ -3,88 +3,93 @@
 #'
 #' Integrate multiple seurat objects and save to file
 #'
-#' @param child_proj_dirs child projects to be integrated
+#' @param batches seurat objects for each all batches provided as a list. If named, the resulting integrated object will be identified with corresponding values in 'batch' metadata
 #' @param excluded_cells named list of cells to exclude
+#' @param resolution value(s) to control the clustering resolution via `Seurat::FindMarkers`
+#' @param experiment_name arbitrary name to identify experiment
+#' @param organism either "human" or "mouse"
 #' @param ...
-#' @param resolution
 #'
 #' @return
 #' @export
 #'
 #' @examples
-integration_workflow <- function(child_proj_dirs, excluded_cells, resolution = seq(0.2, 2.0, by = 0.2), experiment_name, organism, ...) {
+#' batches <- seurat_pancreas_reduced %>%
+#'   purrr::map(Seurat::SplitObject, split.by = "dataset") %>%
+#'   purrr::transpose()
+#'
+#' inegrated_seu <- integration_workflow(batches)
 
-  # return(list(gene = mtcars))
+integration_workflow <- function(batches, excluded_cells, resolution = seq(0.2, 2.0, by = 0.2), experiment_name = "default_experiment", organism = "human", ...) {
 
-  names(child_proj_dirs) <- gsub("_proj", "", fs::path_file(child_proj_dirs))
+  # names(child_proj_dirs) <- gsub("_proj", "", fs::path_file(child_proj_dirs))
 
   # load seurat objects from 'child' projects
-  seus <- purrr::map(child_proj_dirs, load_seurat_from_proj)
+  # seus <- purrr::map(child_proj_dirs, load_seurat_from_proj)
 
-  # check species of child projects
-  # project_names <- purrr::map(seus, ~.x[[1]]@project.name)
+  organisms <- purrr::map(batches, list(1, "meta.data", "organism", 1))
+  experiment_names <- names(batches)
 
-  if (all(grepl("Hs", names(seus)))){
-    seus <- purrr::transpose(seus)
-    merged_seus <- purrr::imap(seus, seuratTools::seurat_integration_pipeline, resolution = resolution, organism = "human", ...)
-    for (i in names(merged_seus)){
-      merged_seus[[i]]@misc$child_projs <- names(child_proj_dirs)
+  batches <- purrr::transpose(batches)
+  for (i in names(batches)){
+    batches[[i]] <- purrr::pmap(list(batches[[i]], experiment_names, organisms), record_experiment_data)
+  }
+  batches <- purrr::transpose(batches)
+
+  if (all(purrr::map(batches, list(1, "misc", "experiment", "organism")) == "human")){
+    batches <- purrr::transpose(batches)
+    merged_batches <- purrr::imap(batches, seuratTools::seurat_integration_pipeline, resolution = resolution, organism = "human", ...)
+    for (i in names(merged_batches)){
+      merged_batches[[i]]@misc$batches <- names(batches)
     }
 
-  } else if (all(grepl("Mm", names(seus)))){
-    seus <- purrr::transpose(seus)
-    merged_seus <- purrr::imap(seus, seuratTools::seurat_integration_pipeline, resolution = resolution, organism = "mouse", ...)
-    for (i in names(merged_seus)){
-      merged_seus[[i]]@misc$child_projs <- names(child_proj_dirs)
+  } else if (all(purrr::map(batches, list(1, "misc", "experiment", "organism")) == "mouse")){
+    batches <- purrr::transpose(batches)
+    merged_batches <- purrr::imap(batches, seuratTools::seurat_integration_pipeline, resolution = resolution, organism = "mouse", ...)
+    for (i in names(merged_batches)){
+      merged_batches[[i]]@misc$batches <- names(batches)
     }
 
   }  else {
 
-    mouse_seu_list <- seus[grepl("Mm", names(seus))]
-    human_seu_list <- seus[grepl("Hs", names(seus))]
-    merged_seus <- cross_species_integrate(mouse_seu_list = mouse_seu_list, human_seu_list = human_seu_list)
-    for (i in names(merged_seus)){
-      merged_seus[[i]]@misc$child_projs <- names(child_proj_dirs)
+    # mouse_seu_list <- batches[grepl("Mm", names(batches))]
+    mouse_seu_list <- batches[names(organisms[organisms == "mouse"])]
+    # human_seu_list <- batches[grepl("Hs", names(batches))]
+    human_seu_list <- batches[names(organisms[organisms == "human"])]
+    merged_batches <- cross_species_integrate(mouse_seu_list = mouse_seu_list, human_seu_list = human_seu_list)
+    for (i in names(merged_batches)){
+      merged_batches[[i]]@misc$batches <- names(batches)
     }
   }
 
-  return(merged_seus)
+  merged_batches <- purrr::map(merged_batches, record_experiment_data, experiment_name, organism)
 
+  return(merged_batches)
 
 }
 
 
 #' Clustering Workflow
 #'
-#' Integrate multiple seurat objects and save to file
+#' Cluster and Reduce Dimensions of a seurat object
 #'
 #' @param feature_seus list of seurat objects named according to feature of interest ("gene" or "transcript")
 #' @param excluded_cells named list of cells to exclude
-#' @param cell_cycle whether to score and regress cell cycle related features
 #' @param resolution resolution(s) to use for clustering cells
-#' @param ...
+#' @param organism
+#' @param experiment_name
+#' ...
 #'
 #' @return
 #' @export
 #'
 #' @examples
-clustering_workflow <- function(feature_seus = NULL, excluded_cells, cell_cycle = FALSE, resolution = seq(0.2, 2.0, by = 0.2), organism = "human", experiment_name = "batch", ...) {
+#' clustered_seu <- clustering_workflow(seurat_pancrease_reduced)
+clustering_workflow <- function(feature_seus = NULL, excluded_cells, resolution = seq(0.2, 2.0, by = 0.2), organism = "human", experiment_name = "default_experiment", ...){
 
-  feature_seus <- purrr::map(feature_seus, seuratTools::seurat_pipeline, resolution = resolution, ...)
+  feature_seus <- purrr::imap(feature_seus, seuratTools::seurat_pipeline, resolution = resolution, ...)
 
-  if(cell_cycle){
-    # add cell cycle scoring to seurat objects
-    feature_seus <- purrr::imap(feature_seus, seuratTools::annotate_cell_cycle, ...)
-  }
-
-  # annotate low read count category in seurat metadata
-  feature_seus <- purrr::map(feature_seus, seuratTools::add_read_count_col)
-
-  # annotate mitochondrial percentage in seurat metadata
-  feature_seus <- purrr::imap(feature_seus, seuratTools::add_percent_mito)
-
-  feature_seus <- purrr::map(seus, record_experiment_data, experiment_name, organism)
-
+  feature_seus <- purrr::map(feature_seus, record_experiment_data, experiment_name, organism)
 
   # save_seurat(feature_seus, proj_dir = proj_dir, ...)
 

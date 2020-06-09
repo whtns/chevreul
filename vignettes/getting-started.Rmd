@@ -1,0 +1,100 @@
+---
+title: "Getting Started"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Getting Started}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(seuratTools, lib.loc = "~/rpkgs/devel_install/")
+library(tidyverse)
+library(Seurat)
+library(ggraph)
+library(iheatmapr)
+library(formattable)
+```
+
+# view included dataset 
+
+```{r}
+seurat_pancreas_reduced
+
+glimpse(seurat_pancreas_reduced)
+```
+
+# run clustering on a single seurat object
+
+By default clustering will be run at ten different resolutions between 0.2 and 2.0. Any resolution can be specified by providing the resolution argument as a numeric vector.
+
+```{r}
+
+clustered_seu <- clustering_workflow(seurat_pancreas_reduced, experiment_name = "seurat_pancreas", organism = "human")
+```
+
+```{r}
+minimalSeuratApp(clustered_seu)
+```
+
+## split included dataset based on collection technology 
+
+```{r}
+batches <- seurat_pancreas_reduced %>%
+ purrr::map(Seurat::SplitObject, split.by = "dataset") %>%
+ purrr::transpose()
+
+names(batches)
+
+glimpse(batches)
+
+```
+
+# run seurat batch integration on 'child' projects
+
+```{r}
+integrated_seu <- integration_workflow(batches)
+```
+
+# launch app to inspect
+
+```{r, eval = FALSE}
+
+minimalSeuratApp(integrated_seu)
+
+```
+
+# view analysis details
+
+```{r}
+integrated_seu$gene@misc$experiment %>% 
+  tibble::enframe() %>% 
+  knitr::kable()
+```
+
+# regress out stress related genes from integrated seurat object
+
+```{r, eval = FALSE}
+
+stress_genes <- list(c("FOS", "FOSB", "EGR1", "IER2", "JUNB", "DUSP1", "ID1", "RASD1", "BTG2"))
+
+stress_transcripts <- genes_to_transcripts(stress_genes)
+
+integrated_seu <- seuratTools::regress_by_features(integrated_seu, feature_set = stress_genes, set_name = "stress_score")
+
+```
+
+#annotate excluded cells 
+
+```{r, eval = FALSE}
+
+corrected_seus <- map(corrected_seus, seuratTools::annotate_excluded, wandering_cells = c("ds20170407_S476", "ds20170407_S490", "ds20170407_S492", "ds20170407_S473", "ds20170407_S482", "ds20170407_S491", "ds20170407_S487", "ds20170407_S477", "ds20170407_S486", "ds20170407_S374", "ds20170407_S409", "ds20170407_S335", "ds20170407_S327", "ds20170407_S314", "ds20170407_S317", "ds20170407_S424", "ds20170407_S430", "ds20171031_S196", "ds20171031_S287", "ds20171031_S128", "ds20171031_S108", "ds20171031_S116", "shl20190501-083", "shl20190501-643", "hs20151130_SC1_95", "hs20151130_SC2_33", "hs20151130_SC2_50", "hs20151130_SC2_52", "hs20151130_SC2_56", "hs20151130_SC2_65", "hs20151130_SC2_72", "hs20151130_SC2_80", "hs20151130_SC2_89", "hs20151130_SC3_13", "hs20151130_SC3_2", "hs20151130_SC3_32", "hs20151130_SC3_43", "hs20151130_SC3_46", "hs20151130_SC3_53", "hs20151130_SC3_63", "hs20151130_SC3_75", "hs20151130_SC3_90", "hs20151130_SC2_15", "hs20151130_SC2_37", "hs20151130_SC2_47", "hs20151130_SC2_54", "hs20151130_SC2_75", "hs20151130_SC2_82", "hs20151130_SC3_25", "hs20151130_SC3_42", "hs20151130_SC3_78", "hs20151130_SC3_81", "hs20151130_SC3_85", "hs20151130_SC2_59", "hs20151130_SC2_70", "hs20151130_SC2_93", "hs20151130_SC1_29", "hs20151130_SC1_94", "hs20151130_SC3_22", "hs20151130_SC3_16", "hs20151130_SC2_17", "hs20151130_SC2_69", "hs20151130_SC3_12", "hs20151130_SC2_79", "hs20151130_SC3_4", "hs20151130_SC3_71", "hs20151130_SC1_75"))
+
+```
