@@ -10,15 +10,16 @@ seurat_integration_pipeline(
   resolution,
   suffix = "",
   algorithm = 1,
-  experiment_name,
   organism,
+  annotate_cell_cycle = FALSE,
+  annotate_percent_mito = FALSE,
   ...
 )
 }
 \arguments{
-\item{feature}{}
-
 \item{suffix}{a suffix to be appended to a file save in output dir}
+
+\item{...}{}
 }
 \value{
 

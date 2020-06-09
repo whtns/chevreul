@@ -253,8 +253,8 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
       tabName = "violinPlots", icon = icon("sort")
     ), shinydashboard::menuItem("Differential Expression",
       tabName = "diffex", icon = icon("magnet")
-    ), shinydashboard::menuItem("Gene Enrichment Analysis",
-      tabName = "geneEnrichment", icon = icon("sitemap")
+    ), shinydashboard::menuItem("Pathway Enrichment Analysis",
+      tabName = "pathwayEnrichment", icon = icon("sitemap")
     ), shinydashboard::menuItem("Find Markers",
       tabName = "findMarkers", icon = icon("bullhorn")
     ), shinydashboard::menuItem("Subset Seurat Input",
@@ -275,6 +275,7 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
     width = 250
   )
   body <- shinydashboard::dashboardBody(
+    waiter::use_waiter(),
     shinydashboard::tabItems(
     shinydashboard::tabItem(
       tabName = "comparePlots",
@@ -389,10 +390,9 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
         diffexui("diffex"),
         width = 6)
     ), shinydashboard::tabItem(
-      tabName = "geneEnrichment",
-      h2("Gene Enrichment"),
-      geneEnrichmentui("geneenrichment"),
-      downloadTable_UI("downloadtable")
+      tabName = "pathwayEnrichment",
+      h2("Pathway Enrichment"),
+      pathwayEnrichmentui("pathwayEnrichment"),
     ), shinydashboard::tabItem(
       tabName = "regressFeatures",
       fluidRow(
@@ -436,6 +436,9 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
     )
   }
   server <- function(input, output, session) {
+
+    w <- waiter::Waiter$new()
+
     # lib.loc = "/dataVolume/storage/rpkgs/devel_install/"
     shinyhelper::observe_helpers(help_dir = system.file("helpers", package = "seuratTools"))
     options(warn = -1)
@@ -659,6 +662,9 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
       tableSelected, "diffex",
       seu
     )
+
+    callModule(pathwayEnrichment, "pathwayEnrichment", seu)
+
     subset_selected_cells <- callModule(
       tableSelected, "subset",
       seu
@@ -757,15 +763,6 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
       diffex, "diffex", seu, featureType,
       diffex_selected_cells
     )
-    enrichment_report <- callModule(
-      geneEnrichment, "geneenrichment",
-      seu, diffex_results
-    )
-
-    observe({
-      req(enrichment_report())
-      callModule(downloadTable, "downloadtable", enrichment_report)
-    })
 
     observe({
       req(featureType())

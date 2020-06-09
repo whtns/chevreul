@@ -1,58 +1,3 @@
-#' Title
-#'
-#' @param id
-#'
-#' @return
-#' @export
-#'
-#' @examples
-downloadTable_UI <- function(id) {
-  ns <- NS(id)
-  tagList(
-    uiOutput(ns("geaDownloadButton"))
-    # downloadButton(ns("mydata"), "my data")
-  )
-}
-
-#' Title
-#'
-#' @param input
-#' @param output
-#' @param session
-#' @param mytable
-#'
-#' @return
-#' @export
-#'
-#' @examples
-downloadTable <- function(input, output, session, mytable) {
-  ns <- session$ns
-  results <- reactive({
-    req(mytable())
-    mytable()$results
-  })
-
-  reportLink <- reactive({
-    req(mytable())
-    mytable()$report
-  })
-
-  output$geaDownloadButton <- renderUI({
-    req(mytable())
-    downloadButton(ns("mydata"), "Gene Enrichment Results")
-  })
-
-  # Downloadable csv of selected dataset ----
-  output$mydata <- downloadHandler(
-    filename = function(){
-      paste0(fs::path_file(reportLink()), ".csv")
-      },
-    content = function(myfile) {
-      write.csv(results(), myfile, row.names = FALSE)
-    }
-  )
-}
-
 #' plot clustree ui
 #'
 #' @param id
@@ -64,8 +9,10 @@ downloadTable <- function(input, output, session, mytable) {
 plotClustree_UI <- function(id) {
   ns <- NS(id)
   tagList(
+    seuratToolsBox(
     # textOutput(ns("checkSeu")),
-    plotOutput(ns("clustree"))
+    plotOutput(ns("clustree"), height = "500px")
+    )
 
   )
 }
@@ -1860,3 +1807,174 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
       })
 
 }
+
+
+#' Title
+#'
+#' @param id
+#'
+#' @return
+#' @export
+#'
+#' @examples
+pathwayEnrichmentui <- function(id){
+    ns <- NS(id)
+        seuratToolsBox(
+          title = "Enriched pathways by cluster",
+          tagList(
+            uiOutput(ns("enriched_pathways_by_cluster_select_source_UI")),
+            uiOutput(ns("enriched_pathways_by_cluster_UI"))
+          ),
+          width = 12
+        )
+    }
+
+#' pathway enrichment
+#'
+#' @param input
+#' @param output
+#' @param session
+#'
+#' @return
+#' @export
+#'
+#' @examples
+pathwayEnrichment <- function(input, output, session, seu){
+    ns <- session$ns
+
+    ##----------------------------------------------------------------------------##
+    ## Tab: Enriched pathways
+    ##----------------------------------------------------------------------------##
+
+    ##----------------------------------------------------------------------------##
+    ## Clusters.
+    ##----------------------------------------------------------------------------##
+
+    # UI element: choose source for pathway enrichement results (currently Enrichr or GSVA)
+    output$enriched_pathways_by_cluster_select_source_UI <- renderUI({
+      req(seu$active)
+      if (is.null(seu$active@misc$enriched_pathways) ) {
+        textOutput(ns("enriched_pathways_by_cluster_table_missing"))
+      } else {
+        selectInput(
+          ns("enriched_pathways_by_cluster_select_source"),
+          label = NULL,
+          choices = names(seu$active@misc$enriched_pathways)
+        )
+      }
+    })
+
+    # UI element: display results or alternative text
+    output$enriched_pathways_by_cluster_UI <- renderUI({
+      req(seu$active)
+      req(input$enriched_pathways_by_cluster_select_source)
+      if ( input$enriched_pathways_by_cluster_select_source == "enrichr" ) {
+        if ( !is.null(seu$active@misc$enriched_pathways$enrichr$by_cluster) ) {
+          if ( is.list(seu$active@misc$enriched_pathways$enrichr$by_cluster) ) {
+            tagList(
+              fluidRow(
+                column(4,
+                       uiOutput(ns("enriched_pathways_by_cluster_select_cluster_UI"))
+                ),
+                column(8,
+                       uiOutput(ns("enriched_pathways_by_cluster_select_db_UI"))
+                )
+              ),
+              DT::dataTableOutput(ns("enriched_pathways_by_cluster_table_present"))
+            )
+          } else if ( seu$active@misc$enriched_pathways$enrichr$by_cluster == "no_markers_found" ) {
+            textOutput(ns("enriched_pathways_by_cluster_table_no_markers_found"))
+          }
+        } else {
+          textOutput(ns("enriched_pathways_by_cluster_table_missing_enrichr"))
+        }
+      }
+    })
+
+    # UI element: choose cluster
+    output$enriched_pathways_by_cluster_select_cluster_UI <- renderUI({
+      req(seu$active)
+      req(input$enriched_pathways_by_cluster_select_source)
+      if ( input$enriched_pathways_by_cluster_select_source == 'enrichr' ) {
+        choices <- levels(seu$active@misc$enriched_pathways$enrichr$by_cluster$cluster) %>%
+          intersect(., unique(seu$active@misc$enriched_pathways$enrichr$by_cluster$cluster))
+      }
+      selectInput(
+        ns("enriched_pathways_by_cluster_select_cluster"),
+        label = NULL,
+        choices = choices
+      )
+    })
+
+    # UI element: choose database
+    output$enriched_pathways_by_cluster_select_db_UI <- renderUI({
+      req(
+        input$enriched_pathways_by_cluster_select_source,
+        input$enriched_pathways_by_cluster_select_cluster
+      )
+      choices <- seu$active@misc$enriched_pathways$enrichr$by_cluster %>%
+        dplyr::filter(cluster == input$enriched_pathways_by_cluster_select_cluster) %>%
+        dplyr::pull(db) %>%
+        intersect(., levels(.))
+      selectInput(
+        ns("enriched_pathways_by_cluster_select_db"),
+        label = NULL,
+        choices = choices
+      )
+    })
+
+    # table
+    output$enriched_pathways_by_cluster_table_present <- DT::renderDataTable(server = FALSE, {
+      req(
+        input$enriched_pathways_by_cluster_select_source,
+        input$enriched_pathways_by_cluster_select_cluster,
+        input$enriched_pathways_by_cluster_select_db
+      )
+      if ( input$enriched_pathways_by_cluster_select_source == "enrichr" & is.data.frame(seu$active@misc$enriched_pathways$enrichr$by_cluster) ) {
+
+        format_pathway_table(seu$active@misc$enriched_pathways$enrichr$by_cluster,
+                             input$enriched_pathways_by_cluster_select_cluster,
+                             input$enriched_pathways_by_cluster_select_db)
+
+      }
+    })
+
+    # # alternative text messages
+    output$enriched_pathways_by_cluster_table_missing <- renderText({
+      "Data not available. Possible reason: Data not generated."
+    })
+
+    output$enriched_pathways_by_cluster_table_no_markers_found <- renderText({
+      "No marker genes identified to perform pathway enrichment analysis with."
+    })
+
+    output$enriched_pathways_by_cluster_table_missing_enrichr <- renderText({
+      "Data not available. Possible reasons: Only 1 cluster in this data set, no marker genes found or data not generated."
+    })
+
+    output$enriched_pathways_by_cluster_table_no_gene_sets_enriched <- renderText({
+      "Either the loaded data set consists of a single cluster (in which case GSVA cannot be applied) or no gene sets were found to be enriched (with the selected statistical thresholds) in any cluster."
+    })
+
+    output$enriched_pathways_by_cluster_table_only_one_cluster_in_data_set <- renderText({
+      "The loaded data set consists of a single cluster which means GSVA cannot be applied."
+    })
+
+    output$enriched_pathways_by_cluster_table_missing_gsva <- renderText({
+      "Data not available. Possible reason: Data not generated."
+    })
+
+    # info box
+    observeEvent(input$enriched_pathways_by_cluster_info, {
+      showModal(
+        modalDialog(
+          enriched_pathways_by_cluster_info$text,
+          title = enriched_pathways_by_cluster_info$title,
+          easyClose = TRUE,
+          footer = NULL
+        )
+      )
+    })
+
+}
+
