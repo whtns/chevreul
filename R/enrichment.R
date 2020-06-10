@@ -115,7 +115,7 @@ getEnrichedPathways <- function(
   max_terms = 100,
   URL_API = 'http://amp.pharm.mssm.edu/Enrichr/enrich'
 ) {
-  # browser()
+
   ## check if Seurat is installed
   if (!requireNamespace("Seurat", quietly = TRUE))
   {
@@ -145,9 +145,9 @@ getEnrichedPathways <- function(
   ## - try up to three times to run enrichR annotation (fails sometimes)
   ## - filter results
   ##--------------------------------------------------------------------------##
-  if ( !is.null(object@misc$markers) )
+  if ( !is.null(object@misc$markers[[1]]$presto) )
   {
-    if ( is.data.frame(object@misc$markers[[1]]) )
+    if ( is.data.frame(object@misc$markers[[1]]$presto) )
     {
       message(
         paste0(
@@ -155,21 +155,13 @@ getEnrichedPathways <- function(
           '] Get enriched pathway for clusters...'
         )
       )
-      #
-      # markers_by_cluster <- object@misc$markers
-      # #
-      # if ( is.factor(object@meta.data[[column_cluster]]) )
-      # {
-      #   cluster_names <- as.character(levels(object@meta.data[[column_cluster]]))
-      # } else
-      # {
-      #   cluster_names <- sort(unique(object@meta.data[[column_cluster]]))
-      # }
-      ## remove clusters for which no marker genes were found
-      markers_by_cluster <- object@misc$markers[[1]] %>%
-        dplyr::filter(padj < 0.05)
 
-      cluster_names <- unique(markers_by_cluster$group)
+      ## remove clusters for which no marker genes were found
+      markers_by_cluster <- object@misc$markers[[1]]$presto %>%
+        # dplyr::filter(padj < 0.05) %>%
+        identity()
+
+      cluster_names <- names(markers_by_cluster)
 
       results_by_cluster <- future.apply::future_sapply(
         cluster_names, USE.NAMES = TRUE, simplify = FALSE,
@@ -186,10 +178,7 @@ getEnrichedPathways <- function(
             attempt <- attempt + 1
             try(
               temp <- markers_by_cluster %>%
-                dplyr::filter(.data$group == x) %>%
-                dplyr::select('feature') %>%
-                t() %>%
-                as.vector() %>%
+                dplyr::pull(x) %>%
                 .send_enrichr_query(databases = databases, URL_API = URL_API)
             )
           }
@@ -238,7 +227,7 @@ getEnrichedPathways <- function(
         dplyr::select(.data$group, .data$db, dplyr::everything()) %>%
         dplyr::mutate(
           cluster = factor(.data$group, levels = intersect(cluster_names,
-                                                             .data$group)),
+                                                           .data$group)),
           db = factor(.data$db, databases)
         )
       message(
@@ -293,6 +282,7 @@ getEnrichedPathways <- function(
   ##--------------------------------------------------------------------------##
   return(object)
 }
+
 
 #' Title
 #'

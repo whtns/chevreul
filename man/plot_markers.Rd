@@ -10,6 +10,7 @@ plot_markers(
   num_markers = 5,
   selected_clusters = NULL,
   return_plot = FALSE,
+  marker_method = "presto",
   ...
 )
 }
