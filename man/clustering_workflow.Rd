@@ -14,13 +14,13 @@ clustering_workflow(
 )
 }
 \arguments{
-\item{feature_seus}{list of seurat objects named according to feature of interest ("gene" or "transcript")}
+\item{feature_seus}{list of seurat objedevelcts named according to feature of interest ("gene" or "transcript")}
 
 \item{excluded_cells}{named list of cells to exclude}
 
 \item{resolution}{resolution(s) to use for clustering cells}
 
-\item{experiment_name}{...}
+\item{...}{}
 }
 \value{
 

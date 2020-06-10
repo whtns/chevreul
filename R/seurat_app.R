@@ -544,7 +544,9 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
             "active"]
           for (i in seu_names) {
             seu[[i]] <- dataset[[i]]
+            seu[[i]] <- update_seuratTools_object(seu[[i]], i)
           }
+
           seu$active <- seu[["gene"]]
           print(uploadSeuratPath())
           print(names(seu))

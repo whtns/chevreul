@@ -308,7 +308,7 @@ prep_plot_genes_in_pseudotime <- function(cds, mygenes, resolution, partition = 
 #' @export
 #'
 #' @examples
-record_experiment_data <- function(object, experiment_name = NULL, organism = NULL){
+record_experiment_data <- function(object, experiment_name = "default_experiment", organism = "human"){
   if (!requireNamespace("Seurat", quietly = TRUE)) {
     stop("Package 'Seurat' needed for this function to work. Please install it.",
          call. = FALSE)
@@ -383,5 +383,40 @@ plot_all_transcripts <- function(seu_transcript, seu_gene, features, embedding){
   names(pList) <- features
 
   return(pList)
+
+}
+
+#' Title
+#'
+#' @param seu
+#' @param feature
+#' @param resolution
+#' @param ...
+#'
+#' @return
+#' @export
+#'
+#' @examples
+update_seuratTools_object <- function(seu, feature, resolution = seq(0.2, 2.0, by = 0.2), ...){
+  # browser()
+
+  seuratTools_version <- seu@misc$experiment$technical_info$seuratTools_version
+
+  seuratTools_version <- ifelse(is.null(seuratTools_version), 0.1, seuratTools_version)
+
+  if(seuratTools_version < getNamespaceVersion("seuratTools")){
+
+    if (!grepl("_snn_res", colnames(seu@meta.data))){
+      seu <- seurat_cluster(seu = seu, resolution = resolution, reduction = "pca", ...)
+
+    }
+
+      seu <- find_all_markers(seu, resolution = resolution)
+      if (feature == "gene"){
+        seu <- getEnrichedPathways(seu)
+      }
+      seu <- record_experiment_data(seu)
+  }
+  return(seu)
 
 }
