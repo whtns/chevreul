@@ -77,18 +77,32 @@ find_all_markers <- function(seu, ...){
 #'
 #' @param resolution
 #' @param seu
+#' @param top_n
 #'
 #' @return
 #' @export
 #'
 #' @examples
-stash_marker_features <- function(resolution, seu){
+stash_marker_features <- function(resolution, seu, top_n = 200){
+  markers <- list()
+    markers$presto <- presto::wilcoxauc(seu, resolution) %>%
+      dplyr::group_by(group) %>%
+      dplyr::filter(padj < 0.05) %>%
+      dplyr::top_n(n = top_n, wt = logFC) %>%
+      dplyr::arrange(group, desc(logFC)) %>%
+      dplyr::select(feature, group) %>%
+      dplyr::mutate(rn = row_number()) %>%
+      tidyr::pivot_wider(names_from = group, values_from = feature) %>%
+      dplyr::select(-rn)
 
-  markers <- presto::wilcoxauc(seu, resolution) %>%
-    dplyr::group_by(group) %>%
-    dplyr::top_n(n = 200, wt = logFC) %>%
-    # dplyr::pull(feature) %>%
-    identity()
+    markers$genesorteR <- genesorteR::sortGenes(
+      seu@assays$RNA@data,
+      seu[[]][[resolution]]
+    )
+
+    markers$genesorteR <-
+      apply(markers$genesorteR$specScore, 2, function(x) names(head(sort(x, decreasing = TRUE), n = top_n))) %>%
+      as.data.frame()
 
   return(markers)
 
