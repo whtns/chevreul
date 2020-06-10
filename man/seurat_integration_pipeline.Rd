@@ -5,7 +5,7 @@
 \title{Run Seurat Integration}
 \usage{
 seurat_integration_pipeline(
-  seus,
+  seu_list,
   feature,
   resolution,
   suffix = "",
