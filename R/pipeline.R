@@ -27,7 +27,9 @@ seurat_integration_pipeline <- function(seu_list, feature, resolution, suffix = 
 
   integrated_seu <- find_all_markers(integrated_seu)
 
-  integrated_seu <- getEnrichedPathways(integrated_seu)
+  if (feature == "gene"){
+    integrated_seu <- getEnrichedPathways(integrated_seu)
+  }
 
   # add read count column
   integrated_seu <- add_read_count_col(integrated_seu)
@@ -69,9 +71,11 @@ seurat_pipeline <- function(seu, feature = "gene", resolution=0.6, reduction = "
 
   seu <- seurat_cluster(seu = seu, resolution = resolution, reduction = reduction, ...)
 
-  seu <- find_all_markers(seu, resolution = resolution, reduction = reduction)
+  seu <- find_all_markers(seu, resolution = resolution)
 
-  seu <- getEnrichedPathways(seu)
+  if (feature == "gene"){
+    seu <- getEnrichedPathways(seu)
+  }
 
   # annotate low read count category in seurat metadata
   seu <- seuratTools::add_read_count_col(seu)

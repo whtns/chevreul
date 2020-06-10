@@ -16,6 +16,7 @@ knitr::opts_chunk$set(
 
 ```{r setup}
 library(seuratTools, lib.loc = "~/rpkgs/devel_install/")
+library(seuratTools)
 library(tidyverse)
 library(Seurat)
 library(ggraph)
