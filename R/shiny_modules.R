@@ -1099,6 +1099,7 @@ findMarkersui <- function(id) {
       sliderInput(ns("resolution2"), label = "Resolution of clustering algorithm (affects number of clusters)", min = 0.2, max = 2, step = 0.2, value = 0.6),
       numericInput(ns("num_markers"), "Select Number of Markers to Plot for Each Cluster", value = 5, min = 2, max = 20),
       uiOutput(ns("clusterSelect")),
+      radioButtons(ns("markerMethod"), "Method of Marker Selection", choices = c("presto", "genesorteR"), selected = "presto"),
       actionButton(ns("plotDots"), "Plot Markers!"),
       plotly::plotlyOutput(ns("markerplot"), height = 800),
       width = 12
@@ -1142,7 +1143,7 @@ findMarkers <- function(input, output, session, seu) {
   })
 
   marker_plot <- eventReactive(input$plotDots, {
-    plot_markers(seu = seu$active, resolution = resolution(), num_markers = input$num_markers, selected_clusters = input$displayClusters)
+    plot_markers(seu = seu$active, resolution = resolution(), num_markers = input$num_markers, selected_clusters = input$displayClusters, marker_method = input$markerMethod)
   })
 
   output$markerplot <- plotly::renderPlotly({
@@ -1707,7 +1708,7 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
           "This process may take a minute or two!"
         ))
 
-        cds_pr_test_res = monocle3::graph_test(cds$traj, neighbor_graph="principal_graph", cores=4)
+        cds_pr_test_res = monocle3::graph_test(cds$traj, neighbor_graph="principal_graph", cores=4, expression_family = "negbinom")
         removeModal()
 
         cds$traj@metadata[["diff_genes"]] <- cds_pr_test_res

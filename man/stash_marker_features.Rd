@@ -4,10 +4,10 @@
 \alias{stash_marker_features}
 \title{Stash Marker Genes in a Seurat Object}
 \usage{
-stash_marker_features(resolution, seu)
+stash_marker_features(resolution, seu, top_n = 200)
 }
 \arguments{
-\item{seu}{}
+\item{top_n}{}
 }
 \value{
 

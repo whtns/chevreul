@@ -44,7 +44,8 @@ Imports:
     shinyWidgets,
     shinyjs,
     waiter,
-    sessioninfo
+    sessioninfo,
+    genesorteR (>= 0.4.3)
 Suggests: 
     dplyr,
     tidyr,
@@ -54,12 +55,13 @@ Suggests:
     rmarkdown
 URL: https://github.com/cobriniklab/seuratTools
 BugReports: https://github.com/cobriniklab/seuratTools/issues
-Remotes: 
+Remotes:  
     immunogenomics/presto,
     satijalab/seurat-wrappers,
     cole-trapnell-lab/monocle3,
     velocyto-team/velocyto.R,
-    stephenturner/annotables
+    stephenturner/annotables,
+    mahmoudibrahim/genesorteR
 Depends: 
     Rcpp,
     Seurat,

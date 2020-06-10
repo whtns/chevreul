@@ -506,18 +506,21 @@ plot_ridge <- function(seu, features){
 #' @param seu
 #' @param resolution
 #' @param selected_clusters
+#' @param marker_method
 #' @param ...
 #'
 #' @return
 #' @export
 #'
 #' @examples
-plot_markers <- function(seu, resolution, num_markers = 5, selected_clusters = NULL, return_plot = FALSE, ...){
-
+plot_markers <- function(seu, resolution, num_markers = 5, selected_clusters = NULL, return_plot = FALSE, marker_method = "presto", ...){
   Idents(seu) <- seu[[resolution]]
 
-  markers <- seu@misc$markers[[resolution]] %>%
-    dplyr::top_n(n = num_markers, wt = logFC) %>%
+  markers <- seu@misc$markers[[resolution]][[marker_method]] %>%
+    dplyr::slice_head(n = num_markers) %>%
+    tidyr::pivot_longer(everything(), names_to = "group", values_to = "feature") %>%
+    dplyr::arrange(group) %>%
+    # dplyr::top_n(n = num_markers, wt = logFC) %>%
     identity()
 
   if(!is.null(selected_clusters)){
