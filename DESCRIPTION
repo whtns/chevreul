@@ -43,7 +43,8 @@ Imports:
     htmlwidgets,
     shinyWidgets,
     shinyjs,
-    waiter
+    waiter,
+    sessioninfo
 Suggests: 
     dplyr,
     tidyr,

@@ -5,7 +5,7 @@
 \title{Run Seurat Pipeline}
 \usage{
 seurat_pipeline(
-  seu = seu,
+  seu,
   feature = "gene",
   resolution = 0.6,
   reduction = "pca",
