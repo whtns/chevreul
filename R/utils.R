@@ -344,7 +344,7 @@ record_experiment_data <- function(object, experiment_name = NULL, organism = NU
     genes_max = Inf
   )
   export$experiment$technical_info <- list(
-    'R' = capture.output(session_info())
+    'R' = capture.output(sessioninfo::session_info())
   )
 
   if (!is.null(object@version)) {

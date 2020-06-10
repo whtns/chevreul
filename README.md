@@ -35,10 +35,68 @@ You can view documentation on the [seuratTools website](https://whtns.github.io/
 
 ![add custom metadata](README_docs/add_arbitrary_metadata.gif)
 
-This is a basic example which shows you how to solve a common problem:
 
-``` r
-## basic example code
+```
+library(seuratTools, lib.loc = "~/rpkgs/devel_install/")
+library(tidyverse)
+library(Seurat)
+library(ggraph)
+library(iheatmapr)
+library(formattable)
 ```
 
+# view included dataset 
 
+```
+seurat_pancreas_reduced
+
+glimpse(seurat_pancreas_reduced)
+```
+
+# run clustering on a single seurat object
+
+By default clustering will be run at ten different resolutions between 0.2 and 2.0. Any resolution can be specified by providing the resolution argument as a numeric vector.
+
+```
+
+clustered_seu <- clustering_workflow(seurat_pancreas_reduced, experiment_name = "seurat_pancreas", organism = "human")
+```
+
+```
+minimalSeuratApp(clustered_seu)
+```
+
+## split included dataset based on collection technology 
+
+```
+batches <- seurat_pancreas_reduced %>%
+ purrr::map(Seurat::SplitObject, split.by = "dataset") %>%
+ purrr::transpose()
+
+names(batches)
+
+glimpse(batches)
+
+```
+
+# run seurat batch integration on 'child' projects
+
+```
+integrated_seu <- integration_workflow(batches)
+```
+
+# launch app to inspect
+
+```
+
+minimalSeuratApp(integrated_seu)
+
+```
+
+# view analysis details
+
+```
+integrated_seu$gene@misc$experiment %>% 
+  tibble::enframe() %>% 
+  knitr::kable()
+```

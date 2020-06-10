@@ -10,23 +10,27 @@
 
 
 <!-- jquery -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
 <!-- Bootstrap -->
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha256-916EbMg70RQy9LHiGkXzG8hSg9EdNy97GazNG/aiY1w=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous" />
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha256-U5ZEeKfGNOja007MMD3YBI0A3OSZOQbeG6z2f2Y0hu8=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script>
+
+<!-- bootstrap-toc -->
+<link rel="stylesheet" href="../bootstrap-toc.css">
+<script src="../bootstrap-toc.js"></script>
 
 <!-- Font Awesome icons -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.7.1/css/all.min.css" integrity="sha256-nAmazAk6vS34Xqo0BSrTb+abbtFlgsFK7NKSi6o7Y78=" crossorigin="anonymous" />
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.7.1/css/v4-shims.min.css" integrity="sha256-6qHlizsOWFskGlwVOKuns+D1nB6ssZrHQrNj1wGplHc=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous" />
 
 <!-- clipboard.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" integrity="sha256-FiZwavyI2V6+EXO1U+xzLG3IKldpiTFf3153ea9zikQ=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script>
 
 <!-- headroom.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.9.4/headroom.min.js" integrity="sha256-DJFC1kqIhelURkuza0AvYal5RxMtpzLjFhsnVIeuk+U=" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.9.4/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script>
 
 <!-- pkgdown -->
 <link href="../pkgdown.css" rel="stylesheet">
@@ -53,7 +57,7 @@
 
   </head>
 
-  <body>
+  <body data-spy="scroll" data-target="#toc">
     <div class="container template-reference-index">
       <header>
       <div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -82,10 +86,22 @@
 <li>
   <a href="../reference/index.html">Reference</a>
 </li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Articles
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="../articles/getting-started.html">Getting Started</a>
+    </li>
+  </ul>
+</li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li>
-  <a href="https://github.com/cobriniklab/seuratTools">
+  <a href="https://github.com/cobriniklab/seuratTools/">
     <span class="fab fa fab fa-github fa-lg"></span>
      
   </a>
@@ -121,7 +137,30 @@
           <p class="section-desc"></p>
         </th>
       </tr>
+      
+      
+    </tbody><tbody>
+      
+      
       <tr>
+        
+        <td>
+          <p><code><a href="FindMarkers.html">FindMarkers()</a></code> </p>
+        </td>
+        <td><p>Overwrite seurat findmarkers to run scde</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="FindMarkers.Seurat.html">FindMarkers(<i>&lt;Seurat&gt;</i>)</a></code> </p>
+        </td>
+        <td><p>overwrite seurat findmarkers</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="FindMarkers.default.html">FindMarkers(<i>&lt;default&gt;</i>)</a></code> </p>
+        </td>
+        <td><p>Overwrite seurat findmarkers to run scde</p></td>
+      </tr><tr>
         
         <td>
           <p><code><a href="Monocle2_diffex.html">Monocle2_diffex()</a></code> </p>
@@ -133,6 +172,12 @@
           <p><code><a href="SetDefaultAssay.html">SetDefaultAssay()</a></code> </p>
         </td>
         <td><p>Reset the default assay of a seurat object</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="add_percent_mito.html">add_percent_mito()</a></code> </p>
+        </td>
+        <td><p>Annotate Low Read Count Category</p></td>
       </tr><tr>
         
         <td>
@@ -178,6 +223,12 @@
       </tr><tr>
         
         <td>
+          <p><code><a href="calc_pseudotime_heatmap.html">calc_pseudotime_heatmap()</a></code> </p>
+        </td>
+        <td><p>calculate pseudotime heatmaps</p></td>
+      </tr><tr>
+        
+        <td>
           <p><code><a href="ccScore.html">ccScore()</a></code> </p>
         </td>
         <td><p>Cell Cycle Score</p></td>
@@ -187,6 +238,18 @@
           <p><code><a href="ccScoreui.html">ccScoreui()</a></code> </p>
         </td>
         <td><p>Cell Cycle Score UI</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="cells_selected.html">cells_selected()</a></code> </p>
+        </td>
+        <td><p>Title</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="celltype_markers.html">celltype_markers</a></code> </p>
+        </td>
+        <td><p>Retinal Cell Type Marker Genes</p></td>
       </tr><tr>
         
         <td>
@@ -208,6 +271,18 @@
       </tr><tr>
         
         <td>
+          <p><code><a href="combine_cols.html">combine_cols()</a></code> </p>
+        </td>
+        <td><p>Reformat Seurat Object Metadata</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="combine_looms.html">combine_looms()</a></code> </p>
+        </td>
+        <td><p>Title</p></td>
+      </tr><tr>
+        
+        <td>
           <p><code><a href="convert_human_seu_to_mouse.html">convert_human_seu_to_mouse()</a></code> </p>
         </td>
         <td><p>Convert Seurat Objects from Human to Mouse</p></td>
@@ -220,7 +295,7 @@
       </tr><tr>
         
         <td>
-          <p><code><a href="convert_seu_to_cds.html">convert_seu_to_cds()</a></code> <code><a href="convert_seu_to_cds.html">convert_seu_to_cds()</a></code> </p>
+          <p><code><a href="convert_seu_to_cds.html">convert_seu_to_cds()</a></code> </p>
         </td>
         <td><p>Convert a Seurat Object to a Monocle Cell Data Set</p></td>
       </tr><tr>
@@ -232,15 +307,21 @@
       </tr><tr>
         
         <td>
-          <p><code><a href="convert_symbols_by_species.html">convert_symbols_by_species()</a></code> </p>
+          <p><code><a href="convert_symbols_by_biomart.html">convert_symbols_by_biomart()</a></code> </p>
         </td>
         <td><p>convert gene symbols between species</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="create_proj_list.html">create_proj_list()</a></code> </p>
+          <p><code><a href="convert_symbols_by_species.html">convert_symbols_by_species()</a></code> </p>
         </td>
-        <td><p>Create List of Projects</p></td>
+        <td><p>Title</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="create_proj_db.html">create_proj_db()</a></code> </p>
+        </td>
+        <td><p>Create Project database</p></td>
       </tr><tr>
         
         <td>
@@ -250,9 +331,33 @@
       </tr><tr>
         
         <td>
+          <p><code><a href="cross_check_heatmaps.html">cross_check_heatmaps()</a></code> </p>
+        </td>
+        <td><p>Title</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="cross_plot_vars.html">cross_plot_vars()</a></code> </p>
+        </td>
+        <td><p>Cross plot vars</p></td>
+      </tr><tr>
+        
+        <td>
           <p><code><a href="cross_species_integrate.html">cross_species_integrate()</a></code> </p>
         </td>
         <td><p>Integrate Seurat Objects from Moust to Human</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="default_helper.html">default_helper()</a></code> </p>
+        </td>
+        <td><p>Default Shiny Helper</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="delete_seurat.html">delete_seurat()</a></code> </p>
+        </td>
+        <td><p>delete seurat path</p></td>
       </tr><tr>
         
         <td>
@@ -265,6 +370,12 @@
           <p><code><a href="diffexui.html">diffexui()</a></code> </p>
         </td>
         <td><p>Differential Expression UI</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="dot-send_enrichr_query.html">.send_enrichr_query()</a></code> </p>
+        </td>
+        <td><p>Gene enrichment using Enrichr.</p></td>
       </tr><tr>
         
         <td>
@@ -286,6 +397,12 @@
       </tr><tr>
         
         <td>
+          <p><code><a href="filter_rows_to_top.html">filter_rows_to_top()</a></code> </p>
+        </td>
+        <td><p>Filter Rows to Top</p></td>
+      </tr><tr>
+        
+        <td>
           <p><code><a href="findMarkers.html">findMarkers()</a></code> </p>
         </td>
         <td><p>Find Markers</p></td>
@@ -301,6 +418,18 @@
           <p><code><a href="find_all_markers.html">find_all_markers()</a></code> </p>
         </td>
         <td><p>Find All Markers at a range of resolutions</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="format_new_metadata.html">format_new_metadata()</a></code> </p>
+        </td>
+        <td><p>Title</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="format_pathway_table.html">format_pathway_table()</a></code> </p>
+        </td>
+        <td><p>Title</p></td>
       </tr><tr>
         
         <td>
@@ -328,6 +457,12 @@
       </tr><tr>
         
         <td>
+          <p><code><a href="getEnrichedPathways.html">getEnrichedPathways()</a></code> </p>
+        </td>
+        <td><p>Get enriched pathways based on marker genes from EnrichR.</p></td>
+      </tr><tr>
+        
+        <td>
           <p><code><a href="get_meta.html">get_meta()</a></code> </p>
         </td>
         <td><p>Get Metadata for a project</p></td>
@@ -340,7 +475,7 @@
       </tr><tr>
         
         <td>
-          <p><code><a href="global_align.html">global_align()</a></code> </p>
+          <p><code><a href="global_cellalign.html">global_cellalign()</a></code> </p>
         </td>
         <td><p>Global Alignment of two trajectories with cellAlign</p></td>
       </tr><tr>
@@ -364,7 +499,13 @@
       </tr><tr>
         
         <td>
-          <p><code><a href="learn_graph_by_resolution.html">learn_graph_by_resolution()</a></code> <code><a href="learn_graph_by_resolution.html">learn_graph_by_resolution()</a></code> </p>
+          <p><code><a href="label_transfer.html">label_transfer()</a></code> </p>
+        </td>
+        <td><p>Transfer Labels Between Seurat Objects</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="learn_graph_by_resolution.html">learn_graph_by_resolution()</a></code> </p>
         </td>
         <td><p>Learn Monocle Graph by Resolution</p></td>
       </tr><tr>
@@ -400,21 +541,93 @@
       </tr><tr>
         
         <td>
-          <p><code><a href="local_align.html">local_align()</a></code> </p>
+          <p><code><a href="local_cellalign.html">local_cellalign()</a></code> </p>
         </td>
         <td><p>Align two trajectories via cellalign</p></td>
       </tr><tr>
         
         <td>
+          <p><code><a href="merge_small_seus.html">merge_small_seus()</a></code> </p>
+        </td>
+        <td><p>Merge Small Seurat Objects</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="minimalSeuratApp.html">minimalSeuratApp()</a></code> </p>
+        </td>
+        <td><p>Create Seurat App</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="monocle.html">monocle()</a></code> </p>
+        </td>
+        <td><p>Title</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="monocle_module_heatmap.html">monocle_module_heatmap()</a></code> </p>
+        </td>
+        <td><p>Title</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="monocleui.html">monocleui()</a></code> </p>
+        </td>
+        <td><p>Title</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="pad_sample_files.html">pad_sample_files()</a></code> </p>
+        </td>
+        <td><p>pad sample numbers to prep for armor</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="pathwayEnrichment.html">pathwayEnrichment()</a></code> </p>
+        </td>
+        <td><p>pathway enrichment</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="pathwayEnrichmentui.html">pathwayEnrichmentui()</a></code> </p>
+        </td>
+        <td><p>Title</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="plotClustree.html">plotClustree()</a></code> </p>
+        </td>
+        <td><p>plot clustree server</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="plotClustree_UI.html">plotClustree_UI()</a></code> </p>
+        </td>
+        <td><p>plot clustree ui</p></td>
+      </tr><tr>
+        
+        <td>
           <p><code><a href="plotDimRed.html">plotDimRed()</a></code> </p>
         </td>
-        <td><p>Plot Dimensionally Reduced Data</p></td>
+        <td><p>Plot Dimensional Reduduction</p></td>
       </tr><tr>
         
         <td>
           <p><code><a href="plotDimRedui.html">plotDimRedui()</a></code> </p>
         </td>
-        <td><p>Plot Dimensionally Reduced Data UI</p></td>
+        <td><p>Plot Dimensional Reduduction UI</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="plotHeatmap.html">plotHeatmap()</a></code> </p>
+        </td>
+        <td><p>Plot Heatmap</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="plotHeatmapui.html">plotHeatmapui()</a></code> </p>
+        </td>
+        <td><p>Plot Heatmap ui</p></td>
       </tr><tr>
         
         <td>
@@ -430,9 +643,51 @@
       </tr><tr>
         
         <td>
-          <p><code><a href="plot_cds.html">plot_cds()</a></code> <code><a href="plot_cds.html">plot_cds()</a></code> </p>
+          <p><code><a href="plotVelocity.html">plotVelocity()</a></code> </p>
+        </td>
+        <td><p>RNA Velocity</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="plotVelocityui.html">plotVelocityui()</a></code> </p>
+        </td>
+        <td><p>RNA Velocity UI</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="plotViolin.html">plotViolin()</a></code> </p>
+        </td>
+        <td><p>Plot Violin Server</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="plotViolinui.html">plotViolinui()</a></code> </p>
+        </td>
+        <td><p>Title</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="plot_all_ptimes.html">plot_all_ptimes()</a></code> </p>
+        </td>
+        <td><p>Plot a Set of Heatmaps Based on a provided pseudotime</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="plot_all_transcripts.html">plot_all_transcripts()</a></code> </p>
+        </td>
+        <td><p>Title</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="plot_cds.html">plot_cds()</a></code> </p>
         </td>
         <td><p>Plot a Monocle Cell Data Set</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="plot_cells.html">plot_cells()</a></code> </p>
+        </td>
+        <td><p>Title</p></td>
       </tr><tr>
         
         <td>
@@ -449,15 +704,21 @@ This is a great function</p></td>
       </tr><tr>
         
         <td>
+          <p><code><a href="plot_heatmap.html">plot_heatmap()</a></code> </p>
+        </td>
+        <td><p>plot heatmap</p></td>
+      </tr><tr>
+        
+        <td>
           <p><code><a href="plot_markers.html">plot_markers()</a></code> </p>
         </td>
         <td><p>Plot Cluster Marker Genes</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="plot_monocle_all_ptimes.html">plot_monocle_all_ptimes()</a></code> </p>
+          <p><code><a href="plot_monocle_features.html">plot_monocle_features()</a></code> </p>
         </td>
-        <td><p>Plot a heatmap of differentially expressed genes over a query and set of reference pseudotimes</p></td>
+        <td><p>Plot a Monocle Cell Data Set</p></td>
       </tr><tr>
         
         <td>
@@ -467,15 +728,15 @@ This is a great function</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="plot_pseudotime.html">plot_pseudotime()</a></code> <code><a href="plot_pseudotime.html">plot_pseudotime()</a></code> </p>
+          <p><code><a href="plot_pseudotime.html">plot_pseudotime()</a></code> </p>
         </td>
         <td><p>Plot a Monocle Cell Data Set</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="plot_pseudotime_heatmap.html">plot_pseudotime_heatmap()</a></code> <code><a href="plot_pseudotime_heatmap.html">plot_pseudotime_heatmap()</a></code> </p>
+          <p><code><a href="plot_pseudotime_heatmap.html">plot_pseudotime_heatmap()</a></code> </p>
         </td>
-        <td><p>Plot Pseudotime Heatmap</p></td>
+        <td><p>plot pseudotime heatmap</p></td>
       </tr><tr>
         
         <td>
@@ -497,15 +758,39 @@ This is a great function</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="plot_velocity.html">plot_velocity()</a></code> </p>
+          <p><code><a href="plot_velocity_arrows.html">plot_velocity_arrows()</a></code> </p>
         </td>
         <td><p>Plot RNA velocity Computed by Velocyto.R</p></td>
       </tr><tr>
         
         <td>
+          <p><code><a href="plot_velocity_trajectory.html">plot_velocity_trajectory()</a></code> </p>
+        </td>
+        <td><p>Plot RNA velocity trajectory computed by Velocyto.R</p></td>
+      </tr><tr>
+        
+        <td>
           <p><code><a href="plot_violin.html">plot_violin()</a></code> </p>
         </td>
-        <td><p>Make Violin Plots Based on Metadata and Feature Expression</p></td>
+        <td><p>plot Violin plot</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="plotly_settings.html">plotly_settings()</a></code> </p>
+        </td>
+        <td><p>Plotly settings</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="prep_armor_meta.html">prep_armor_meta()</a></code> </p>
+        </td>
+        <td><p>prep armor metadata file</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="prep_plot_genes_in_pseudotime.html">prep_plot_genes_in_pseudotime()</a></code> </p>
+        </td>
+        <td><p>Title</p></td>
       </tr><tr>
         
         <td>
@@ -521,6 +806,30 @@ This is a great function</p></td>
       </tr><tr>
         
         <td>
+          <p><code><a href="record_experiment_data.html">record_experiment_data()</a></code> </p>
+        </td>
+        <td><p>Record Experiment Metadata</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="reference_integrate.html">reference_integrate()</a></code> </p>
+        </td>
+        <td><p>Transfer labels between gene or transcript objects</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="reformatMetadata.html">reformatMetadata()</a></code> </p>
+        </td>
+        <td><p>Reformat Seurat Object Metadata Server</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="reformatMetadataui.html">reformatMetadataui()</a></code> </p>
+        </td>
+        <td><p>Reformat Seurat Object Metadata UI</p></td>
+      </tr><tr>
+        
+        <td>
           <p><code><a href="regress_by_features.html">regress_by_features()</a></code> </p>
         </td>
         <td><p>Regress Seurat Object by Given Set of Genes</p></td>
@@ -530,6 +839,12 @@ This is a great function</p></td>
           <p><code><a href="reintegrate_seu.html">reintegrate_seu()</a></code> </p>
         </td>
         <td><p>Reintegrate (filtered) seurat objects</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="rename_from_x_notation.html">rename_from_x_notation()</a></code> </p>
+        </td>
+        <td><p>Rename cell ids from annoying old notation</p></td>
       </tr><tr>
         
         <td>
@@ -563,18 +878,6 @@ This is a great function</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="rnaVelocity.html">rnaVelocity()</a></code> </p>
-        </td>
-        <td><p>RNA Velocity</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="rnaVelocityui.html">rnaVelocityui()</a></code> </p>
-        </td>
-        <td><p>RNA Velocity UI</p></td>
-      </tr><tr>
-        
-        <td>
           <p><code><a href="run_BEAM.html">run_BEAM()</a></code> </p>
         </td>
         <td><p>Run BEAM from Monocle2</p></td>
@@ -590,18 +893,6 @@ This is a great function</p></td>
           <p><code><a href="run_hmap.html">run_hmap()</a></code> </p>
         </td>
         <td><p>Run heatmap from Monocle2</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="run_rna_velocity.html">run_rna_velocity()</a></code> </p>
-        </td>
-        <td><p>Run RNA Velocity</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="run_rna_velocity2.html">run_rna_velocity2()</a></code> </p>
-        </td>
-        <td><p>Run RNA Velocity2</p></td>
       </tr><tr>
         
         <td>
@@ -653,6 +944,12 @@ This is a great function</p></td>
       </tr><tr>
         
         <td>
+          <p><code><a href="seuratToolsBox.html">seuratToolsBox()</a></code> </p>
+        </td>
+        <td><p>custom collapsible box</p></td>
+      </tr><tr>
+        
+        <td>
           <p><code><a href="seurat_cluster.html">seurat_cluster()</a></code> </p>
         </td>
         <td><p>Run Louvain Clustering at Multiple Resolutions</p></td>
@@ -695,15 +992,15 @@ This is a great function</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="seurat_reference_integrate.html">seurat_reference_integrate()</a></code> </p>
-        </td>
-        <td><p>Predict One Seurat Object on another merged set</p></td>
-      </tr><tr>
-        
-        <td>
           <p><code><a href="stash_marker_features.html">stash_marker_features()</a></code> </p>
         </td>
         <td><p>Stash Marker Genes in a Seurat Object</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="subset_by_meta.html">subset_by_meta()</a></code> </p>
+        </td>
+        <td><p>subset by new metadata</p></td>
       </tr><tr>
         
         <td>
@@ -728,16 +1025,33 @@ This is a great function</p></td>
           <p><code><a href="update_seu_meta.html">update_seu_meta()</a></code> </p>
         </td>
         <td><p>Update Seurat Metadata from Project</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="velocyto_assay.html">velocyto_assay()</a></code> </p>
+        </td>
+        <td><p>run velocyto on a gene or transcript level seurat object</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="velocyto_seu.html">velocyto_seu()</a></code> </p>
+        </td>
+        <td><p>run velocyto on a seurat object</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="velocyto_seurat_from_loom.html">velocyto_seurat_from_loom()</a></code> </p>
+        </td>
+        <td><p>Run RNA Velocity starting with only a loom File</p></td>
       </tr>
     </tbody>
     </table>
   </div>
 
-  <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
-    <h2>Contents</h2>
-    <ul class="nav nav-pills nav-stacked">
-      <li><a href="#section-all-functions">All functions</a></li>
-    </ul>
+  <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
+    <nav id="toc" data-toggle="toc" class="sticky-top">
+      <h2 data-toc-skip>Contents</h2>
+    </nav>
   </div>
 </div>
 
@@ -748,7 +1062,7 @@ This is a great function</p></td>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.4.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
 </div>
 
       </footer>
