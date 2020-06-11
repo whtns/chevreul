@@ -38,7 +38,7 @@ seurat_preprocess <- function(seu, scale=TRUE, normalize = TRUE, ...){
 #'
 #' @examples
 find_all_markers <- function(seu, ...){
-  # browser()
+
 
   if ("integrated" %in% names(seu@assays)) {
     default_assay = "integrated"
@@ -133,7 +133,7 @@ rename_markers <- function(seu){
 #'
 #' @examples
 save_proj_feature_seus <- function(seu_list, proj_dir){
-  # browser()
+
   suffixes <- names(seu_list)
   features <- names(seu_list[[1]])
 

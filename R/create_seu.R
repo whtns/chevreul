@@ -100,7 +100,7 @@ seu_from_tximport <- function(txi, meta_tbl, ...){
 #'
 #' @examples
 seu_from_tibbles <- function(exp_tbl, meta_tbl, census_counts=NULL){
-  # browser()
+
 
   expid <- gsub("-.*", "", colnames(exp_tbl))
 
@@ -136,7 +136,7 @@ seu_from_tibbles <- function(exp_tbl, meta_tbl, census_counts=NULL){
 #'
 #' @examples
 filter_low_rc_cells <- function(seu, read_thresh = 1e5){
-	# browser()
+
 	counts <- as.matrix(seu@assays$RNA@counts)
 
 	counts <- colSums(counts)

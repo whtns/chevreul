@@ -28,7 +28,7 @@ get_meta <- function(proj_path){
 update_exp_meta <- function(original_meta, corrected_meta) {
   coltypes <- sapply(corrected_meta, is.numeric)
   numcols <- colnames(corrected_meta)[coltypes]
-	# browser()
+
 	common_cols <- intersect(colnames(original_meta), colnames(corrected_meta))
   original_meta <- mutate_at(original_meta, .vars = vars(one_of(numcols)), .funs = funs(as.numeric))
   updated_meta <- dplyr::left_join(original_meta, corrected_meta, by = "sample_id")
