@@ -235,6 +235,7 @@ minimalSeuratApp <- function(seu_list, appTitle = NULL, feature_types = "gene",
       seu_names <- names(seu_list)[!names(seu_list) %in% c("monocle", "active")]
       for (i in seu_names) {
         seu[[i]] <- seu_list[[i]]
+        seu[[i]] <- update_seuratTools_object(seu[[i]], i)
       }
       seu$active <- seu[["gene"]]
     })

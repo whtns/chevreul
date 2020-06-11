@@ -45,7 +45,7 @@
   result <- future.apply::future_sapply(databases, USE.NAMES = TRUE,
                                         simplify = FALSE, function(x)
                                         {
-                                          # browser()
+
                                           r <- httr::GET(
                                             url = 'http://amp.pharm.mssm.edu/Enrichr/export',
                                             query = list(file = 'API', backgroundType = x)
@@ -167,7 +167,7 @@ getEnrichedPathways <- function(
         cluster_names, USE.NAMES = TRUE, simplify = FALSE,
         future.globals = FALSE, function(x)
         {
-          # browser()
+
           temp <- list()
           attempt <- 1
           while(
@@ -186,7 +186,7 @@ getEnrichedPathways <- function(
           results_2 <- sapply(names(temp), USE.NAMES = TRUE,
                               simplify = FALSE, function(y)
                               {
-                                # browser()
+
                                 ## apply cut-off of adj. p-value and add database info as column
                                 out <- temp[[y]] %>%
                                   dplyr::filter(.data$Adjusted.P.value <= adj_p_cutoff) %>%

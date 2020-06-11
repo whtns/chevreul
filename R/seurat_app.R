@@ -267,6 +267,8 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
       tabName = "monocle", icon = icon("bullseye")
     ), shinydashboard::menuItem("Regress Features",
       tabName = "regressFeatures", icon = icon("eraser")
+    ), shinydashboard::menuItem("Technical Information",
+                                tabName = "techInfo", icon = icon("cogs")
     )),
     actionButton("changeEmbedAction",
                  label = "Change Embedding Parameters"
@@ -298,7 +300,7 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
       fluidRow(seuratToolsBox(
         title = "Selected Cells",
         tableSelectedui("tableselected"), width = 6
-      ), seuratToolsBox(plotClustree_UI("clustreePlot")))
+      ), plotClustree_UI("clustreePlot"))
     ),
     shinydashboard::tabItem(
       tabName = "violinPlots",
@@ -426,7 +428,11 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
       tabName = "monocle",
       h2("Monocle"),
       monocleui("monocle")
-      )
+    ), shinydashboard::tabItem(
+      tabName = "techInfo",
+      h2("Technical Information"),
+      techInfoui("techInfo")
+    )
   ))
 
   ui <- function(request) {
@@ -546,7 +552,6 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
             seu[[i]] <- dataset[[i]]
             seu[[i]] <- update_seuratTools_object(seu[[i]], i)
           }
-
           seu$active <- seu[["gene"]]
           print(uploadSeuratPath())
           print(names(seu))
@@ -618,7 +623,7 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
       newprojList <- c(projList(), newintegrated_project)
     })
     observe({
-      print(newprojList())
+      # print(newprojList())
       updateSelectizeInput(session, "setProject",
         label = "Select input label",
         choices = newprojList(),
@@ -858,43 +863,12 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
 
       loom_path <- fs::path(proj_path, "output", "velocyto", paste0(proj_name, ".loom"))
 
-      print(loom_path)
-
       seu$active <- callModule(plotVelocity, "plotvelocity", seu, loom_path, featureType)
     })
 
+    callModule(techInfo, "techInfo", seu)
 
-    observe({
-      shinyFiles::shinyFileSave(input, "saveCDS",
-        roots = dataset_volumes(),
-        session = session, restrictions = system.file(package = "base")
-      )
-    })
-    cdsSavePath <- eventReactive(input$saveCDS, {
-      savefile <- shinyFiles::parseSavePath(
-        volumes(),
-        input$saveCDS
-      )
-      savefile$datapath
-    })
-    observeEvent(input$saveCDS, {
-      req(cds$traj)
-      req(cdsSavePath())
-      if (!is.null(cdsSavePath())) {
-        shiny::withProgress(
-          message = paste0("Saving Data"),
-          value = 0,
-          {
-            Sys.sleep(6)
-            shiny::incProgress(2 / 10)
-            cdsList <- reactiveValuesToList(cds)
-            names(cdsList) <- names(cds)
-            saveRDS(cdsList, cdsSavePath())
-            shiny::incProgress(10 / 10)
-          }
-        )
-      }
-    })
+
   }
   shinyApp(ui, server, enableBookmarking = "server")
 }

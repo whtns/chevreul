@@ -12,7 +12,7 @@
 #'
 #' @examples
 update_seu_meta <- function(seu, proj_dir, numcols) {
-	# browser()
+
 
   seu_meta <- as.data.frame(seu[[]])
 
@@ -46,7 +46,7 @@ update_seu_meta <- function(seu, proj_dir, numcols) {
 #'
 #' @examples
 reset_seu_meta <- function(seu, new_meta){
-	# browser()
+
 	seu@meta.data <- as.data.frame(new_meta, row.names = new_meta$sample_id)
 	return(seu)
 }

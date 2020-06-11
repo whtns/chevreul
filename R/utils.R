@@ -369,7 +369,7 @@ record_experiment_data <- function(object, experiment_name = "default_experiment
 #' @examples
 plot_all_transcripts <- function(seu_transcript, seu_gene, features, embedding){
 
-  # browser()
+
   transcript_cols <- as.data.frame(t(as.matrix(seu_transcript[["RNA"]][features,])))
 
   cells <- rownames(transcript_cols)
@@ -398,7 +398,15 @@ plot_all_transcripts <- function(seu_transcript, seu_gene, features, embedding){
 #'
 #' @examples
 update_seuratTools_object <- function(seu, feature, resolution = seq(0.2, 2.0, by = 0.2), ...){
-  # browser()
+
+  # set appropriate assay
+  if ("integrated" %in% names(seu@assays)) {
+    default_assay = "integrated"
+  } else {
+    default_assay = "RNA"
+  }
+
+  DefaultAssay(seu) <- default_assay
 
   seuratTools_version <- seu@misc$experiment$technical_info$seuratTools_version
 
@@ -413,7 +421,11 @@ update_seuratTools_object <- function(seu, feature, resolution = seq(0.2, 2.0, b
 
       seu <- find_all_markers(seu, resolution = resolution)
       if (feature == "gene"){
-        seu <- getEnrichedPathways(seu)
+        enriched_seu <- tryCatch(getEnrichedPathways(seu), error = function(e) e)
+        enrichr_available <- !any(class(enriched_seu) == "error")
+        if(enrichr_available){
+          seu <- enriched_seu
+        }
       }
       seu <- record_experiment_data(seu)
   }

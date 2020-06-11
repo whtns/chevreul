@@ -82,7 +82,7 @@ convert_human_seu_to_mouse <- function(seu){
 #'
 #' @examples
 convert_symbols_by_biomart <- function(src_genes, src_species, host = "uswest.ensembl.org"){
-  # browser()
+
   if(src_species == "human"){
     dest_species = "mouse"
     src_species_mart = biomaRt::useMart("ensembl", dataset = "hsapiens_gene_ensembl", host = host)
@@ -128,7 +128,7 @@ convert_symbols_by_biomart <- function(src_genes, src_species, host = "uswest.en
 #'
 #' @examples
 convert_symbols_by_species <- function(src_genes, src_species){
-  # browser()
+
   if(src_species == "human"){
     dest_species = "mouse"
 

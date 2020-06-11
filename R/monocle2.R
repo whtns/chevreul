@@ -7,7 +7,7 @@
 #'
 #' @examples
 convert_seuv3_to_monoclev2 <- function(seu, return_census = FALSE, sig_slice = 1000) {
-  # browser()
+
   # Load Seurat object
 
 
@@ -86,7 +86,7 @@ convert_seuv3_to_monoclev2 <- function(seu, return_census = FALSE, sig_slice = 1
 
 
   # use dpFeature -----------------------------------------------------------
-  # browser()
+
   monocle_cds <- detectGenes(monocle_cds, min_expr = 0.1)
   Biobase::featureData(monocle_cds)$use_for_ordering <- Biobase::featureData(monocle_cds)$num_cells_expressed > 0.05 * ncol(monocle_cds)
 
@@ -227,7 +227,7 @@ plot_all_ptimes <- function(monocle_list, query_name, sig_slice = 1000, ...) {
 
   reference_names <- names(monocle_list)[names(monocle_list) != query_name]
 
-  # browser()
+
   for (i in reference_names){
     monocle_list[[i]]$monocle_cds <- monocle_list[[i]]$monocle_cds[heatmap_gene_order,]
 
@@ -431,7 +431,7 @@ Monocle2_diffex <- function(seu){
 run_hmap <- function(HSMM, BEAM_res, branches, pt_param, pt_paramval, colorval, top_genes, out_pdf){
   beam_pdf <- gsub(".pdf", "_beam.pdf", out_pdf)
   pdf(beam_pdf, height = 10)
-  # browser()
+
   plotted_trx <- row.names(subset(BEAM_res, qval < 1e-4))
   gene_df <- data.frame(row.names = plotted_trx, gene_symbol = lookup_genes(plotted_trx))
 
