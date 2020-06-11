@@ -45,7 +45,8 @@ Imports:
     shinyjs,
     waiter,
     sessioninfo,
-    genesorteR (>= 0.4.3)
+    genesorteR (>= 0.4.3),
+    httr
 Suggests: 
     dplyr,
     tidyr,
@@ -55,7 +56,7 @@ Suggests:
     rmarkdown
 URL: https://github.com/cobriniklab/seuratTools
 BugReports: https://github.com/cobriniklab/seuratTools/issues
-Remotes:  
+Remotes: 
     immunogenomics/presto,
     satijalab/seurat-wrappers,
     cole-trapnell-lab/monocle3,

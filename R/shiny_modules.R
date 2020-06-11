@@ -429,7 +429,12 @@ integrateProj <- function(input, output, session, proj_matrices, seu, proj_dir, 
             #   need(input$data != "", "Please select a data set")
             # )
 
-            mergedSeus(integration_workflow(selectedProjects()))
+            batches <- fs::path(selectedProjects(), "output", "seurat", "unfiltered_seu.rds") %>%
+              purrr::map(readRDS)
+
+            names(batches) <- names(selectedProjects())
+
+            mergedSeus(integration_workflow(batches))
 
             message("Integration Complete!")
 
@@ -1069,8 +1074,8 @@ plotReadCountui <- function(id) {
     sliderInput(ns("resolution"), "Resolution of clustering algorithm (affects number of clusters)",
       min = 0.2, max = 2, step = 0.2, value = 0.6
     ),
-    plotly::plotlyOutput(ns("rcplot"), height = 750)
-  )
+    plotly::plotlyOutput(ns("rcplot"), height = 750),
+    collapsed = TRUE)
 }
 
 #' Plot Read Count
@@ -1203,13 +1208,13 @@ allTranscripts <- function(input, output, session, seu,
 
   pList <- eventReactive(input$plotTrx, {
 
-    # browser()
+
     pList <- plot_all_transcripts(seu$transcript, seu$gene, transcripts(), input$embedding)
 
   })
 
   observe({
-    # browser()
+
     for (i in 1:length(pList())) {
       local({
         my_i <- i
@@ -1879,3 +1884,134 @@ pathwayEnrichment <- function(input, output, session, seu){
 
 }
 
+techInfoui <- function(id){
+    ns <- NS(id)
+    fluidRow(
+      seuratToolsBox(
+        title = "Information about samples and analysis",
+        htmlOutput(ns("sample_info_general")),
+        width = 12
+      )
+    )
+    }
+
+techInfo <- function(input, output, session, seu){
+    ns <- session$ns
+    ##----------------------------------------------------------------------------##
+    ## Tab: Analysis info.
+    ##----------------------------------------------------------------------------##
+
+    misc <- reactive({
+      req(seu$active)
+      seu$active@misc
+      })
+
+    observe({
+      # general info
+      output$sample_info_general <- renderText({
+        info <- paste0(
+          "<strong><u>General</u></strong>",
+          "<ul>",
+          "<li><b>Date of analysis:</b> ",
+          misc()$experiment$date_of_analysis,
+          "<li><b>Date of export:</b> ",
+          misc()$experiment$date_of_export,
+          "<li><b>Experiment name:</b> ",
+          misc()$experiment$experiment_name,
+          "<li><b>Organism:</b> ",
+          misc()$experiment$organism,
+          "</ul>",
+          "<strong><u>Parameters</u></strong>",
+          "<ul>",
+          "<li><b>Discard genes in fewer than X cells:</b> ",
+          misc()$experiment$parameters$discard_genes_expressed_in_fewer_cells_than,
+          "<li><b>Keep mitochondrial genes:</b> ",
+          misc()$experiment$parameters$keep_mitochondrial_genes,
+          "<li><b>Min/max # of UMI:</b> ",
+          paste0(
+            misc()$experiment$filtering$UMI_min, " / ",
+            misc()$experiment$filtering$UMI_max
+          ),
+          "<li><b>Min/max # of expressed genes:</b> ",
+          paste0(
+            misc()$experiment$filtering$genes_min, " / ",
+            misc()$experiment$filtering$genes_max
+          ),
+          "<li><b>Cluster resolution: </b>",
+          paste(misc()$experiment$parameters$cluster_resolution, collapse = ","),
+          "<li><b>Number of principal components: </b>",
+          misc()$experiment$parameters$number_PCs,
+          "<li><b>Variables to regress: </b>",
+          misc()$experiment$parameters$variables_to_regress_out,
+          "<li><b>tSNE perplexity: </b>",
+          misc()$experiment$parameters$tSNE_perplexity,
+          "</ul>",
+          "<strong><u>Gene lists</u></strong>",
+          "<ul>",
+          # "<li><b>Mitochondrial genes:</b> ",
+          # paste0(mito_features[[misc()$experiment$organism]][["gene"]], collapse = ", "),
+          # "<li><b>Ribosomal genes:</b> ",
+          # paste0(ribo_features[[misc()$experiment$organism]][["gene"]], collapse = ", "),
+          "<li><b>S phase genes:</b> ",
+          paste0(cc.genes$s.genes, collapse = ", "),
+          "<li><b>G2M phase genes:</b> ",
+          paste0(cc.genes$g2m.genes, collapse = ", "),
+          "</ul>",
+          "<strong><u>Marker genes</u></strong>",
+          "<ul>",
+          # "<li><b>Only positive:</b> ",
+          # misc()$marker_genes$parameters$only_positive,
+          # "<li><b>Fraction of cells in group of interest that must express marker gene:</b> ",
+          # misc()$marker_genes$parameters$minimum_percentage,
+          # "<li><b>LogFC threshold:</b> ",
+          # misc()$marker_genes$parameters$logFC_threshold,
+          "<li><b>p-value threshold:</b> ",
+          "0.05",
+          # misc()$marker_genes$parameters$p_value_threshold,
+          "</ul>",
+          "<strong><u>Pathway enrichment</u></strong>",
+          "<ul>",
+          "<li><b>Enrichr:</b>",
+          "<ul>",
+          "<li><b>Databases:</b> ",
+          paste0(misc()$enriched_pathways$enrichr$parameters$databases, collapse = ", "),
+          "<li><b>Adj. p-value cut-off:</b> ",
+          misc()$enriched_pathways$enrichr$parameters$adj_p_cutoff,
+          "<li><b>Max. terms:</b> ",
+          misc()$enriched_pathways$enrichr$parameters$max_terms,
+          "</ul>",
+          "</ul>"
+        )
+        info_R_raw <- misc()$experiment$technical_info$R
+        info_R <- c()
+        for ( i in 1:length(info_R_raw) ) {
+          info_R <- paste(info_R, "<br>", info_R_raw[i])
+        }
+        paste0(
+          info,
+          "<strong><u>Technical info (package versions)</u></strong>",
+          "<ul>",
+          "<li><strong>seuratTools version:</strong> ",
+          misc()$experiment$technical_info$seuratTools_version,
+          "<li><strong>Seurat version:</strong> ",
+          misc()$technical_info$seurat_version,
+          "<li><strong>Session info:</strong> ",
+          "</ul>",
+          "<pre>",
+          info_R,
+          "</pre>"
+        )
+      })
+
+      # R info
+      output$sample_info_R <- renderPrint({
+        if ( !is.null(misc()$technical_info$R) ) {
+          capture.output(misc()$technical_info$R)
+        } else {
+          print("Not available")
+        }
+      })
+    })
+
+
+}

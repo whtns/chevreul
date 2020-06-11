@@ -28,6 +28,15 @@ integration_workflow <- function(batches, excluded_cells, resolution = seq(0.2, 
   # seus <- purrr::map(child_proj_dirs, load_seurat_from_proj)
 
   organisms <- purrr::map(batches, list(1, "meta.data", "organism", 1))
+
+  if (any(map_lgl(organisms, is.null))){
+    organisms <- case_when(
+        grepl("Hs", names(batches)) ~ "human",
+        grepl("Mm", names(batches)) ~ "mouse"
+      )
+    names(organisms) <- names(batches)
+  }
+
   experiment_names <- names(batches)
 
   batches <- purrr::transpose(batches)

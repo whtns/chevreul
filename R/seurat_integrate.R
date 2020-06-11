@@ -89,13 +89,13 @@ seurat_integrate <- function(seu_list, method = "cca", ...) {
 #'
 #' @examples
 seurat_cluster <- function(seu = seu, resolution = 0.6, custom_clust = NULL, reduction = "pca", algorithm = 1, ...){
-  # browser()
+
 
   seu <- FindNeighbors(object = seu, dims = 1:10, reduction = reduction)
 
   if (length(resolution) > 1){
     for (i in resolution){
-      # browser()
+
       message(paste0("clustering at ", i, " resolution"))
       seu <- Seurat::FindClusters(object = seu, resolution = i, algorithm = algorithm, ...)
     }
@@ -113,7 +113,7 @@ seurat_cluster <- function(seu = seu, resolution = 0.6, custom_clust = NULL, red
     identity()
 
     Idents(object = seu) <- clusters
-    # browser()
+
 
     return(seu)
   }
@@ -132,7 +132,7 @@ seurat_cluster <- function(seu = seu, resolution = 0.6, custom_clust = NULL, red
 #'
 #' @examples
 load_seurat_path <- function(proj_dir = getwd(), prefix = "unfiltered"){
-  # browser()
+
 
   seu_regex <- paste0(paste0(".*/", prefix, "_seu.rds"))
 

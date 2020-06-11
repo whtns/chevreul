@@ -7,7 +7,7 @@
 seurat_integration_pipeline(
   seu_list,
   feature,
-  resolution,
+  resolution = seq(0.2, 2, by = 0.2),
   suffix = "",
   algorithm = 1,
   organism,
