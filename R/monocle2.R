@@ -617,3 +617,79 @@ plot_pseudotime_heatmap <- function(heatmap_matrix, heatmap_title, dend_k = 6, c
 
 }
 
+#' Create Single Cell Experiment from Tibbles
+#'
+#' @param counts
+#' @param colData
+#' @param metadata
+#'
+#' @return
+#' @export
+#'
+#' @examples
+sce_from_tibbles <- function(counts, colData, metadata){
+  # browser()
+  featuredata <- data.frame(counts[,1])
+  rownames(featuredata) <- featuredata[,1]
+
+  counts <- data.frame(counts)
+  rownames(counts) <- counts[,1]
+  counts[,1] <- NULL
+  counts <- as.matrix(counts)
+
+  colData <- data.frame(colData)
+  rownames(colData) <- colData[,1]
+  colData <- colData[colnames(counts),]
+  sce <- SingleCellExperiment::SingleCellExperiment(assays=list(counts=counts), colData=colData, rowData=featuredata, metadata=metadata)
+
+  return(sce)
+}
+
+#' Run Census
+#'
+#' @param sce
+#' @param census_output_file
+#'
+#' @return
+#' @export
+#'
+#' @examples
+run_census <- function(sce, census_output_file){
+
+  # create new celldataset
+  pd <- new("AnnotatedDataFrame", data=data.frame(colData(sce)))
+  fd <- new("AnnotatedDataFrame", data=data.frame(rowData(sce)))
+
+
+  HSMM <- monocle::newCellDataSet(counts(sce),
+                         phenoData = pd,
+                         featureData = fd,
+                         lowerDetectionLimit=0.1,
+                         expressionFamily=tobit(Lower=0.1))
+
+  HSMM_path <- gsub("census_matrix.csv", "raw_dataset.rds", census_output_file)
+
+  rpc_matrix <- monocle::relative2abs(HSMM, method = "num_genes")
+
+
+  # Now, make a new CellDataSet using the RNA counts
+  HSMM <- monocle::newCellDataSet(as(rpc_matrix, "sparseMatrix"),
+                         phenoData = pd,
+                         featureData = fd,
+                         lowerDetectionLimit=1,
+                         expressionFamily=negbinomial.size())
+
+  return(HSMM)
+
+  #print output of census to csv prior to monocle workflow
+
+  write.csv(as.matrix(Biobase::exprs(HSMM)), census_output_file)
+
+  census_meta_file <- gsub("census_matrix.csv", "census_meta.csv", census_output_file)
+
+  write.csv(pData(HSMM), census_meta_file, row.names = FALSE)
+
+  return(as.matrix(Biobase::exprs(HSMM)))
+
+}
+

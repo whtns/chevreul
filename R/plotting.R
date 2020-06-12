@@ -324,6 +324,8 @@ plot_velocity_trajectory <- function(seu, reduction = "umap", format = "arrow", 
 #' @examples
 plot_var <- function(seu, embedding = "umap", group = "batch", dims = c(1,2), highlight = NULL, ...){
 
+  Seurat::DefaultAssay(seu) <- "RNA"
+
   metadata <- tibble::as_tibble(seu[[]][Seurat::Cells(seu),], rownames = "sID")
   cellid <- metadata[["sID"]]
   key <- rownames(metadata)
@@ -388,12 +390,14 @@ plotly_settings <- function(plotly_plot){
 #' @examples
 plot_violin <- function(seu, plot_var = "batch", plot_vals = NULL, features = "RXRG",
                         ...){
+  default_assay = "RNA"
+
   if (is.null(plot_vals)) {
     plot_vals = unique(seu[[]][[plot_var]])
     plot_vals <- plot_vals[!is.na(plot_vals)]
   }
   seu <- seu[, seu[[]][[plot_var]] %in% plot_vals]
-  vln_plot <- Seurat::VlnPlot(seu, features = features, group.by = plot_var, pt.size = 0.1, ...) +
+  vln_plot <- Seurat::VlnPlot(seu, features = features, group.by = plot_var, assay = default_assay, pt.size = 0.1, ...) +
     geom_boxplot() +
     # labs(title = "Expression Values for each cell are normalized by that cell's total expression then multiplied by 10,000 and natural-log transformed") +
     # stat_summary(fun.y = mean, geom = "line", size = 4, colour = "black") +
@@ -423,11 +427,7 @@ plot_violin <- function(seu, plot_var = "batch", plot_vals = NULL, features = "R
 #' @examples
 plot_heatmap <- function(seu, features = "RXRG", ...){
 
-  if ("integrated" %in% names(seu@assays)) {
-    default_assay = "integrated"
-  } else {
-    default_assay = "RNA"
-  }
+  default_assay = "RNA"
 
   hm <- Seurat::DoHeatmap(seu, features = features, assay = default_assay, ...) +
     labs(title = "Expression Values for each cell are normalized by that cell's total expression then multiplied by 10,000 and natural-log transformed") +
@@ -450,6 +450,8 @@ plot_heatmap <- function(seu, features = "RXRG", ...){
 #'
 #' @examples
 plot_feature <- function(seu, embedding, features, dims = c(1,2), return_plotly = TRUE){
+
+  DefaultAssay(seu) <- "RNA"
 
   metadata <- tibble::as_tibble(seu[[]][Seurat::Cells(seu),], rownames = "sID")
 
