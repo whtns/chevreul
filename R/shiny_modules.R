@@ -104,7 +104,7 @@ plotViolin <- function(input, output, session, seu, featureType, organism_type){
   observe({
     req(prefill_feature())
     req(seu$active)
-    updateSelectizeInput(session, "customFeature", choices = rownames(seu$active),
+    updateSelectizeInput(session, "customFeature", choices = rownames(seu$active@assays$RNA),
                          selected = prefill_feature(), server = TRUE)
   })
 
@@ -202,7 +202,7 @@ plotHeatmap <- function(input, output, session, seu, featureType, organism_type)
 
     preset_features <- VariableFeatures(seu$active, assay = default_assay)[1:50]
 
-    updateSelectizeInput(session, "customFeature", choices = rownames(seu$active),
+    updateSelectizeInput(session, "customFeature", choices = rownames(seu$active@assays$RNA),
                          selected = preset_features, server = TRUE)
   })
   output$hm_group <- renderUI({
@@ -668,7 +668,7 @@ plotDimRed <- function(input, output, session, seu, plot_types, featureType,
   observe({
     req(prefill_feature())
     req(seu$active)
-    updateSelectizeInput(session, "customFeature", choices = rownames(seu$active),
+    updateSelectizeInput(session, "customFeature", choices = rownames(seu$active@assays$RNA),
                          selected = prefill_feature(), server = TRUE)
   })
 
@@ -1192,7 +1192,7 @@ allTranscripts <- function(input, output, session, seu,
 
   observe({
     req(seu$gene)
-    updateSelectizeInput(session, "feature", choices = rownames(seu$gene), selected = "RXRG", server = TRUE)
+    updateSelectizeInput(session, "feature", choices = rownames(seu$gene@assays$RNA), selected = "RXRG", server = TRUE)
   })
 
   output$embeddings <- renderUI({
