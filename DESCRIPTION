@@ -46,7 +46,8 @@ Imports:
     waiter,
     sessioninfo,
     genesorteR (>= 0.4.3),
-    httr
+    httr,
+    patchwork
 Suggests: 
     dplyr,
     tidyr,

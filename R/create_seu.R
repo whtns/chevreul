@@ -27,13 +27,13 @@ set_colnames_txi <- function(txi, colnames){
 #'
 #' @examples
 load_counts_from_stringtie <- function(proj_dir, countsFromAbundance = "scaledTPM"){
-  stringtie_paths <- rlang::with_handlers(
-    error = ~ rlang::abort("Can't find input stringtie files (stringtie output with extension t._ctab)", parent  = .),
-    stringtie_files <- fs::path(proj_dir, "output", "stringtie") %>%
-      dir_ls(recursive = T) %>%
-      path_filter("*t_data.ctab") %>%
-      identity()
-  )
+  stringtie_paths <- rlang::with_handlers(error = ~ rlang::abort("Can't find input stringtie files (stringtie output with extension t._ctab)",
+                                                                 parent = .
+  ), stringtie_files <- fs::path(
+    proj_dir, "output",
+    "stringtie"
+  ) %>% fs::dir_ls(recurse = T, glob = "*t_data.ctab") %>%
+    identity())
 
   tmp <- read_tsv(stringtie_paths[1])
   tx2gene <- tmp[, c("t_name", "gene_name")]
@@ -42,11 +42,10 @@ load_counts_from_stringtie <- function(proj_dir, countsFromAbundance = "scaledTP
 
   txi_genes <- tximport::summarizeToGene(txi_transcripts, tx2gene = tx2gene)
 
-  sample_names <- path_file(path_dir(stringtie_paths))
+  sample_names <- fs::path_file(fs::path_dir(stringtie_paths))
 
   txi_features <- purrr::map(list(gene = txi_genes, transcript = txi_transcripts), ~set_colnames_txi(.x, sample_names))
 
-  # txi <- set_colnames_txi(txi, sample_names)
 
 }
 
@@ -72,8 +71,8 @@ load_meta <- function(proj_dir){
 
 #' Create a Seurat Object from return of tximport
 #'
-#' @param txi
-#' @param meta_tbl
+#' @param txi output from load_counts_from_stringtie
+#' @param meta_tbl a tibble of cell metadata with cell ids as the first column
 #' @param ...
 #'
 #' @return
@@ -108,9 +107,7 @@ seu_from_tibbles <- function(exp_tbl, meta_tbl, census_counts=NULL){
   rownames(featuredata) <- featuredata[,1]
 
   meta_tbl <- data.frame(meta_tbl)
-  rownames(meta_tbl) <- meta_tbl[,grepl("^sample_id$", colnames(meta_tbl), ignore.case = TRUE)]
-
-  # exp_tbl[1:3] <- purrr::map(exp_tbl[1:3], ~ .x[,(colnames(.x) %in% rownames(meta_tbl))])
+  rownames(meta_tbl) <- meta_tbl[,"sample_id"]
 
   meta_tbl <- meta_tbl[colnames(exp_tbl),]
 

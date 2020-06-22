@@ -61,8 +61,8 @@ minimalSeuratApp <- function(seu_list, appTitle = NULL, feature_types = "gene",
   )
   body <- shinydashboard::dashboardBody(
     waiter::use_waiter(),
-    waiter::waiter_show_on_load(),
-    waiter::waiter_hide_on_render("plotreadcount1-rcplot"),
+    # waiter::waiter_show_on_load(),
+    # waiter::waiter_hide_on_render("plotreadcount1-rcplot"),
     shinydashboard::tabItems(
       shinydashboard::tabItem(
         tabName = "violinPlots",
@@ -229,13 +229,16 @@ minimalSeuratApp <- function(seu_list, appTitle = NULL, feature_types = "gene",
     # shinylogs::track_usage(storage_mode = shinylogs::store_json(path = "logs/"))
     # projects_db <- "/dataVolume/storage/single_cell_projects/single_cell_projects.db"
 
+    seu_names <- names(seu_list)[!names(seu_list) %in% c("monocle", "active")]
+    for (i in seu_names) {
+      seu_list[[i]] <- update_seuratTools_object(seu_list[[i]], i)
+    }
+
     seu <- reactiveValues()
 
     observe({
-      seu_names <- names(seu_list)[!names(seu_list) %in% c("monocle", "active")]
       for (i in seu_names) {
         seu[[i]] <- seu_list[[i]]
-        seu[[i]] <- update_seuratTools_object(seu[[i]], i)
       }
       seu$active <- seu[["gene"]]
     })
@@ -421,7 +424,7 @@ minimalSeuratApp <- function(seu_list, appTitle = NULL, feature_types = "gene",
       )
       removeModal()
     })
-    callModule(findMarkers, "findmarkers", seu)
+    callModule(findMarkers, "findmarkers", seu, plot_types)
 
     callModule(pathwayEnrichment, "pathwayEnrichment", seu)
 

@@ -187,7 +187,7 @@ seurat_reduce_dimensions <- function(seu, reduction = "pca", ...) {
     npcs = 50
   }
 
-  seu <- Seurat::RunPCA(object = seu, features = Seurat::VariableFeatures(object = seu), do.print = FALSE, npcs = npcs, ...)
+  seu <- Seurat::RunPCA(object = seu, do.print = FALSE, npcs = npcs, ...)
   if (reduction == "harmony"){
     seu <- harmony::RunHarmony(seu, "batch")
   }

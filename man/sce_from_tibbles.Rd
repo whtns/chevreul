@@ -4,10 +4,10 @@
 \alias{sce_from_tibbles}
 \title{Create Single Cell Experiment from Tibbles}
 \usage{
-sce_from_tibbles(counts, colData, metadata)
+sce_from_tibbles(counts, colData, experimentdata = NULL)
 }
 \arguments{
-\item{metadata}{}
+\item{experimentdata}{}
 }
 \value{
 
