@@ -7,6 +7,10 @@
 seu_from_tximport(txi, meta_tbl, ...)
 }
 \arguments{
+\item{txi}{output from load_counts_from_stringtie}
+
+\item{meta_tbl}{a tibble of cell metadata with cell ids as the first column}
+
 \item{...}{}
 }
 \value{

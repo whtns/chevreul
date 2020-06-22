@@ -4,10 +4,10 @@
 \alias{find_all_markers}
 \title{Find All Markers at a range of resolutions}
 \usage{
-find_all_markers(seu, ...)
+find_all_markers(seu, metavar = NULL, ...)
 }
 \arguments{
-\item{seu}{}
+\item{metavar}{}
 }
 \value{
 

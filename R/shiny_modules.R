@@ -56,16 +56,14 @@ plotViolinui <- function(id){
   tagList(
     seuratToolsBox(
       title = "Violin Plots",
-      uiOutput(ns("vln_split")) %>% default_helper(type = "markdown", content = "violin_helper"),
-      uiOutput(ns("split_val")),
       uiOutput(ns("vln_group")),
       selectizeInput(ns("customFeature"),
                      "gene or transcript on which to color the plot; eg. 'RXRG' or 'ENST00000488147'",
                      choices = NULL, multiple = TRUE),
-      plotly::plotlyOutput(ns("vplot"), height = 750))
+      plotly::plotlyOutput(ns("vplot"), height = 750),
+      width = 12)
     )
 }
-
 
 #' Plot Violin Server
 #'
@@ -113,24 +111,6 @@ plotViolin <- function(input, output, session, seu, featureType, organism_type){
               value = prefill_feature())
   })
 
-  output$vln_split <- renderUI({
-    req(seu$active)
-    selectizeInput(ns("vlnSplit"), "choose variable filter by",
-                   choices = c("None", colnames(seu$active[[]])), selected = "batch")
-  })
-  output$split_val <- renderUI({
-    req(seu$active)
-    req(input$vlnSplit)
-    if (input$vlnSplit == "None") {
-      choices = "None"
-    }
-    else {
-      choices = c("None", unique(seu$active[[input$vlnSplit]][,
-                                                              1]))
-    }
-    selectizeInput(ns("splitVal"), "choose value to filter by",
-                   choices = choices)
-  })
   output$vln_group <- renderUI({
     req(seu$active)
     selectizeInput(ns("vlnGroup"), "choose variable to group by",
@@ -139,17 +119,8 @@ plotViolin <- function(input, output, session, seu, featureType, organism_type){
   output$vplot <- plotly::renderPlotly({
     req(input$customFeature)
     req(input$vlnGroup)
-    req(input$vlnSplit)
-    if (!("None" %in% c(input$vlnSplit, input$splitVal))) {
-      selected_cells <- tibble::as_tibble(seu$active[[input$vlnSplit]],
-                                          rownames = "sample_id") %>% dplyr::filter(!!sym(input$vlnSplit) ==
-                                                                                      input$splitVal) %>% dplyr::pull(sample_id)
-      sub_seu <- seu$active[, selected_cells]
-    }
-    else {
-      sub_seu <- seu$active
-    }
-    plot_violin(sub_seu, plot_var = input$vlnGroup, features = input$customFeature)
+
+    plot_violin(seu$active, plot_var = input$vlnGroup, features = input$customFeature)
   })
 }
 
@@ -168,9 +139,12 @@ plotHeatmapui <- function(id){
     seuratToolsBox(
       title = "Heatmap",
       uiOutput(ns("hm_group")),
+      radioButtons(ns("slot"), "Data Scaling", choices = c(scaled = "scale.data", unscaled = "data"), selected = "scale.data"),
+      downloadButton(ns("downloadPlot"), "Download Heatmap"),
       selectizeInput(ns("customFeature"), "gene or transcript on which to color the plot; eg. 'RXRG' or 'ENST00000488147'",
                      choices = NULL, multiple = TRUE),
-      plotOutput(ns("heatmap"), height = 750)) %>%
+      plotOutput(ns("heatmap"), height = 750),
+      width = 12) %>%
       default_helper(type = "markdown", content = "heatMap")
     )
 }
@@ -210,12 +184,25 @@ plotHeatmap <- function(input, output, session, seu, featureType, organism_type)
     selectizeInput(ns("hmGroup"), "choose variable to group by",
                    choices = colnames(seu$active[[]]), selected = "batch")
   })
-  output$heatmap <- renderPlot({
+
+  heatmap_plot <- reactive({
     req(input$customFeature)
     req(input$hmGroup)
-
-    plot_heatmap(seu$active, group.by = input$hmGroup, features = input$customFeature)
+    plot_heatmap(seu$active, group.by = input$hmGroup, features = input$customFeature, slot = input$slot)
   })
+
+  output$heatmap <- renderPlot({
+    heatmap_plot()
+  })
+
+  output$downloadPlot <- downloadHandler(
+    filename = function() { paste("heatmap", '.pdf', sep='') },
+    content = function(file) {
+      ggsave(file, heatmap_plot(), width = 16, height = 10.4)
+    })
+
+
+
 }
 
 
@@ -1001,9 +988,10 @@ findMarkersui <- function(id) {
   tagList(
     seuratToolsBox(
       title = "Find Markers",
+      uiOutput(ns("dplottype")),
       sliderInput(ns("resolution2"), label = "Resolution of clustering algorithm (affects number of clusters)", min = 0.2, max = 2, step = 0.2, value = 0.6),
-      numericInput(ns("num_markers"), "Select Number of Markers to Plot for Each Cluster", value = 5, min = 2, max = 20),
-      uiOutput(ns("clusterSelect")),
+      numericInput(ns("num_markers"), "Select Number of Markers to Plot for Each Value", value = 5, min = 2, max = 20),
+      uiOutput(ns("valueSelect")),
       radioButtons(ns("markerMethod"), "Method of Marker Selection", choices = c("presto", "genesorteR"), selected = "presto"),
       actionButton(ns("plotDots"), "Plot Markers!"),
       plotly::plotlyOutput(ns("markerplot"), height = 800),
@@ -1025,30 +1013,44 @@ findMarkersui <- function(id) {
 #'
 #' @examples
 #'
-findMarkers <- function(input, output, session, seu) {
+findMarkers <- function(input, output, session, seu, plot_types) {
   ns <- session$ns
 
-  resolution <- reactive({
+  output$dplottype <- renderUI({
+    req(seu$active)
+    # selected_plot <- ifelse(is.null(selected_plot()), "seurat",
+    #                         selected_plot())
+    selectizeInput(ns("plottype"), "Variable to Plot", choices = purrr::flatten_chr(plot_types()),
+                   selected = "seurat", multiple = TRUE)
+  })
+
+  metavar <- reactive({
+    req(input$plottype)
     if ("integrated" %in% names(seu$active@assays)){
       active_assay <- "integrated"
     } else {
       active_assay <- "RNA"
     }
-    paste0(active_assay, "_snn_res.", input$resolution2)
+
+    if (input$plottype == "seurat"){
+      metavar <- paste0(active_assay, "_snn_res.", input$resolution2)
+    } else {
+      metavar <- input$plottype
+    }
 
     })
 
-  output$clusterSelect <- renderUI({
+  output$valueSelect <- renderUI({
     req(seu$active)
-    req(resolution())
+    req(metavar())
 
-    choices = levels(seu$active[[]][[resolution()]])
+    choices = levels(seu$active[[]][[metavar()]])
 
-    selectizeInput(ns("displayClusters"), "Clusters to display", multiple = TRUE, choices = choices)
+    selectizeInput(ns("displayValues"), "Values to display", multiple = TRUE, choices = choices)
   })
 
   marker_plot <- eventReactive(input$plotDots, {
-    plot_markers(seu = seu$active, resolution = resolution(), num_markers = input$num_markers, selected_clusters = input$displayClusters, marker_method = input$markerMethod)
+    plot_markers(seu = seu$active, metavar = metavar(), num_markers = input$num_markers, selected_values = input$displayValues, marker_method = input$markerMethod)
   })
 
   output$markerplot <- plotly::renderPlotly({

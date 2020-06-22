@@ -4,7 +4,7 @@
 \alias{plot_heatmap}
 \title{plot heatmap}
 \usage{
-plot_heatmap(seu, features = "RXRG", ...)
+plot_heatmap(seu, features = "RXRG", group.by = NULL, ...)
 }
 \arguments{
 \item{...}{}
