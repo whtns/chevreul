@@ -9,8 +9,6 @@
 convert_seuv3_to_monoclev2 <- function(seu, return_census = FALSE, sig_slice = 1000) {
 
   # Load Seurat object
-
-
   # Extract data, phenotype data, and feature data from the SeuratObject
   data <- as(as.matrix(seu@assays$RNA@data), "sparseMatrix")
 
@@ -621,34 +619,30 @@ plot_pseudotime_heatmap <- function(heatmap_matrix, heatmap_title, dend_k = 6, c
 #'
 #' @param counts
 #' @param colData
-#' @param metadata
+#' @param experimentdata
 #'
 #' @return
 #' @export
 #'
 #' @examples
-sce_from_tibbles <- function(counts, colData, metadata){
-  # browser()
-  featuredata <- data.frame(counts[,1])
-  rownames(featuredata) <- featuredata[,1]
+sce_from_tibbles <- function(counts, colData, experimentdata = NULL){
+  featuredata <- data.frame(rownames(counts), row.names = rownames(counts))
 
   counts <- data.frame(counts)
-  rownames(counts) <- counts[,1]
-  counts[,1] <- NULL
   counts <- as.matrix(counts)
 
   colData <- data.frame(colData)
-  rownames(colData) <- colData[,1]
+  rownames(colData) <- gsub("-", ".", colData$sample_id)
   colData <- colData[colnames(counts),]
-  sce <- SingleCellExperiment::SingleCellExperiment(assays=list(counts=counts), colData=colData, rowData=featuredata, metadata=metadata)
+  sce <- SingleCellExperiment::SingleCellExperiment(assays=list(counts=counts), colData=colData, rowData=featuredata, metadata=experimentdata)
 
   return(sce)
 }
 
 #' Run Census
 #'
-#' @param sce
-#' @param census_output_file
+#' @param sce a single cell experiment object
+#' @param census_output_file name to be given to output file
 #'
 #' @return
 #' @export
@@ -660,17 +654,13 @@ run_census <- function(sce, census_output_file){
   pd <- new("AnnotatedDataFrame", data=data.frame(colData(sce)))
   fd <- new("AnnotatedDataFrame", data=data.frame(rowData(sce)))
 
-
   HSMM <- monocle::newCellDataSet(counts(sce),
                          phenoData = pd,
                          featureData = fd,
                          lowerDetectionLimit=0.1,
                          expressionFamily=tobit(Lower=0.1))
 
-  HSMM_path <- gsub("census_matrix.csv", "raw_dataset.rds", census_output_file)
-
   rpc_matrix <- monocle::relative2abs(HSMM, method = "num_genes")
-
 
   # Now, make a new CellDataSet using the RNA counts
   HSMM <- monocle::newCellDataSet(as(rpc_matrix, "sparseMatrix"),

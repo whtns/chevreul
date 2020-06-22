@@ -6,16 +6,16 @@
 \usage{
 plot_markers(
   seu,
-  resolution,
+  metavar,
   num_markers = 5,
-  selected_clusters = NULL,
+  selected_values = NULL,
   return_plot = FALSE,
   marker_method = "presto",
   ...
 )
 }
 \arguments{
-\item{...}{}
+\item{return_plot}{}
 }
 \value{
 

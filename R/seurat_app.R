@@ -305,7 +305,9 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
     shinydashboard::tabItem(
       tabName = "violinPlots",
       fluidRow(
-        title = "Violin Plot", plotViolinui("violinPlot"),
+        title = "Violin Plot", plotViolinui("violinPlot")
+      ),
+      fluidRow(
         tite = "Heatmap", plotHeatmapui("heatMap")
       )
     ),
@@ -765,7 +767,7 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
       )
       removeModal()
     })
-    callModule(findMarkers, "findmarkers", seu)
+    callModule(findMarkers, "findmarkers", seu, plot_types)
     diffex_results <- callModule(
       diffex, "diffex", seu, featureType,
       diffex_selected_cells

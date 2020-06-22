@@ -7,7 +7,9 @@
 run_census(sce, census_output_file)
 }
 \arguments{
-\item{census_output_file}{}
+\item{sce}{a single cell experiment object}
+
+\item{census_output_file}{name to be given to output file}
 }
 \value{
 
