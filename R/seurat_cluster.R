@@ -63,12 +63,12 @@ find_all_markers <- function(seu, metavar = NULL, ...){
     metavar = names(clusters)
   }
 
-  marker_features <- purrr::map(metavar, stash_marker_features, seu)
-  names(marker_features) <- metavar
+  new_markers <- purrr::map(metavar, stash_marker_features, seu)
+  names(new_markers) <- metavar
 
-  new_markers <- marker_features[setdiff(names(marker_features), names(seu@misc$markers))]
+  old_markers <- seu@misc$markers[!names(seu@misc$markers) %in% names(new_markers)]
 
-  seu@misc$markers <- c(seu@misc$markers, new_markers)
+  seu@misc$markers <- c(old_markers, new_markers)
 
   return(seu)
 
