@@ -34,7 +34,7 @@ minimalSeuratApp <- function(seu_list, appTitle = NULL, feature_types = "gene",
     shinydashboard::sidebarMenu(
       shinydashboard::menuItem("Plot Data",
         tabName = "comparePlots", icon = icon("chart-bar"), selected = TRUE
-      ), shinydashboard::menuItem("Violin/Heatmap Plots",
+      ), shinydashboard::menuItem("Heatmap/Violin Plots",
         tabName = "violinPlots", icon = icon("sort")
       ), shinydashboard::menuItem("Differential Expression",
         tabName = "diffex", icon = icon("magnet")
@@ -67,8 +67,8 @@ minimalSeuratApp <- function(seu_list, appTitle = NULL, feature_types = "gene",
       shinydashboard::tabItem(
         tabName = "violinPlots",
         fluidRow(
-          plotViolinui("violinPlot"),
-          plotHeatmapui("heatMap")
+          plotHeatmapui("heatMap"),
+          plotViolinui("violinPlot")
         )
       ), shinydashboard::tabItem(
         tabName = "comparePlots",
@@ -108,10 +108,10 @@ minimalSeuratApp <- function(seu_list, appTitle = NULL, feature_types = "gene",
           column(
             seuratToolsBox(
             title = "Subset Settings",
-            shinyWidgets::actionBttn(
+            actionButton(
               "subsetAction",
               "subset seurat by selected cells"
-            ), shinyWidgets::actionBttn(
+            ), actionButton(
               "subsetCsv",
               "subset seurat by uploaded csv"
             ), fileInput("uploadCsv",
@@ -153,7 +153,7 @@ minimalSeuratApp <- function(seu_list, appTitle = NULL, feature_types = "gene",
           default_helper(type = "markdown", content = "allTranscripts"),
         fluidRow(column(allTranscriptsui("alltranscripts1"),
           width = 6
-        ), column(allTranscriptsui("alltranscripts2"),
+        ), column(plotDimRedui("alltranscripts2"),
           width = 6
         ))
       ),
@@ -435,16 +435,13 @@ minimalSeuratApp <- function(seu_list, appTitle = NULL, feature_types = "gene",
 
     observe({
       req(featureType())
-      if("transcript" %in% req(featureType())){
-        callModule(
-          allTranscripts, "alltranscripts1", seu, featureType,
-          organism_type
-        )
-        callModule(
-          allTranscripts, "alltranscripts2", seu, featureType,
-          organism_type
-        )
-      }
+      callModule(
+        allTranscripts, "alltranscripts1", seu, featureType,
+        organism_type
+      )
+
+      callModule(plotDimRed, "alltranscripts2", seu, plot_types, featureType,
+                 organism_type = organism_type, reductions)
     })
 
     prior_gene_set <- reactive({

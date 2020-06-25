@@ -415,35 +415,6 @@ plot_violin <- function(seu, plot_var = "batch", plot_vals = NULL, features = "R
   return(vln_plot)
 }
 
-#' plot heatmap
-#'
-#' @param seu
-#' @param features
-#' @param ...
-#'
-#' @return
-#' @export
-#'
-#' @examples
-plot_heatmap <- function(seu, features = "RXRG", group.by = NULL, ...){
-
-  if ("integrated" %in% names(seu@assays)) {
-    default_assay = "integrated"
-  } else {
-    default_assay = "RNA"
-  }
-
-  # bug in seurat doheatmap for NA values
-  seu[[group.by]][is.na(seu[[group.by]])] <- "NA"
-
-  hm <- DoHeatmap(seu, features = features, assay = default_assay, group.by = group.by, colors = Seurat::BlueAndRed(), ...) +
-    labs(title = "Expression Values for each cell are normalized by that cell's total expression then multiplied by 10,000 and natural-log transformed") +
-    NULL
-
-  return(hm)
-}
-
-
 
 #' Plot Features
 #' This is a great function
@@ -547,7 +518,9 @@ plot_markers <- function(seu, metavar, num_markers = 5, selected_values = NULL, 
 
   markers <- dplyr::pull(markers, feature)
 
-  markerplot <- DotPlot(seu, features = unique(markers), group.by = metavar, dot.scale = 3) +
+  markers <- unique(markers[markers %in% rownames(seu)])
+
+  markerplot <- DotPlot(seu, features = markers, group.by = metavar, dot.scale = 3) +
     theme(axis.text.x = element_text(size = 10, angle = 45, vjust = 1, hjust=1),
           axis.text.y = element_text(size = 10)) +
     scale_y_discrete(position = "right") +
@@ -570,28 +543,24 @@ plot_markers <- function(seu, metavar, num_markers = 5, selected_values = NULL, 
 #' Plot Read Count
 #'
 #' @param seu
-#' @param plot_type
+#' @param metavar
+#' @param color.by
 #'
 #' @return
 #' @export
 #'
 #' @examples
-plot_readcount <- function(seu, plot_type){
+plot_readcount <- function(seu, metavar = "nCount_RNA", color.by = "batch"){
 
-  seu_tbl <- tibble::rownames_to_column(seu[[]], "SID")
+  seu_tbl <- tibble::rownames_to_column(seu[[]], "SID") %>%
+    dplyr::select(SID, !!as.symbol(metavar), !!as.symbol(color.by))
 
-  rc_plot <- ggplot(seu_tbl, aes(x=reorder(SID, -nCount_RNA), y = nCount_RNA, fill = !!as.symbol(plot_type))) +
-    # scale_y_continuous(breaks = seq(0, 8e7, by = 5e5)) +
-    scale_y_log10() +
-    geom_bar(position = "identity", stat = "identity") +
-    # geom_text(data=subset(agg_qc_wo_na, Sample %in% thresholded_cells & align_type == "paired_total"),
-    #   aes(Sample, count, label=Sample)) +
-    # geom_text(data=subset(agg_qc_wo_na, Sample %in% low_read_count_cells & align_type == "paired_aligned_one"),
-    #   aes(Sample, count, label=Sample)) +
-    theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
-    # scale_fill_manual(values = c( "low_read_count"="tomato", "keep"="gray" ), guide = FALSE ) +
-    labs(title = "Paired Unique Reads", x = "Sample") +
-    NULL
+  rc_plot <-
+    ggplot(seu_tbl, aes(x = reorder(SID, -!!as.symbol(metavar)),
+                        y = !!as.symbol(metavar), fill = !!as.symbol(color.by))) +
+    scale_y_log10() + geom_bar(position = "identity", stat = "identity") +
+    theme(axis.text.x = element_blank()) + labs(title = metavar,
+                                                x = "Sample") + NULL
 
   rc_plot <- rc_plot %>%
     plotly::toWebGL() %>%
@@ -600,53 +569,68 @@ plot_readcount <- function(seu, plot_type){
 
 }
 
-#' Feature expression heatmap
+#' Plot a dendrogram colored by Seurat metadata
 #'
-#' Draws a heatmap of single cell feature expression. overwrites from seurat
+#' @param seu
+#' @param metavar metadata variable from seurat object
+#' @param hclust_method hierarchical clustering method as defined in hclust
+#'
+#' @return
+#' @export
+#' @importFrom ggtree layout_dendrogram
+#'
+#' @examples
+plot_dend_by_metadata <- function(seu, metavar = "batch", hclust_method = "ward.D2"){
+
+  hc <-
+    Seurat::Embeddings(seu, "pca") %>%
+    dist() %>%
+    hclust(hclust_method)
+
+  node_labels <- seu[[metavar]] %>%
+    dplyr::mutate(node = row_number()) %>%
+    dplyr::select("node", !!as.symbol(metavar)) %>%
+    identity()
+
+  p <- ggtree::ggtree(hc) %<+% node_labels +
+    aes(color = !!as.symbol(metavar)) +
+    layout_dendrogram()
+
+  return(p)
+}
+
+#' Plot Annotated Complexheatmap from Seurat object
 #'
 #' @param object
 #' @param features
 #' @param cells
 #' @param group.by
-#' @param group.bar
-#' @param group.colors
-#' @param disp.min
-#' @param disp.max
 #' @param slot
 #' @param assay
-#' @param label
-#' @param size
-#' @param hjust
-#' @param angle
-#' @param raster
-#' @param draw.lines
-#' @param lines.width
 #' @param group.bar.height
-#' @param combine
+#' @param cluster_columns FALSE
+#' @param col_dendrogram
+#' @param column_split
+#' @param mm_col_dend
 #' @param ...
 #'
 #' @return
 #' @export
-#' @importFrom ggplot2 ggplot_build annotation_raster coord_cartesian
 #'
 #' @examples
-DoHeatmap <- function(object, features = NULL, cells = NULL, group.by = "ident",
-                                 group.bar = TRUE, group.colors = NULL, disp.min = -2.5,
-                                 disp.max = NULL, slot = "scale.data", assay = NULL, label = FALSE,
-                                 size = 5.5, hjust = 0, angle = 45, raster = TRUE, draw.lines = TRUE,
-                                 lines.width = NULL, group.bar.height = 0.02, combine = TRUE, ...)
+seu_complex_heatmap <- function(seu, features = NULL, cells = NULL, group.by = "ident",
+                                slot = "scale.data", assay = NULL, group.bar.height = 0.01,
+                                cluster_columns = FALSE, column_split = NULL, col_dendrogram = "ward.D2", mm_col_dend = 30, ...)
 {
-  cells <- cells %||% colnames(x = object)
+  cells <- cells %||% colnames(x = seu)
   if (is.numeric(x = cells)) {
-    cells <- colnames(x = object)[cells]
+    cells <- colnames(x = seu)[cells]
   }
-  assay <- assay %||% DefaultAssay(object = object)
-  DefaultAssay(object = object) <- assay
-  features <- features %||% VariableFeatures(object = object)
+  assay <- assay %||% DefaultAssay(object = seu)
+  DefaultAssay(object = seu) <- assay
+  features <- features %||% VariableFeatures(object = seu)
   features <- rev(x = unique(x = features))
-  disp.max <- disp.max %||% ifelse(test = slot == "scale.data",
-                                   yes = 2.5, no = 6)
-  possible.features <- rownames(x = GetAssayData(object = object,
+  possible.features <- rownames(x = GetAssayData(object = seu,
                                                  slot = slot))
   if (any(!features %in% possible.features)) {
     bad.features <- features[!features %in% possible.features]
@@ -659,107 +643,71 @@ DoHeatmap <- function(object, features = NULL, cells = NULL, group.by = "ident",
             slot, " slot for the ", assay, " assay: ", paste(bad.features,
                                                              collapse = ", "))
   }
-  data <- as.data.frame(x = t(x = as.matrix(x = GetAssayData(object = object,
+  data <- as.data.frame(x = t(x = as.matrix(x = GetAssayData(object = seu,
                                                              slot = slot)[features, cells, drop = FALSE])))
-  object <- suppressMessages(expr = StashIdent(object = object,
+  seu <- suppressMessages(expr = StashIdent(object = seu,
                                                save.name = "ident"))
-  group.by <- group.by %||% "ident"
-  groups.use <- object[[group.by]][cells, , drop = FALSE]
-  plots <- vector(mode = "list", length = ncol(x = groups.use))
-  for (i in 1:ncol(x = groups.use)) {
-    data.group <- data
-    group.use <- groups.use[, i, drop = TRUE]
-    if (!is.factor(x = group.use)) {
-      group.use <- factor(x = group.use)
-    }
-    names(x = group.use) <- cells
-    if (draw.lines) {
-      lines.width <- lines.width %||% ceiling(x = nrow(x = data.group) *
-                                                0.0025)
-      placeholder.cells <- sapply(X = 1:(length(x = levels(x = group.use)) *
-                                           lines.width), FUN = function(x) {
-                                             return(Seurat:::RandomName(length = 20))
-                                           })
-      placeholder.groups <- rep(x = levels(x = group.use),
-                                times = lines.width)
-      group.levels <- levels(x = group.use)
-      names(x = placeholder.groups) <- placeholder.cells
-      group.use <- as.vector(x = group.use)
-      names(x = group.use) <- cells
-      group.use <- factor(x = c(group.use, placeholder.groups),
-                          levels = group.levels)
-      na.data.group <- matrix(data = NA, nrow = length(x = placeholder.cells),
-                              ncol = ncol(x = data.group), dimnames = list(placeholder.cells,
-                                                                           colnames(x = data.group)))
-      data.group <- rbind(data.group, na.data.group)
-    }
-    lgroup <- length(levels(group.use))
-    plot <- Seurat:::SingleRasterMap(data = data.group, raster = raster,
-                            disp.min = disp.min, disp.max = disp.max, feature.order = features,
-                            cell.order = names(x = sort(x = group.use)), group.by = group.use, ...)
-    if (group.bar) {
-      default.colors <- c(scales::hue_pal()(length(x = levels(x = group.use))))
-      cols <- group.colors[1:length(x = levels(x = group.use))] %||%
-        default.colors
-      if (any(is.na(x = cols))) {
-        cols[is.na(x = cols)] <- default.colors[is.na(x = cols)]
-        cols <- Col2Hex(cols)
-        col.dups <- sort(x = unique(x = which(x = duplicated(x = substr(x = cols,
-                                                                        start = 1, stop = 7)))))
-        through <- length(x = default.colors)
-        while (length(x = col.dups) > 0) {
-          pal.max <- length(x = col.dups) + through
-          cols.extra <- scales::hue_pal()(pal.max)[(through +
-                                              1):pal.max]
-          cols[col.dups] <- cols.extra
-          col.dups <- sort(x = unique(x = which(x = duplicated(x = substr(x = cols,
-                                                                          start = 1, stop = 7)))))
-        }
-      }
-      group.use2 <- sort(x = group.use)
-      if (draw.lines) {
-        na.group <- Seurat:::RandomName(length = 20)
-        levels(x = group.use2) <- c(levels(x = group.use2),
-                                    na.group)
-        group.use2[placeholder.cells] <- na.group
-        cols <- c(cols, "#FFFFFF")
-      }
-      pbuild <- ggplot_build(plot = plot)
-      names(x = cols) <- levels(x = group.use2)
-      y.range <- diff(x = pbuild$layout$panel_params[[1]]$y.range)
-      y.pos <- max(pbuild$layout$panel_params[[1]]$y.range) +
-        y.range * 0.015
-      y.max <- y.pos + group.bar.height * y.range
-      plot <- plot + annotation_raster(raster = t(x = cols[group.use2]),
-                                       xmin = -Inf, xmax = Inf, ymin = y.pos, ymax = y.max) +
-        coord_cartesian(ylim = c(0, y.max), clip = "off") +
-        scale_color_manual(values = cols)
-      if (label) {
-        x.max <- max(pbuild$layout$panel_params[[1]]$x.range)
-        x.divs <- pbuild$layout$panel_params[[1]]$x.major %||%
-          pbuild$layout$panel_params[[1]]$x$break_positions()
-        x <- data.frame(group = sort(x = group.use),
-                        x = x.divs)
-        label.x.pos <- tapply(X = x$x, INDEX = x$group,
-                              FUN = median) * x.max
-        label.x.pos <- data.frame(group = names(x = label.x.pos),
-                                  label.x.pos)
-        plot <- plot + geom_text(stat = "identity",
-                                 data = label.x.pos, aes_string(label = "group",
-                                                                x = "label.x.pos"), y = y.max + y.max *
-                                   0.03 * 0.5, angle = angle, hjust = hjust,
-                                 size = size)
-        plot <- suppressMessages(plot + coord_cartesian(ylim = c(0,
-                                                                 y.max + y.max * 0.002 * max(nchar(x = levels(x = group.use))) *
-                                                                   size), clip = "off"))
-      }
-    }
-    plot <- plot + theme(line = element_blank())
-    plots[[i]] <- plot
-  }
-  if (combine) {
-    plots <- patchwork::wrap_plots(plots)
-  }
-  return(plots)
-}
 
+  if (col_dendrogram %in% c("ward.D", "single", "complete", "average", "mcquitty",
+                            "median", "centroid", "ward.D2")){
+    cluster_columns <-
+      Seurat::Embeddings(seu, "pca") %>%
+      dist() %>%
+      hclust(col_dendrogram)
+  } else {
+    ordered_meta <- seu[[col_dendrogram]][order(seu[[col_dendrogram]]), ,drop = FALSE]
+    column_split <- ordered_meta[,1]
+    cells <- rownames(ordered_meta)
+    data <- data[cells,]
+    # browser()
+    group.by = union(group.by, col_dendrogram)
+  }
+
+  group.by <- group.by %||% "ident"
+  groups.use <- seu[[group.by]][cells, , drop = FALSE]
+
+  groups.use <- groups.use %>%
+    tibble::rownames_to_column("sample_id") %>%
+    dplyr::mutate(across(where(is.character), as.factor)) %>%
+    data.frame(row.names = 1) %>%
+    identity()
+
+  # factor colors
+  groups.use.factor <- groups.use[sapply(groups.use, is.factor)]
+  ha_cols.factor <- NULL
+  if (length(groups.use.factor) > 0){
+    ha_col_names.factor <- lapply(groups.use.factor, levels)
+
+    ha_cols.factor <- purrr::map(ha_col_names.factor, ~scales::hue_pal()(length(.x))) %>%
+      purrr::map2(ha_col_names.factor, set_names)
+  }
+
+  # numeric colors
+  groups.use.numeric <- groups.use[sapply(groups.use, is.numeric)]
+  ha_cols.numeric <- NULL
+  if (length(groups.use.numeric) > 0){
+    numeric_col_fun = function(myvec, color){
+      circlize::colorRamp2(range(myvec), c("white", color))
+    }
+
+    ha_col_names.numeric <- names(groups.use.numeric)
+    ha_col_hues.numeric <- scales::hue_pal()(length(ha_col_names.numeric))
+
+    ha_cols.numeric  <- purrr::map2(groups.use[ha_col_names.numeric], ha_col_hues.numeric, numeric_col_fun)
+  }
+
+  ha_cols <- c(ha_cols.factor, ha_cols.numeric)
+
+  column_ha = ComplexHeatmap::HeatmapAnnotation(df = groups.use, height = group.bar.height, col = ha_cols)
+
+  hm <- ComplexHeatmap::Heatmap(t(data), name = "z score", top_annotation = column_ha,
+                                cluster_columns = cluster_columns,
+                                show_column_names = FALSE,
+                                column_dend_height = unit(mm_col_dend, "mm"),
+                                column_split = column_split,
+                                column_title = NULL,
+                                ...)
+
+  return(hm)
+
+}

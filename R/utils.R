@@ -103,7 +103,7 @@ filter_rows_to_top <- function(df, column, values){
 #' @param seu
 #'
 #' @return plot_types
-#'
+#' @export
 #' @examples
 list_plot_types <- function(seu){
 
@@ -318,21 +318,18 @@ record_experiment_data <- function(object, experiment_name = "default_experiment
 
   experiment_name = ifelse(!is.null(object@misc$experiment$experiment_name), object@misc$experiment$experiment_name, experiment_name)
 
-  message(paste0("[", format(Sys.time(), "%H:%M:%S"), "] Initializing seuratTools object..."))
+  message(paste0("[", format(Sys.time(), "%H:%M:%S"), "] Logging Technical Details..."))
   export <- list(experiment = list(experiment_name = experiment_name,
                                    organism = organism))
   export$experiment$date_of_analysis <- object@misc$experiment$date_of_analysis
   export$experiment$date_of_export <- Sys.Date()
-
-  export$experiment$experiment_name <- experiment_name
-  export$experiment$organism <- organism
   export$experiment$date_of_analysis <- Sys.Date()
 
   export$experiment$parameters <- list(
     gene_nomenclature = 'gene_symbol',
     discard_genes_expressed_in_fewer_cells_than = 10,
     keep_mitochondrial_genes = TRUE,
-    variables_to_regress_out = 'ncount_RNA',
+    variables_to_regress_out = 'nCount_RNA',
     number_PCs = 30,
     tSNE_perplexity = 30,
     cluster_resolution = seq(0.2, 2.0, by = 0.2)
@@ -379,7 +376,7 @@ plot_all_transcripts <- function(seu_transcript, seu_gene, features, embedding){
   seu_gene[[features]] <- transcript_cols
 
   pList <- purrr::map(features, ~plot_feature(seu_gene,
-                                                   embedding = embedding, features = .x))
+                                                   embedding = embedding, features = .x, return_plotly = FALSE))
   names(pList) <- features
 
   return(pList)
@@ -414,21 +411,38 @@ update_seuratTools_object <- function(seu, feature, resolution = seq(0.2, 2.0, b
 
   if(seuratTools_version < getNamespaceVersion("seuratTools")){
 
-    if (!grepl("_snn_res", colnames(seu@meta.data))){
+    if (!any(grepl("_snn_res", colnames(seu@meta.data)))){
       seu <- seurat_cluster(seu = seu, resolution = resolution, reduction = "pca", ...)
 
     }
-
       seu <- find_all_markers(seu, resolution = resolution)
-      if (feature == "gene"){
-        enriched_seu <- tryCatch(getEnrichedPathways(seu), error = function(e) e)
-        enrichr_available <- !any(class(enriched_seu) == "error")
-        if(enrichr_available){
-          seu <- enriched_seu
-        }
-      }
       seu <- record_experiment_data(seu)
   }
+
+  seu <- seu_calcn(seu)
+
   return(seu)
 
+}
+
+
+#' recalculate counts/features per cell for a seurat object
+#'
+#' @param seu
+#' @param assay
+#' @param slot
+#'
+#' @return
+#' @export
+#'
+#' @examples
+seu_calcn <- function(seu, assay = "RNA", slot = "counts"){
+
+  n.calc <- Seurat:::CalcN(object = GetAssay(seu, assay))
+  if (!is.null(x = n.calc)) {
+    names(x = n.calc) <- paste(names(x = n.calc), assay, sep = '_')
+    seu[[names(x = n.calc)]] <- n.calc
+  }
+
+  return(seu)
 }
