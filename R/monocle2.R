@@ -586,7 +586,7 @@ plot_pseudotime_heatmap <- function(heatmap_matrix, heatmap_title, dend_k = 6, c
 
   ph_res <- ComplexHeatmap::Heatmap(heatmap_matrix,
                                     # Remove name from fill legend
-                                    name = "",
+                                    name = NULL,
                                     # Keep original row/col order
                                     row_order = rownames(heatmap_matrix),
                                     column_order = colnames(heatmap_matrix),

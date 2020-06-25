@@ -10,8 +10,9 @@ plotClustree_UI <- function(id) {
   ns <- NS(id)
   tagList(
     seuratToolsBox(
+      title = "Clustering Tree",
     # textOutput(ns("checkSeu")),
-    plotOutput(ns("clustree"), height = "500px")
+    plotOutput(ns("clustree"), height = "700px")
     )
 
   )
@@ -58,7 +59,7 @@ plotViolinui <- function(id){
       title = "Violin Plots",
       uiOutput(ns("vln_group")),
       selectizeInput(ns("customFeature"),
-                     "gene or transcript on which to color the plot; eg. 'RXRG' or 'ENST00000488147'",
+                     "Gene or transcript expression by which to color the plot eg. 'RXRG' or 'ENST00000488147'",
                      choices = NULL, multiple = TRUE),
       plotly::plotlyOutput(ns("vplot"), height = 750),
       width = 12)
@@ -106,14 +107,9 @@ plotViolin <- function(input, output, session, seu, featureType, organism_type){
                          selected = prefill_feature(), server = TRUE)
   })
 
-  output$featuretext <- renderUI({
-    textInput(ns("customFeature"), "gene or transcript on which to color the plot; eg. 'RXRG' or 'ENST00000488147'",
-              value = prefill_feature())
-  })
-
   output$vln_group <- renderUI({
     req(seu$active)
-    selectizeInput(ns("vlnGroup"), "choose variable to group by",
+    selectizeInput(ns("vlnGroup"), "Grouping variable",
                    choices = colnames(seu$active[[]]), selected = "batch")
   })
   output$vplot <- plotly::renderPlotly({
@@ -138,10 +134,12 @@ plotHeatmapui <- function(id){
   tagList(
     seuratToolsBox(
       title = "Heatmap",
-      uiOutput(ns("hm_group")),
-      radioButtons(ns("slot"), "Data Scaling", choices = c(scaled = "scale.data", unscaled = "data"), selected = "scale.data"),
+      uiOutput(ns("colAnnoVarui")),
+      radioButtons(ns("slot"), "Data Scaling", choices = c(scaled = "scale.data", unscaled = "data"), selected = "scale.data", inline = TRUE),
+      selectizeInput(ns("dendroSelect"), "Clustering algorigthm for column dendrogram or metadata for annotation", choices = NULL, selected = NULL),
+      actionButton(ns("actionHeatmap"), "Plot Heatmap"),
       downloadButton(ns("downloadPlot"), "Download Heatmap"),
-      selectizeInput(ns("customFeature"), "gene or transcript on which to color the plot; eg. 'RXRG' or 'ENST00000488147'",
+      selectizeInput(ns("customFeature"), "Gene or transcript expression by which to color the plot; eg. 'RXRG' or 'ENST00000488147'",
                      choices = NULL, multiple = TRUE),
       plotOutput(ns("heatmap"), height = 750),
       width = 12) %>%
@@ -179,16 +177,35 @@ plotHeatmap <- function(input, output, session, seu, featureType, organism_type)
     updateSelectizeInput(session, "customFeature", choices = rownames(seu$active@assays$RNA),
                          selected = preset_features, server = TRUE)
   })
-  output$hm_group <- renderUI({
+
+  output$colAnnoVarui <- renderUI({
     req(seu$active)
-    selectizeInput(ns("hmGroup"), "choose variable to group by",
-                   choices = colnames(seu$active[[]]), selected = "batch")
+
+    selectizeInput(ns("colAnnoVar"), "Column Annotation(s)",
+                   choices = colnames(seu$active[[]]), selected = "batch", multiple = TRUE)
   })
 
-  heatmap_plot <- reactive({
+  observe({
+    req(seu$active)
+
+    hclust_methods <- c("Ward" = "ward.D2", "single", "complete", "average")
+
+    updateSelectizeInput(session, "dendroSelect", choices = c(hclust_methods, colnames(seu$active[[]])), selected = "ward.D2")
+  })
+
+  heatmap_plot <- eventReactive(input$actionHeatmap, {
     req(input$customFeature)
-    req(input$hmGroup)
-    plot_heatmap(seu$active, group.by = input$hmGroup, features = input$customFeature, slot = input$slot)
+    req(input$colAnnoVar)
+
+    if ("integrated" %in% names(seu$active@assays)) {
+      default_assay = "integrated"
+    } else {
+      default_assay = "RNA"
+    }
+
+    hm <- seu_complex_heatmap(seu$active, features = input$customFeature, assay = default_assay, group.by = input$colAnnoVar, slot = input$slot, col_dendrogram = input$dendroSelect)
+
+    return(hm)
   })
 
   output$heatmap <- renderPlot({
@@ -198,7 +215,7 @@ plotHeatmap <- function(input, output, session, seu, featureType, organism_type)
   output$downloadPlot <- downloadHandler(
     filename = function() { paste("heatmap", '.pdf', sep='') },
     content = function(file) {
-      ggsave(file, heatmap_plot(), width = 16, height = 10.4)
+      ggsave(file, ggplotify::as.ggplot(heatmap_plot()), width = 16, height = 12)
     })
 
 
@@ -594,9 +611,8 @@ plotDimRedui <- function(id){
                    selectizeInput(ns("dim2"), "Dimension 2", choices = seq(1, 99), selected = 2)
                    )
             ),
-          selectizeInput(ns("customFeature"), "gene or transcript on which to color the plot; eg. 'RXRG' or 'ENST00000488147'",
-                                                                                                                                                                                      choices = NULL, multiple = TRUE), sliderInput(ns("resolution"),
-                                                                                                                                                                                                                                    "Resolution of clustering algorithm (affects number of clusters)", min = 0.2, max = 2, step = 0.2, value = 0.6),
+          selectizeInput(ns("customFeature"), "Gene or transcript expression by which to color the plot; eg. 'RXRG' or 'ENST00000488147'", choices = NULL, multiple = TRUE),
+          sliderInput(ns("resolution"), "Resolution of clustering algorithm (affects number of clusters)", min = 0.2, max = 2, step = 0.2, value = 0.6),
           plotly::plotlyOutput(ns("dplot"), height = 500),
           width = 12)
 }
@@ -808,7 +824,8 @@ diffexui <- function(id) {
       "Seurat Cluster",
       "Custom"
     ), choiceValues = c("seurat", "custom"),
-    selected = "seurat"
+    selected = "seurat",
+    inline = TRUE
   ), conditionalPanel(
     ns = ns,
     condition = "input.diffex_scheme == 'seurat'",
@@ -828,15 +845,15 @@ diffexui <- function(id) {
     sliderInput(ns("customResolution"), "Resolution of clustering algorithm (affects number of clusters)",
       min = 0.2, max = 2, step = 0.2, value = 0.6
     ),
-    shinyWidgets::actionBttn(
+    actionButton(
       ns("saveClust1"),
       "Save to Custom Cluster 1"
-    ), shinyWidgets::actionBttn(
+    ), actionButton(
       ns("saveClust2"),
       "Save to Custom Cluster 2"
     )
   ), uiOutput(ns("testChoices")),
-  shinyWidgets::actionBttn(
+  actionButton(
     ns("diffex"),
     "Run Differential Expression"
   ),
@@ -886,8 +903,22 @@ cells_selected <- function(input) {
 diffex <- function(input, output, session, seu, featureType, selected_cells, tests = c("t-test" = "t", "wilcoxon rank-sum test" = "wilcox", "Likelihood-ratio test (bimodal)" = "bimod", "MAST" = "MAST")) {
   ns <- session$ns
 
+  default_assay <- reactive({
+    req(seu$active)
+    if ("integrated" %in% names(seu$active@assays)){
+      active_assay <- "integrated"
+    } else {
+      active_assay <- "RNA"
+    }
+  })
+
+  observe({
+    req(seu$active)
+    DefaultAssay(seu$active) <- "RNA"
+  })
+
   output$testChoices <- renderUI(
-    shinyWidgets::prettyRadioButtons(ns("diffex_method"),
+    selectizeInput(ns("diffex_method"),
                                      "Method of Differential Expression",
                                      choices = tests
     )
@@ -956,7 +987,7 @@ diffex <- function(input, output, session, seu, featureType, selected_cells, tes
 
   output$DT1 <- DT::renderDT(de_results()[[input$diffex_method]],
                              extensions = "Buttons", options = list(dom = "Bfptr",
-                                                                    buttons = c("copy", "csv"), scrollX = "100px", pageLength = 20, paging = FALSE), class = "display")
+                                                                    buttons = c("copy", "csv"), scrollX = "100px", scrollY = "600px"), class = "display")
 
   cluster_list <- reactive({
     if (input$diffex_scheme == "seurat"){
@@ -992,7 +1023,7 @@ findMarkersui <- function(id) {
       sliderInput(ns("resolution2"), label = "Resolution of clustering algorithm (affects number of clusters)", min = 0.2, max = 2, step = 0.2, value = 0.6),
       numericInput(ns("num_markers"), "Select Number of Markers to Plot for Each Value", value = 5, min = 2, max = 20),
       uiOutput(ns("valueSelect")),
-      radioButtons(ns("markerMethod"), "Method of Marker Selection", choices = c("presto", "genesorteR"), selected = "presto"),
+      radioButtons(ns("markerMethod"), "Method of Marker Selection", choices = c("presto", "genesorteR"), selected = "presto", inline = TRUE),
       actionButton(ns("plotDots"), "Plot Markers!"),
       plotly::plotlyOutput(ns("markerplot"), height = 800),
       width = 12
@@ -1024,21 +1055,25 @@ findMarkers <- function(input, output, session, seu, plot_types) {
                    selected = "seurat", multiple = TRUE)
   })
 
-  metavar <- reactive({
-    req(input$plottype)
+  default_assay <- reactive({
+    req(seu$active)
     if ("integrated" %in% names(seu$active@assays)){
       active_assay <- "integrated"
     } else {
       active_assay <- "RNA"
     }
+  })
+
+  metavar <- reactive({
+    req(input$plottype)
 
     if (input$plottype == "seurat"){
-      metavar <- paste0(active_assay, "_snn_res.", input$resolution2)
+      metavar <- paste0(default_assay(), "_snn_res.", input$resolution2)
     } else {
       metavar <- input$plottype
     }
 
-    })
+  })
 
   output$valueSelect <- renderUI({
     req(seu$active)
@@ -1047,6 +1082,11 @@ findMarkers <- function(input, output, session, seu, plot_types) {
     choices = levels(seu$active[[]][[metavar()]])
 
     selectizeInput(ns("displayValues"), "Values to display", multiple = TRUE, choices = choices)
+  })
+
+  observe({
+    req(default_assay())
+    DefaultAssay(seu$active) <- "RNA"
   })
 
   marker_plot <- eventReactive(input$plotDots, {
@@ -1071,12 +1111,13 @@ findMarkers <- function(input, output, session, seu, plot_types) {
 plotReadCountui <- function(id) {
   ns <- NS(id)
   seuratToolsBox(
-    title = "Read Counts",
-    uiOutput(ns("rcplottype")),
+    title = "Histogram (Read Counts, etc.)",
+    uiOutput(ns("metavarui")),
+    uiOutput(ns("colorbyui")),
     sliderInput(ns("resolution"), "Resolution of clustering algorithm (affects number of clusters)",
       min = 0.2, max = 2, step = 0.2, value = 0.6
     ),
-    plotly::plotlyOutput(ns("rcplot"), height = 750),
+    plotly::plotlyOutput(ns("rcplot"), height = 500),
     collapsed = TRUE)
 }
 
@@ -1095,18 +1136,25 @@ plotReadCountui <- function(id) {
 plotReadCount <- function(input, output, session, seu, plot_types) {
   ns <- session$ns
 
-  output$rcplottype <- renderUI({
+  output$colorbyui <- renderUI({
     req(seu$active)
-    shiny::selectInput(ns("plottype"), "Variable to Plot",
-                       choices = purrr::flatten_chr(plot_types()), selected = c("seurat"), multiple = TRUE
+    shiny::selectInput(ns("colorby"), "Variable to Color the Plot by",
+                       choices = purrr::flatten_chr(plot_types()), selected = c("seurat"), multiple = FALSE
+    )
+  })
+
+  output$metavarui <- renderUI({
+    req(seu$active)
+    shiny::selectInput(ns("metavar"), "Variable for x-axis",
+                       choices = purrr::flatten_chr(plot_types()), selected = c("nCount_RNA"), multiple = FALSE
     )
   })
 
   output$rcplot <- plotly::renderPlotly({
     req(seu$active)
-    req(input$plottype)
+    req(input$colorby)
 
-    if (input$plottype == "seurat") {
+    if (input$colorby == "seurat") {
 
       if ("integrated" %in% names(seu$active@assays)){
         active_assay <- "integrated"
@@ -1115,10 +1163,10 @@ plotReadCount <- function(input, output, session, seu, plot_types) {
       }
 
       louvain_resolution = paste0(active_assay, "_snn_res.", input$resolution)
-      plot_readcount(seu$active, louvain_resolution)
+      plot_readcount(seu$active, metavar = input$metavar, color.by = louvain_resolution)
     }
-    else if (input$plottype %in% purrr::flatten_chr(plot_types())) {
-      plot_readcount(seu$active, input$plottype)
+    else if (input$colorby %in% purrr::flatten_chr(plot_types())) {
+      plot_readcount(seu$active, metavar = input$metavar, color.by = input$colorby)
     }
   })
 }
@@ -1167,9 +1215,9 @@ allTranscriptsui <- function(id) {
   ns <- NS(id)
   tagList(fluidRow(seuratToolsBox(
     title = "Transcript Expression per Gene",
-    shinyWidgets::actionBttn(ns("plotTrx"), "Plot all transcripts"),
+    actionButton(ns("plotTrx"), "Plot all transcripts"),
     uiOutput(ns("embeddings")),
-   selectizeInput(ns("feature"), "gene on which to colour the plot; eg. 'RXRG'", choices = NULL, selected = NULL),
+   selectizeInput(ns("feature"), "Gene or transcript expression by which to color the plot; eg. 'RXRG'", choices = NULL, selected = NULL),
    uiOutput(ns("plotlys")),
    width = 12) %>%
      default_helper(type = "markdown", content = "allTranscripts"),
@@ -1221,7 +1269,7 @@ allTranscripts <- function(input, output, session, seu,
       local({
         my_i <- i
         plotname <- transcripts()[[my_i]]
-        output[[plotname]] <- plotly::renderPlotly({
+        output[[plotname]] <- renderPlot({
           pList()[[my_i]]
         })
       })
@@ -1232,7 +1280,7 @@ allTranscripts <- function(input, output, session, seu,
   output$plotlys <- renderUI({
     req(pList())
 
-    plot_output_list <- purrr::map(names(pList()), ~plotly::plotlyOutput(ns(.x), height = 500))
+    plot_output_list <- purrr::map(names(pList()), ~plotOutput(ns(.x), height = 500))
 
     do.call(tagList, plot_output_list)
   })
@@ -1403,7 +1451,7 @@ monocleui <- function(id){
         seuratToolsBox(
           title = "Embedding Plot",
           selectizeInput(ns("plottype1"), "Variable to Plot", choices = c(Seurat = "seurat"), selected = "Seurat", multiple = TRUE),
-          selectizeInput(ns("customFeature1"), "gene or transcript on which to color the plot",
+          selectizeInput(ns("customFeature1"), "Gene or transcript expression by which to color the plot",
                          choices = NULL, multiple = FALSE),
           uiOutput(ns("moduleSelect1")),
           plotly::plotlyOutput(ns("monoclePlot1")),
@@ -1730,6 +1778,7 @@ pathwayEnrichmentui <- function(id){
         seuratToolsBox(
           title = "Enriched pathways by cluster",
           tagList(
+            actionButton(ns("calcPathwayEnrichment"), "Calculate Pathway Enrichment"),
             uiOutput(ns("enriched_pathways_by_cluster_select_source_UI")),
             uiOutput(ns("enriched_pathways_by_cluster_UI"))
           ),
@@ -1747,7 +1796,7 @@ pathwayEnrichmentui <- function(id){
 #' @export
 #'
 #' @examples
-pathwayEnrichment <- function(input, output, session, seu){
+pathwayEnrichment <- function(input, output, session, seu, featureType){
     ns <- session$ns
 
     ##----------------------------------------------------------------------------##
@@ -1758,16 +1807,29 @@ pathwayEnrichment <- function(input, output, session, seu){
     ## Clusters.
     ##----------------------------------------------------------------------------##
 
+    enriched_pathways <- eventReactive(input$calcPathwayEnrichment, {
+      req(seu$active)
+      if (featureType() == "gene"){
+        enriched_seu <- tryCatch(getEnrichedPathways(seu$active), error = function(e) e)
+        enrichr_available <- !any(class(enriched_seu) == "error")
+        if(enrichr_available){
+          seu$active <- enriched_seu
+        }
+      }
+
+      seu$active@misc$enriched_pathways
+    })
+
     # UI element: choose source for pathway enrichement results (currently Enrichr or GSVA)
     output$enriched_pathways_by_cluster_select_source_UI <- renderUI({
       req(seu$active)
-      if (is.null(seu$active@misc$enriched_pathways) ) {
+      if (is.null(enriched_pathways()) ) {
         textOutput(ns("enriched_pathways_by_cluster_table_missing"))
       } else {
         selectInput(
           ns("enriched_pathways_by_cluster_select_source"),
           label = NULL,
-          choices = names(seu$active@misc$enriched_pathways)
+          choices = names(enriched_pathways())
         )
       }
     })
@@ -1777,8 +1839,8 @@ pathwayEnrichment <- function(input, output, session, seu){
       req(seu$active)
       req(input$enriched_pathways_by_cluster_select_source)
       if ( input$enriched_pathways_by_cluster_select_source == "enrichr" ) {
-        if ( !is.null(seu$active@misc$enriched_pathways$enrichr$by_cluster) ) {
-          if ( is.list(seu$active@misc$enriched_pathways$enrichr$by_cluster) ) {
+        if ( !is.null(enriched_pathways()$enrichr$by_cluster) ) {
+          if ( is.list(enriched_pathways()$enrichr$by_cluster) ) {
             tagList(
               fluidRow(
                 column(4,
@@ -1790,7 +1852,7 @@ pathwayEnrichment <- function(input, output, session, seu){
               ),
               DT::dataTableOutput(ns("enriched_pathways_by_cluster_table_present"))
             )
-          } else if ( seu$active@misc$enriched_pathways$enrichr$by_cluster == "no_markers_found" ) {
+          } else if ( enriched_pathways()$enrichr$by_cluster == "no_markers_found" ) {
             textOutput(ns("enriched_pathways_by_cluster_table_no_markers_found"))
           }
         } else {
@@ -1804,8 +1866,8 @@ pathwayEnrichment <- function(input, output, session, seu){
       req(seu$active)
       req(input$enriched_pathways_by_cluster_select_source)
       if ( input$enriched_pathways_by_cluster_select_source == 'enrichr' ) {
-        choices <- levels(seu$active@misc$enriched_pathways$enrichr$by_cluster$cluster) %>%
-          intersect(., unique(seu$active@misc$enriched_pathways$enrichr$by_cluster$cluster))
+        choices <- levels(enriched_pathways()$enrichr$by_cluster$cluster) %>%
+          intersect(., unique(enriched_pathways()$enrichr$by_cluster$cluster))
       }
       selectInput(
         ns("enriched_pathways_by_cluster_select_cluster"),
@@ -1820,7 +1882,7 @@ pathwayEnrichment <- function(input, output, session, seu){
         input$enriched_pathways_by_cluster_select_source,
         input$enriched_pathways_by_cluster_select_cluster
       )
-      choices <- seu$active@misc$enriched_pathways$enrichr$by_cluster %>%
+      choices <- enriched_pathways()$enrichr$by_cluster %>%
         dplyr::filter(cluster == input$enriched_pathways_by_cluster_select_cluster) %>%
         dplyr::pull(db) %>%
         intersect(., levels(.))
@@ -1838,9 +1900,9 @@ pathwayEnrichment <- function(input, output, session, seu){
         input$enriched_pathways_by_cluster_select_cluster,
         input$enriched_pathways_by_cluster_select_db
       )
-      if ( input$enriched_pathways_by_cluster_select_source == "enrichr" & is.data.frame(seu$active@misc$enriched_pathways$enrichr$by_cluster) ) {
+      if ( input$enriched_pathways_by_cluster_select_source == "enrichr" & is.data.frame(enriched_pathways()$enrichr$by_cluster) ) {
 
-        format_pathway_table(seu$active@misc$enriched_pathways$enrichr$by_cluster,
+        format_pathway_table(enriched_pathways()$enrichr$by_cluster,
                              input$enriched_pathways_by_cluster_select_cluster,
                              input$enriched_pathways_by_cluster_select_db)
 

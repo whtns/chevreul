@@ -4,10 +4,10 @@
 \alias{plot_readcount}
 \title{Plot Read Count}
 \usage{
-plot_readcount(seu, plot_type)
+plot_readcount(seu, metavar = "nCount_RNA", color.by = "batch")
 }
 \arguments{
-\item{plot_type}{}
+\item{color.by}{}
 }
 \value{
 

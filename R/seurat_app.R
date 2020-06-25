@@ -249,7 +249,7 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
       tabName = "reformatMetadata", icon = icon("columns")
     ), shinydashboard::menuItem("Plot Data",
       tabName = "comparePlots", icon = icon("chart-bar"), selected = TRUE
-    ), shinydashboard::menuItem("Violin/Heatmap Plots",
+    ), shinydashboard::menuItem("Heatmap/Violin Plots",
       tabName = "violinPlots", icon = icon("sort")
     ), shinydashboard::menuItem("Differential Expression",
       tabName = "diffex", icon = icon("magnet")
@@ -305,10 +305,10 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
     shinydashboard::tabItem(
       tabName = "violinPlots",
       fluidRow(
-        title = "Violin Plot", plotViolinui("violinPlot")
+        tite = "Heatmap", plotHeatmapui("heatMap")
       ),
       fluidRow(
-        tite = "Heatmap", plotHeatmapui("heatMap")
+        title = "Violin Plot", plotViolinui("violinPlot")
       )
     ),
     shinydashboard::tabItem(
@@ -335,10 +335,10 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
         column(
           seuratToolsBox(
             title = "Subset Settings",
-            shinyWidgets::actionBttn(
+            actionButton(
               "subsetAction",
               "subset seurat by selected cells"
-            ), shinyWidgets::actionBttn(
+            ), actionButton(
               "subsetCsv",
               "subset seurat by uploaded csv"
             ), fileInput("uploadCsv",
@@ -366,9 +366,10 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
       )
     ), shinydashboard::tabItem(
       tabName = "allTranscripts",
-      h2("All Transcripts"), fluidRow(column(allTranscriptsui("alltranscripts1"),
+      h2("All Transcripts"),
+      fluidRow(column(allTranscriptsui("alltranscripts1"),
         width = 6),
-        column(allTranscriptsui("alltranscripts2"),
+        column(plotDimRedui("alltranscripts2"),
         width = 6
       ))
     ),
@@ -396,7 +397,9 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
     ), shinydashboard::tabItem(
       tabName = "pathwayEnrichment",
       h2("Pathway Enrichment"),
-      pathwayEnrichmentui("pathwayEnrichment"),
+      fluidRow(
+        pathwayEnrichmentui("pathwayEnrichment")
+      )
     ), shinydashboard::tabItem(
       tabName = "regressFeatures",
       fluidRow(
@@ -672,7 +675,7 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
       seu
     )
 
-    callModule(pathwayEnrichment, "pathwayEnrichment", seu)
+    callModule(pathwayEnrichment, "pathwayEnrichment", seu, featureType)
 
     subset_selected_cells <- callModule(
       tableSelected, "subset",
@@ -780,10 +783,8 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
           organism_type
         )
 
-        callModule(
-          allTranscripts, "alltranscripts2", seu, featureType,
-          organism_type
-        )
+        callModule(plotDimRed, "alltranscripts2", seu, plot_types, featureType,
+                   organism_type = organism_type, reductions)
     })
 
     prior_gene_set <- reactive({
