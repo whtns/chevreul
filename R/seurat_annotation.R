@@ -37,9 +37,9 @@ annotate_cell_cycle <- function(seu, feature, organism = "human", ...){
 
 }
 
-#' Ensembl Genes to Transcripts
+#' Gene Symbols to Ensembl Transcript Ids
 #'
-#' convert genes to transcripts
+#' convert hgnc gene symbols to ensembl transcript ids
 #'
 #' @param genes
 #'
@@ -61,6 +61,33 @@ genes_to_transcripts <- function(genes, organism = "human") {
     dplyr::left_join(gene_table, by = "symbol") %>%
     dplyr::left_join(transcript_table, by = "ensgene") %>%
     dplyr::pull("enstxp") %>%
+    identity()
+}
+
+#' Ensembl Transcript Ids to Gene Symbols
+#'
+#' convert ensembl transcript ids to hgnc gene symbols
+#'
+#' @param transcripts
+#'
+#' @return
+#' @export
+#'
+#' @examples
+transcripts_to_genes <- function(transcripts, organism = "human") {
+
+  if(organism == "human"){
+    gene_table = annotables::grch38
+    transcript_table = annotables::grch38_tx2gene
+  } else if (organism == "mouse"){
+    gene_table = annotables::grcm38
+    transcript_table = annotables::grcm38_tx2gene
+  }
+
+  tibble::tibble(enstxp = transcripts) %>%
+    dplyr::left_join(transcript_table, by = "enstxp") %>%
+    dplyr::left_join(gene_table, by = "ensgene") %>%
+    dplyr::pull("symbol") %>%
     identity()
 }
 
@@ -93,37 +120,14 @@ add_read_count_col <- function(seu, thresh = 1e5){
 #'  Add a Read Count Categorical Variable to Seurat Object (based on nCount_RNA)
 #'
 #' @param seu A seurat object
+#' @param feature
+#' @param organism
 #'
 #' @return
 #' @export
 #'
 #' @examples
-add_percent_mito <- function(seu, feature, organism = "human"){
-
-  # mito_features = list()
-  # if (organism == "human"){
-  #   mito_regex = c(mt = "^MT-", mt_pseudo = "^MT.*P.*")
-  #   mito_features$gene <- annotables::grch38 %>%
-  #     dplyr::filter(stringr::str_detect(symbol, paste(mito_regex, collapse = "|"))) %>%
-  #     dplyr::pull(symbol)
-  #
-  #   mito_features$transcript <-
-  #     annotables::grch38 %>%
-  #     dplyr::filter(symbol %in% mito_features$gene) %>%
-  #     dplyr::left_join(annotables::grch38_tx2gene, by = "ensgene") %>%
-  #     dplyr::pull(enstxp)
-  # } else if (organism == "mouse"){
-  #   mito_regex = c(mt = "^Mt-", mt_pseudo = "^Mt.*p.*")
-  #   mito_features$gene <- annotables::grcm38 %>%
-  #     dplyr::filter(stringr::str_detect(symbol, paste(mito_regex, collapse = "|"))) %>%
-  #     dplyr::pull(symbol)
-  #
-  #   mito_features$transcript <-
-  #     annotables::grcm38 %>%
-  #     dplyr::filter(symbol %in% mito_features$gene) %>%
-  #     dplyr::left_join(annotables::grcm38_tx2gene, by = "ensgene") %>%
-  #     dplyr::pull(enstxp)
-  # }
+add_percent_mito <- function(seu, feature, organism){
 
   mito_features <- mito_features[[organism]][[feature]]
 

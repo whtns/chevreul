@@ -32,7 +32,9 @@ minimalSeuratApp <- function(seu_list, appTitle = NULL, feature_types = "gene",
       "Organism", choices = c("human", "mouse"), selected = organism_type
     ),
     shinydashboard::sidebarMenu(
-      shinydashboard::menuItem("Plot Data",
+      shinydashboard::menuItem("Reformat Metadata",
+                               tabName = "reformatMetadata", icon = icon("columns")
+      ), shinydashboard::menuItem("Plot Data",
         tabName = "comparePlots", icon = icon("chart-bar"), selected = TRUE
       ), shinydashboard::menuItem("Heatmap/Violin Plots",
         tabName = "violinPlots", icon = icon("sort")
@@ -91,12 +93,13 @@ minimalSeuratApp <- function(seu_list, appTitle = NULL, feature_types = "gene",
           title = "Selected Cells",
           tableSelectedui("tableselected"), width = 6
         ), plotClustree_UI("clustreePlot"))
-      ),
-      shinydashboard::tabItem(
+      ), shinydashboard::tabItem(
         tabName = "reformatMetadata",
         h2("Reformat Metadata") %>%
           default_helper(type = "markdown", content = "reformatMetadata"),
-        fluidRow((reformatMetadataui("reformatmetadata")))
+        fluidRow(
+          reformatMetadataui("reformatmetadata")
+          )
       ), shinydashboard::tabItem(
         tabName = "subsetSeurat",
         h2("Subset Seurat Input") %>%
@@ -234,14 +237,15 @@ minimalSeuratApp <- function(seu_list, appTitle = NULL, feature_types = "gene",
       seu_list[[i]] <- update_seuratTools_object(seu_list[[i]], i)
     }
 
-    seu <- reactiveValues()
+    seu <- reactiveValues(gene = seu_list$gene, transcript = seu_list$transcript, active = seu_list$gene)
 
-    observe({
-      for (i in seu_names) {
-        seu[[i]] <- seu_list[[i]]
-      }
-      seu$active <- seu[["gene"]]
-    })
+
+    # observe({
+    #   for (i in seu_names) {
+    #     seu[[i]] <- seu_list[[i]]
+    #   }
+    #   seu$active <- seu[["gene"]]
+    # })
 
     organism_type <- reactive({
       input$organism_type
@@ -286,7 +290,18 @@ minimalSeuratApp <- function(seu_list, appTitle = NULL, feature_types = "gene",
       newprojList <- c(projList(), newintegrated_project)
     })
 
-    seu <- callModule(reformatMetadata, "reformatmetadata", seu)
+    reformatted_seu <- reactive({
+      req(seu$active)
+      callModule(reformatMetadata, "reformatmetadata", seu)
+    })
+
+    observe({
+      req(reformatted_seu())
+      for (i in names(seu)){
+        seu[[i]] <- reformatted_seu()[[i]]
+      }
+    })
+
 
     reductions <- reactive({
       req(seu$active)

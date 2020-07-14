@@ -4,7 +4,15 @@
 \alias{plot_violin}
 \title{plot Violin plot}
 \usage{
-plot_violin(seu, plot_var = "batch", plot_vals = NULL, features = "RXRG", ...)
+plot_violin(
+  seu,
+  plot_var = "batch",
+  plot_vals = NULL,
+  features = "RXRG",
+  return_plotly = TRUE,
+  assay = "RNA",
+  ...
+)
 }
 \arguments{
 \item{...}{}

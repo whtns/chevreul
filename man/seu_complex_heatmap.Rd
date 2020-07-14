@@ -5,7 +5,7 @@
 \title{Plot Annotated Complexheatmap from Seurat object}
 \usage{
 seu_complex_heatmap(
-  object,
+  seu,
   features = NULL,
   cells = NULL,
   group.by = "ident",
