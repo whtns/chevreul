@@ -4,7 +4,7 @@
 \alias{format_new_metadata}
 \title{Title}
 \usage{
-format_new_metadata(datapath, header, row.names = 1)
+format_new_metadata(datapath)
 }
 \arguments{
 \item{row.names}{}

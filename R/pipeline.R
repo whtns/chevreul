@@ -66,9 +66,7 @@ seurat_integration_pipeline <- function(seu_list, feature, resolution = seq(0.2,
 #' @export
 #'
 #' @examples
-seurat_pipeline <- function(seu, feature = "gene", resolution=0.6, reduction = "pca", annotate_cell_cycle = TRUE, annotate_percent_mito = TRUE, select_var_features = TRUE, ...){
-
-  features = ifelse(select_var_features, NULL, rownames(seu))
+seurat_pipeline <- function(seu, feature = "gene", resolution=0.6, reduction = "pca", annotate_cell_cycle = TRUE, annotate_percent_mito = TRUE, organism = "human", ...){
 
   seu <- seurat_preprocess(seu, scale = T, ...)
 
@@ -97,7 +95,7 @@ seurat_pipeline <- function(seu, feature = "gene", resolution=0.6, reduction = "
 
   # annotate mitochondrial percentage in seurat metadata
   if (annotate_percent_mito){
-    seu <- add_percent_mito(seu, feature, ...)
+    seu <- add_percent_mito(seu, feature, organism)
   }
 
   return(seu)

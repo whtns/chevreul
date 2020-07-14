@@ -11,7 +11,7 @@ seurat_pipeline(
   reduction = "pca",
   annotate_cell_cycle = TRUE,
   annotate_percent_mito = TRUE,
-  select_var_features = TRUE,
+  organism = "human",
   ...
 )
 }

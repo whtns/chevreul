@@ -635,7 +635,18 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
         server = TRUE
       )
     })
-    seu <- callModule(reformatMetadata, "reformatmetadata", seu)
+
+    reformatted_seu <- reactive({
+      req(seu$active)
+      callModule(reformatMetadata, "reformatmetadata", seu)
+    })
+
+    observe({
+      req(reformatted_seu())
+      for (i in names(seu)){
+        seu[[i]] <- reformatted_seu()[[i]]
+      }
+    })
 
     reductions <- reactive({
       req(seu$active)

@@ -9,9 +9,15 @@
 #' @export
 #'
 #' @examples
-format_new_metadata <- function(datapath, header, row.names = 1){
-  new_meta <- read.csv(datapath, header = header, row.names = row.names) %>%
+format_new_metadata <- function(datapath){
+  new_meta <- read_csv(datapath) %>%
     dplyr::mutate(across(contains("snn"), as.factor) )
+
+  rowname_col <- colnames(new_meta)[1]
+
+  new_meta <- tibble::column_to_rownames(new_meta, rowname_col)
+
+  return(new_meta)
 }
 
 #' Rename cell ids from annoying old notation
@@ -107,43 +113,36 @@ filter_rows_to_top <- function(df, column, values){
 #' @examples
 list_plot_types <- function(seu){
 
-  meta_types <- tibble::tibble(
-    vars = colnames(seu[[]]),
-    var_type = unlist(purrr::map(seu[[]], class)),
-    num_levels = unlist(purrr::map(seu[[]], ~length(unique(.x))))
-  )
 
-  meta_types <-
-    meta_types %>%
+  meta_types <- tibble::tibble(vars = colnames(seu[[]]),
+                               var_type = purrr::map_chr(purrr::map(seu[[]], pillar::new_pillar_type), "type"),
+                               num_levels = unlist(purrr::map(seu[[]], ~length(unique(.x)))))
+
+  meta_types <- meta_types %>%
     dplyr::filter(!grepl("_snn_res", vars)) %>%
-    dplyr::mutate(meta_type = dplyr::case_when(var_type %in% c("integer", "numeric") ~ "continuous",
-                                        var_type %in% c("character", "factor") ~ "category")) %>%
+    dplyr::mutate(meta_type = dplyr::case_when(var_type %in% c("int", "dbl") ~ "continuous",
+                                               var_type %in% c("chr", "fct", "ord") ~ "category")) %>%
     dplyr::mutate(meta_type = ifelse(meta_type == "continuous" & num_levels < 30, "category", meta_type)) %>%
-    dplyr::filter(num_levels > 1) %>%
-    identity()
+    dplyr::filter(num_levels > 1) %>% identity()
 
   continuous_vars <- meta_types %>%
-    dplyr::filter(meta_type == "continuous") %>%
+    dplyr::filter(meta_type =="continuous") %>%
     dplyr::pull(vars)
 
-  continuous_vars <- c("custom", continuous_vars)
-
-  continuous_names <- stringr::str_to_title(gsub("[[:punct:]]", " ", continuous_vars))
-
-  names(continuous_vars) <- continuous_names
+  continuous_vars <- c("custom", continuous_vars) %>%
+    purrr::set_names(stringr::str_to_title(str_replace(., "[[:punct:]]", " ")))
 
 
   category_vars <- meta_types %>%
-    dplyr::filter(meta_type == "category") %>%
+    dplyr::filter(meta_type =="category") %>%
     dplyr::pull(vars)
 
-  category_vars <- c("seurat", category_vars)
-
-  category_names <- stringr::str_to_title(gsub("[[:punct:]]", " ", category_vars))
-
-  names(category_vars) <- category_names
+  category_vars <- c("seurat", category_vars) %>%
+    purrr::set_names(stringr::str_to_title(str_replace(., "[[:punct:]]", " ")))
 
   plot_types <- list(category_vars = category_vars, continuous_vars = continuous_vars)
+
+
 
   return(plot_types)
 
@@ -341,7 +340,7 @@ record_experiment_data <- function(object, experiment_name = "default_experiment
     genes_max = Inf
   )
   export$experiment$technical_info <- list(
-    'R' = capture.output(sessioninfo::session_info())
+    # capture.output(sessioninfo::session_info())
   )
 
   if (!is.null(object@version)) {
@@ -417,9 +416,8 @@ update_seuratTools_object <- function(seu, feature, resolution = seq(0.2, 2.0, b
     }
       seu <- find_all_markers(seu, resolution = resolution)
       seu <- record_experiment_data(seu)
+      seu <- seu_calcn(seu)
   }
-
-  seu <- seu_calcn(seu)
 
   return(seu)
 
@@ -445,4 +443,27 @@ seu_calcn <- function(seu, assay = "RNA", slot = "counts"){
   }
 
   return(seu)
+}
+
+#' Propagate Metadata Changes
+#'
+#' @param meta
+#' @param changes
+#'
+#' @return
+#' @export
+#'
+#' @examples
+propagate_spreadsheet_changes <- function(changes){
+  meta <- rhandsontable::hot_to_r(changes)
+
+  sample_ids <- rownames(meta)
+
+  meta <- meta %>%
+    dplyr::mutate(meta, across(contains("snn"), as.factor)) %>%
+    mutate(across(where(is.ordered), ~as.factor(as.character(.x))))
+
+  rownames(meta) <- sample_ids
+
+  return(meta)
 }

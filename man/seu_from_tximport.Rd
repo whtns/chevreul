@@ -4,10 +4,12 @@
 \alias{seu_from_tximport}
 \title{Create a Seurat Object from return of tximport}
 \usage{
-seu_from_tximport(txi, meta_tbl, ...)
+seu_from_tximport(txi, feature, meta_tbl, ...)
 }
 \arguments{
 \item{txi}{output from load_counts_from_stringtie}
+
+\item{feature}{gene or transcript}
 
 \item{meta_tbl}{a tibble of cell metadata with cell ids as the first column}
 

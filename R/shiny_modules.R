@@ -239,18 +239,17 @@ reformatMetadataui <- function(id) {
   tagList(
     seuratToolsBox(
       title = "Reformat Metadata",
-    uiOutput(ns("colNames")),
-    textInput(ns("newCol"), "provide a name for the new column"),
-    actionButton(ns("mergeCol"), "Merge Selected Columns"),
     checkboxInput(ns("header"), "Header", TRUE),
-    fileInput(ns("addCols"), "Choose CSV File of metadata with cell names in first column",
+    fileInput(ns("metaFile"), "Choose CSV File of metadata with cell names in first column",
               accept = c(
                 "text/csv",
                 "text/comma-separated-values,text/plain",
                 ".csv")
     ),
-    downloadLink(ns("downloadMetadata"), "Download Metadata"),
-    DT::DTOutput(ns("seuTable")),
+    actionButton(ns("updateMetadata"), "Update Metadata"),
+    radioButtons(ns("updateMethod"), "Update By:", choices = c("table (below)" = "spreadsheet", "uploaded file" = "file"), inline = TRUE),
+    # downloadLink(ns("downloadMetadata"), "Download Metadata"),
+    rhandsontable::rHandsontableOutput(ns("seuTable")),
     width = 12
     ) %>%
       default_helper(type = "markdown", content = "reformatMetadata")
@@ -275,76 +274,62 @@ reformatMetadata <- function(input, output, session, seu) {
   meta <- reactiveValues()
 
   observe({
-    # req(seu$active)
-    meta$old <- data.frame(seu$active[[]]) %>%
-      identity()
-
-    # na_cols <- purrr::map_lgl(meta$old, ~all(is.na(.x)))
-    # cluster_cols <- grepl("^cluster|snn_res", colnames(meta$old))
-    #
-    # keep_cols <- !(na_cols | cluster_cols)
-    #
-    # meta$old <- meta$old[,keep_cols]
+    meta$old <- seu$active@meta.data
   })
 
-  seuColNames <- reactive({
-    seuColNames <- colnames(seu$gene[[]]) %>%
-      purrr::set_names(.)
-  })
+  observeEvent(input$updateMetadata, {
 
-  output$colNames <- renderUI({
-    selectizeInput(ns("col_names"), "Seurat Object Metadata Columns", choices = seuColNames(), multiple = TRUE)
-  })
+    if (input$updateMethod == "file"){
+      inFile <- input$metaFile
 
-  observeEvent(input$mergeCol, {
+      if (is.null(inFile))
+        return(NULL)
 
-    combined_cols <- combine_cols(seu, input$col_names, input$newCol)
-    meta$new <- combined_cols
+      meta$new <- format_new_metadata(inFile$datapath)
+
+    } else if (input$updateMethod == "spreadsheet"){
+      meta$new <- propagate_spreadsheet_changes(input$seuTable)
+    }
 
     for (i in names(seu)){
       seu[[i]] <- Seurat::AddMetaData(seu[[i]], meta$new)
     }
 
-    meta$old <- cbind(meta$old, meta$new)
+  })
+
+  table_out <- reactive({
+    meta$new %||% meta$old
+  })
+
+  output$seuTable <- rhandsontable::renderRHandsontable({
+
+    rhandsontable::rhandsontable(table_out(), rowHeaderWidth = 200, height = 700) %>%
+      rhandsontable::hot_context_menu(
+        customOpts = list(
+          csv = list(name = "Download to CSV",
+                     callback = htmlwidgets::JS(
+                       "function (key, options) {
+                         var csv = csvString(this, sep=',', dec='.');
+
+                         var link = document.createElement('a');
+                         link.setAttribute('href', 'data:text/plain;charset=utf-8,' +
+                           encodeURIComponent(csv));
+                         link.setAttribute('download', 'data.csv');
+
+                         document.body.appendChild(link);
+                         link.click();
+                         document.body.removeChild(link);
+                       }"))))
 
   })
 
-  observeEvent(input$addCols, {
-
-    inFile <- input$addCols
-
-    if (is.null(inFile))
-      return(NULL)
-
-    meta$new <- format_new_metadata(inFile$datapath, header = input$header, row.names = 1)
-
-    # meta$new <- read.csv(inFile$datapath, header = input$header, row.names = 1)
-
-    for (i in names(seu)){
-      seu[[i]] <- Seurat::AddMetaData(seu[[i]], meta$new)
-      print(colnames(seu[[i]][[]]))
-    }
-
-    meta$old <- cbind(meta$old, meta$new)
-
-  })
-
-  output$seuTable <- DT::renderDT({
-    # req(meta$old)
-
-    DT::datatable(meta$old, extensions = 'Buttons', options = list(buttons = c("copy", "csv"),
-                                                                   paging = TRUE, pageLength = 15, scrollX = "100px"))
-
-
-  })
-
-  output$downloadMetadata <- downloadHandler(
-    filename = function() {
-      paste("data-", Sys.Date(), ".csv", sep="")
-    },
-    content = function(file) {
-      write.csv(meta$old, file)
-    })
+  # output$downloadMetadata <- downloadHandler(
+  #   filename = function() {
+  #     paste("data-", Sys.Date(), ".csv", sep="")
+  #   },
+  #   content = function(file) {
+  #     write.csv(table_out(), file)
+  #   })
 
   return(seu)
 

@@ -2,7 +2,7 @@
 % Please edit documentation in R/seurat_annotation.R
 \name{genes_to_transcripts}
 \alias{genes_to_transcripts}
-\title{Ensembl Genes to Transcripts}
+\title{Gene Symbols to Ensembl Transcript Ids}
 \usage{
 genes_to_transcripts(genes, organism = "human")
 }
@@ -13,5 +13,5 @@ genes_to_transcripts(genes, organism = "human")
 
 }
 \description{
-convert genes to transcripts
+convert hgnc gene symbols to ensembl transcript ids
 }

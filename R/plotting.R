@@ -382,26 +382,28 @@ plotly_settings <- function(plotly_plot){
 #' @param plot_var
 #' @param plot_vals
 #' @param features
+#' @param return_plotly
+#' @param assay
 #' @param ...
 #'
 #' @return
 #' @export
 #'
 #' @examples
-plot_violin <- function(seu, plot_var = "batch", plot_vals = NULL, features = "RXRG",
-                        ...){
-  default_assay = "RNA"
+plot_violin <- function(seu, plot_var = "batch", plot_vals = NULL, features = "RXRG", return_plotly = TRUE, assay = "RNA", ...){
 
   if (is.null(plot_vals)) {
     plot_vals = unique(seu[[]][[plot_var]])
     plot_vals <- plot_vals[!is.na(plot_vals)]
   }
   seu <- seu[, seu[[]][[plot_var]] %in% plot_vals]
-  vln_plot <- Seurat::VlnPlot(seu, features = features, group.by = plot_var, assay = default_assay, pt.size = 0.1, ...) +
+  vln_plot <- Seurat::VlnPlot(seu, features = features, group.by = plot_var, assay = assay, pt.size = 0.1, ...) +
     geom_boxplot() +
     # labs(title = "Expression Values for each cell are normalized by that cell's total expression then multiplied by 10,000 and natural-log transformed") +
     # stat_summary(fun.y = mean, geom = "line", size = 4, colour = "black") +
     NULL
+
+  if (!return_plotly) return(vln_plot)
 
   exclude_trace_number = length(unique(seu[[]][[plot_var]]))*2
 
@@ -700,7 +702,7 @@ seu_complex_heatmap <- function(seu, features = NULL, cells = NULL, group.by = "
 
   column_ha = ComplexHeatmap::HeatmapAnnotation(df = groups.use, height = group.bar.height, col = ha_cols)
 
-  hm <- ComplexHeatmap::Heatmap(t(data), name = "z score", top_annotation = column_ha,
+  hm <- ComplexHeatmap::Heatmap(t(data), name = "log expression", top_annotation = column_ha,
                                 cluster_columns = cluster_columns,
                                 show_column_names = FALSE,
                                 column_dend_height = unit(mm_col_dend, "mm"),
