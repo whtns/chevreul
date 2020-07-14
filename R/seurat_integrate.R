@@ -91,6 +91,7 @@ seurat_integrate <- function(seu_list, method = "cca", ...) {
 seurat_cluster <- function(seu = seu, resolution = 0.6, custom_clust = NULL, reduction = "pca", algorithm = 1, ...){
 
 
+  message(paste0("[", format(Sys.time(), "%H:%M:%S"), "] Clustering Cells..."))
   seu <- FindNeighbors(object = seu, dims = 1:10, reduction = reduction)
 
   if (length(resolution) > 1){
@@ -172,12 +173,15 @@ load_seurat_from_proj <- function(proj_dir, ...){
 #' perplexity should not be bigger than 3 * perplexity < nrow(X) - 1, see details for interpretation
 #'
 #' @param seu
+#' @param reduction
+#' @param legacy_settings
+#' @param ...
 #'
 #' @return
 #' @export
 #'
 #' @examples
-seurat_reduce_dimensions <- function(seu, reduction = "pca", ...) {
+seurat_reduce_dimensions <- function(seu, reduction = "pca", legacy_settings = FALSE, ...) {
 
   num_samples <- dim(seu)[[2]]
 
@@ -187,7 +191,12 @@ seurat_reduce_dimensions <- function(seu, reduction = "pca", ...) {
     npcs = 50
   }
 
-  seu <- Seurat::RunPCA(object = seu, do.print = FALSE, npcs = npcs, ...)
+  if (legacy_settings){
+    seu <- Seurat::RunPCA(seu, features = rownames(seu))
+  } else {
+    seu <- Seurat::RunPCA(object = seu, do.print = FALSE, npcs = npcs, ...)
+  }
+
   if (reduction == "harmony"){
     seu <- harmony::RunHarmony(seu, "batch")
   }

@@ -4,14 +4,28 @@
 #'
 #' @param seu
 #' @param scale
+#' @param normalize
+#' @param features
+#' @param legacy_settings
+#' @param ...
 #'
 #' @return
 #' @export
 #'
 #' @examples
 
-seurat_preprocess <- function(seu, scale=TRUE, normalize = TRUE, features = NULL, ...){
+seurat_preprocess <- function(seu, scale=TRUE, normalize = TRUE, features = NULL, legacy_settings = FALSE, ...){
   # Normalize data
+
+  if (legacy_settings){
+
+    logtransform_exp <- as.matrix(log1p(Seurat::GetAssayData(seu)))
+
+    seu <- Seurat::SetAssayData(seu, slot = "data", logtransform_exp) %>%
+      Seurat::ScaleData(features = rownames(.))
+
+    return(seu)
+  }
 
   if (normalize){
     seu <- Seurat::NormalizeData(object = seu, verbose = FALSE, ...)

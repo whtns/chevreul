@@ -4,10 +4,10 @@
 \alias{seu_from_tibbles}
 \title{Create a Seurat Object from a set of tibbles}
 \usage{
-seu_from_tibbles(exp_tbl, meta_tbl, census_counts = NULL)
+seu_from_tibbles(exp_tbl, feature, meta_tbl, ...)
 }
 \arguments{
-\item{census_counts}{}
+\item{...}{}
 }
 \value{
 

@@ -42,6 +42,8 @@ load_counts_from_stringtie <- function(proj_dir, countsFromAbundance = "scaledTP
 
   txi_genes <- tximport::summarizeToGene(txi_transcripts, tx2gene = tx2gene)
 
+  txi_transcripts$tx2gene <- tx2gene
+
   sample_names <- fs::path_file(fs::path_dir(stringtie_paths))
 
   txi_features <- purrr::map(list(gene = txi_genes, transcript = txi_transcripts), ~set_colnames_txi(.x, sample_names))
@@ -73,16 +75,41 @@ load_meta <- function(proj_dir){
 #'
 #' @param txi output from load_counts_from_stringtie
 #' @param meta_tbl a tibble of cell metadata with cell ids as the first column
+#' @param feature gene or transcript
 #' @param ...
 #'
 #' @return
 #' @export
 #'
 #' @examples
-seu_from_tximport <- function(txi, meta_tbl, ...){
+seu_from_tximport <- function(txi, feature, meta_tbl, ...){
+  # seu <- seu_from_tibbles(exp_tbl, feature, meta_tbl)
+
   exp_tbl <- as.matrix(txi$counts)
 
-  seu <- seu_from_tibbles(exp_tbl, meta_tbl)
+  expid <- gsub("-.*", "", colnames(exp_tbl))
+
+  featuredata <- data.frame(feature = rownames(exp_tbl))
+  rownames(featuredata) <- featuredata[,1]
+  if (feature == "transcript"){
+    featuredata <-
+      featuredata %>%
+      tibble::rownames_to_column("t_name") %>%
+      dplyr::left_join(txi$tx2gene, by = "t_name") %>%
+      tibble::column_to_rownames("t_name")
+  }
+
+  meta_tbl <- data.frame(meta_tbl)
+  rownames(meta_tbl) <- meta_tbl[,"sample_id"]
+
+  meta_tbl <- meta_tbl[colnames(exp_tbl),]
+
+  seu <- Seurat::CreateSeuratObject(counts = exp_tbl, project = expid, assay = "RNA", meta.data = meta_tbl)
+
+  seu@assays$RNA <- AddMetaData(seu@assays$RNA, featuredata)
+
+  # add default batch if missing
+  seu$batch <- seu@project.name
 
   return(seu)
 
@@ -91,20 +118,24 @@ seu_from_tximport <- function(txi, meta_tbl, ...){
 #' Create a Seurat Object from a set of tibbles
 #'
 #' @param exp_tbl
+#' @param feature
 #' @param meta_tbl
-#' @param census_counts
+#' @param ...
 #'
 #' @return
 #' @export
 #'
 #' @examples
-seu_from_tibbles <- function(exp_tbl, meta_tbl, census_counts=NULL){
-
+seu_from_tibbles <- function(exp_tbl, feature, meta_tbl, ...){
 
   expid <- gsub("-.*", "", colnames(exp_tbl))
 
   featuredata <- data.frame(rownames(exp_tbl))
   rownames(featuredata) <- featuredata[,1]
+  if (feature == "transcript"){
+    # gene_id <- tx2gene
+    # featuredata$gene_symbol =
+  }
 
   meta_tbl <- data.frame(meta_tbl)
   rownames(meta_tbl) <- meta_tbl[,"sample_id"]

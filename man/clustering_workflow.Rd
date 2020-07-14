@@ -10,7 +10,6 @@ clustering_workflow(
   resolution = seq(0.2, 2, by = 0.2),
   organism = "human",
   experiment_name = "default_experiment",
-  select_var_features = TRUE,
   ...
 )
 }

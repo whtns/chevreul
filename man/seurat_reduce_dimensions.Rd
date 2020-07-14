@@ -4,10 +4,10 @@
 \alias{seurat_reduce_dimensions}
 \title{Dimensional Reduction}
 \usage{
-seurat_reduce_dimensions(seu, reduction = "pca", ...)
+seurat_reduce_dimensions(seu, reduction = "pca", legacy_settings = FALSE, ...)
 }
 \arguments{
-\item{seu}{}
+\item{...}{}
 }
 \value{
 
