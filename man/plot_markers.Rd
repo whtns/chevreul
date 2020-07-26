@@ -11,11 +11,13 @@ plot_markers(
   selected_values = NULL,
   return_plot = FALSE,
   marker_method = "presto",
+  featureType = "gene",
+  hide_pseudo = FALSE,
   ...
 )
 }
 \arguments{
-\item{return_plot}{}
+\item{...}{}
 }
 \value{
 

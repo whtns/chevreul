@@ -5,7 +5,14 @@
 \title{Plot Features
 This is a great function}
 \usage{
-plot_feature(seu, embedding, features, dims = c(1, 2), return_plotly = TRUE)
+plot_feature(
+  seu,
+  embedding,
+  features,
+  dims = c(1, 2),
+  return_plotly = TRUE,
+  pt.size = 1
+)
 }
 \arguments{
 \item{dims}{}
@@ -16,4 +23,7 @@ plot_feature(seu, embedding, features, dims = c(1, 2), return_plotly = TRUE)
 \description{
 Plot Features
 This is a great function
+}
+\examples{
+
 }

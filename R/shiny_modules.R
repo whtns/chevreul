@@ -297,6 +297,7 @@ reformatMetadata <- function(input, output, session, seu) {
 
   })
 
+
   table_out <- reactive({
     meta$new %||% meta$old
   })
@@ -588,6 +589,7 @@ plotDimRedui <- function(id){
   seuratToolsBox(title = "Embedding",
                  uiOutput(ns("dplottype")),
           uiOutput(ns("embeddings")),
+          sliderInput(ns("dotSize"), "Size of Points in UMAP", min = 1, max = 3, step = 0.5, value = 1),
           fluidRow(
             column(2,
                    selectizeInput(ns("dim1"), "Dimension 1", choices = seq(1, 99), selected = 1)
@@ -641,6 +643,7 @@ plotDimRed <- function(input, output, session, seu, plot_types, featureType,
         "ENST00000488147"
       }
       else if (organism_type() == "mouse") {
+
         "ENSG00000488147"
       }
     }
@@ -674,18 +677,18 @@ plotDimRed <- function(input, output, session, seu, plot_types, featureType,
       selected_plot(newcolname)
 
       plot_var(seu$active, dims = c(input$dim1, input$dim2),
-               embedding = input$embedding, group = NULL)
+               embedding = input$embedding, group = NULL, pt.size = input$dotSize)
     }
     else {
       if (input$plottype == "custom") {
         plot_feature(seu$active, dims = c(input$dim1,
                                           input$dim2), embedding = input$embedding,
-                     features = input$customFeature)
+                     features = input$customFeature, pt.size = input$dotSize)
       }
       else if (input$plottype %in% plot_types()$continuous_vars) {
         plot_feature(seu$active, dims = c(input$dim1,
                                           input$dim2), embedding = input$embedding,
-                     features = input$plottype)
+                     features = input$plottype, pt.size = input$dotSize)
       }
       else if (input$plottype == "seurat") {
         if ("integrated" %in% names(seu$active@assays)) {
@@ -700,11 +703,11 @@ plotDimRed <- function(input, output, session, seu, plot_types, featureType,
         })
 
         plot_var(seu$active, dims = c(input$dim1, input$dim2),
-                 embedding = input$embedding, group = louvain_resolution())
+                 embedding = input$embedding, group = louvain_resolution(), pt.size = input$dotSize)
       }
       else if (input$plottype %in% plot_types()$category_vars) {
         plot_var(seu$active, dims = c(input$dim1, input$dim2),
-                 embedding = input$embedding, group = input$plottype)
+                 embedding = input$embedding, group = input$plottype, pt.size = input$dotSize)
       }
     }
   })
@@ -1010,6 +1013,7 @@ findMarkersui <- function(id) {
       uiOutput(ns("valueSelect")),
       radioButtons(ns("markerMethod"), "Method of Marker Selection", choices = c("presto", "genesorteR"), selected = "presto", inline = TRUE),
       actionButton(ns("plotDots"), "Plot Markers!"),
+      checkboxInput(ns("hidePseudo"), "Hide Pseudogenes", value = TRUE),
       plotly::plotlyOutput(ns("markerplot"), height = 800),
       width = 12
     )
@@ -1029,7 +1033,7 @@ findMarkersui <- function(id) {
 #'
 #' @examples
 #'
-findMarkers <- function(input, output, session, seu, plot_types) {
+findMarkers <- function(input, output, session, seu, plot_types, featureType) {
   ns <- session$ns
 
   output$dplottype <- renderUI({
@@ -1075,7 +1079,7 @@ findMarkers <- function(input, output, session, seu, plot_types) {
   })
 
   marker_plot <- eventReactive(input$plotDots, {
-    plot_markers(seu = seu$active, metavar = metavar(), num_markers = input$num_markers, selected_values = input$displayValues, marker_method = input$markerMethod)
+    plot_markers(seu = seu$active, metavar = metavar(), num_markers = input$num_markers, selected_values = input$displayValues, marker_method = input$markerMethod, featureType = featureType(), hide_pseudo = input$hidePseudo)
   })
 
   output$markerplot <- plotly::renderPlotly({
@@ -1429,6 +1433,7 @@ monocleui <- function(id){
           actionButton(ns("subsetCells"), "Subset Monocle Object After Pseudotime Calculation"),
           uiOutput(ns("rootCellsui")),
           actionButton(ns("plotPseudotime"), "Calculate Pseudotime With Root Cells"),
+          checkboxInput(ns("flipPtime"), "Invert Pseudotime", value = TRUE),
           width = 6
         )
       ),
@@ -1453,7 +1458,8 @@ monocleui <- function(id){
         )
       ),
       fluidRow(
-        seuratToolsBox(actionButton(ns("calcPtimeGenes"), "Find Pseudotime Correlated Genes"),
+        seuratToolsBox(title = "calculate pseudotime",
+                       actionButton(ns("calcPtimeGenes"), "Find Pseudotime Correlated Genes"),
             uiOutput(ns("partitionSelect")),
             uiOutput(ns("genePlotQuery2")),
             uiOutput(ns("ptimeGenes")),
@@ -1464,7 +1470,7 @@ monocleui <- function(id){
         seuratToolsBox(
           title = "Heatmap",
           radioButtons(ns("pickHeatmap"), "heatmap on clusters or cells?", choices = c(clusters = TRUE, cells = FALSE), selected = TRUE),
-          iheatmapr::iheatmaprOutput(ns("monocleHeatmap"), width = "600px", height = "600px")
+          iheatmapr::iheatmaprOutput(ns("monocleHeatmap"), width = "800px", height = "600px")
         ),
         seuratToolsBox(
           div(DT::dataTableOutput(ns("moduleTable")), style = "font-size: 75%")
@@ -1635,7 +1641,11 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
 
     observeEvent(input$plotPseudotime, {
       req(cds$traj)
+      req(input$rootCells)
       cds$traj <- monocle3::order_cells(cds$traj, root_cells = input$rootCells)
+      if(input$flipPtime){
+        cds$traj <- flip_pseudotime(cds$traj)
+      }
       updateSelectizeInput(session, "plottype1", selected = "pseudotime", choices = myplot_types())
       updateSelectizeInput(session, "plottype2", selected = "pseudotime", choices = myplot_types())
       cds$selected = "ptime"

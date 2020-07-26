@@ -10,6 +10,7 @@ plot_var(
   group = "batch",
   dims = c(1, 2),
   highlight = NULL,
+  pt.size = 1,
   ...
 )
 }
