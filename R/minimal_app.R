@@ -439,7 +439,7 @@ minimalSeuratApp <- function(seu_list, appTitle = NULL, feature_types = "gene",
       )
       removeModal()
     })
-    callModule(findMarkers, "findmarkers", seu, plot_types)
+    callModule(findMarkers, "findmarkers", seu, plot_types, featureType)
 
     callModule(pathwayEnrichment, "pathwayEnrichment", seu)
 

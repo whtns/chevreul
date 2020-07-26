@@ -322,7 +322,7 @@ plot_velocity_trajectory <- function(seu, reduction = "umap", format = "arrow", 
 #' @export
 #'
 #' @examples
-plot_var <- function(seu, embedding = "umap", group = "batch", dims = c(1,2), highlight = NULL, ...){
+plot_var <- function(seu, embedding = "umap", group = "batch", dims = c(1,2), highlight = NULL, pt.size = 1.0, ...){
 
   Seurat::DefaultAssay(seu) <- "RNA"
 
@@ -332,13 +332,14 @@ plot_var <- function(seu, embedding = "umap", group = "batch", dims = c(1,2), hi
 
   if (embedding == "umap"){
     dims = c(1,2)
+
   } else if (embedding == "tsne"){
     dims = c(1,2)
   }
 
   dims <- as.numeric(dims)
 
-  d <- Seurat::DimPlot(object = seu, dims = dims, reduction = embedding, group.by = group, pt.size = 1.0, ...) +
+  d <- Seurat::DimPlot(object = seu, dims = dims, reduction = embedding, group.by = group, pt.size = pt.size, ...) +
     aes(key = key, cellid = cellid) +
     # gghighlight()
     # theme(legend.text=element_text(size=10)) +
@@ -429,7 +430,8 @@ plot_violin <- function(seu, plot_var = "batch", plot_vals = NULL, features = "R
 #' @export
 #'
 #' @examples
-plot_feature <- function(seu, embedding, features, dims = c(1,2), return_plotly = TRUE){
+#'
+plot_feature <- function(seu, embedding, features, dims = c(1,2), return_plotly = TRUE, pt.size = 1.0){
 
   DefaultAssay(seu) <- "RNA"
 
@@ -444,7 +446,7 @@ plot_feature <- function(seu, embedding, features, dims = c(1,2), return_plotly 
 
   dims <- as.numeric(dims)
 
-  fp <- Seurat::FeaturePlot(object = seu, features = features, dims = dims, reduction = embedding, pt.size = 1.0, blend = FALSE)	+
+  fp <- Seurat::FeaturePlot(object = seu, features = features, dims = dims, reduction = embedding, pt.size = pt.size, blend = FALSE)	+
     aes(key = key, cellid = cellid, alpha = 0.7)
 
   if (return_plotly == FALSE) return(fp)
@@ -487,17 +489,19 @@ plot_ridge <- function(seu, features){
 #'
 #' @param seu
 #' @param marker_method
-#' @param ...
 #' @param metavar
 #' @param num_markers
 #' @param selected_values
 #' @param return_plot
+#' @param featureType
+#' @param hide_pseudo
+#' @param ...
 #'
 #' @return
 #' @export
 #'
 #' @examples
-plot_markers <- function(seu, metavar, num_markers = 5, selected_values = NULL, return_plot = FALSE, marker_method = "presto", ...){
+plot_markers <- function(seu, metavar, num_markers = 5, selected_values = NULL, return_plot = FALSE, marker_method = "presto", featureType  = "gene", hide_pseudo = FALSE, ...){
   Idents(seu) <- seu[[metavar]]
 
   # by default only resolution markers are calculated in pre-processing
@@ -505,7 +509,22 @@ plot_markers <- function(seu, metavar, num_markers = 5, selected_values = NULL, 
     seu <- find_all_markers(seu, metavar)
   }
 
-  markers <- seu@misc$markers[[metavar]][[marker_method]] %>%
+  markers <- seu@misc$markers[[metavar]][[marker_method]]
+
+  if(hide_pseudo){
+
+    markers <- purrr::map(markers, c)
+    markers <- purrr::map(markers, ~.x[!.x %in% pseudogenes[[featureType]]])
+
+    min_length <- min(purrr::map_int(markers, length))
+
+    markers <- purrr::map(markers, head, min_length) %>%
+      dplyr::bind_cols()
+
+  }
+
+  markers <-
+    markers %>%
     dplyr::slice_head(n = num_markers) %>%
     tidyr::pivot_longer(everything(), names_to = "group", values_to = "feature") %>%
     dplyr::arrange(group) %>%
