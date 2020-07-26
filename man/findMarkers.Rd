@@ -4,7 +4,7 @@
 \alias{findMarkers}
 \title{Find Markers}
 \usage{
-findMarkers(input, output, session, seu, plot_types)
+findMarkers(input, output, session, seu, plot_types, featureType)
 }
 \arguments{
 \item{seu}{}

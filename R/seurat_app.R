@@ -225,7 +225,8 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
     scrollX = TRUE, language = list(search = "Filter:")
   ))
   header <- shinydashboard::dashboardHeader(title = appTitle)
-  sidebar <- shinydashboard::dashboardSidebar(uiOutput("projInput"),
+  sidebar <- shinydashboard::dashboardSidebar(
+      uiOutput("projInput"),
     actionButton("loadProject", "Load Selected Project") %>%
       default_helper(type = "markdown", content = "overview"),
     textOutput("appTitle"),
@@ -270,10 +271,10 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
     ), shinydashboard::menuItem("Technical Information",
                                 tabName = "techInfo", icon = icon("cogs")
     )),
-    actionButton("changeEmbedAction",
-                 label = "Change Embedding Parameters"
-    ),
-    changeEmbedParamsui("changeembed"),
+      actionButton("changeEmbedAction",
+                   label = "Change Embedding Parameters"
+      ),
+      changeEmbedParamsui("changeembed"),
     width = 250
   )
   body <- shinydashboard::dashboardBody(
@@ -781,7 +782,7 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
       )
       removeModal()
     })
-    callModule(findMarkers, "findmarkers", seu, plot_types)
+    callModule(findMarkers, "findmarkers", seu, plot_types, featureType)
     diffex_results <- callModule(
       diffex, "diffex", seu, featureType,
       diffex_selected_cells

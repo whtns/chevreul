@@ -63,13 +63,13 @@ convert_seu_to_cds <- function(seu, resolution = 1) {
   cds_from_seurat@clusters@listData[["UMAP"]][["louvain_res"]] <- "NA"
 
 
-  # cds_from_seurat <- monocle3::preprocess_cds(cds_from_seurat)
-  # cds_from_seurat <- monocle3::reduce_dimension(cds_from_seurat, "UMAP")
-  #
-  # reducedDim(cds_from_seurat, "PCA") <- Embeddings(seu, "pca")
-  # reducedDim(cds_from_seurat, "UMAP") <- Embeddings(seu, "umap")
-  cds_from_seurat@reducedDims@listData[["UMAP"]] <- Embeddings(seu, "umap")
-  cds_from_seurat@reducedDims@listData[["PCA"]] <- Embeddings(seu, "pca")
+  cds_from_seurat <- monocle3::preprocess_cds(cds_from_seurat)
+  cds_from_seurat <- monocle3::reduce_dimension(cds_from_seurat, "UMAP")
+
+  reducedDim(cds_from_seurat, "PCA") <- Embeddings(seu, "pca")
+  reducedDim(cds_from_seurat, "UMAP") <- Embeddings(seu, "umap")
+  # cds_from_seurat@reducedDims@listData[["UMAP"]] <- Embeddings(seu, "umap")
+  # cds_from_seurat@reducedDims@listData[["PCA"]] <- Embeddings(seu, "pca")
   cds_from_seurat@preprocess_aux$gene_loadings <- Loadings(seu, "pca")
 
   cds_from_seurat <- learn_graph_by_resolution(cds_from_seurat, seu, resolution = resolution)
@@ -727,3 +727,30 @@ monocle_module_heatmap <- function(cds, pr_deg_ids, seu_resolution, collapse_row
   return(list(module_table = gene_module_df, module_heatmap = module_heatmap, agg_mat = agg_mat))
 }
 
+#' Flip Pseudotime
+#'
+#' @param cds
+#'
+#' @return
+#' @export
+#'
+#' @examples
+flip_pseudotime <- function(cds){
+  # pull original ptime
+  orig_pseudotime <- monocle3::pseudotime(cds)
+
+  # sort ptime
+  forward_pseudotime <- sort(orig_pseudotime)
+
+  # rev ptime and flip names
+  rev_pseudotime <- rev(forward_pseudotime)
+  names(rev_pseudotime) <- names(forward_pseudotime)
+
+  # sort rev ptime by original order
+  rev_pseudotime <- rev_pseudotime[names(orig_pseudotime)]
+
+  #assign flipped ptime to cds
+  cds@principal_graph_aux$UMAP$pseudotime <- rev_pseudotime
+
+  return(cds)
+}

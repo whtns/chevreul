@@ -115,6 +115,40 @@ seu_from_tximport <- function(txi, feature, meta_tbl, ...){
 
 }
 
+#' create a multimodal seurat object from genes and transcript counts from tximport
+#'
+#' @param txi
+#' @param meta_tbl
+#' @param ...
+#'
+#' @return
+#'
+#'
+#' @examples
+multimodal_seu_from_tximport <- function (txi, meta_tbl, ...){
+  gene_tbl <- as.matrix(txi$gene$counts)
+  expid <- gsub("-.*", "", colnames(gene_tbl))
+  genedata <- data.frame(feature = rownames(gene_tbl))
+  rownames(genedata) <- genedata[, 1]
+  meta_tbl <- data.frame(meta_tbl)
+  rownames(meta_tbl) <- meta_tbl[, "sample_id"]
+  meta_tbl <- meta_tbl[colnames(gene_tbl), ]
+  seu <- Seurat::CreateSeuratObject(counts = gene_tbl, project = expid,
+                                    assay = "gene", meta.data = meta_tbl)
+  seu@assays$gene <- AddMetaData(seu@assays$gene, genedata)
+
+  transcript_tbl <- as.matrix(txi$transcript$counts)
+  transcriptdata <- data.frame(feature = rownames(transcript_tbl))
+  rownames(transcriptdata) <- transcriptdata[, 1]
+
+  seu[["transcript"]] <- CreateAssayObject(counts = transcript_tbl)
+  seu@assays$transcript <- AddMetaData(seu@assays$transcript, transcriptdata)
+
+  seu$batch <- seu@project.name
+  return(seu)
+}
+
+
 #' Create a Seurat Object from a set of tibbles
 #'
 #' @param exp_tbl
