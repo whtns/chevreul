@@ -467,3 +467,21 @@ propagate_spreadsheet_changes <- function(changes){
 
   return(meta)
 }
+
+create_project_db <- function(projects_dir = "/dataVolume/storage/single_cell_projects",
+                              db_path = "single-cell-projects.db"){
+  mydb <- DBI::dbConnect(RSQLite::SQLite(), fs::path(projects_dir, db_path))
+
+  projects_tbl <-
+    fs::dir_ls(projects_dir, glob = "*.here", recurse = TRUE, fail = FALSE, all = TRUE) %>%
+    fs::path_dir(.) %>%
+    purrr::set_names(fs::path_file(.)) %>%
+    tibble::enframe("project_name", "project_path") %>%
+    dplyr::mutate(project_slug = stringr::str_remove(project_name, "_proj$")) %>%
+    dplyr::mutate(project_type = map_chr(fs::path_split(fs::path_dir(project_path)), 5)) %>%
+    identity()
+
+  DBI::dbWriteTable(mydb, "projects_tbl", projects_tbl)
+
+  DBI::dbDisconnect(mydb)
+}

@@ -719,7 +719,7 @@ seu_complex_heatmap <- function(seu, features = NULL, cells = NULL, group.by = "
 
   ha_cols <- c(ha_cols.factor, ha_cols.numeric)
 
-  column_ha = ComplexHeatmap::HeatmapAnnotation(df = groups.use, height = group.bar.height, col = ha_cols)
+  column_ha = ComplexHeatmap::HeatmapAnnotation(df = groups.use, height = unit(group.bar.height, "points"), col = ha_cols)
 
   hm <- ComplexHeatmap::Heatmap(t(data), name = "log expression", top_annotation = column_ha,
                                 cluster_columns = cluster_columns,

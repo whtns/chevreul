@@ -213,7 +213,7 @@ prep_slider_values <- function(default_val) {
 #'
 #' @examples
 seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_types = "gene",
-                      organism_type = "human", db_path = "/dataVolume/storage/single_cell_projects/rsqlite/single-cell-projects.db", futureMb = 13000) {
+                      organism_type = "human", db_path = "/dataVolume/storage/single_cell_projects/single-cell-projects.db", futureMb = 13000) {
   print(feature_types)
   future::plan(strategy = "multicore", workers = 6)
   future_size <- futureMb * 1024^2
