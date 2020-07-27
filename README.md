@@ -18,7 +18,7 @@ There are functions for:
 You can install the released version of seuratTools from [our github](https://github.com/whtns/seuratTools) with:
 
 ``` r
-devtools::install_package("whtns/seuratTools")
+devtools::install_github("whtns/seuratTools")
 ```
 
 ## Site
