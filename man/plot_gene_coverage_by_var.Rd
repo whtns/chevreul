@@ -6,13 +6,15 @@
 \usage{
 plot_gene_coverage_by_var(
   genes_of_interest = "RXRG",
-  cell_metadata_file,
+  cell_metadata,
+  bigwig_tbl,
   var_of_interest,
-  edb = EnsDb.Hsapiens.v86::EnsDb.Hsapiens.v86
+  edb = EnsDb.Hsapiens.v86::EnsDb.Hsapiens.v86,
+  ...
 )
 }
 \arguments{
-\item{edb}{}
+\item{...}{}
 }
 \value{
 

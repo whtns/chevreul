@@ -135,7 +135,7 @@ stash_marker_features <- function(metavar, seu, top_n = 200){
 #'
 #' @examples
 rename_markers <- function(seu){
-  default_assay <- DefaultAssay(seu)
+  default_assay <- Seurat::DefaultAssay(seu)
   test <- names(seu@misc$markers)
   names(seu@misc$markers) <- gsub("clusters_", paste0(default_assay, "_snn_res."), test)
   return(seu)

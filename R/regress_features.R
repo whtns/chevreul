@@ -16,7 +16,7 @@ regress_by_features <- function(seu, feature_set, set_name, regress = TRUE, ...)
   if (!is.list(feature_set)) feature_set <- list(feature_set)
 
   #set default assay to "RNA"
-  DefaultAssay(seu) <- "RNA"
+  Seurat::DefaultAssay(seu) <- "RNA"
 
   ctrl <- 100
   if (dim(seu)[2] < 100){
@@ -32,7 +32,7 @@ regress_by_features <- function(seu, feature_set, set_name, regress = TRUE, ...)
   }
 
   #revert default assay to "integrated"
-  DefaultAssay(seu) <- default_assay
+  Seurat::DefaultAssay(seu) <- default_assay
 
   #regress out feature set
   if (regress){
@@ -46,7 +46,7 @@ regress_by_features <- function(seu, feature_set, set_name, regress = TRUE, ...)
     seu <- seurat_cluster(seu, resolution = resolutions)
   }
 
-  DefaultAssay(seu) <- "RNA"
+  Seurat::DefaultAssay(seu) <- "RNA"
 
   return(seu)
 }
