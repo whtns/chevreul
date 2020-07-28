@@ -902,7 +902,7 @@ diffex <- function(input, output, session, seu, featureType, selected_cells, tes
 
   observe({
     req(seu$active)
-    DefaultAssay(seu$active) <- "RNA"
+    Seurat::DefaultAssay(seu$active) <- "RNA"
   })
 
   output$testChoices <- renderUI(
@@ -1075,7 +1075,7 @@ findMarkers <- function(input, output, session, seu, plot_types, featureType) {
 
   observe({
     req(default_assay())
-    DefaultAssay(seu$active) <- "RNA"
+    Seurat::DefaultAssay(seu$active) <- "RNA"
   })
 
   marker_plot <- eventReactive(input$plotDots, {
@@ -2072,5 +2072,78 @@ techInfo <- function(input, output, session, seu){
       })
     })
 
+
+}
+
+#' Title
+#'
+#' @param id
+#'
+#' @return
+#' @export
+#'
+#' @examples
+plotCoverage_UI <- function(id) {
+  ns <- NS(id)
+  tagList(
+    seuratToolsBox(
+      title = "Plot Coverage",
+      selectizeInput(ns("geneSelect"), "Select a Gene", choices = NULL, selected = "RXRG", multiple = FALSE),
+      selectizeInput(ns("varSelect"), "Color by Variable", choices = NULL, multiple = FALSE),
+      actionButton(ns("plotCoverage"), "Plot Coverage"),
+      downloadButton(ns("downloadPlot"), "Download Coverage Plot"),
+      plotOutput(ns("coveragePlot"), height = "1000px"),
+      width = 12
+      )
+    )
+}
+
+#' Title
+#'
+#' @param input
+#' @param output
+#' @param session
+#' @param seu
+#' @param plot_types
+#' @param bigwig_dir
+#' @param organism_type
+#'
+#' @return
+#' @export
+#'
+#' @examples
+plotCoverage <- function(input, output, session, seu, plot_types, proj_dir, organism_type = "human") {
+
+    observe({
+      req(seu$active)
+      updateSelectizeInput(session, "geneSelect", choices = rownames(seu$active), server = TRUE)
+      updateSelectizeInput(session, "varSelect", choices = plot_types())
+    })
+
+    bigwig_tbl <- reactive({
+      load_bigwigs(seu$active, proj_dir())
+    })
+
+    coverage_plot <- eventReactive(input$plotCoverage, {
+      req(seu$active)
+      req(bigwig_tbl())
+
+      plot_gene_coverage_by_var(genes_of_interest = input$geneSelect,
+                                cell_metadata = seu$active@meta.data,
+                                bigwig_tbl = bigwig_tbl(),
+                                var_of_interest = input$varSelect,
+                                edb = EnsDb.Hsapiens.v86::EnsDb.Hsapiens.v86,
+                                mean_only = FALSE)
+    })
+
+    output$coveragePlot <- renderPlot({
+      coverage_plot()
+    })
+
+    output$downloadPlot <- downloadHandler(
+      filename = function() { paste("coverage", '.pdf', sep='') },
+      content = function(file) {
+        ggsave(file, coverage_plot(), width = 16, height = 12)
+      })
 
 }

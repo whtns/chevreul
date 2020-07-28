@@ -66,7 +66,7 @@ seurat_integrate <- function(seu_list, method = "cca", ...) {
 
   # switch to integrated assay. The variable features of this assay are
   # automatically set during IntegrateData
-  DefaultAssay(object = seu_list.integrated) <- "integrated"
+  Seurat::DefaultAssay(object = seu_list.integrated) <- "integrated"
 
   # Run the standard workflow for visualization and clustering
   seu_list.integrated <- Seurat::ScaleData(object = seu_list.integrated, verbose = FALSE)
@@ -234,7 +234,7 @@ rename_seurat <- function(seu, new_name){
 #'
 #' @examples
 SetDefaultAssay <- function(seu, new_assay){
-  DefaultAssay(seu) <- new_assay
+  Seurat::DefaultAssay(seu) <- new_assay
   return(seu)
 }
 
@@ -297,7 +297,7 @@ filter_merged_seu <- function(seu, filter_var, filter_val, .drop = .drop) {
 #' @examples
 reintegrate_seu <- function(seu, feature = "gene", suffix = "", reduction = "pca", algorithm = 1, ...){
 
-  DefaultAssay(seu) <- "RNA"
+  Seurat::DefaultAssay(seu) <- "RNA"
 
   seu <- Seurat::DietSeurat(seu, counts = TRUE, data = TRUE, scale.data = FALSE)
   seus <- Seurat::SplitObject(seu, split.by = "batch")

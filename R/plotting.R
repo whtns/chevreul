@@ -433,7 +433,7 @@ plot_violin <- function(seu, plot_var = "batch", plot_vals = NULL, features = "R
 #'
 plot_feature <- function(seu, embedding, features, dims = c(1,2), return_plotly = TRUE, pt.size = 1.0){
 
-  DefaultAssay(seu) <- "RNA"
+  Seurat::DefaultAssay(seu) <- "RNA"
 
   metadata <- tibble::as_tibble(seu[[]][Seurat::Cells(seu),], rownames = "sID")
 
@@ -647,8 +647,8 @@ seu_complex_heatmap <- function(seu, features = NULL, cells = NULL, group.by = "
   if (is.numeric(x = cells)) {
     cells <- colnames(x = seu)[cells]
   }
-  assay <- assay %||% DefaultAssay(object = seu)
-  DefaultAssay(object = seu) <- assay
+  assay <- assay %||% Seurat::DefaultAssay(object = seu)
+  Seurat::DefaultAssay(object = seu) <- assay
   features <- features %||% VariableFeatures(object = seu)
   features <- rev(x = unique(x = features))
   possible.features <- rownames(x = GetAssayData(object = seu,
