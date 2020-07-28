@@ -13,7 +13,7 @@ annotate_cell_cycle <- function(seu, feature, organism = "human", ...){
 
 
   # setdefaultassay to "RNA"
-  DefaultAssay(seu) <- "RNA"
+  Seurat::DefaultAssay(seu) <- "RNA"
 
   s_genes <- cc.genes$s.genes
   g2m_genes <- cc.genes$g2m.genes

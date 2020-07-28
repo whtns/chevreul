@@ -48,7 +48,9 @@ Imports:
     genesorteR (>= 0.4.3),
     httr,
     patchwork,
-    ComplexHeatmap (>= 2.5.3)
+    ComplexHeatmap (>= 2.5.3),
+    wiggleplotr,
+    ensembldb
 Suggests: 
     dplyr,
     tidyr,

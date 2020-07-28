@@ -252,6 +252,8 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
       tabName = "comparePlots", icon = icon("chart-bar"), selected = TRUE
     ), shinydashboard::menuItem("Heatmap/Violin Plots",
       tabName = "violinPlots", icon = icon("sort")
+    ), shinydashboard::menuItem("Coverage Plots",
+      tabName = "coveragePlots", icon = icon("mountain")
     ), shinydashboard::menuItem("Differential Expression",
       tabName = "diffex", icon = icon("magnet")
     ), shinydashboard::menuItem("Pathway Enrichment Analysis",
@@ -306,10 +308,16 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
     shinydashboard::tabItem(
       tabName = "violinPlots",
       fluidRow(
-        tite = "Heatmap", plotHeatmapui("heatMap")
+        plotHeatmapui("heatMap")
       ),
       fluidRow(
-        title = "Violin Plot", plotViolinui("violinPlot")
+        plotViolinui("violinPlot")
+      )
+    ),
+    shinydashboard::tabItem(
+      tabName = "coveragePlots",
+      fluidRow(
+        plotCoverage_UI("coverageplots")
       )
     ),
     shinydashboard::tabItem(
@@ -470,7 +478,7 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
         # ) %>%
         #   fs::path_dir() %>%
         #   purrr::set_names(fs::path_file(.))
-        DBI::dbReadTable(con, "projects") %>%
+        DBI::dbReadTable(con, "projects_tbl") %>%
           tibble::deframe()
       } else {
         ""
@@ -481,7 +489,7 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
       # ) %>%
       #   fs::path_dir() %>%
       #   purrr::set_names(fs::path_file(.))
-      DBI::dbReadTable(con, "projects") %>%
+      DBI::dbReadTable(con, "projects_tbl") %>%
         tibble::deframe()
     })
     output$projInput <- renderUI({
@@ -679,6 +687,10 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
     callModule(
       plotHeatmap, "heatMap", seu, featureType,
       organism_type
+    )
+
+    callModule(
+      plotCoverage, "coverageplots", seu, plot_types, proj_dir, organism_type
     )
     callModule(plotClustree, "clustreePlot", seu)
     callModule(tableSelected, "tableselected", seu)
