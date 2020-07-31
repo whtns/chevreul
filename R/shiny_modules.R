@@ -1469,8 +1469,9 @@ monocleui <- function(id){
       fluidRow(
         seuratToolsBox(
           title = "Heatmap",
-          radioButtons(ns("pickHeatmap"), "heatmap on clusters or cells?", choices = c(clusters = TRUE, cells = FALSE), selected = TRUE),
-          iheatmapr::iheatmaprOutput(ns("monocleHeatmap"), width = "800px", height = "600px")
+          uiOutput(ns("colAnnoVarui")),
+          radioButtons(ns("heatmapRows"), "annotate heatmap rows by genes or modules?", choices = c(genes = FALSE, modules = TRUE), selected = FALSE),
+          plotOutput(ns("monocleHeatmap"), width = "800px", height = "600px")
         ),
         seuratToolsBox(
           div(DT::dataTableOutput(ns("moduleTable")), style = "font-size: 75%")
@@ -1499,6 +1500,13 @@ monocleui <- function(id){
 monocle <- function(input, output, session, seu, plot_types, featureType,
                     organism_type, reductions){
     ns <- session$ns
+
+    output$colAnnoVarui <- renderUI({
+      req(seu$active)
+
+      selectizeInput(ns("colAnnoVar"), "Column Annotation(s)",
+                     choices = colnames(seu$active[[]]), selected = "batch", multiple = TRUE)
+    })
 
     cds <- reactiveValues(selected = "traj")
     cds_plot_types <- reactiveVal(c(Pseudotime = "pseudotime", Module = "module"))
@@ -1728,7 +1736,7 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
       monocle_heatmap <- reactive({
         req(cds$traj)
         req(cds_pr_test_res())
-        monocle_module_heatmap(cds$traj, rownames(cds_pr_test_res()), input$cdsResolution, collapse_cols = input$pickHeatmap)
+        monocle_module_heatmap(cds$traj, rownames(cds_pr_test_res()), input$cdsResolution, collapse_rows = input$heatmapRows, group.by = input$colAnnoVarui)
       })
 
       module_choices <- reactive({
@@ -1744,7 +1752,7 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
       })
 
       observe({
-        output$monocleHeatmap <- iheatmapr::renderIheatmap({
+        output$monocleHeatmap <- renderPlot({
           monocle_heatmap()$module_heatmap
         })
 
