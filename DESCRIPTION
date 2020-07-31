@@ -15,10 +15,8 @@ RoxygenNote: 7.1.1
 biocViews:
 Imports: 
     fs,
-    rprojroot,
     rlang,
     magrittr,
-    furrr,
     velocyto.R (>= 0.6),
     future,
     DT,
@@ -38,8 +36,6 @@ Imports:
     presto (>= 1.0.0),
     DBI,
     RSQLite,
-    iheatmapr,
-    gghighlight,
     htmlwidgets,
     shinyWidgets,
     shinyjs,
@@ -48,9 +44,11 @@ Imports:
     genesorteR (>= 0.4.3),
     httr,
     patchwork,
-    ComplexHeatmap (>= 2.5.3),
-    wiggleplotr,
-    ensembldb
+    ComplexHeatmap (>= 2.5.4),
+    wiggleplotr (>= 1.12.1),
+    ensembldb,
+    Rcpp,
+    SingleCellExperiment
 Suggests: 
     dplyr,
     tidyr,
@@ -69,10 +67,8 @@ Remotes:
     mahmoudibrahim/genesorteR,
     jokergoo/ComplexHeatmap
 Depends: 
-    Rcpp,
     Seurat,
     R (>= 2.10),
-    SingleCellExperiment,
     shiny,
     shinydashboard
 VignetteBuilder: knitr

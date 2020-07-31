@@ -341,7 +341,6 @@ plot_var <- function(seu, embedding = "umap", group = "batch", dims = c(1,2), hi
 
   d <- Seurat::DimPlot(object = seu, dims = dims, reduction = embedding, group.by = group, pt.size = pt.size, ...) +
     aes(key = key, cellid = cellid) +
-    # gghighlight()
     # theme(legend.text=element_text(size=10)) +
     NULL
 
@@ -509,7 +508,8 @@ plot_markers <- function(seu, metavar, num_markers = 5, selected_values = NULL, 
     seu <- find_all_markers(seu, metavar)
   }
 
-  markers <- seu@misc$markers[[metavar]][[marker_method]]
+  markers <- seu@misc$markers[[metavar]][[marker_method]] %>%
+    dplyr::mutate(dplyr::across(.fns = as.character))
 
   if(hide_pseudo){
 
