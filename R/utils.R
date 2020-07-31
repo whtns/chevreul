@@ -30,8 +30,8 @@ format_new_metadata <- function(datapath){
 #'
 #' @examples
 rename_from_x_notation <- function(cell_ids, batch_id){
-  cell_ids <- str_replace(cell_ids, "X", "")
-  cell_ids <- paste0(batch_id, str_pad(cell_ids, width = max(nchar(cell_ids)), pad = "0"))
+  cell_ids <- stringr::str_replace(cell_ids, "X", "")
+  cell_ids <- paste0(batch_id, stringr::str_pad(cell_ids, width = max(nchar(cell_ids)), pad = "0"))
 }
 
 #' delete seurat path
@@ -130,7 +130,7 @@ list_plot_types <- function(seu){
     dplyr::pull(vars)
 
   continuous_vars <- c("custom", continuous_vars) %>%
-    purrr::set_names(stringr::str_to_title(str_replace(., "[[:punct:]]", " ")))
+    purrr::set_names(stringr::str_to_title(stringr::str_replace(., "[[:punct:]]", " ")))
 
 
   category_vars <- meta_types %>%
@@ -138,7 +138,7 @@ list_plot_types <- function(seu){
     dplyr::pull(vars)
 
   category_vars <- c("seurat", category_vars) %>%
-    purrr::set_names(stringr::str_to_title(str_replace(., "[[:punct:]]", " ")))
+    purrr::set_names(stringr::str_to_title(stringr::str_replace(., "[[:punct:]]", " ")))
 
   plot_types <- list(category_vars = category_vars, continuous_vars = continuous_vars)
 
@@ -227,7 +227,7 @@ pad_sample_files <- function(proj_dir) {
     purrr::set_names(path_file(.)) %>%
     tibble::enframe("file", "path") %>%
     tidyr::separate(file, into = c("proj_id", "sample_number", "pair"), sep = "-|_") %>%
-    dplyr::mutate(sample_number = str_pad(sample_number, max(nchar(sample_number)), pad = "0")) %>%
+    dplyr::mutate(sample_number = stringr::str_pad(sample_number, max(nchar(sample_number)), pad = "0")) %>%
     dplyr::mutate(file = fs::path(proj_dir, "data", "FASTQ", paste0(proj_id, "-", sample_number, "_", pair))) %>%
     # dplyr::mutate() %>%
     identity()

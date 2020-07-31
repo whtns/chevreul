@@ -48,10 +48,12 @@ Imports:
     wiggleplotr (>= 1.12.1),
     ensembldb,
     Rcpp,
-    SingleCellExperiment
-Suggests: 
+    SingleCellExperiment,
     dplyr,
     tidyr,
+    shinyhelper,
+    rhandsontable
+Suggests: 
     ggplot2,
     testthat (>= 2.1.0),
     knitr,
