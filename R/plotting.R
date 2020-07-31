@@ -590,35 +590,6 @@ plot_readcount <- function(seu, metavar = "nCount_RNA", color.by = "batch"){
 
 }
 
-#' Plot a dendrogram colored by Seurat metadata
-#'
-#' @param seu
-#' @param metavar metadata variable from seurat object
-#' @param hclust_method hierarchical clustering method as defined in hclust
-#'
-#' @return
-#' @export
-#' @importFrom ggtree layout_dendrogram
-#'
-#' @examples
-plot_dend_by_metadata <- function(seu, metavar = "batch", hclust_method = "ward.D2"){
-
-  hc <-
-    Seurat::Embeddings(seu, "pca") %>%
-    dist() %>%
-    hclust(hclust_method)
-
-  node_labels <- seu[[metavar]] %>%
-    dplyr::mutate(node = row_number()) %>%
-    dplyr::select("node", !!as.symbol(metavar)) %>%
-    identity()
-
-  p <- ggtree::ggtree(hc) %<+% node_labels +
-    aes(color = !!as.symbol(metavar)) +
-    layout_dendrogram()
-
-  return(p)
-}
 
 #' Plot Annotated Complexheatmap from Seurat object
 #'
