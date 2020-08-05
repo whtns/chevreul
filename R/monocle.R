@@ -142,11 +142,9 @@ learn_graph_by_resolution <- function(cds, seu, resolution = 1){
 #' @examples
 plot_cds <- function(cds, color_cells_by = NULL, genes = NULL){
 
-  key <- seq(1, length(colnames(cds)))
-  cellid <- colnames(cds)
+  key <- colnames(cds)
 
   cds[['key']] = key
-  cds[['cellid']] = cellid
 
   if (any(grepl("integrated", names(cds@colData)))){
     default_assay = "integrated"
@@ -165,7 +163,7 @@ plot_cds <- function(cds, color_cells_by = NULL, genes = NULL){
                                    label_groups_by_cluster = FALSE,
                                    label_leaves = FALSE,
                                    label_branch_points = FALSE,
-                                   color_cells_by = color_cells_by, key = key, cellid = cellid,
+                                   color_cells_by = color_cells_by, key = key, cellid = key,
                          cell_size = 0.75)
     NULL
 
@@ -219,7 +217,6 @@ plot_pseudotime <- function(cds, resolution, color_cells_by = NULL, genes = NULL
 
   cds_plot <-
     cds_plot %>%
-    plotly::ggplotly(height = 400) %>%
     plotly::ggplotly(height = 400) %>%
     plotly_settings() %>%
     plotly::toWebGL() %>%

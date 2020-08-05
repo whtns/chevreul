@@ -326,8 +326,11 @@ plot_var <- function(seu, embedding = "umap", group = "batch", dims = c(1,2), hi
 
   Seurat::DefaultAssay(seu) <- "RNA"
 
-  metadata <- tibble::as_tibble(seu[[]][Seurat::Cells(seu),], rownames = "sID")
-  cellid <- metadata[["sID"]]
+  # metadata <- tibble::as_tibble(seu[[]][Seurat::Cells(seu),], rownames = "sID")
+  # cellid <- metadata[["sID"]]
+  # key <- rownames(metadata)
+
+  metadata <- seu[[]][Seurat::Cells(seu),]
   key <- rownames(metadata)
 
   if (embedding == "umap"){
@@ -340,7 +343,7 @@ plot_var <- function(seu, embedding = "umap", group = "batch", dims = c(1,2), hi
   dims <- as.numeric(dims)
 
   d <- Seurat::DimPlot(object = seu, dims = dims, reduction = embedding, group.by = group, pt.size = pt.size, ...) +
-    aes(key = key, cellid = cellid) +
+    aes(key = key, cellid = key) +
     # theme(legend.text=element_text(size=10)) +
     NULL
 
@@ -434,9 +437,7 @@ plot_feature <- function(seu, embedding, features, dims = c(1,2), return_plotly 
 
   Seurat::DefaultAssay(seu) <- "RNA"
 
-  metadata <- tibble::as_tibble(seu[[]][Seurat::Cells(seu),], rownames = "sID")
-
-  cellid <- metadata[["sID"]]
+  metadata <- seu[[]][Seurat::Cells(seu),]
   key <- rownames(metadata)
 
   if (embedding %in% c("tsne", "umap")){
@@ -446,7 +447,7 @@ plot_feature <- function(seu, embedding, features, dims = c(1,2), return_plotly 
   dims <- as.numeric(dims)
 
   fp <- Seurat::FeaturePlot(object = seu, features = features, dims = dims, reduction = embedding, pt.size = pt.size, blend = FALSE)	+
-    aes(key = key, cellid = cellid, alpha = 0.7)
+    aes(key = key, cellid = key, alpha = 0.7)
 
   if (return_plotly == FALSE) return(fp)
 
@@ -701,5 +702,83 @@ seu_complex_heatmap <- function(seu, features = NULL, cells = NULL, group.by = "
                                 ...)
 
   return(hm)
+
+}
+
+
+#' Title
+#'
+#' @param seu_transcript
+#' @param seu_gene
+#' @param gene_symbol
+#' @param group.by
+#'
+#' @return
+#' @export
+#'
+#' @examples
+plot_transcript_composition <- function(seu_transcript, seu_gene, gene_symbol, group.by = "batch"){
+  # browser()
+
+  transcripts <- annotables::grch38 %>%
+    dplyr::filter(symbol == gene_symbol) %>%
+    dplyr::left_join(annotables::grch38_tx2gene, by = "ensgene") %>%
+    dplyr::pull(enstxp)
+
+  metadata <- seu_transcript@meta.data
+  metadata$sample_id <- NULL
+  metadata <-
+    metadata %>%
+    tibble::rownames_to_column("sample_id") %>%
+    dplyr::select(sample_id, group.by = {{group.by}})
+
+  data <- as.data.frame(t(as.matrix(seu_transcript[["RNA"]][transcripts,]))) %>%
+    tibble::rownames_to_column("sample_id") %>%
+    tidyr::pivot_longer(cols = starts_with("ENST"),
+                        names_to = "transcript",
+                        values_to = "expression") %>%
+    dplyr::left_join(metadata, by = "sample_id")
+
+  p <- ggplot(
+    data=data,
+    aes(x = group.by, y= expression, fill = transcript)) +
+    # geom_col() +
+    stat_summary(fun = "mean", geom = "col") +
+    theme_minimal() +
+    theme(axis.title.x = element_blank(),
+          axis.text.x = element_text(
+      angle=45, hjust = 1, vjust = 1, size=12)) +
+    labs(title = paste("Mean expression by", group.by, "-", gene_symbol), subtitle = "data scaled by library size then ln transformed") +
+    NULL
+
+  return(p)
+
+}
+
+#' Title
+#'
+#' @param seu
+#' @param transcripts
+#'
+#' @return
+#' @export
+#'
+#' @examples
+plot_all_transcripts <- function(seu_transcript, seu_gene, features, embedding){
+
+
+  transcript_cols <- as.data.frame(t(as.matrix(seu_transcript[["RNA"]][features,])))
+
+  cells <- rownames(transcript_cols)
+  transcript_cols <- as.list(transcript_cols) %>%
+    purrr::map(~purrr::set_names(.x, cells))
+
+  seu_gene[[features]] <- transcript_cols
+
+  pList <- purrr::map(features, ~plot_feature(seu_gene,
+                                              embedding = embedding, features = .x, return_plotly = FALSE))
+  names(pList) <- features
+
+  return(pList)
 
 }

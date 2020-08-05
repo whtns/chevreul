@@ -8,7 +8,8 @@ plot_gene_coverage_by_var(
   genes_of_interest = "RXRG",
   cell_metadata,
   bigwig_tbl,
-  var_of_interest,
+  var_of_interest = NULL,
+  values_of_interest = NULL,
   edb = EnsDb.Hsapiens.v86::EnsDb.Hsapiens.v86,
   ...
 )
