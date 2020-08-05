@@ -31,6 +31,7 @@ load_bigwigs <- function(seu, proj_dir){
 #' @param cell_metadata
 #' @param bigwig_tbl
 #' @param var_of_interest
+#' @param values_of_interest
 #' @param edb
 #' @param ...
 #'
@@ -41,7 +42,8 @@ load_bigwigs <- function(seu, proj_dir){
 plot_gene_coverage_by_var <- function(genes_of_interest = "RXRG",
                                       cell_metadata,
                                       bigwig_tbl,
-                                      var_of_interest,
+                                      var_of_interest = NULL,
+                                      values_of_interest = NULL,
                                       edb = EnsDb.Hsapiens.v86::EnsDb.Hsapiens.v86,
                                       ...) {
 
@@ -58,6 +60,12 @@ plot_gene_coverage_by_var <- function(genes_of_interest = "RXRG",
     dplyr::mutate(scaling_factor = 1, condition = as.factor(condition), colour_group = as.factor(colour_group)) %>%
     dplyr::left_join(bigwig_tbl, by = "sample_id") %>%
     identity()
+
+  if (!is.null(values_of_interest)){
+    new_track_data <-
+      new_track_data %>%
+      dplyr::filter(condition %in% values_of_interest)
+  }
 
   coverage_plot <- wiggleplotr::plotCoverageFromEnsembldb(ensembldb = edb,
                             gene_names = genes_of_interest,

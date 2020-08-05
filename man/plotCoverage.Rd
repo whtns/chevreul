@@ -23,3 +23,6 @@ plotCoverage(
 \description{
 Title
 }
+\examples{
+
+}

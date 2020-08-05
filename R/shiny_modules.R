@@ -748,7 +748,8 @@ tableSelected <- function(input, output, session, seu) {
       return(d)
     }
     else {
-      selected_cells <- colnames(seu$active)[as.numeric(d$key)]
+      # selected_cells <- colnames(seu$active)[as.numeric(d$key)]
+      d$key
     }
   })
 
@@ -921,7 +922,8 @@ diffex <- function(input, output, session, seu, featureType, selected_cells, tes
       return(d)
     }
     else {
-      selected_cells <- colnames(seu$active)[as.numeric(d$key)]
+      # selected_cells <- colnames(seu$active)[as.numeric(d$key)]
+      d$key
     }
   })
   custom_cluster1 <- eventReactive(input$saveClust1,
@@ -1203,10 +1205,13 @@ ccScore <- function(input, output, session) {
 allTranscriptsui <- function(id) {
   ns <- NS(id)
   tagList(fluidRow(seuratToolsBox(
-    title = "Transcript Expression per Gene",
-    actionButton(ns("plotTrx"), "Plot all transcripts"),
-    uiOutput(ns("embeddings")),
+   title = "Transcript Expression per Gene",
+   actionButton(ns("plotComposition"), "Plot transcript composition"),
    selectizeInput(ns("feature"), "Gene or transcript expression by which to color the plot; eg. 'RXRG'", choices = NULL, selected = NULL),
+   selectizeInput(ns("groupby"), "Group by:", choices = NULL, selected = NULL),
+   plotly::plotlyOutput(ns("compositionPlot")),
+   actionButton(ns("plotTrx"), "Plot all transcripts"),
+   uiOutput(ns("embeddings")),
    uiOutput(ns("plotlys")),
    width = 12) %>%
      default_helper(type = "markdown", content = "allTranscripts"),
@@ -1232,6 +1237,7 @@ allTranscripts <- function(input, output, session, seu,
   observe({
     req(seu$gene)
     updateSelectizeInput(session, "feature", choices = rownames(seu$gene@assays$RNA), selected = "RXRG", server = TRUE)
+    updateSelectizeInput(session, "groupby", choices = colnames(seu$gene@meta.data), server = TRUE)
   })
 
   output$embeddings <- renderUI({
@@ -1240,16 +1246,24 @@ allTranscripts <- function(input, output, session, seu,
   })
 
   transcripts <- reactive({
-
     get_transcripts_from_seu(seu$transcript, input$feature, organism = organism_type())
+  })
 
+  composition_plot <- eventReactive(input$plotComposition, {
+    plot_transcript_composition(seu$transcript, seu$gene, gene_symbol = input$feature, group.by = input$groupby) %>%
+      plotly::ggplotly(height = 400) %>%
+      plotly_settings() %>%
+      plotly::toWebGL() %>%
+      # plotly::partial_bundle() %>%
+      identity()
+  })
+
+  output$compositionPlot <- plotly::renderPlotly({
+    composition_plot()
   })
 
   pList <- eventReactive(input$plotTrx, {
-
-
     pList <- plot_all_transcripts(seu$transcript, seu$gene, transcripts(), input$embedding)
-
   })
 
   observe({
@@ -1420,6 +1434,7 @@ monocleui <- function(id){
     tagList(
       fluidRow(
         seuratToolsBox(
+          title = "Seurat Data",
           plotly::plotlyOutput(ns("seudimplot"), height = 500),
           width = 6
           # plotDimRedui(ns("plotdimred"))
@@ -1542,22 +1557,20 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
     # callModule(plotDimRed, "plotdimred", seu, plot_types, featureType,
     #            organism_type, reductions)
 
-    seubrush <- reactive({
-      req(seu$monocle)
-      d <- plotly::event_data("plotly_selected")
-      if (is.null(d)) {
-        msg <- "Click and drag events (i.e. select/lasso) appear here (double-click to clear)"
-        return(d)
-      }
-      else {
-        selected_cells <- colnames(seu$monocle)[as.numeric(d$key)]
-      }
-    })
 
     observeEvent(input$subsetSeurat, {
       req(seu$monocle)
-      print(seubrush())
-      seu$monocle <- seu$monocle[,seubrush()]
+
+      d <- plotly::event_data("plotly_selected", priority = "event")
+      if (is.null(d)) {
+        msg <- "Click and drag events (i.e. select/lasso) appear here (double-click to clear)"
+        print(d)
+      }
+      else {
+        print(d$key)
+        print(d)
+        seu$monocle <- seu$monocle[,d$key]
+      }
     })
 
     observeEvent(input$calcCDS, {
@@ -1633,7 +1646,8 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
         return(d)
       }
       else {
-        selected_cells <- colnames(cds$traj)[as.numeric(d$key)]
+        # selected_cells <- colnames(cds$traj)[as.numeric(d$key)]
+        d$key
       }
     })
 
@@ -2100,6 +2114,9 @@ plotCoverage_UI <- function(id) {
       selectizeInput(ns("varSelect"), "Color by Variable", choices = NULL, multiple = FALSE),
       actionButton(ns("plotCoverage"), "Plot Coverage"),
       downloadButton(ns("downloadPlot"), "Download Coverage Plot"),
+      uiOutput(ns("displayvaluesui")),
+      checkboxInput(ns("collapseIntrons"), "Collapse Introns", value = TRUE),
+      checkboxInput(ns("meanCoverage"), "Summarize Coverage to Mean", value = TRUE),
       plotOutput(ns("coveragePlot"), height = "1000px"),
       width = 12
       )
@@ -2120,13 +2137,25 @@ plotCoverage_UI <- function(id) {
 #' @export
 #'
 #' @examples
+#'
 plotCoverage <- function(input, output, session, seu, plot_types, proj_dir, organism_type = "human") {
-
+  ns <- session$ns
     observe({
       req(seu$active)
       updateSelectizeInput(session, "geneSelect", choices = rownames(seu$active), server = TRUE)
-      updateSelectizeInput(session, "varSelect", choices = plot_types())
+      updateSelectizeInput(session, "varSelect", choices = colnames(seu$active@meta.data))
     })
+
+  displayvalues <- reactive({
+    req(input$varSelect)
+    req(seu$active)
+    unique(seu$active[][[input$varSelect]])
+  })
+
+  output$displayvaluesui <- renderUI({
+    req(input$varSelect)
+    selectizeInput(ns("displayvalues"), "groups to display", choices = displayvalues(), multiple = TRUE)
+  })
 
     bigwig_tbl <- reactive({
       load_bigwigs(seu$active, proj_dir())
@@ -2140,8 +2169,10 @@ plotCoverage <- function(input, output, session, seu, plot_types, proj_dir, orga
                                 cell_metadata = seu$active@meta.data,
                                 bigwig_tbl = bigwig_tbl(),
                                 var_of_interest = input$varSelect,
+                                values_of_interest = input$displayvalues,
                                 edb = EnsDb.Hsapiens.v86::EnsDb.Hsapiens.v86,
-                                mean_only = FALSE)
+                                mean_only = input$meanCoverage,
+                                rescale_introns = input$collapseIntrons)
     })
 
     output$coveragePlot <- renderPlot({
@@ -2155,3 +2186,4 @@ plotCoverage <- function(input, output, session, seu, plot_types, proj_dir, orga
       })
 
 }
+
