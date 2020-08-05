@@ -378,8 +378,9 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
       h2("All Transcripts"),
       fluidRow(column(allTranscriptsui("alltranscripts1"),
         width = 6),
-        column(plotDimRedui("alltranscripts2"),
-        width = 6
+        column(
+          plotDimRedui("alltranscripts2"),
+          width = 6
       ))
     ),
     shinydashboard::tabItem(

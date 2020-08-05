@@ -354,33 +354,6 @@ record_experiment_data <- function(object, experiment_name = "default_experiment
   return(object)
 }
 
-#' Title
-#'
-#' @param seu
-#' @param transcripts
-#'
-#' @return
-#' @export
-#'
-#' @examples
-plot_all_transcripts <- function(seu_transcript, seu_gene, features, embedding){
-
-
-  transcript_cols <- as.data.frame(t(as.matrix(seu_transcript[["RNA"]][features,])))
-
-  cells <- rownames(transcript_cols)
-  transcript_cols <- as.list(transcript_cols) %>%
-    purrr::map(~purrr::set_names(.x, cells))
-
-  seu_gene[[features]] <- transcript_cols
-
-  pList <- purrr::map(features, ~plot_feature(seu_gene,
-                                                   embedding = embedding, features = .x, return_plotly = FALSE))
-  names(pList) <- features
-
-  return(pList)
-
-}
 
 #' Title
 #'
