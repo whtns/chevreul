@@ -1206,9 +1206,10 @@ allTranscriptsui <- function(id) {
   ns <- NS(id)
   tagList(fluidRow(seuratToolsBox(
    title = "Transcript Expression per Gene",
-   actionButton(ns("plotComposition"), "Plot transcript composition"),
    selectizeInput(ns("feature"), "Gene or transcript expression by which to color the plot; eg. 'RXRG'", choices = NULL, selected = NULL),
    selectizeInput(ns("groupby"), "Group by:", choices = NULL, selected = NULL),
+   actionButton(ns("plotComposition"), "Plot transcript composition"),
+   checkboxInput(ns("standardizeExpression"), "Standardize Expression", value = TRUE),
    plotly::plotlyOutput(ns("compositionPlot")),
    actionButton(ns("plotTrx"), "Plot all transcripts"),
    uiOutput(ns("embeddings")),
@@ -1250,11 +1251,11 @@ allTranscripts <- function(input, output, session, seu,
   })
 
   composition_plot <- eventReactive(input$plotComposition, {
-    plot_transcript_composition(seu$transcript, seu$gene, gene_symbol = input$feature, group.by = input$groupby) %>%
+    plot_transcript_composition(seu$transcript, seu$gene, gene_symbol = input$feature, group.by = input$groupby, standardize = input$standardizeExpression) %>%
       plotly::ggplotly(height = 400) %>%
       plotly_settings() %>%
       plotly::toWebGL() %>%
-      # plotly::partial_bundle() %>%
+      plotly::partial_bundle() %>%
       identity()
   })
 

@@ -8,11 +8,12 @@ plot_transcript_composition(
   seu_transcript,
   seu_gene,
   gene_symbol,
-  group.by = "batch"
+  group.by = "batch",
+  standardize = FALSE
 )
 }
 \arguments{
-\item{group.by}{}
+\item{standardize}{}
 }
 \value{
 
