@@ -712,12 +712,13 @@ seu_complex_heatmap <- function(seu, features = NULL, cells = NULL, group.by = "
 #' @param seu_gene
 #' @param gene_symbol
 #' @param group.by
+#' @param standardize
 #'
 #' @return
 #' @export
 #'
 #' @examples
-plot_transcript_composition <- function(seu_transcript, seu_gene, gene_symbol, group.by = "batch"){
+plot_transcript_composition <- function(seu_transcript, seu_gene, gene_symbol, group.by = "batch", standardize = FALSE){
   # browser()
 
   transcripts <- annotables::grch38 %>%
@@ -737,13 +738,22 @@ plot_transcript_composition <- function(seu_transcript, seu_gene, gene_symbol, g
     tidyr::pivot_longer(cols = starts_with("ENST"),
                         names_to = "transcript",
                         values_to = "expression") %>%
-    dplyr::left_join(metadata, by = "sample_id")
+    dplyr::left_join(metadata, by = "sample_id") %>%
+    dplyr::mutate(group.by = as.factor(group.by),
+                  transcript = as.factor(transcript))
+
+  data <-
+    data %>%
+    dplyr::group_by(group.by, transcript) %>%
+    dplyr::summarize(expression = mean(expression))
+
+  position <- ifelse(standardize, "fill", "stack")
 
   p <- ggplot(
     data=data,
     aes(x = group.by, y= expression, fill = transcript)) +
-    # geom_col() +
-    stat_summary(fun = "mean", geom = "col") +
+    # stat_summary(fun = "mean", geom = "col") +
+    geom_col(stat = "identity", position = position) +
     theme_minimal() +
     theme(axis.title.x = element_blank(),
           axis.text.x = element_text(
