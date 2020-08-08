@@ -13,7 +13,6 @@
 #' @export
 #'
 #' @examples
-
 seurat_preprocess <- function(seu, scale=TRUE, normalize = TRUE, features = NULL, legacy_settings = FALSE, ...){
   # Normalize data
 

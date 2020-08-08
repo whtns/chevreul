@@ -8,7 +8,6 @@
 #' @export
 #'
 #' @examples
-
 annotate_cell_cycle <- function(seu, feature, organism = "human", ...){
 
 

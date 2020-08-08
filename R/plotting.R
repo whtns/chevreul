@@ -733,7 +733,11 @@ plot_transcript_composition <- function(seu_transcript, seu_gene, gene_symbol, g
     tibble::rownames_to_column("sample_id") %>%
     dplyr::select(sample_id, group.by = {{group.by}})
 
-  data <- as.data.frame(t(as.matrix(seu_transcript[["RNA"]][transcripts,]))) %>%
+  data <-
+    GetAssayData(seu_transcript, assay = "RNA", slot = "counts")[transcripts,] %>%
+    as.matrix() %>%
+    t() %>%
+    as.data.frame() %>%
     tibble::rownames_to_column("sample_id") %>%
     tidyr::pivot_longer(cols = starts_with("ENST"),
                         names_to = "transcript",

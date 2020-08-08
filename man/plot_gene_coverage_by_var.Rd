@@ -11,6 +11,7 @@ plot_gene_coverage_by_var(
   var_of_interest = NULL,
   values_of_interest = NULL,
   edb = EnsDb.Hsapiens.v86::EnsDb.Hsapiens.v86,
+  heights = c(2, 1),
   ...
 )
 }

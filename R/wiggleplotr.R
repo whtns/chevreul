@@ -45,6 +45,7 @@ plot_gene_coverage_by_var <- function(genes_of_interest = "RXRG",
                                       var_of_interest = NULL,
                                       values_of_interest = NULL,
                                       edb = EnsDb.Hsapiens.v86::EnsDb.Hsapiens.v86,
+                                      heights = c(2,1),
                                       ...) {
 
   cell_metadata["sample_id"] <- NULL
@@ -67,14 +68,24 @@ plot_gene_coverage_by_var <- function(genes_of_interest = "RXRG",
       dplyr::filter(condition %in% values_of_interest)
   }
 
-  coverage_plot <- wiggleplotr::plotCoverageFromEnsembldb(ensembldb = edb,
+  coverage_plot_list <- wiggleplotr::plotCoverageFromEnsembldb(ensembldb = edb,
                             gene_names = genes_of_interest,
                             track_data = new_track_data,
-                            heights = c(2,1),
+                            heights = heights,
                             alpha = 0.5,
                             fill_palette = scales::hue_pal()(length(levels(new_track_data$colour_group))),
+                            return_subplots_list = TRUE,
                             ...
                             )
+
+  coverage_plot_list$coverage_plot <-
+    coverage_plot_list$coverage_plot +
+    # scale_y_continuous(trans = scales::log1p_trans()) +
+    NULL
+
+  coverage_plot = patchwork::wrap_plots(coverage_plot_list, ncol = 1, heights = heights)
+
+  # coverage_plot = cowplot::plot_grid(coverage_plot_list$coverage_plot, coverage_plot_list$tx_structure, align = "v", rel_heights = heights, ncol = 1)
 
   return(coverage_plot)
 
