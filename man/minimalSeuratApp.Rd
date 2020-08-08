@@ -5,7 +5,7 @@
 \title{Create Seurat App}
 \usage{
 minimalSeuratApp(
-  seu_list,
+  seu,
   appTitle = NULL,
   feature_types = "gene",
   organism_type = "human",
@@ -14,11 +14,11 @@ minimalSeuratApp(
 )
 }
 \arguments{
+\item{seu}{A preloaded project to start the app with}
+
 \item{appTitle}{A title of the App}
 
 \item{futureMb}{amount of Mb allocated to future package}
-
-\item{preset_project}{A preloaded project to start the app with}
 }
 \value{
 

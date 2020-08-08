@@ -19,7 +19,6 @@
 #'   purrr::transpose()
 #'
 #' inegrated_seu <- integration_workflow(batches)
-
 integration_workflow <- function(batches, excluded_cells, resolution = seq(0.2, 2.0, by = 0.2), experiment_name = "default_experiment", organism = "human", ...) {
 
   # names(child_proj_dirs) <- gsub("_proj", "", fs::path_file(child_proj_dirs))

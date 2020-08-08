@@ -1,6 +1,6 @@
 #' Create Seurat App
 #'
-#' @param preset_project A preloaded project to start the app with
+#' @param <- A preloaded project to start the app with
 #' @param appTitle A title of the App
 #' @param futureMb amount of Mb allocated to future package
 #' @param preset_project
@@ -12,7 +12,7 @@
 #' @export
 #'
 #' @examples
-minimalSeuratApp <- function(seu_list, appTitle = NULL, feature_types = "gene",
+minimalSeuratApp <- function(seu, appTitle = NULL, feature_types = "gene",
                              organism_type = "human", loom_path = NULL, futureMb = 13000) {
   print(feature_types)
   future::plan(strategy = "multicore", workers = 6)
@@ -232,20 +232,9 @@ minimalSeuratApp <- function(seu_list, appTitle = NULL, feature_types = "gene",
     # shinylogs::track_usage(storage_mode = shinylogs::store_json(path = "logs/"))
     # projects_db <- "/dataVolume/storage/single_cell_projects/single_cell_projects.db"
 
-    seu_names <- names(seu_list)[!names(seu_list) %in% c("monocle", "active")]
-    for (i in seu_names) {
-      seu_list[[i]] <- update_seuratTools_object(seu_list[[i]], i)
-    }
+    # <- <- update_seuratTools_object(seu)
 
-    seu <- reactiveValues(gene = seu_list$gene, transcript = seu_list$transcript, active = seu_list$gene)
-
-
-    # observe({
-    #   for (i in seu_names) {
-    #     seu[[i]] <- seu_list[[i]]
-    #   }
-    #   seu$active <- seu[["gene"]]
-    # })
+    seu <- reactiveValues(seu = seu)
 
     organism_type <- reactive({
       input$organism_type
@@ -256,21 +245,21 @@ minimalSeuratApp <- function(seu_list, appTitle = NULL, feature_types = "gene",
     })
 
     plot_types <- reactive({
-      list_plot_types(seu$active)
+      list_plot_types(seu$seu)
     })
 
     output$featureType <- renderUI({
-      req(seu)
-      seu_names <- names(seu)[!(names(seu) %in% c("monocle", "active"))]
+      req(seu$seu)
       shinyWidgets::prettyRadioButtons("feature_type",
         "Feature for Display",
-        choices = seu_names,
+        choices = c("gene", "transcript"),
         selected = "gene", inline = TRUE
       )
     })
     observeEvent(input$feature_type, {
-      seu$active <- seu[[input$feature_type]]
+      DefaultAssay(seu$seu) <- paste0(input$feature_type, ".", "integrated")
     })
+
     featureType <- reactive({
       featureType <- input$feature_type
     })
@@ -291,26 +280,24 @@ minimalSeuratApp <- function(seu_list, appTitle = NULL, feature_types = "gene",
     })
 
     reformatted_seu <- reactive({
-      req(seu$active)
+      req(seu$seu)
       callModule(reformatMetadata, "reformatmetadata", seu)
     })
 
     observe({
       req(reformatted_seu())
-      for (i in names(seu)){
-        seu[[i]] <- reformatted_seu()[[i]]
-      }
+      seu$seu <- reformatted_seu()
     })
 
 
     reductions <- reactive({
-      req(seu$active)
-      names(seu$active@reductions)
-      # c("pca", "tsne", "umap")
+      req(seu$seu)
+      # names(seu$seu@reductions)
+      c("pca", "tsne", "umap")
     })
 
     observe({
-      req(seu$active)
+      req(seu$seu)
 
       callModule(plotDimRed, "plotdimred1", seu, plot_types, featureType,
         organism_type = organism_type, reductions
@@ -358,7 +345,7 @@ minimalSeuratApp <- function(seu_list, appTitle = NULL, feature_types = "gene",
           for (i in names(seu)[!(names(seu) %in% c("monocle", "active"))]) {
             seu[[i]] <- seu[[i]][, colnames(seu[[i]]) %in% subset_selected_cells()]
           }
-          if (length(unique(seu$gene[[]]$batch)) > 1) {
+          if (length(unique(seu$seu$batch)) > 1) {
             print(names(seu)[!(names(seu) %in% c("monocle", "active"))])
             for (i in names(seu)[!(names(seu) %in% c("monocle", "active"))]) {
               message(paste0("reintegrating ", i, " expression"))
@@ -376,7 +363,6 @@ minimalSeuratApp <- function(seu_list, appTitle = NULL, feature_types = "gene",
               ))
             }
           }
-          seu$active <- seu[[input$feature_type]]
           message("Complete!")
         },
         message = function(m) {
@@ -394,30 +380,16 @@ minimalSeuratApp <- function(seu_list, appTitle = NULL, feature_types = "gene",
         {
           shinyjs::html("subsetMessages", "")
           message("Beginning")
-          for (i in names(seu)[!(names(seu) %in% c("monocle", "active"))]) {
-            seu[[i]] <- subset_by_meta(
-              input$uploadCsv$datapath,
-              seu[[i]]
-            )
-          }
-          if (length(unique(seu$gene[[]]$batch)) > 1) {
-            for (i in names(seu)[!(names(seu) %in% c("monocle", "active"))]) {
-              message(paste0("reintegrating ", i, " expression"))
-              seu[[i]] <- reintegrate_seu(seu[[i]],
-                feature = i,
-                resolution = seq(0.2, 2, by = 0.2)
-              )
-            }
+          seu <- subset_by_meta(
+            input$uploadCsv$datapath,
+            seu$seu
+          )
+          if (length(unique(seu$seu$batch)) > 1) {
+            seu$seu <- reintegrate_seu(seu$seu)
           }
           else {
-            for (i in names(seu)[!(names(seu) %in% c("monocle", "active"))]) {
-              seu[[i]] <- seurat_pipeline(seu[[i]], resolution = seq(0.2,
-                2,
-                by = 0.2
-              ))
-            }
+            seu$seu <- seurat_pipeline(seu$seu, resolution = seq(0.2, 2, by = 0.2))
           }
-          seu$active <- seu[[input$feature_type]]
           message("Complete!")
         },
         message = function(m) {
@@ -461,7 +433,7 @@ minimalSeuratApp <- function(seu_list, appTitle = NULL, feature_types = "gene",
 
     prior_gene_set <- reactive({
       # req(input$priorGeneSet)
-      req(seu$active)
+      req(seu$seu)
 
       if (is.null(input$priorGeneSet)) {
         ""
@@ -471,7 +443,7 @@ minimalSeuratApp <- function(seu_list, appTitle = NULL, feature_types = "gene",
           "BCL2", "MCL1"
         )
 
-        marker_genes[marker_genes %in% rownames(seu$active)]
+        marker_genes[marker_genes %in% rownames(seu$seu)]
       }
       else if (input$priorGeneSet == "Cell Cycle") {
         marker_genes <- c(
@@ -486,36 +458,36 @@ minimalSeuratApp <- function(seu_list, appTitle = NULL, feature_types = "gene",
           "E2F8"
         )
 
-        marker_genes[marker_genes %in% rownames(seu$active)]
+        marker_genes[marker_genes %in% rownames(seu$seu)]
       } else if (input$priorGeneSet == "Mitochondrial") {
         marker_genes <- mito_features[[organism_type()]][["gene"]]
 
-        marker_genes[marker_genes %in% rownames(seu$active)]
+        marker_genes[marker_genes %in% rownames(seu$seu)]
       } else if (input$priorGeneSet == "Ribosomal") {
         marker_genes <- ribo_features[[organism_type()]][["gene"]]
 
-        marker_genes[marker_genes %in% rownames(seu$active)]
+        marker_genes[marker_genes %in% rownames(seu$seu)]
       }
     })
 
     observe({
       updateSelectizeInput(session, "geneSet",
-        choices = rownames(seu$active),
+        choices = rownames(seu$seu),
         selected = prior_gene_set(),
         server = TRUE
       )
     })
     observeEvent(input$regressAction, {
-      req(seu$active)
+      req(seu$seu)
       showModal(modalDialog(
         title = "Regressing out provided list of features",
         "This process may take a minute or two!"
       ))
-      seu$gene <- seuratTools::regress_by_features(seu$gene,
+      seu$seu <- seuratTools::regress_by_features(seu$seu,
         feature_set = list(input$geneSet), set_name = janitor::make_clean_names(input$geneSetName),
         regress = input$runRegression
       )
-      seu$active <- seu[[input$feature_type]]
+      seu$seu <- seu[[input$feature_type]]
       removeModal()
     })
 
@@ -533,7 +505,7 @@ minimalSeuratApp <- function(seu_list, appTitle = NULL, feature_types = "gene",
       req(input$feature_type)
       req(loom_path())
 
-      seu$active <- callModule(plotVelocity, "plotvelocity", seu, loom_path(), featureType)
+      seu$seu <- callModule(plotVelocity, "plotvelocity", seu, loom_path(), featureType)
     })
   }
   shinyApp(ui, server, enableBookmarking = "server")
