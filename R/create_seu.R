@@ -16,35 +16,48 @@ set_colnames_txi <- function(txi, colnames){
   return(txi)
 }
 
-#' Load Counts from Stringtie Files
+
+#' Load Sample Counts then run Tximpor
 #'
-#' @param stringtie_paths
-#' @param txOut
 #' @param countsFromAbundance
+#' @param proj_dir
+#' @param type
+#' @param edb
 #'
 #' @return
 #' @export
 #'
 #' @examples
-load_counts_from_stringtie <- function(proj_dir, countsFromAbundance = "scaledTPM"){
-  stringtie_paths <- rlang::with_handlers(error = ~ rlang::abort("Can't find input stringtie files (stringtie output with extension t._ctab)",
+load_counts_by_tximport <- function(proj_dir, type = "salmon", countsFromAbundance = "scaledTPM", edb = EnsDb.Hsapiens.v86::EnsDb.Hsapiens.v86){
+
+  sample_glob <- switch(type,
+                        salmon = "*quant.sf",
+                        stringtie = "*t_data.ctab")
+
+  sample_paths <- rlang::with_handlers(error = ~ rlang::abort("Can't find input files",
                                                                  parent = .
-  ), stringtie_files <- fs::path(
+  ), sample_files <- fs::path(
     proj_dir, "output",
-    "stringtie"
-  ) %>% fs::dir_ls(recurse = T, glob = "*t_data.ctab") %>%
+    type
+  ) %>% fs::dir_ls(recurse = T, glob = sample_glob) %>%
     identity())
 
-  tmp <- read_tsv(stringtie_paths[1])
-  tx2gene <- tmp[, c("t_name", "gene_name")]
+  tx2gene <- ensembldb::transcripts(edb, return.type = "DataFrame")[, c("tx_id", "gene_id")]
 
-  txi_transcripts <- tximport::tximport(stringtie_files, type = "stringtie", tx2gene = tx2gene, txOut = T, countsFromAbundance = countsFromAbundance)
+  txi_transcripts <- tximport::tximport(sample_files, type = type, tx2gene = tx2gene, txOut = T, countsFromAbundance = countsFromAbundance)
+
+  # sanitize transcript ids with trailing (.1, .2, etc)
+  for (i in seq_along(txi_transcripts)){
+    if (class(txi_transcripts[[i]]) == "matrix"){
+      rownames(txi_transcripts[[i]]) <- stringr::str_remove(rownames(txi_transcripts[[i]]), "\\.[0-9]$")
+    }
+  }
 
   txi_genes <- tximport::summarizeToGene(txi_transcripts, tx2gene = tx2gene)
 
   txi_transcripts$tx2gene <- tx2gene
 
-  sample_names <- fs::path_file(fs::path_dir(stringtie_paths))
+  sample_names <- fs::path_file(fs::path_dir(sample_paths))
 
   txi_features <- purrr::map(list(gene = txi_genes, transcript = txi_transcripts), ~set_colnames_txi(.x, sample_names))
 
