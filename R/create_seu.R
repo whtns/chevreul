@@ -44,7 +44,8 @@ load_counts_by_tximport <- function(proj_dir, type = "salmon", countsFromAbundan
 
   tx2gene <- ensembldb::transcripts(edb, return.type = "data.frame")[, c("tx_id", "gene_id")] %>%
     dplyr::left_join(annotables::grch38, by = c("gene_id" = "ensgene")) %>%
-    dplyr::select(tx_id, symbol)
+    dplyr::select(tx_id, symbol) %>%
+    tidyr::drop_na()
 
   txi_transcripts <- tximport::tximport(sample_files, type = type, tx2gene = tx2gene, txOut = T, countsFromAbundance = countsFromAbundance, ignoreTxVersion = TRUE)
 
@@ -57,7 +58,7 @@ load_counts_by_tximport <- function(proj_dir, type = "salmon", countsFromAbundan
 
   txi_genes <- tximport::summarizeToGene(txi_transcripts, tx2gene = tx2gene, ignoreTxVersion = TRUE)
 
-  txi_transcripts$tx2gene <- tibble::as_tibble(tx2gene)
+  txi_transcripts$tx2gene <- tx2gene
 
   sample_names <- fs::path_file(fs::path_dir(sample_paths))
 
