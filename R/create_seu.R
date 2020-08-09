@@ -42,20 +42,22 @@ load_counts_by_tximport <- function(proj_dir, type = "salmon", countsFromAbundan
   ) %>% fs::dir_ls(recurse = T, glob = sample_glob) %>%
     identity())
 
-  tx2gene <- ensembldb::transcripts(edb, return.type = "DataFrame")[, c("tx_id", "gene_id")]
+  tx2gene <- ensembldb::transcripts(edb, return.type = "data.frame")[, c("tx_id", "gene_id")] %>%
+    dplyr::left_join(annotables::grch38, by = c("gene_id" = "ensgene")) %>%
+    dplyr::select(tx_id, symbol)
 
-  txi_transcripts <- tximport::tximport(sample_files, type = type, tx2gene = tx2gene, txOut = T, countsFromAbundance = countsFromAbundance)
+  txi_transcripts <- tximport::tximport(sample_files, type = type, tx2gene = tx2gene, txOut = T, countsFromAbundance = countsFromAbundance, ignoreTxVersion = TRUE)
 
   # sanitize transcript ids with trailing (.1, .2, etc)
-  for (i in seq_along(txi_transcripts)){
-    if (class(txi_transcripts[[i]]) == "matrix"){
-      rownames(txi_transcripts[[i]]) <- stringr::str_remove(rownames(txi_transcripts[[i]]), "\\.[0-9]$")
-    }
-  }
+  # for (i in seq_along(txi_transcripts)){
+  #   if (class(txi_transcripts[[i]]) == "matrix"){
+  #     rownames(txi_transcripts[[i]]) <- stringr::str_remove(rownames(txi_transcripts[[i]]), "\\.[0-9]$")
+  #   }
+  # }
 
-  txi_genes <- tximport::summarizeToGene(txi_transcripts, tx2gene = tx2gene)
+  txi_genes <- tximport::summarizeToGene(txi_transcripts, tx2gene = tx2gene, ignoreTxVersion = TRUE)
 
-  txi_transcripts$tx2gene <- tx2gene
+  txi_transcripts$tx2gene <- tibble::as_tibble(tx2gene)
 
   sample_names <- fs::path_file(fs::path_dir(sample_paths))
 
@@ -104,13 +106,13 @@ seu_from_tximport <- function(txi, feature, meta_tbl, ...){
 
   featuredata <- data.frame(feature = rownames(exp_tbl))
   rownames(featuredata) <- featuredata[,1]
-  if (feature == "transcript"){
-    featuredata <-
-      featuredata %>%
-      tibble::rownames_to_column("t_name") %>%
-      dplyr::left_join(txi$tx2gene, by = "t_name") %>%
-      tibble::column_to_rownames("t_name")
-  }
+  # if (feature == "transcript"){
+  #   featuredata <-
+  #     featuredata %>%
+  #     tibble::rownames_to_column("tx_id") %>%
+  #     dplyr::left_join(txi$tx2gene, by = "tx_id") %>%
+  #     tibble::column_to_rownames("tx_id")
+  # }
 
   meta_tbl <- data.frame(meta_tbl)
   rownames(meta_tbl) <- meta_tbl[,"sample_id"]
@@ -126,39 +128,6 @@ seu_from_tximport <- function(txi, feature, meta_tbl, ...){
 
   return(seu)
 
-}
-
-#' create a multimodal seurat object from genes and transcript counts from tximport
-#'
-#' @param txi
-#' @param meta_tbl
-#' @param ...
-#'
-#' @return
-#'
-#'
-#' @examples
-multimodal_seu_from_tximport <- function (txi, meta_tbl, ...){
-  gene_tbl <- as.matrix(txi$gene$counts)
-  expid <- gsub("-.*", "", colnames(gene_tbl))
-  genedata <- data.frame(feature = rownames(gene_tbl))
-  rownames(genedata) <- genedata[, 1]
-  meta_tbl <- data.frame(meta_tbl)
-  rownames(meta_tbl) <- meta_tbl[, "sample_id"]
-  meta_tbl <- meta_tbl[colnames(gene_tbl), ]
-  seu <- Seurat::CreateSeuratObject(counts = gene_tbl, project = expid,
-                                    assay = "gene", meta.data = meta_tbl)
-  seu@assays$gene <- AddMetaData(seu@assays$gene, genedata)
-
-  transcript_tbl <- as.matrix(txi$transcript$counts)
-  transcriptdata <- data.frame(feature = rownames(transcript_tbl))
-  rownames(transcriptdata) <- transcriptdata[, 1]
-
-  seu[["transcript"]] <- CreateAssayObject(counts = transcript_tbl)
-  seu@assays$transcript <- AddMetaData(seu@assays$transcript, transcriptdata)
-
-  seu$batch <- seu@project.name
-  return(seu)
 }
 
 
