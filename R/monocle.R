@@ -36,8 +36,10 @@ convert_seu_to_cds <- function(seu, resolution = 1) {
   # part one, cell information
   cell_metadata <- seu[[]][colnames(count_matrix),]
 
-  # drop metadata column 'sample_name' for monocle plotting functions
-  cell_metadata <- subset(cell_metadata, select=-sample_name)
+  # drop metadata column 'sample_name' for monocle plotting functions if present
+  if (any(str_detect(colnames(cell_metadata), "sample_name"))){
+    cell_metadata <- subset(cell_metadata, select=-sample_name)
+  }
 
   seu <- seu[,colnames(count_matrix)]
 
@@ -736,6 +738,9 @@ monocle_module_heatmap <- function(cds, pr_deg_ids, seu_resolution, cells = NULL
     dplyr::arrange(pseudotime) %>%
     data.frame(row.names = 1) %>% identity()
 
+
+  groups.use[is.na(groups.use)] <- min(groups.use$pseudotime, na.rm = TRUE)
+
   groups.use.factor <- groups.use[sapply(groups.use, is.factor)]
   ha_cols.factor <- NULL
   if (length(groups.use.factor) > 0) {
@@ -785,9 +790,10 @@ monocle_module_heatmap <- function(cds, pr_deg_ids, seu_resolution, cells = NULL
 flip_pseudotime <- function(cds){
   # pull original ptime
   orig_pseudotime <- monocle3::pseudotime(cds)
+  orig_pseudotime[is.infinite(orig_pseudotime)] <- NA
 
   # sort ptime
-  forward_pseudotime <- sort(orig_pseudotime)
+  forward_pseudotime <- sort(orig_pseudotime, na.last = TRUE)
 
   # rev ptime and flip names
   rev_pseudotime <- rev(forward_pseudotime)

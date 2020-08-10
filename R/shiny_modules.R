@@ -1593,7 +1593,12 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
       print(cds$selected)
       if (input$plottype1 == "seurat") {
         cluster_resolution = reactive({
-          paste0("integrated", "_snn_res.", input$cdsResolution)
+          if(any(str_detect(colnames(colData(cds$traj)), "integrated"))){
+            paste0("integrated", "_snn_res.", input$cdsResolution)
+          } else {
+            paste0("RNA", "_snn_res.", input$cdsResolution)
+          }
+
         })
         plot_cds(cds$traj, color_cells_by = cluster_resolution())
       } else if (input$plottype1 == "pseudotime"){
@@ -1618,7 +1623,12 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
       print(cds$selected)
       if (input$plottype2 == "seurat") {
         cluster_resolution = reactive({
-          paste0("integrated", "_snn_res.", input$cdsResolution)
+          if(any(str_detect(colnames(colData(cds$traj)), "integrated"))){
+            paste0("integrated", "_snn_res.", input$cdsResolution)
+          } else {
+            paste0("RNA", "_snn_res.", input$cdsResolution)
+          }
+
         })
         plot_cds(cds$traj, color_cells_by = cluster_resolution())
       } else if (input$plottype2 == "pseudotime"){

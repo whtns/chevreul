@@ -50,11 +50,8 @@ load_counts_by_tximport <- function(proj_dir, type = "salmon", countsFromAbundan
   txi_transcripts <- tximport::tximport(sample_files, type = type, tx2gene = tx2gene, txOut = T, countsFromAbundance = countsFromAbundance, ignoreTxVersion = TRUE)
 
   # sanitize transcript ids with trailing (.1, .2, etc)
-  # for (i in seq_along(txi_transcripts)){
-  #   if (class(txi_transcripts[[i]]) == "matrix"){
-  #     rownames(txi_transcripts[[i]]) <- stringr::str_remove(rownames(txi_transcripts[[i]]), "\\.[0-9]$")
-  #   }
-  # }
+  txi_transcripts <- purrr::map_if(txi_transcripts, is.matrix,
+                                    ~`rownames<-`(.x, stringr::str_remove(rownames(.x), "\\.[0-9]$")))
 
   txi_genes <- tximport::summarizeToGene(txi_transcripts, tx2gene = tx2gene, ignoreTxVersion = TRUE)
 
