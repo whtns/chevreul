@@ -113,7 +113,7 @@ stash_marker_features <- function(metavar, seu, top_n = 200){
       dplyr::select(-rn)
 
     markers$genesorteR <- genesorteR::sortGenes(
-      seu@assays$RNA@data,
+      Seurat::GetAssayData(seu, assay = "gene", slot = data),
       seu[[]][[metavar]]
     )
 

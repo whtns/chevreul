@@ -66,13 +66,13 @@ combine_cols <- function(seu, cols, new_col) {
   drop_cols <- cols[!cols == new_col]
 
   # make sure that none of the columns to be coalesced are entirely NA
-  na_cols <- purrr::map_lgl(cols, ~all(is.na(seu$gene[[.x]])))
+  na_cols <- purrr::map_lgl(cols, ~all(is.na(seu[[.x]])))
   cols <- cols[!na_cols]
 
   # check class of cols to be coalesced
 
 
-  meta <- tibble::rownames_to_column(seu$gene[[]]) %>%
+  meta <- tibble::rownames_to_column(seu[[]]) %>%
     dplyr::mutate_at(vars(one_of(cols)), as.character) %>%
     dplyr::mutate(!!new_col := dplyr::coalesce(!!!syms(cols))) %>%
     dplyr::select(-drop_cols) %>%
@@ -209,8 +209,7 @@ reorg_seurat_files <- function(proj_dir = NULL){
 get_transcripts_from_seu <- function(seu, gene, organism = "human") {
   transcripts <- genes_to_transcripts(gene, organism)
 
-  transcripts <- transcripts[transcripts %in%
-                               rownames(GetAssay(seu, "RNA"))]
+  transcripts <- transcripts[transcripts %in% rownames(GetAssay(seu, "RNA"))]
 }
 
 #' pad sample numbers to prep for armor

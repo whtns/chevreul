@@ -2,7 +2,7 @@
 % Please edit documentation in R/create_seu.R
 \name{load_counts_by_tximport}
 \alias{load_counts_by_tximport}
-\title{Load Sample Counts then run Tximpor}
+\title{Load Sample Counts then run Tximport}
 \usage{
 load_counts_by_tximport(
   proj_dir,
@@ -18,5 +18,5 @@ load_counts_by_tximport(
 
 }
 \description{
-Load Sample Counts then run Tximpor
+Load Sample Counts then run Tximport
 }

@@ -40,11 +40,11 @@ mod_seurat_pipeline <- function(seu, feature = "none", resolution=0.6, reduction
   seu <- mod_seurat_preprocess(seu, scale = T, ...)
 
   # PCA
-  seu <- mod_seurat_reduce_dimensions(seu, check_duplicates = FALSE, ...)
+  seu <- mod_seurat_reduce_dimensions(seu, assays = Seurat::Assays(seu), check_duplicates = FALSE, ...)
 
-  seu <- mod_seurat_cluster(seu = seu, resolution = resolution, reduction = reduction, ...)
+  seu <- mod_seurat_cluster(seu = seu, assays = Seurat::Assays(seu), resolution = resolution, reduction = reduction, ...)
 
-  seu@misc$markers <- mod_find_all_markers(seu, assay = "gene", resolution = resolution)
+  seu@misc$markers <- purrr::map(Seurat::Assays(seu), ~mod_find_all_markers(seu, assay = .x, resolution = resolution))
 
   if (feature == "gene"){
     enriched_seu <- tryCatch(getEnrichedPathways(seu), error = function(e) e)
@@ -70,6 +70,7 @@ mod_seurat_pipeline <- function(seu, feature = "none", resolution=0.6, reduction
   return(seu)
 }
 
+
 #' Dimensional Reduction
 #'
 #' Run PCA, TSNE and UMAP on a seurat object
@@ -86,12 +87,6 @@ mod_seurat_pipeline <- function(seu, feature = "none", resolution=0.6, reduction
 #' @examples
 mod_seurat_reduce_dimensions <- function(seu, assays = NULL, legacy_settings = FALSE, ...) {
 
-  if(any(str_detect(Seurat::Assays(seu), "integrated"))){
-    assay = "gene.integrated"
-  } else {
-    assay = "gene"
-  }
-
   num_samples <- dim(seu)[[2]]
 
   if (num_samples < 50){
@@ -103,13 +98,22 @@ mod_seurat_reduce_dimensions <- function(seu, assays = NULL, legacy_settings = F
   if (legacy_settings){
     seu <- Seurat::RunPCA(seu, features = rownames(seu))
   } else {
-    seu <- Seurat::RunPCA(object = seu, assay = assay, do.print = FALSE, npcs = npcs, ...)
+    for (i in assays){
+      reduction.name = paste0(i,".pca")
+      seu <- Seurat::RunPCA(object = seu, assay = i, do.print = FALSE, npcs = npcs, reduction.name = reduction.name, ...)
+    }
   }
 
   if ((ncol(seu) -1) > 3*30){
-    seu <- Seurat::RunTSNE(object = seu, reduction = "pca", dims = 1:30, ...)
+    for (i in assays){
+      reduction.name = paste0(i,".tsne")
+      seu <- Seurat::RunTSNE(object = seu, reduction = paste0(i,".pca"), dims = 1:30, reduction.name = reduction.name, ...)
+    }
 
-    seu <- Seurat::RunUMAP(object = seu, reduction = "pca", dims = 1:30, ...)
+    for (i in assays){
+      reduction.name = paste0(i,".umap")
+      seu <- Seurat::RunUMAP(object = seu, reduction = paste0(i,".pca"), dims = 1:30, reduction.name = reduction.name, ...)
+    }
   }
 
   return(seu)
@@ -130,11 +134,10 @@ mod_seurat_reduce_dimensions <- function(seu, assays = NULL, legacy_settings = F
 #' @examples
 mod_seurat_cluster <- function(seu = seu, assays = NULL, resolution = 0.6, custom_clust = NULL, reduction = "pca", algorithm = 1, ...){
 
-  assays %||% Seurat::Assays(seu)
-
   message(paste0("[", format(Sys.time(), "%H:%M:%S"), "] Clustering Cells..."))
   for (i in assays){
-    seu <- FindNeighbors(object = seu, assay = i, dims = 1:10)
+    reduction.name = paste0(i, ".pca")
+    seu <- FindNeighbors(object = seu, assay = i, reduction = reduction.name, dims = 1:10)
   }
 
   if (length(resolution) > 1){
@@ -168,15 +171,10 @@ mod_seurat_cluster <- function(seu = seu, assays = NULL, resolution = 0.6, custo
 #' @examples
 mod_find_all_markers <- function(seu, assay, metavar = NULL, ...){
   if (is.null(metavar)){
-    if ("integrated" %in% names(seu@assays)) {
-      default_assay = "integrated"
-    } else {
-      default_assay = assay
-    }
 
-    resolutions <- colnames(seu[[]])[grepl(paste0(default_assay, "_snn_res."), colnames(seu[[]]))]
+    resolutions <- colnames(seu[[]])[grepl(paste0(assay, "_snn_res."), colnames(seu[[]]))]
 
-    cluster_index <- grepl(paste0(default_assay, "_snn_res."), colnames(seu[[]]))
+    cluster_index <- grepl(paste0(assay, "_snn_res."), colnames(seu[[]]))
 
     if(!any(cluster_index)) {
       stop("no clusters found in metadata. Please run seurat_cluster")
@@ -228,23 +226,18 @@ mod_seurat_preprocess <- function(seu, scale=TRUE, normalize = TRUE, features = 
     return(seu)
   }
 
-  if (normalize){
-    for (i in Seurat::Assays(seu)){
-      seu <- Seurat::NormalizeData(object = seu, assay = i, verbose = FALSE, ...)
-    }
-  }
-
   # Filter out only variable genes
   for (i in Seurat::Assays(seu)){
-    seu <- Seurat::FindVariableFeatures(object = seu, assay = i, selection.method = "vst", verbose = FALSE, ...)
-  }
-
-  # Regress out unwanted sources of variation
-  if (scale){
-    for (i in Seurat::Assays(seu)){
-      seu <- Seurat::ScaleData(object = seu, assay = i, ...)
+    if (normalize){
+      seu <- Seurat::NormalizeData(object = seu, assay = i, verbose = FALSE, ...)
     }
 
+    seu <- Seurat::FindVariableFeatures(object = seu, assay = i, selection.method = "vst", verbose = FALSE, ...)
+
+    # Regress out unwanted sources of variation
+    if (scale){
+      seu <- Seurat::ScaleData(object = seu, assay = i, ...)
+    }
   }
 
   return(seu)
@@ -299,29 +292,18 @@ mod_stash_marker_features <- function(metavar, seu, assay, top_n = 200){
 #' @examples
 mod_annotate_cell_cycle <- function(seu, assay, organism = "human", ...){
 
-
   # setdefaultassay to "RNA"
   Seurat::DefaultAssay(seu) <- assay
 
   s_genes <- cc.genes$s.genes
   g2m_genes <- cc.genes$g2m.genes
 
-  s_transcripts <- cc.transcripts$s.genes
-  g2m_transcripts <- cc.transcripts$g2m.genes
-
   if(organism == "mouse"){
     s_genes <- stringr::str_to_title(s_genes)
     g2m_genes <- stringr::str_to_title(g2m_genes)
-    s_transcripts <- genes_to_transcripts(s_genes, organism = organism)
-    g2m_transcripts <- genes_to_transcripts(g2m_genes, organism = organism)
   }
 
-  if (assay == "gene"){
-    seu <- CellCycleScoring(seu, s.features = s_genes, g2m.features = g2m_genes, set.ident = FALSE)
-
-  } else if (assay == "transcript"){
-    seu <- CellCycleScoring(seu, s.features = s_transcripts, g2m.features = g2m_transcripts, set.ident = FALSE)
-  }
+  seu <- CellCycleScoring(seu, s.features = s_genes, g2m.features = g2m_genes, set.ident = FALSE)
 
 }
 
@@ -339,13 +321,11 @@ mod_annotate_cell_cycle <- function(seu, assay, organism = "human", ...){
 #' @examples
 mod_add_percent_mito <- function(seu, assay, organism){
 
-  DefaultAssay(seu) <- assay
-
   mito_features <- mito_features[[organism]][[assay]]
 
   mito_features <- mito_features[mito_features %in% rownames(seu)]
 
-  seu[["percent.mt"]] <- PercentageFeatureSet(seu, features = mito_features)
+  seu[["percent.mt"]] <- PercentageFeatureSet(seu, features = mito_features, assay = assay)
 
   return(seu)
 
@@ -472,12 +452,12 @@ mod_seurat_integration_pipeline <- function(seu_list, feature = "none", resoluti
 
   # annotate cell cycle scoring to seurat objects
   if (annotate_cell_cycle){
-    integrated_seu <- mod_annotate_cell_cycle(integrated_seu, assay = "integrated", ...)
+    integrated_seu <- mod_annotate_cell_cycle(integrated_seu, assay = "gene.integrated", ...)
   }
 
   # annotate mitochondrial percentage in seurat metadata
   if (annotate_percent_mito){
-    integrated_seu <- mod_add_percent_mito(integrated_seu, assay = "integrated", ...)
+    integrated_seu <- mod_add_percent_mito(integrated_seu, assay = "gene.integrated", ...)
   }
 
   #annotate excluded cells
@@ -530,10 +510,14 @@ mod_seurat_integrate <- function(seu_list, method = "cca", ...) {
   Idents(integrated_seu) <- "batch"
   integrated_seu[["batch"]] <- Idents(integrated_seu)
 
-  # Run the standard workflow for visualization and clustering
-  integrated_seu <- Seurat::ScaleData(object = integrated_seu, verbose = FALSE)
+  integrated_assays <- stringr::str_subset(Seurat::Assays(integrated_seu), "integrated")
 
-  integrated_seu <- mod_seurat_reduce_dimensions(integrated_seu, ...)
+  # Run the standard workflow for visualization and clustering
+  for (i in integrated_assays){
+    integrated_seu <- Seurat::ScaleData(object = integrated_seu, assay = i, verbose = FALSE)
+  }
+
+  integrated_seu <- mod_seurat_reduce_dimensions(integrated_seu, assays = integrated_assays, ...)
 
   return(integrated_seu)
 }
@@ -608,4 +592,37 @@ conform_assay_name <- function(seu, assay){
 
   return(seu)
 
+}
+
+#' create a multimodal seurat object from genes and transcript counts from tximport
+#'
+#' @param txi
+#' @param meta_tbl
+#' @param ...
+#'
+#' @return
+#'
+#'
+#' @examples
+mod_seu_from_tximport <- function (txi, meta_tbl, ...){
+  gene_tbl <- as.matrix(txi$gene$counts)
+  expid <- gsub("-.*", "", colnames(gene_tbl))
+  genedata <- data.frame(feature = rownames(gene_tbl))
+  rownames(genedata) <- genedata[, 1]
+  meta_tbl <- data.frame(meta_tbl)
+  rownames(meta_tbl) <- meta_tbl[, "sample_id"]
+  meta_tbl <- meta_tbl[colnames(gene_tbl), ]
+  seu <- Seurat::CreateSeuratObject(counts = gene_tbl, project = expid,
+                                    assay = "gene", meta.data = meta_tbl)
+  seu@assays$gene <- AddMetaData(seu@assays$gene, genedata)
+
+  transcript_tbl <- as.matrix(txi$transcript$counts)
+  transcriptdata <- data.frame(feature = rownames(transcript_tbl))
+  rownames(transcriptdata) <- transcriptdata[, 1]
+
+  seu[["transcript"]] <- CreateAssayObject(counts = transcript_tbl)
+  seu@assays$transcript <- AddMetaData(seu@assays$transcript, transcriptdata)
+
+  seu$batch <- seu@project.name
+  return(seu)
 }
