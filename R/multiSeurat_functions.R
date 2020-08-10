@@ -44,10 +44,7 @@ mod_seurat_pipeline <- function(seu, feature = "none", resolution=0.6, reduction
 
   seu <- mod_seurat_cluster(seu = seu, resolution = resolution, reduction = reduction, ...)
 
-  seu_assays = Seurat::Assays(seu)
-  names(seu_assays) = seu_assays
-
-  seu@misc$markers <- purrr::map(seu_assays, ~mod_find_all_markers(seu, assay = .x, resolution = resolution))
+  seu@misc$markers <- mod_find_all_markers(seu, assay = "gene", resolution = resolution)
 
   if (feature == "gene"){
     enriched_seu <- tryCatch(getEnrichedPathways(seu), error = function(e) e)
@@ -89,7 +86,11 @@ mod_seurat_pipeline <- function(seu, feature = "none", resolution=0.6, reduction
 #' @examples
 mod_seurat_reduce_dimensions <- function(seu, assays = NULL, legacy_settings = FALSE, ...) {
 
-  assays %||% Seurat::Assays(seu)
+  if(any(str_detect(Seurat::Assays(seu), "integrated"))){
+    assay = "gene.integrated"
+  } else {
+    assay = "gene"
+  }
 
   num_samples <- dim(seu)[[2]]
 
@@ -102,22 +103,13 @@ mod_seurat_reduce_dimensions <- function(seu, assays = NULL, legacy_settings = F
   if (legacy_settings){
     seu <- Seurat::RunPCA(seu, features = rownames(seu))
   } else {
-    for (i in assays){
-      reduction.name = paste0(i,".pca")
-      seu <- Seurat::RunPCA(object = seu, assay = i, do.print = FALSE, npcs = npcs, reduction.name = reduction.name, ...)
-    }
+    seu <- Seurat::RunPCA(object = seu, assay = assay, do.print = FALSE, npcs = npcs, ...)
   }
 
   if ((ncol(seu) -1) > 3*30){
-    for (i in assays){
-      reduction.name = paste0(i,".tsne")
-      seu <- Seurat::RunTSNE(object = seu, reduction = paste0(i,".pca"), dims = 1:30, reduction.name = reduction.name, ...)
-    }
+    seu <- Seurat::RunTSNE(object = seu, reduction = "pca", dims = 1:30, ...)
 
-    for (i in assays){
-      reduction.name = paste0(i,".umap")
-      seu <- Seurat::RunUMAP(object = seu, reduction = paste0(i,".pca"), dims = 1:30, reduction.name = reduction.name, ...)
-    }
+    seu <- Seurat::RunUMAP(object = seu, reduction = "pca", dims = 1:30, ...)
   }
 
   return(seu)
@@ -142,8 +134,7 @@ mod_seurat_cluster <- function(seu = seu, assays = NULL, resolution = 0.6, custo
 
   message(paste0("[", format(Sys.time(), "%H:%M:%S"), "] Clustering Cells..."))
   for (i in assays){
-    reduction.name = paste0(i, ".pca")
-    seu <- FindNeighbors(object = seu, assay = i, reduction = reduction.name, dims = 1:10)
+    seu <- FindNeighbors(object = seu, assay = i, dims = 1:10)
   }
 
   if (length(resolution) > 1){
@@ -481,12 +472,12 @@ mod_seurat_integration_pipeline <- function(seu_list, feature = "none", resoluti
 
   # annotate cell cycle scoring to seurat objects
   if (annotate_cell_cycle){
-    integrated_seu <- mod_annotate_cell_cycle(integrated_seu, assay = "gene.integrated", ...)
+    integrated_seu <- mod_annotate_cell_cycle(integrated_seu, assay = "integrated", ...)
   }
 
   # annotate mitochondrial percentage in seurat metadata
   if (annotate_percent_mito){
-    integrated_seu <- mod_add_percent_mito(integrated_seu, assay = "gene.integrated", ...)
+    integrated_seu <- mod_add_percent_mito(integrated_seu, assay = "integrated", ...)
   }
 
   #annotate excluded cells
@@ -513,27 +504,25 @@ mod_seurat_integrate <- function(seu_list, method = "cca", ...) {
   # Prior to finding anchors, we perform standard preprocessing (log-normalization), and identify variable features individually for each. Note that Seurat v3 implements an improved method for variable feature selection based on a variance stabilizing transformation ("vst")
   seu_list <- purrr::map(seu_list, mod_seurat_preprocess, scale = TRUE, ...)
 
-
-  # for (i in 1:length(x = seu_list)) {
-  #   seu_list[[i]] <- seurat_preprocess(seu_list[[i]], scale = TRUE, ...)
-  #   seu_list[[i]]$batch <- names(seu_list)[[i]]
-  # }
-
   seu_list <- merge_small_seus(seu_list)
-
 
   assays_in_common <- reduce(map(seu_list, Assays), intersect)
 
   seu_list.integrated = list()
   for (i in assays_in_common){
+    new.assay.name = paste0(i, ".integrated")
     # Next, we identify anchors using the FindIntegrationAnchors function, which takes a list of Seurat objects as input.
     seu_list.anchors <- Seurat::FindIntegrationAnchors(object.list = seu_list, assay = rep(i, length(seu_list)), dims = 1:30, k.filter = 50)
     # proceed with integration
-    seu_list.integrated[[i]]  <- IntegrateData(anchorset = seu_list.anchors, dims = 1:30, new.assay.name = paste0(i,".integrated"))
+    seu_list.integrated[[i]]  <- IntegrateData(anchorset = seu_list.anchors, dims = 1:30, new.assay.name = new.assay.name)
   }
 
-  integrated_seu <- seu_list.integrated$gene
-  integrated_seu[["transcript.integrated"]] <- seu_list.integrated$transcript[["transcript.integrated"]]
+  integrated_seu <- seu_list.integrated[[1]]
+
+  for(i in seq_along(assays_in_common)[-1]){
+    new_assay = paste0(assays_in_common[[i]], ".integrated")
+    integrated_seu[[new_assay]] <- seu_list.integrated[[i]][[new_assay]]
+  }
 
   # Next, we identify anchors using the FindIntegrationAnchors function, which takes a list of Seurat objects as input.
 
@@ -541,19 +530,10 @@ mod_seurat_integrate <- function(seu_list, method = "cca", ...) {
   Idents(integrated_seu) <- "batch"
   integrated_seu[["batch"]] <- Idents(integrated_seu)
 
-  # switch to integrated assay. The variable features of this assay are
-  # automatically set during IntegrateData
-  # Seurat::DefaultAssay(object = seu_list.integrated) <- "integrated"
+  # Run the standard workflow for visualization and clustering
+  integrated_seu <- Seurat::ScaleData(object = integrated_seu, verbose = FALSE)
 
-
-  integrated_assays <- stringr::str_subset(Seurat::Assays(integrated_seu), "integrated")
-
-  for (i in integrated_assays){
-    # Run the standard workflow for visualization and clustering
-    integrated_seu <- Seurat::ScaleData(object = integrated_seu, assay = i, verbose = FALSE)
-  }
-
-  integrated_seu <- mod_seurat_reduce_dimensions(integrated_seu, assays = integrated_assays, ...)
+  integrated_seu <- mod_seurat_reduce_dimensions(integrated_seu, ...)
 
   return(integrated_seu)
 }
@@ -608,7 +588,7 @@ mod_update_seuratTools_object <- function(seu_list, feature, resolution = seq(0.
     integrated_seu <- seu_calcn(integrated_seu)
   }
 
-  DefaultAssay(integrated_seu) <- "gene.integrated"
+  DefaultAssay(integrated_seu) <- "integrated"
 
   return(integrated_seu)
 
