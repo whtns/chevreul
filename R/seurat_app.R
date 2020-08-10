@@ -463,7 +463,7 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
     # lib.loc = "/dataVolume/storage/rpkgs/devel_install/"
     shinyhelper::observe_helpers(help_dir = system.file("helpers", package = "seuratTools"))
     options(warn = -1)
-    shinylogs::track_usage(storage_mode = shinylogs::store_json(path = "logs/"))
+    # shinylogs::track_usage(storage_mode = shinylogs::store_json(path = "logs/"))
     # projects_db <- "/dataVolume/storage/single_cell_projects/single_cell_projects.db"
     rsqlite_db <- db_path
 
