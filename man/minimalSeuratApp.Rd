@@ -14,11 +14,11 @@ minimalSeuratApp(
 )
 }
 \arguments{
-\item{seu}{A preloaded project to start the app with}
-
 \item{appTitle}{A title of the App}
 
 \item{futureMb}{amount of Mb allocated to future package}
+
+\item{<-}{A preloaded project to start the app with}
 }
 \value{
 
