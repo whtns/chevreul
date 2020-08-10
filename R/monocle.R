@@ -113,9 +113,9 @@ learn_graph_by_resolution <- function(cds, seu, resolution = 1){
 
   ### Assign the cluster info
   if (any(grepl("integrated", names(cds@colData)))){
-    default_assay = "integrated"
+    default_assay = "gene.integrated"
   } else {
-    default_assay = "RNA"
+    default_assay = "gene"
   }
 
   cds <- monocle3::cluster_cells(cds)
