@@ -164,7 +164,9 @@ convert_seuv3_to_monoclev2 <- function(seu, return_census = FALSE, sig_slice = 1
 #'
 #' @examples
 process_monocle_child <- function(ptime, monocle_cds, trend_formula = "~sm.ns(Pseudotime, df=3)") {
-  monocle_cds <- monocle_cds[, ptime$sample_id]
+  monocle_cds <- monocle_cds[, colnames(monocle_cds) %in% ptime$sample_id]
+
+  ptime <- ptime[ptime$sample_id %in% colnames(monocle_cds),]
 
   old_ptime <- phenoData(monocle_cds)$Pseudotime
 
@@ -348,8 +350,25 @@ arrange_ptime_heatmaps <- function(cds_list, cds_name) {
 #' @examples
 plot_feature_in_ref_query_ptime <- function(cds_list, features = c("RXRG"), color_by = "State", relative_expr = FALSE, min_expr = 0.5, ...){
   sub_cds_list <- purrr::map(cds_list, ~.x$monocle_cds[features,])
+
+  string_NA_meta <- function(cds){
+    # fix metadata with only NA
+    metadata <- Biobase::pData(cds)
+
+    metadata[is.na(metadata)] <- "NA"
+
+    Biobase::pData(Biobase:::phenoData(cds)) <- metadata
+
+    cds
+
+  }
+
+  sub_cds_list <- purrr::map(sub_cds_list, string_NA_meta)
+
   feature_plots_in_ptime <- purrr::map(sub_cds_list, monocle::plot_genes_in_pseudotime, trend_formula = "~sm.ns(Pseudotime, df=3)", color_by = color_by, relative_expr = relative_expr, min_expr = min_expr)
+
   refquery_ptime_plot <- cowplot::plot_grid(plotlist = feature_plots_in_ptime, ncol = 2, labels = names(feature_plots_in_ptime))
+
   plot(refquery_ptime_plot)
 
 }

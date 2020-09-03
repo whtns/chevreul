@@ -33,6 +33,7 @@ load_bigwigs <- function(seu, proj_dir){
 #' @param var_of_interest
 #' @param values_of_interest
 #' @param edb
+#' @param heights
 #' @param ...
 #'
 #' @return
@@ -45,6 +46,8 @@ plot_gene_coverage_by_var <- function(genes_of_interest = "RXRG",
                                       var_of_interest = NULL,
                                       values_of_interest = NULL,
                                       edb = EnsDb.Hsapiens.v86::EnsDb.Hsapiens.v86,
+                                      heights = c(3,1),
+                                      scale_y = "log10",
                                       ...) {
 
   cell_metadata["sample_id"] <- NULL
@@ -67,14 +70,24 @@ plot_gene_coverage_by_var <- function(genes_of_interest = "RXRG",
       dplyr::filter(condition %in% values_of_interest)
   }
 
-  coverage_plot <- wiggleplotr::plotCoverageFromEnsembldb(ensembldb = edb,
+  coverage_plot_list <- wiggleplotr::plotCoverageFromEnsembldb(ensembldb = edb,
                             gene_names = genes_of_interest,
                             track_data = new_track_data,
-                            heights = c(2,1),
+                            heights = heights,
                             alpha = 0.5,
                             fill_palette = scales::hue_pal()(length(levels(new_track_data$colour_group))),
+                            return_subplots_list = TRUE,
                             ...
                             )
+
+  if(scale_y == "log10"){
+    coverage_plot_list$coverage_plot <-
+      coverage_plot_list$coverage_plot +
+      scale_y_continuous(trans = scales::pseudo_log_trans(base = 10), breaks = 10^(0:4)) +
+      NULL
+  }
+
+  coverage_plot = patchwork::wrap_plots(coverage_plot_list, heights = heights, ncol = 1)
 
   return(coverage_plot)
 

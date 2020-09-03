@@ -4,7 +4,7 @@
 \alias{seuratToolsBox}
 \title{custom collapsible box}
 \usage{
-seuratToolsBox(content, title = "", ...)
+seuratToolsBox(title = "", ...)
 }
 \arguments{
 \item{title}{}

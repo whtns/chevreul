@@ -192,6 +192,7 @@ seurat_reduce_dimensions <- function(seu, reduction = "pca", legacy_settings = F
   }
 
   if (legacy_settings){
+    message("using legacy settings")
     seu <- Seurat::RunPCA(seu, features = rownames(seu))
   } else {
     seu <- Seurat::RunPCA(object = seu, do.print = FALSE, npcs = npcs, ...)

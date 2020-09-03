@@ -6,7 +6,7 @@
 \usage{
 integration_workflow(
   batches,
-  excluded_cells,
+  excluded_cells = NULL,
   resolution = seq(0.2, 2, by = 0.2),
   experiment_name = "default_experiment",
   organism = "human",

@@ -61,12 +61,14 @@ seurat_integration_pipeline <- function(seu_list, feature, resolution = seq(0.2,
 #'
 #' @param seu
 #' @param resolution
+#' @param reduction
+#' @param organism
 #'
 #' @return
 #' @export
 #'
 #' @examples
-seurat_pipeline <- function(seu, feature = "gene", resolution=0.6, reduction = "pca", annotate_cell_cycle = TRUE, annotate_percent_mito = TRUE, organism = "human", ...){
+seurat_pipeline <- function(seu, feature = "gene", resolution=0.6, reduction = "pca", organism = "human", ...){
 
   seu <- seurat_preprocess(seu, scale = T, ...)
 
@@ -89,14 +91,30 @@ seurat_pipeline <- function(seu, feature = "gene", resolution=0.6, reduction = "
   seu <- seuratTools::add_read_count_col(seu)
 
   # annotate cell cycle scoring to seurat objects
-  if (annotate_cell_cycle){
-    seu <- annotate_cell_cycle(seu, feature, ...)
-  }
+  seu <- tryCatch({
+    annotate_cell_cycle(seu, feature, ...)
+  }, warning = function(w) {
+    message(sprintf("Warning in %s: %s", deparse(w[["call"]]), w[["message"]]))
+    return(seu)
+  }, error = function(e) {
+    message(sprintf("Error in %s: %s", deparse(e[["call"]]), e[["message"]]))
+    return(seu)
+  }, finally = {
+      message("done")
+  })
 
   # annotate mitochondrial percentage in seurat metadata
-  if (annotate_percent_mito){
-    seu <- add_percent_mito(seu, feature, organism)
-  }
+  seu <- tryCatch({
+    add_percent_mito(seu, feature, organism)
+  }, warning = function(w) {
+    message(sprintf("Warning in %s: %s", deparse(w[["call"]]), w[["message"]]))
+    return(seu)
+  }, error = function(e) {
+    message(sprintf("Error in %s: %s", deparse(e[["call"]]), e[["message"]]))
+    return(seu)
+  }, finally = {
+    message("done")
+  })
 
   return(seu)
 }
