@@ -9,14 +9,12 @@ seurat_pipeline(
   feature = "gene",
   resolution = 0.6,
   reduction = "pca",
-  annotate_cell_cycle = TRUE,
-  annotate_percent_mito = TRUE,
   organism = "human",
   ...
 )
 }
 \arguments{
-\item{resolution}{}
+\item{organism}{}
 }
 \value{
 

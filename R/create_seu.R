@@ -220,23 +220,22 @@ save_seurat <- function(..., prefix = "unfiltered", proj_dir = getwd()){
 
   seu_path <- fs::path(seurat_dir, paste0(prefix, "_seu.rds"))
 
-
-  if (interactive()) {
-    message(paste0("Do you want to save to ", fs::path_file(seu_path)))
-    confirm_save <- (menu(c("Yes", "No")) == 1)
-  } else {
-    confirm_save <- TRUE
-  }
-
-  if (!confirm_save){
-    stop("aborting project save")
-  }
+  # if (interactive()) {
+  #   message(paste0("Do you want to save to ", fs::path_file(seu_path)))
+  #   confirm_save <- (menu(c("Yes", "No")) == 1)
+  # } else {
+  #   confirm_save <- TRUE
+  # }
+  #
+  # if (!confirm_save){
+  #   stop("aborting project save")
+  # }
 
   message(paste0("saving to ", fs::path_file(seu_path)))
   saveRDS(seu_list, seu_path)
-  if(prefix == "unfiltered"){
-    Sys.chmod(seu_path, "775")
-  }
+  # if(prefix == "unfiltered"){
+  #   Sys.chmod(seu_path, "775")
+  # }
 
   return(seu_list)
 

@@ -400,7 +400,7 @@ plot_violin <- function(seu, plot_var = "batch", plot_vals = NULL, features = "R
     plot_vals <- plot_vals[!is.na(plot_vals)]
   }
   seu <- seu[, seu[[]][[plot_var]] %in% plot_vals]
-  vln_plot <- Seurat::VlnPlot(seu, features = features, group.by = plot_var, assay = assay, pt.size = 0.1, ...) +
+  vln_plot <- Seurat::VlnPlot(seu, features = features, group.by = plot_var, assay = assay, pt.size = 1, ...) +
     geom_boxplot() +
     # labs(title = "Expression Values for each cell are normalized by that cell's total expression then multiplied by 10,000 and natural-log transformed") +
     # stat_summary(fun.y = mean, geom = "line", size = 4, colour = "black") +
@@ -567,12 +567,13 @@ plot_markers <- function(seu, metavar, num_markers = 5, selected_values = NULL, 
 #' @param seu
 #' @param metavar
 #' @param color.by
+#' @param yscale
 #'
 #' @return
 #' @export
 #'
 #' @examples
-plot_readcount <- function(seu, metavar = "nCount_RNA", color.by = "batch"){
+plot_readcount <- function(seu, metavar = "nCount_RNA", color.by = "batch", yscale = "linear"){
 
   seu_tbl <- tibble::rownames_to_column(seu[[]], "SID") %>%
     dplyr::select(SID, !!as.symbol(metavar), !!as.symbol(color.by))
@@ -580,9 +581,16 @@ plot_readcount <- function(seu, metavar = "nCount_RNA", color.by = "batch"){
   rc_plot <-
     ggplot(seu_tbl, aes(x = reorder(SID, -!!as.symbol(metavar)),
                         y = !!as.symbol(metavar), fill = !!as.symbol(color.by))) +
-    scale_y_log10() + geom_bar(position = "identity", stat = "identity") +
+    geom_bar(position = "identity", stat = "identity") +
     theme(axis.text.x = element_blank()) + labs(title = metavar,
-                                                x = "Sample") + NULL
+                                                x = "Sample") +
+    NULL
+
+  if(yscale == "log"){
+    rc_plot <-
+      rc_plot +
+      scale_y_log10()
+  }
 
   rc_plot <- rc_plot %>%
     plotly::toWebGL() %>%
@@ -706,18 +714,20 @@ seu_complex_heatmap <- function(seu, features = NULL, cells = NULL, group.by = "
 }
 
 
+
 #' Title
 #'
 #' @param seu_transcript
 #' @param seu_gene
 #' @param gene_symbol
 #' @param group.by
+#' @param standardize
 #'
 #' @return
 #' @export
 #'
 #' @examples
-plot_transcript_composition <- function(seu_transcript, seu_gene, gene_symbol, group.by = "batch"){
+plot_transcript_composition <- function(seu_transcript, seu_gene, gene_symbol, group.by = "batch", standardize = FALSE, drop_zero = FALSE){
   # browser()
 
   transcripts <- annotables::grch38 %>%
@@ -732,26 +742,46 @@ plot_transcript_composition <- function(seu_transcript, seu_gene, gene_symbol, g
     tibble::rownames_to_column("sample_id") %>%
     dplyr::select(sample_id, group.by = {{group.by}})
 
-  data <- as.data.frame(t(as.matrix(seu_transcript[["RNA"]][transcripts,]))) %>%
+  data <- GetAssayData(seu_transcript, assay = "RNA", slot = "data")[transcripts,]
+
+  data <- t(expm1(as.matrix(data)))
+
+  data <-
+    data %>%
+    as.data.frame() %>%
     tibble::rownames_to_column("sample_id") %>%
     tidyr::pivot_longer(cols = starts_with("ENST"),
                         names_to = "transcript",
                         values_to = "expression") %>%
-    dplyr::left_join(metadata, by = "sample_id")
+    dplyr::left_join(metadata, by = "sample_id") %>%
+    dplyr::mutate(group.by = as.factor(group.by),
+                  transcript = as.factor(transcript))
+
+  data <- dplyr::group_by(data, group.by, transcript)
+
+  # drop zero values
+
+  if(drop_zero){
+    data <- dplyr::filter(data, expression != 0)
+  }
+
+  data <- dplyr::summarize(data, expression = mean(expression))
+
+  position <- ifelse(standardize, "fill", "stack")
 
   p <- ggplot(
     data=data,
     aes(x = group.by, y= expression, fill = transcript)) +
-    # geom_col() +
-    stat_summary(fun = "mean", geom = "col") +
+    # stat_summary(fun = "mean", geom = "col") +
+    geom_col(stat = "identity", position = position) +
     theme_minimal() +
     theme(axis.title.x = element_blank(),
           axis.text.x = element_text(
-      angle=45, hjust = 1, vjust = 1, size=12)) +
+            angle=45, hjust = 1, vjust = 1, size=12)) +
     labs(title = paste("Mean expression by", group.by, "-", gene_symbol), subtitle = "data scaled by library size then ln transformed") +
     NULL
 
-  return(p)
+  return(list(plot = p, data = data))
 
 }
 
