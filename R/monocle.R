@@ -37,7 +37,7 @@ convert_seu_to_cds <- function(seu, resolution = 1) {
   cell_metadata <- seu[[]][colnames(count_matrix),]
 
   # drop metadata column 'sample_name' for monocle plotting functions if present
-  if (any(str_detect(colnames(cell_metadata), "sample_name"))){
+  if (any(stringr::str_detect(colnames(cell_metadata), "sample_name"))){
     cell_metadata <- subset(cell_metadata, select=-sample_name)
   }
 
@@ -67,7 +67,7 @@ convert_seu_to_cds <- function(seu, resolution = 1) {
   cds_from_seurat@clusters@listData[["UMAP"]][["louvain_res"]] <- "NA"
 
 
-  cds_from_seurat <- monocle3::preprocess_cds(cds_from_seurat, method = "PCA")
+  cds_from_seurat <- monocle3::preprocess_cds(cds_from_seurat, method = "PCA", norm_method = "none")
   cds_from_seurat <- monocle3::reduce_dimension(cds_from_seurat, reduction_method = "UMAP")
 
   # reducedDim(cds_from_seurat, "PCA") <- Embeddings(seu, "pca")
@@ -691,9 +691,9 @@ plot_cells <- function(cds, x = 1, y = 2, reduction_method = c("UMAP", "tSNE",
 #' @examples
 monocle_module_heatmap <- function(cds, pr_deg_ids, seu_resolution, cells = NULL, collapse_rows = TRUE,
                                        resolution = 10^seq(-6,-1), group.by = "batch", group.bar.height = 0.01,
-                                       cluster_columns = FALSE, cluster_rows = FALSE,
+                                       cluster_columns = FALSE, cluster_rows = TRUE,
                                    column_split = NULL, col_dendrogram = "ward.D2", mm_col_dend = 30, ...){
-  browser()
+  # browser()
   if (any(grepl("integrated", colnames(cds@colData)))){
     default_assay = "integrated"
   } else {
@@ -715,14 +715,30 @@ monocle_module_heatmap <- function(cds, pr_deg_ids, seu_resolution, cells = NULL
       dplyr::select(gene_module_df, id) %>%
       dplyr::mutate(module = id)
 
-    row_ha <- ComplexHeatmap::rowAnnotation(module = gene_module_df$module)
+    module_levels <- levels(gene_module_df$module)
+    col = scales::hue_pal()(length(module_levels))
+    names(col) <- module_levels
+
+    col <- list(module = col[gene_module_df$module])
+
+    row_ha <- ComplexHeatmap::rowAnnotation(module = gene_module_df$module, col = col)
   } else{
     heatmap_row_df <- gene_module_df
 
-    row_ha <- ComplexHeatmap::rowAnnotation(module = unique(gene_module_df$module))
+    module_levels <- levels(gene_module_df$module)
+    col = scales::hue_pal()(length(module_levels))
+    names(col) <- module_levels
+
+    col <- list(module = col[gene_module_df$module])
+
+    row_ha <- ComplexHeatmap::rowAnnotation(module = unique(gene_module_df$module), col = col)
   }
 
   agg_mat <- monocle3::aggregate_gene_expression(cds, heatmap_row_df)
+
+  # reorder aggregation matrix by pseudotime
+  col_order <- sort(monocle3::pseudotime(cds))
+  agg_mat <- agg_mat[,names(col_order)]
 
   group.by <- group.by %||% "batch"
   cells <- cells %||% colnames(x = cds)
@@ -793,11 +809,13 @@ flip_pseudotime <- function(cds){
   orig_pseudotime[is.infinite(orig_pseudotime)] <- NA
 
   # sort ptime
-  forward_pseudotime <- sort(orig_pseudotime, na.last = TRUE)
+  forward_pseudotime <- sort(orig_pseudotime[!is.na(orig_pseudotime)])
 
   # rev ptime and flip names
   rev_pseudotime <- rev(forward_pseudotime)
   names(rev_pseudotime) <- names(forward_pseudotime)
+
+  rev_pseudotime <- c(rev_pseudotime, orig_pseudotime[is.na(orig_pseudotime)])
 
   # sort rev ptime by original order
   rev_pseudotime <- rev_pseudotime[names(orig_pseudotime)]
