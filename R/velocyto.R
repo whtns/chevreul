@@ -10,9 +10,22 @@
 #' @export
 #'
 #' @examples
-velocyto_assay <- function(seu, loom_path, fit.quantile = 0.05, ...){
+velocyto_assay <- function(seu, loom_path, fit.quantile = 0.05, check_loom = FALSE, ...){
+  # browser()
+  check_loom_dim <- function(seu){
+    # browser()
+
+    !is.null(seu@misc$vel)
+
+    all(rownames(seu@misc$vel$cellKNN) %in% colnames(seu))
+  }
+
+  if (check_loom){
+    if (check_loom_dim(seu)) return(seu)
+  }
 
   ldat <- velocyto.R::read.loom.matrices(loom_path)
+
   # subset ldat by seurat object.size
   ldat <- purrr::map(ldat, ~.x[,colnames(.x) %in% colnames(seu)])
 
@@ -28,41 +41,29 @@ velocyto_assay <- function(seu, loom_path, fit.quantile = 0.05, ...){
     unique()
 
   ## format cell colors------------------------------------------------------------------------
-
   cell.colors <- Idents(sub_seu)
 
   # levels(cell.colors) <- as.character(as.numeric(levels(cell.colors)) + 1)
   levels(cell.colors) <- col_vec
 
-  ## organzie loom data ------------------------------------------------------------------------
-  # exonic read (spliced) expression matrix
-  emat <- ldat$spliced;
-  # intronic read (unspliced) expression matrix
-  nmat <- ldat$unspliced
-  # spanning read (intron+exon) expression matrix
-  smat <- ldat$spanning;
   # filter expression matrices based on some minimum max-cluster averages
-  emat <- velocyto.R::filter.genes.by.cluster.expression(emat,cell.colors,min.max.cluster.average = 0.5)
-  nmat <- velocyto.R::filter.genes.by.cluster.expression(nmat,cell.colors,min.max.cluster.average = 1)
-  smat <- velocyto.R::filter.genes.by.cluster.expression(smat,cell.colors,min.max.cluster.average = 0.5)
+  ldat$spliced <- velocyto.R::filter.genes.by.cluster.expression(ldat$spliced,cell.colors,min.max.cluster.average = 0.5)
+  ldat$unspliced <- velocyto.R::filter.genes.by.cluster.expression(ldat$unspliced,cell.colors,min.max.cluster.average = 1)
+  ldat$spanning <- velocyto.R::filter.genes.by.cluster.expression(ldat$spanning,cell.colors,min.max.cluster.average = 0.5)
   # look at the resulting gene set
-  length(intersect(rownames(emat),rownames(nmat)))
+  length(intersect(rownames(ldat$spliced),rownames(ldat$unspliced)))
 
 
   ## ------------------------------------------------------------------------
-  # and if we use spanning reads (smat)
-  length(intersect(intersect(rownames(emat),rownames(nmat)),rownames(smat)))
+  # and if we use spanning reads (ldat$spanning)
+  length(intersect(intersect(rownames(ldat$spliced),rownames(ldat$unspliced)),rownames(ldat$spanning)))
 
   # plot_spliced_mag <- function(ldat) {
   #   hist(log10(rowSums(ldat$spliced)+1),col='wheat',xlab='log10[ number of reads + 1]',main='number of reads per gene')
   # }
-  #
-  # pdf(fs::path(batch_dir, "reads_per_gene.pdf"))
-  # plot_spliced_mag(ldat)
-  # dev.off()
 
   # ## calculate velocity------------------------------------------------------------------------
-  rvel.qf <- velocyto.R::gene.relative.velocity.estimates(emat, nmat, deltaT=1, kCells = 5, fit.quantile = fit.quantile)
+  rvel.qf <- velocyto.R::gene.relative.velocity.estimates(ldat$spliced, ldat$unspliced, deltaT=1, kCells = 5, fit.quantile = fit.quantile)
 
   cc_umap <- plot_velocity_arrows(seu, rvel.qf, reduction = "umap", cell.colors = cell.colors, plot_format = "arrow")
 
