@@ -443,7 +443,7 @@ propagate_spreadsheet_changes <- function(changes){
 
 create_project_db <- function(projects_dir = "/dataVolume/storage/single_cell_projects",
                               db_path = "single-cell-projects.db"){
-  mydb <- DBI::dbConnect(RSQLite::SQLite(), fs::path(projects_dir, db_path))
+    mydb <- DBI::dbConnect(RSQLite::SQLite(), fs::path(projects_dir, db_path))
 
   projects_tbl <-
     fs::dir_ls(projects_dir, glob = "*.here", recurse = TRUE, fail = FALSE, all = TRUE) %>%

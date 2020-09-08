@@ -12,7 +12,6 @@ convert_seu_to_cds <- function(seu, resolution = 1) {
 
   # part two, counts sparse matrix
 
-
   if ("integrated" %in% names(seu@assays)) {
     default_assay = "integrated"
   } else {
