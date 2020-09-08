@@ -355,7 +355,7 @@ integrateProjui <- function(id){
         textOutput(ns("integrationComplete")),
         # shinyjs::useShinyjs(),
         # shinyjs::runcodeUI(code = "shinyjs::alert('Hello!')", id = "subsetcode"),
-        # textOutput(ns("integrationMessages")),
+        textOutput(ns("integrationMessages")),
         checkboxInput(ns("legacySettings"), "Use Legacy Settings", value = FALSE),
         textOutput(ns("integrationResult")),
         shinyFiles::shinySaveButton(ns("saveIntegratedProject"), "Save Integrated Project", "Save project as..."),
@@ -506,7 +506,12 @@ integrateProj <- function(input, output, session, proj_matrices, seu, proj_dir, 
             system(set_permissions_call)
             writeLines(character(), fs::path(integratedProjectSavePath(), ".here"))
             # create_proj_db()
-            DBI::dbAppendTable(con, "projects_tbl", data.frame(project_name = fs::path_file(integratedProjectSavePath()), project_path = integratedProjectSavePath()))
+            DBI::dbAppendTable(con, "projects_tbl", data.frame(project_name = fs::path_file(integratedProjectSavePath()),
+                                                               project_path = integratedProjectSavePath(),
+                                                               project_slug = stringr::str_remove(fs::path_file(integratedProjectSavePath()), "_proj$"),
+                                                               project_type = "integrated_projects"
+                                                               )
+                               )
             # system("updatedb -l 0 -U /dataVolume/storage/single_cell_projects/ -o /dataVolume/storage/single_cell_projects/single_cell_projects.db", wait = TRUE)
             # # print(set_permissions_call)
             shiny::incProgress(8/10)
@@ -514,6 +519,7 @@ integrateProj <- function(input, output, session, proj_matrices, seu, proj_dir, 
             velocyto_dir <- fs::path(integratedProjectSavePath(), "output", "velocyto")
             fs::dir_create(velocyto_dir)
             new_loom_path <- fs::path(velocyto_dir, fs::path_file(integratedProjectSavePath()))
+            # need to configure conda for line below
             combine_looms(selectedProjects(), new_loom_path)
 
           })
@@ -622,6 +628,20 @@ plotDimRedui <- function(id){
 plotDimRed <- function(input, output, session, seu, plot_types, featureType,
                        organism_type, reductions){
   ns <- session$ns
+
+  output$myPanel <- renderUI({
+    req()
+    lev <- sort(unique(input$select)) # sorting so that "things" are unambigious
+    cols <- gg_fill_hue(length(lev))
+
+    # New IDs "colX1" so that it partly coincide with input$select...
+    lapply(seq_along(lev), function(i) {
+      colourInput(inputId = paste0("col", lev[i]),
+                  label = paste0("Choose colour for ", lev[i]),
+                  value = cols[i]
+      )
+    })
+  })
 
   observe({
     req(seu$active)
@@ -1349,28 +1369,16 @@ plotVelocity <- function(input, output, session, seu, loom_path, featureType){
     req(seu$active)
     print(loom_path)
 
-    if(is.null(seu$active@misc$vel)){
-      if(is.null(seu[[featureType()]]@misc$vel)){
-        showModal(modalDialog("calculating velocity", footer=NULL))
-        seu[[featureType()]] <- velocyto_assay(seu[[featureType()]], loom_path)
-        seu$active@misc$vel <- seu[[featureType()]]@misc$vel
-        removeModal()
-      } else if (!is.null(seu[[featureType()]]@misc$vel)) {
-        seu$active@misc$vel <- seu[[featureType()]]@misc$vel
-      }
-
+    check_loom_dim <- function(seu){
+      all(rownames(seu@misc$vel$cellKNN) == colnames(seu))
     }
-  })
 
-  velocity_flag <- eventReactive(input$calc_velocity, {
-    req(seu$active)
-    if(!is.null(seu$active@misc$vel)){
-      "Velocity Calculated for this dataset"
-    }
-  })
+    showModal(modalDialog("calculating velocity", footer=NULL))
+    seu[[featureType()]] <- velocyto_assay(seu[[featureType()]], loom_path)
+    seu$active@misc$vel <- seu[[featureType()]]@misc$vel
+    removeModal()
 
-  output$velocityFlag <- renderText({
-    velocity_flag()
+
   })
 
   velocity <- reactive({
@@ -1381,6 +1389,17 @@ plotVelocity <- function(input, output, session, seu, loom_path, featureType){
     } else {
       FALSE
     }
+  })
+
+  velocity_flag <- eventReactive(input$calc_velocity, {
+    req(seu$active)
+    req(seu$active@misc$vel)
+    "Velocity Calculated for this dataset"
+  })
+
+  output$velocityFlag <- renderText({
+    req(velocity())
+    velocity_flag()
   })
 
 
@@ -1489,6 +1508,7 @@ monocleui <- function(id){
         seuratToolsBox(
           title = "calculate pseudotime",
           actionButton(ns("calcPtimeGenes"), "Find Pseudotime Correlated Genes"),
+          sliderInput(ns("qvalThreshold"), "Set q value threshold for module calculation", min = 0.01, 0.1, value = 0.05, step = 0.01),
           textOutput("pseudotimeMessages"),
           uiOutput(ns("partitionSelect")),
           uiOutput(ns("genePlotQuery2")),
@@ -1786,7 +1806,11 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
         req(cds$traj)
         req(cds_pr_test_res())
         req(input$colAnnoVar)
-        monocle_module_heatmap(cds$traj, rownames(cds_pr_test_res()), input$cdsResolution, collapse_rows = input$heatmapRows, group.by = input$colAnnoVar)
+
+        heatmap_genes <- cds_pr_test_res() %>%
+          dplyr::filter(q_value < input$qvalThreshold)
+
+        monocle_module_heatmap(cds$traj, rownames(heatmap_genes), input$cdsResolution, collapse_rows = input$heatmapRows, group.by = input$colAnnoVar)
       })
 
       module_choices <- reactive({
