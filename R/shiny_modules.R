@@ -702,9 +702,11 @@ plotDimRed <- function(input, output, session, seu, plot_types, featureType,
     }
     else {
       if (input$plottype == "custom") {
+
         plot_feature(seu$active, dims = c(input$dim1,
                                           input$dim2), embedding = input$embedding,
                      features = input$customFeature, pt.size = input$dotSize)
+
       }
       else if (input$plottype %in% plot_types()$continuous_vars) {
         plot_feature(seu$active, dims = c(input$dim1,

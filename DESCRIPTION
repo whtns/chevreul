@@ -53,7 +53,8 @@ Imports:
     tidyr,
     shinyhelper,
     rhandsontable,
-    checkmate
+    checkmate,
+    Nebulosa
 Suggests: 
     ggplot2,
     testthat (>= 2.1.0),
