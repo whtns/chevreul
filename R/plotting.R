@@ -446,8 +446,16 @@ plot_feature <- function(seu, embedding, features, dims = c(1,2), return_plotly 
 
   dims <- as.numeric(dims)
 
+  if(length(features) == 1){
+
   fp <- Seurat::FeaturePlot(object = seu, features = features, dims = dims, reduction = embedding, pt.size = pt.size, blend = FALSE)	+
     aes(key = key, cellid = key, alpha = 0.7)
+  } else if(length(features) > 1){
+    nebulosa_plots <- Nebulosa::plot_density(object = seu, features = features, dims = dims, reduction = embedding, size = pt.size, joint = TRUE, combine = FALSE)
+
+    fp <- dplyr::last(nebulosa_plots) +
+      aes(key = key, cellid = key, alpha = 0.7)
+  }
 
   if (return_plotly == FALSE) return(fp)
 
