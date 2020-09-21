@@ -57,8 +57,8 @@ minimalSeuratApp <- function(seu_list, appTitle = NULL, feature_types = "gene",
       )
     ),
     actionButton("changeEmbedAction",
-                 label = "Change Embedding Parameters"
-    ), changeEmbedParamsui("changeembed"),
+                 label = "Change Embedding Parameters"),
+    changeEmbedParamsui("changeembed"),
     width = 250
   )
   body <- shinydashboard::dashboardBody(

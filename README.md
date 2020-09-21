@@ -17,9 +17,20 @@ There are functions for:
 
 You can install the released version of seuratTools from [our github](https://github.com/whtns/seuratTools) with:
 
-``` r
-devtools::install_github("whtns/seuratTools")
+Install locally and run in three steps:
+
 ```
+devtools::install_github("whtns/seuratTools")
+seuratTools::create_project_db()
+```
+
+# Install locally (custom location!) and run in three steps:
+```
+devtools::install_github("whtns/seuratTools")
+seuratTools::create_project_db(destdir='/your/path/to/app')
+seuratTools::seuratApp(proj_dir, feature_types = c("gene", "transcript"))
+```
+
 
 ## Site
 
