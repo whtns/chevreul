@@ -441,9 +441,65 @@ propagate_spreadsheet_changes <- function(changes){
   return(meta)
 }
 
-create_project_db <- function(projects_dir = "/dataVolume/storage/single_cell_projects",
-                              db_path = "single-cell-projects.db"){
-    mydb <- DBI::dbConnect(RSQLite::SQLite(), fs::path(projects_dir, db_path))
+#' Create a database of seuratTools projects
+#'
+#' @param destdir
+#' @param destfile
+#' @param verbose
+#'
+#' @return
+#' @export
+#'
+#' @examples
+create_project_db <- function(destdir = "~/.cache/seuratTools",
+          destfile = "single-cell-projects.db", verbose = TRUE){
+
+  if (!dir.exists(destdir)) {
+    dir.create(destdir)
+  }
+
+    con <- DBI::dbConnect(RSQLite::SQLite(), fs::path(destdir, destfile))
+
+    projects_tbl <- tibble::tibble(
+        project_name = character(),
+        project_path = character(),
+        project_slug = character(),
+        project_type = character(),
+      )
+
+    message(paste0("building table of seuratTools projects at ", fs::path(destdir, destfile)))
+
+    DBI::dbWriteTable(con, "projects_tbl", projects_tbl)
+
+    DBI::dbDisconnect(con)
+
+}
+
+#' Update a database of seuratTools projects
+#'
+#' @param projects_dir
+#' @param destdir
+#' @param destfile
+#' @param verbose
+#'
+#' @return
+#' @export
+#'
+#' @examples
+update_project_db <- function(projects_dir = NULL,
+                              destdir = "~/.cache/seuratTools",
+                              destfile = "single-cell-projects.db",
+                              verbose = TRUE){
+
+
+  if (!dir.exists(destdir)) {
+    dir.create(destdir)
+  }
+
+  con <- DBI::dbConnect(RSQLite::SQLite(), fs::path(destdir, destfile))
+
+  current_projects_tbl <-
+    DBI::dbReadTable(con, "projects_tbl")
 
   projects_tbl <-
     fs::dir_ls(projects_dir, glob = "*.here", recurse = TRUE, fail = FALSE, all = TRUE) %>%
@@ -451,10 +507,12 @@ create_project_db <- function(projects_dir = "/dataVolume/storage/single_cell_pr
     purrr::set_names(fs::path_file(.)) %>%
     tibble::enframe("project_name", "project_path") %>%
     dplyr::mutate(project_slug = stringr::str_remove(project_name, "_proj$")) %>%
-    dplyr::mutate(project_type = map_chr(fs::path_split(fs::path_dir(project_path)), 5)) %>%
+    dplyr::mutate(project_type = fs::path_file(fs::path_dir(project_path))) %>%
+    dplyr::bind_rows(current_projects_tbl) %>%
+    dplyr::distinct(.keep_all = TRUE) %>%
     identity()
 
-  DBI::dbWriteTable(mydb, "projects_tbl", projects_tbl)
+  DBI::dbWriteTable(con, "projects_tbl", projects_tbl, overwrite = TRUE)
 
-  DBI::dbDisconnect(mydb)
+  DBI::dbDisconnect(con)
 }
