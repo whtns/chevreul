@@ -201,7 +201,6 @@ prep_slider_values <- function(default_val) {
 #' Create Seurat App
 #'
 #' @param preset_project A preloaded project to start the app with
-#' @param filterTypes A named vector of file suffixes corresponding to subsets of the data
 #' @param appTitle A title of the App
 #' @param futureMb amount of Mb allocated to future package
 #' @param preset_project
@@ -212,8 +211,8 @@ prep_slider_values <- function(default_val) {
 #' @export
 #'
 #' @examples
-seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_types = "gene",
-                      organism_type = "human", db_path = "/dataVolume/storage/single_cell_projects/single-cell-projects.db", futureMb = 13000) {
+seuratApp <- function(preset_project, appTitle = "seuratTools", feature_types = "gene",
+                      organism_type = "human", db_path = "~/.cache/seuratTools/single-cell-projects.db", futureMb = 13000) {
   print(feature_types)
   future::plan(strategy = "multicore", workers = 6)
   future_size <- futureMb * 1024^2
@@ -273,10 +272,9 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
     ), shinydashboard::menuItem("Technical Information",
                                 tabName = "techInfo", icon = icon("cogs")
     )),
-      actionButton("changeEmbedAction",
-                   label = "Change Embedding Parameters"
-      ),
-      changeEmbedParamsui("changeembed"),
+    actionButton("changeEmbedAction",
+                 label = "Change Embedding Parameters"),
+    changeEmbedParamsui("changeembed"),
     width = 250
   )
   body <- shinydashboard::dashboardBody(
@@ -370,10 +368,6 @@ seuratApp <- function(preset_project, filterTypes, appTitle = NULL, feature_type
       h2("Differential Expression") %>%
         default_helper(type = "markdown", content = "diffex"),
           plotDimRedui("diffex"),
-          seuratToolsBox(
-            tableSelectedui("diffex"),
-            width = 6
-          ),
           diffexui("diffex")
     ),
     shinydashboard::tabItem(

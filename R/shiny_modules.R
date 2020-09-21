@@ -599,7 +599,7 @@ plotDimRedui <- function(id){
                  dropdownButton(
                    ns("dimPlotSettings"),
                    selectizeInput(ns("embedding"), "Embedding", choices = NULL, selected = NULL),
-                   sliderInput(ns("dotSize"), "Size of Points in UMAP", min = 0.1, max = 1, step = 0.1, value = 0.5),
+                   sliderInput(ns("dotSize"), "Size of Points in UMAP", min = 0.5, max = 2, step = 0.1, value = 1),
                    selectizeInput(ns("dim1"), "Dimension 1", choices = seq(1, 99), selected = 1),
                    selectizeInput(ns("dim2"), "Dimension 2", choices = seq(1, 99), selected = 2)
                  ),
@@ -871,7 +871,13 @@ diffexui <- function(id) {
   downloadLink(ns("downloadData"), "Download Complete DE Results"),
   DT::dataTableOutput(ns("DT1")),
   width = 6
-  ), seuratToolsBox(
+  ),
+  seuratToolsBox(
+    title = "Selected Cells",
+    tableSelectedui("diffex"),
+    width = 6
+  ),
+  seuratToolsBox(
     title = "Custom Cluster 1", DT::DTOutput(ns("cc1")),
     width = 6
   ), seuratToolsBox(
@@ -1784,7 +1790,7 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
 
         genes_in_pseudotime <-
           genes_in_pseudotime %>%
-          plotly::ggplotly(height = 400) %>%
+          plotly::ggplotly(height = 600) %>%
           plotly_settings() %>%
           plotly::toWebGL() %>%
           # plotly::partial_bundle() %>%
