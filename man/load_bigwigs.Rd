@@ -4,10 +4,10 @@
 \alias{load_bigwigs}
 \title{Create a tibble of big file paths by sample}
 \usage{
-load_bigwigs(seu, proj_dir)
+load_bigwigs(seu, bigwig_db = "~/.cache/seuratTools/bw-files.db")
 }
 \arguments{
-\item{proj_dir}{}
+\item{bigwig_db}{}
 }
 \value{
 

@@ -129,6 +129,28 @@ convert_symbols_by_biomart <- function(src_genes, src_species, host = "uswest.en
 #' @examples
 convert_symbols_by_species <- function(src_genes, src_species){
 
+  # library(biomaRt)
+  #
+  # seu <- readRDS("~/single_cell_projects/integrated_projects/7-seq_050120/output/seurat/Final_dataset_duplicate_070320.rds")
+  #
+  # hs_genes <- rownames(seu$gene)
+  #
+  # ## Not run:
+  # ## The code to prepare the .Rda file file from the marker file is:
+  # listMarts(host="www.ensembl.org")
+  # human <- useMart(host="www.ensembl.org", "ENSEMBL_MART_ENSEMBL", dataset="hsapiens_gene_ensembl")
+  # mouse <- useMart(host="www.ensembl.org", "ENSEMBL_MART_ENSEMBL", dataset="mmusculus_gene_ensembl")
+  #
+  # hs_entrez <- "378938"
+  #
+  # human_to_mouse_homologs_manual = getLDS(attributes = c("hgnc_symbol","entrezgene_id","ensembl_gene_id"),
+  #                                         filters = "hgnc_symbol", values = hs_genes,
+  #                                         # filters = "entrezgene_id", values = hs_entrez,
+  #                                         mart = human,
+  #                                         attributesL = c("mgi_symbol","ensembl_gene_id","entrezgene_id"),
+  #                                         martL = mouse)
+
+
   if(src_species == "human"){
     dest_species = "mouse"
 

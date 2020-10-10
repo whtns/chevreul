@@ -1,15 +1,14 @@
 
 #' Title
 #'
+#' @param seu
 #' @param datapath
-#' @param header
-#' @param row.names
 #'
 #' @return
 #' @export
 #'
 #' @examples
-format_new_metadata <- function(datapath){
+format_new_metadata <- function(seu, datapath){
   new_meta <- read_csv(datapath) %>%
     dplyr::mutate(across(contains("snn"), as.factor) )
 
@@ -17,7 +16,13 @@ format_new_metadata <- function(datapath){
 
   new_meta <- tibble::column_to_rownames(new_meta, rowname_col)
 
-  return(new_meta)
+  seu <- Seurat::AddMetaData(seu, new_meta)
+  DefaultAssay(seu) <- "RNA"
+  ncalc <- Seurat:::CalcN(seu)
+  seu$nFeature_RNA <- ncalc$nFeature
+  seu$nCount_RNA <- ncalc$nCount
+
+  return(seu)
 }
 
 #' Rename cell ids from annoying old notation
@@ -307,15 +312,16 @@ prep_plot_genes_in_pseudotime <- function(cds, mygenes, resolution, partition = 
 #' @export
 #'
 #' @examples
+#' @importFrom purrr %||%
 record_experiment_data <- function(object, experiment_name = "default_experiment", organism = "human"){
   if (!requireNamespace("Seurat", quietly = TRUE)) {
     stop("Package 'Seurat' needed for this function to work. Please install it.",
          call. = FALSE)
   }
 
-  organism = ifelse(!is.null(object@misc$experiment$organism), object@misc$experiment$organism, organism)
+  organism <- object@misc$experiment$organism %||% organism
 
-  experiment_name = ifelse(!is.null(object@misc$experiment$experiment_name), object@misc$experiment$experiment_name, experiment_name)
+  experiment_name <- object@misc$experiment$experiment_name %||% experiment_name
 
   message(paste0("[", format(Sys.time(), "%H:%M:%S"), "] Logging Technical Details..."))
   export <- list(experiment = list(experiment_name = experiment_name,
@@ -388,7 +394,7 @@ update_seuratTools_object <- function(seu, feature, resolution = seq(0.2, 2.0, b
 
     }
       seu <- find_all_markers(seu, resolution = resolution)
-      seu <- record_experiment_data(seu)
+      seu <- record_experiment_data(seu, ...)
       seu <- seu_calcn(seu)
   }
 
@@ -516,3 +522,57 @@ update_project_db <- function(projects_dir = NULL,
 
   DBI::dbDisconnect(con)
 }
+
+#' Make Bigwig Database
+#'
+#' @param destdir
+#' @param destfile
+#'
+#' @return
+#' @export
+#'
+#' @examples
+make_bigwig_db <- function(destdir = "~/.cach/seuratTools/", destfile = "bw-files.db") {
+  bigwigfiles <- dir_ls(destdir, glob = "*.bw", recurse = TRUE) %>%
+    set_names(path_file(.)) %>%
+    enframe("name", "bigWig") %>%
+    dplyr::mutate(sample_id = str_remove(name, "_Aligned.sortedByCoord.out.bw")) %>%
+    dplyr::filter(!str_detect(path, "integrated")) %>%
+    dplyr::distinct(sample_id, .keep_all = TRUE) %>%
+    identity()
+
+  con <- dbConnect(RSQLite::SQLite(), dbname = fs::path(destdir, destfile))
+
+  DBI::dbWriteTable(con, "bigwigfiles", bigwigfiles)
+}
+
+#' Retrieve Metadata from Batch
+#'
+#' @param batch
+#' @param projects_dir
+#' @param db_path
+#'
+#' @return
+#'
+#' @examples
+metadata_from_batch <- function(batch, projects_dir = "/dataVolume/storage/single_cell_projects",
+                                db_path = "single-cell-projects.db"){
+
+  mydb <- DBI::dbConnect(RSQLite::SQLite(), fs::path(projects_dir, db_path))
+
+  projects_tbl <- DBI::dbReadTable(mydb, "projects_tbl") %>%
+    dplyr::filter(!project_type %in% c("integrated_projects", "resources"))
+
+  DBI::dbDisconnect(mydb)
+
+  metadata <-
+    projects_tbl %>%
+    dplyr::filter(project_slug == batch) %>%
+    dplyr::pull(project_path) %>%
+    fs::path("data") %>%
+    fs::dir_ls(glob = "*.csv") %>%
+    identity()
+
+}
+
+

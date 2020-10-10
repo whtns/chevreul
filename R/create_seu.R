@@ -231,7 +231,7 @@ save_seurat <- function(..., prefix = "unfiltered", proj_dir = getwd()){
   #   stop("aborting project save")
   # }
 
-  message(paste0("saving to ", fs::path_file(seu_path)))
+  message(paste0("saving to ", seu_path))
   saveRDS(seu_list, seu_path)
   # if(prefix == "unfiltered"){
   #   Sys.chmod(seu_path, "775")

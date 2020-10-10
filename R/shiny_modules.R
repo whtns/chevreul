@@ -31,6 +31,11 @@ plotClustree_UI <- function(id) {
 #' @examples
 plotClustree <- function(input, output, session, seu) {
 
+  # set appropriate assay
+  # default_assay = reactive({
+  #   ifelse("integrated" %in% names(seu$active@assays), "integrated", "RNA")
+  # })
+
   output$checkSeu <- renderText({
     req(seu$active)
     "test"
@@ -38,7 +43,9 @@ plotClustree <- function(input, output, session, seu) {
 
   output$clustree <- renderPlot({
     req(seu$active)
-    clustree::clustree(seu$active)
+    default_assay <- ifelse("integrated" %in% names(seu$active@assays), "integrated", "RNA")
+    # DefaultAssay(seu$active) <- default_assay
+    clustree::clustree(seu$active, assay = default_assay)
   })
 
 }
@@ -269,7 +276,7 @@ reformatMetadataui <- function(id) {
 #' @export
 #'
 #' @examples
-reformatMetadata <- function(input, output, session, seu) {
+reformatMetadata <- function(input, output, session, seu, featureType = "gene") {
   ns <- session$ns
 
   meta <- reactiveValues()
@@ -279,22 +286,25 @@ reformatMetadata <- function(input, output, session, seu) {
   })
 
   observeEvent(input$updateMetadata, {
+    req(featureType())
 
     if (input$updateMethod == "file"){
       inFile <- input$metaFile
 
-      if (is.null(inFile))
+      if (is.null(inFile)){
         return(NULL)
+      }
 
-      meta$new <- format_new_metadata(inFile$datapath)
+      for (i in names(seu)){
+        print(i)
+        seu[[i]] <- format_new_metadata(seu[[i]], inFile$datapath)
+      }
 
     } else if (input$updateMethod == "spreadsheet"){
       meta$new <- propagate_spreadsheet_changes(input$seuTable)
     }
 
-    for (i in names(seu)){
-      seu[[i]] <- Seurat::AddMetaData(seu[[i]], meta$new)
-    }
+    meta$new <- seu[[featureType()]]@meta.data
 
   })
 
@@ -519,6 +529,7 @@ integrateProj <- function(input, output, session, proj_matrices, seu, proj_dir, 
             velocyto_dir <- fs::path(integratedProjectSavePath(), "output", "velocyto")
             fs::dir_create(velocyto_dir)
             new_loom_path <- fs::path(velocyto_dir, fs::path_file(integratedProjectSavePath()))
+
             # need to configure conda for line below
             combine_looms(selectedProjects(), new_loom_path)
 
@@ -2199,9 +2210,12 @@ plotCoverage_UI <- function(id) {
         ns("coveragePlotSettings"),
         checkboxInput(ns("collapseIntrons"), "Collapse Introns", value = TRUE),
         checkboxInput(ns("meanCoverage"), "Summarize Coverage to Mean", value = TRUE),
-        radioButtons(ns("yScale"), "Scale Y Axis", choices = c("absolute", "log10"), selected = "log10")
+        radioButtons(ns("yScale"), "Scale Y Axis", choices = c("absolute", "log10"), selected = "log10"),
+        numericInput(ns("start"), "start coordinate", value = NULL),
+        numericInput(ns("end"), "end coordinate", value = NULL)
       ),
-      plotOutput(ns("coveragePlot"), height = "2000px"),
+      DT::DTOutput(ns("coverageTable")),
+      plotOutput(ns("coveragePlot"), height = "1500px"),
       width = 12
       )
     )
@@ -2247,10 +2261,10 @@ plotCoverage <- function(input, output, session, seu, plot_types, proj_dir, orga
   })
 
     bigwig_tbl <- reactive({
-      load_bigwigs(seu$active, proj_dir())
+      load_bigwigs(seu$active)
     })
 
-    coverage_plot <- eventReactive(input$plotCoverage, {
+    coverage_return <- eventReactive(input$plotCoverage, {
       req(seu$active)
       req(bigwig_tbl())
 
@@ -2259,15 +2273,24 @@ plotCoverage <- function(input, output, session, seu, plot_types, proj_dir, orga
                                 bigwig_tbl = bigwig_tbl(),
                                 var_of_interest = input$varSelect,
                                 values_of_interest = input$displayvalues,
-                                edb = EnsDb.Hsapiens.v86::EnsDb.Hsapiens.v86,
+                                organism = seu$active@misc$experiment$organism,
                                 mean_only = input$meanCoverage,
                                 rescale_introns = input$collapseIntrons,
-                                scale_y = input$yScale)
+                                scale_y = input$yScale,
+                                start = input$start,
+                                end = input$end)
     })
 
     output$coveragePlot <- renderPlot({
       w$show()
-      coverage_plot()
+      coverage_return()$plot
+    })
+
+    output$coverageTable <- DT::renderDT({
+
+      DT::datatable(coverage_return()$table, extensions = "Buttons",
+                    options = list(dom = "Bft", buttons = c("copy", "csv"), scrollY = "400px"))
+
     })
 
     output$downloadPlot <- downloadHandler(

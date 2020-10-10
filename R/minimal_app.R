@@ -12,7 +12,7 @@
 #' @export
 #'
 #' @examples
-minimalSeuratApp <- function(seu_list, appTitle = NULL, feature_types = "gene",
+minimalSeuratApp <- function(seu_list = seurat_pancreas_reduced, appTitle = NULL, feature_types = "gene",
                              organism_type = "human", loom_path = NULL, futureMb = 13000) {
   print(feature_types)
   future::plan(strategy = "multicore", workers = 6)
@@ -26,36 +26,41 @@ minimalSeuratApp <- function(seu_list, appTitle = NULL, feature_types = "gene",
   ))
   header <- shinydashboard::dashboardHeader(title = appTitle)
   sidebar <- shinydashboard::dashboardSidebar(
+    textOutput("appTitle"),
     uiOutput("featureType"),
-    shinyWidgets::prettyRadioButtons("organism_type",
-      inline = TRUE,
-      "Organism", choices = c("human", "mouse"), selected = organism_type
+    shinyWidgets::prettyRadioButtons("organism_type", inline = TRUE,
+                                     "Organism", choices = c("human", "mouse"), selected = organism_type
     ),
     shinydashboard::sidebarMenu(
-      shinydashboard::menuItem("Reformat Metadata",
-                               tabName = "reformatMetadata", icon = icon("columns")
+      shinydashboard::menuItem("Integrate Projects",
+                               tabName = "integrateProjects", icon = icon("object-group")
+      ), shinydashboard::menuItem("Reformat Metadata",
+                                  tabName = "reformatMetadata", icon = icon("columns")
       ), shinydashboard::menuItem("Plot Data",
-        tabName = "comparePlots", icon = icon("chart-bar"), selected = TRUE
+                                  tabName = "comparePlots", icon = icon("chart-bar"), selected = TRUE
       ), shinydashboard::menuItem("Heatmap/Violin Plots",
-        tabName = "violinPlots", icon = icon("sort")
+                                  tabName = "violinPlots", icon = icon("sort")
+      ), shinydashboard::menuItem("Coverage Plots",
+                                  tabName = "coveragePlots", icon = icon("mountain")
       ), shinydashboard::menuItem("Differential Expression",
-        tabName = "diffex", icon = icon("magnet")
+                                  tabName = "diffex", icon = icon("magnet")
+      ), shinydashboard::menuItem("Pathway Enrichment Analysis",
+                                  tabName = "pathwayEnrichment", icon = icon("sitemap")
       ), shinydashboard::menuItem("Find Markers",
-        tabName = "findMarkers", icon = icon("bullhorn")
-      ),  shinydashboard::menuItem("Pathway Enrichment Analysis",
-        tabName = "pathwayEnrichment", icon = icon("sitemap")
+                                  tabName = "findMarkers", icon = icon("bullhorn")
       ), shinydashboard::menuItem("Subset Seurat Input",
-        tabName = "subsetSeurat", icon = icon("filter")
+                                  tabName = "subsetSeurat", icon = icon("filter")
       ), shinydashboard::menuItem("All Transcripts",
-        tabName = "allTranscripts", icon = icon("sliders-h")
+                                  tabName = "allTranscripts", icon = icon("sliders-h")
       ), shinydashboard::menuItem("RNA Velocity",
-        tabName = "plotVelocity", icon = icon("tachometer-alt")
+                                  tabName = "plotVelocity", icon = icon("tachometer-alt")
       ), shinydashboard::menuItem("Monocle",
-        tabName = "monocle", icon = icon("bullseye")
+                                  tabName = "monocle", icon = icon("bullseye")
       ), shinydashboard::menuItem("Regress Features",
-        tabName = "regressFeatures", icon = icon("eraser")
-      )
-    ),
+                                  tabName = "regressFeatures", icon = icon("eraser")
+      ), shinydashboard::menuItem("Technical Information",
+                                  tabName = "techInfo", icon = icon("cogs")
+      )),
     actionButton("changeEmbedAction",
                  label = "Change Embedding Parameters"),
     changeEmbedParamsui("changeembed"),
@@ -63,160 +68,143 @@ minimalSeuratApp <- function(seu_list, appTitle = NULL, feature_types = "gene",
   )
   body <- shinydashboard::dashboardBody(
     waiter::use_waiter(),
-    # waiter::waiter_show_on_load(),
-    # waiter::waiter_hide_on_render("plotreadcount1-rcplot"),
     shinydashboard::tabItems(
       shinydashboard::tabItem(
-        tabName = "violinPlots",
-        fluidRow(
-          plotHeatmapui("heatMap"),
-          plotViolinui("violinPlot")
-        )
-      ), shinydashboard::tabItem(
         tabName = "comparePlots",
         h2("Compare Plots") %>%
           default_helper(type = "markdown", content = "comparePlots"),
+        plotDimRedui("plotdimred1"),
+        plotDimRedui("plotdimred2"),
+        plotReadCountui("plotreadcount1"),
+        plotReadCountui("plotreadcount2"),
+        seuratToolsBox(
+          title = "Selected Cells",
+          tableSelectedui("tableselected"),
+          width = 6
+        ),
+        plotClustree_UI("clustreePlot")
+      ),
+      shinydashboard::tabItem(
+        tabName = "violinPlots",
         fluidRow(
-          column(
-            plotDimRedui("plotdimred1"),
-            width = 6
-          ),
-          column(
-            plotDimRedui("plotdimred2"),
-            width = 6
-          )
+          plotHeatmapui("heatMap")
         ),
         fluidRow(
-          plotReadCountui("plotreadcount1"),
-          plotReadCountui("plotreadcount2")
-        ), fluidRow(seuratToolsBox(
-          title = "Selected Cells",
-          tableSelectedui("tableselected"), width = 6
-        ), plotClustree_UI("clustreePlot"))
-      ), shinydashboard::tabItem(
+          plotViolinui("violinPlot")
+        )
+      ),
+      shinydashboard::tabItem(
+        tabName = "coveragePlots",
+        fluidRow(
+          plotCoverage_UI("coverageplots")
+        )
+      ),
+      shinydashboard::tabItem(
+        tabName = "integrateProjects",
+        fluidRow(
+          integrateProjui("integrateproj"),
+          width = 12
+        )
+      ),
+      shinydashboard::tabItem(
         tabName = "reformatMetadata",
-        h2("Reformat Metadata") %>%
-          default_helper(type = "markdown", content = "reformatMetadata"),
         fluidRow(
           reformatMetadataui("reformatmetadata")
-          )
-      ), shinydashboard::tabItem(
+        )
+      ),
+      shinydashboard::tabItem(
         tabName = "subsetSeurat",
         h2("Subset Seurat Input") %>%
           default_helper(type = "markdown", content = "subsetSeurat"),
-        fluidRow(
-          column(
-            plotDimRedui("subset"),
-            width = 6),
-          column(
-            seuratToolsBox(
-            title = "Subset Settings",
-            actionButton(
-              "subsetAction",
-              "subset seurat by selected cells"
-            ), actionButton(
-              "subsetCsv",
-              "subset seurat by uploaded csv"
-            ), fileInput("uploadCsv",
-                         "Upload .csv file with cells to include",
-                         accept = c(".csv")),
-            shinyjs::useShinyjs(),
-            textOutput("subsetMessages"),
-            width = 12
-          ),
-          seuratToolsBox(
-            title = "Selected Cells", tableSelectedui("subset"),
-            width = 12
-          ),
-          width = 6)
+        plotDimRedui("subset"),
+        seuratToolsBox(
+          title = "Subset Settings",
+          checkboxInput("legacySettingsSubset", "Use Legacy Settings", value = FALSE),
+          actionButton("subsetAction", "subset seurat by selected cells"),
+          actionButton("subsetCsv", "subset seurat by uploaded csv"),
+          fileInput("uploadCsv",
+                    "Upload .csv file with cells to include",
+                    accept = c(".csv")),
+          shinyjs::useShinyjs(),
+          # shinyjs::runcodeUI(code = "shinyjs::alert('Hello!')"),
+          textOutput("subsetMessages"),
+          width = 6
+        ),
+        seuratToolsBox(
+          title = "Selected Cells", tableSelectedui("subset"),
+          width = 6
         )
       ), shinydashboard::tabItem(
         tabName = "findMarkers",
-        h2("Find Markers") %>%
-          default_helper(type = "markdown", content = "findMarkers"),
-        fluidRow(
-          column(
-            findMarkersui("findmarkers"),
-            width = 6
-          ),
-          column(
-            plotDimRedui("markerScatter"),
-            width = 6
-          )
-        )
-      ),  shinydashboard::tabItem(
-        tabName = "pathwayEnrichment",
-        h2("Pathway Enrichment"),
-        fluidRow(
-          pathwayEnrichmentui("pathwayEnrichment")
-        )
+        h2("Find Markers"),
+        findMarkersui("findmarkers"),
+        plotDimRedui("markerScatter")
       ), shinydashboard::tabItem(
         tabName = "allTranscripts",
-        h2("All Transcripts") %>%
-          default_helper(type = "markdown", content = "allTranscripts"),
-        fluidRow(column(allTranscriptsui("alltranscripts1"),
-          width = 6
-        ), column(plotDimRedui("alltranscripts2"),
-          width = 6
-        ))
+        h2("All Transcripts"),
+        plotDimRedui("alltranscripts2"),
+        allTranscriptsui("alltranscripts1")
       ),
       shinydashboard::tabItem(
         tabName = "plotVelocity",
-        h2("RNA Velocity") %>%
-          default_helper(type = "markdown", content = "plotVelocity"),
+        h2("RNA Velocity"),
         fluidRow(
-          seuratToolsBox(
-            plotVelocityui("plotvelocity"),
-            width = 12
-          )
+          plotVelocityui("plotvelocity"),
         )
       ),
       shinydashboard::tabItem(
         tabName = "diffex",
         h2("Differential Expression") %>%
           default_helper(type = "markdown", content = "diffex"),
+        plotDimRedui("diffex"),
+        diffexui("diffex")
+      ),
+      shinydashboard::tabItem(
+        tabName = "pathwayEnrichment",
+        h2("Pathway Enrichment"),
         fluidRow(
-          column(plotDimRedui("diffex"),
-                 seuratToolsBox(tableSelectedui("diffex"),
-                                width = 12
-                 ), width = 6),
-          column(diffexui("diffex"), width = 6)
+          pathwayEnrichmentui("pathwayEnrichment")
         )
-      ), shinydashboard::tabItem(
+      ),
+      shinydashboard::tabItem(
         tabName = "regressFeatures",
         fluidRow(
           seuratToolsBox(
             title = "Regress Features",
-            actionButton("regressAction", "Regress Seurat Objects By Genes") %>%
-              default_helper(type = "markdown", content = "regressFeatures"),
-            checkboxInput("runRegression",
-              "Run Regression?",
-              value = FALSE
+            actionButton(
+              "regressAction",
+              "Regress Seurat Objects By Genes"
             ),
-            radioButtons("priorGeneSet",
-              "Choose a marker gene set:",
-              choices = c(
-                "Apoptosis",
-                "Cell Cycle",
-                "Mitochondrial",
-                "Ribosomal"
-              )
+            checkboxInput("runRegression",
+                          "Run Regression?",
+                          value = FALSE
+            ), radioButtons("priorGeneSet",
+                            "Choose a marker gene set:",
+                            choices = c(
+                              "Apoptosis",
+                              "Cell Cycle",
+                              "Mitochondrial",
+                              "Ribosomal"
+                            )
             ), selectizeInput("geneSet",
-              "List of genes",
-              choices = NULL, multiple = TRUE
+                              "List of genes",
+                              choices = NULL, multiple = TRUE
             ),
             textInput("geneSetName", "Name for Gene Set"),
             width = 12
-          )
+          ) %>%
+            default_helper(type = "markdown", content = "regressFeatures")
         )
       ), shinydashboard::tabItem(
         tabName = "monocle",
-        h2("Monocle") %>%
-          default_helper(type = "markdown", content = "monocle"),
-        fluidRow(monocleui("monocle"))
+        h2("Monocle"),
+        monocleui("monocle")
+      ), shinydashboard::tabItem(
+        tabName = "techInfo",
+        h2("Technical Information"),
+        techInfoui("techInfo")
       )
-    )
-  )
+    ))
 
   ui <- function(request) {
     ui <- dashboardPage(
@@ -263,9 +251,9 @@ minimalSeuratApp <- function(seu_list, appTitle = NULL, feature_types = "gene",
       req(seu)
       seu_names <- names(seu)[!(names(seu) %in% c("monocle", "active"))]
       shinyWidgets::prettyRadioButtons("feature_type",
-        "Feature for Display",
-        choices = seu_names,
-        selected = "gene", inline = TRUE
+                                       "Feature for Display",
+                                       choices = seu_names,
+                                       selected = "gene", inline = TRUE
       )
     })
     observeEvent(input$feature_type, {
@@ -292,7 +280,7 @@ minimalSeuratApp <- function(seu_list, appTitle = NULL, feature_types = "gene",
 
     reformatted_seu <- reactive({
       req(seu$active)
-      callModule(reformatMetadata, "reformatmetadata", seu)
+      callModule(reformatMetadata, "reformatmetadata", seu, featureType)
     })
 
     observe({
@@ -313,19 +301,19 @@ minimalSeuratApp <- function(seu_list, appTitle = NULL, feature_types = "gene",
       req(seu$active)
 
       callModule(plotDimRed, "plotdimred1", seu, plot_types, featureType,
-        organism_type = organism_type, reductions
+                 organism_type = organism_type, reductions
       )
       callModule(plotDimRed, "plotdimred2", seu, plot_types, featureType,
-        organism_type = organism_type, reductions
+                 organism_type = organism_type, reductions
       )
       callModule(plotDimRed, "diffex", seu, plot_types, featureType,
-        organism_type = organism_type, reductions
+                 organism_type = organism_type, reductions
       )
       callModule(plotDimRed, "subset", seu, plot_types, featureType,
-        organism_type = organism_type, reductions
+                 organism_type = organism_type, reductions
       )
       callModule(plotDimRed, "markerScatter", seu, plot_types, featureType,
-        organism_type = organism_type, reductions
+                 organism_type = organism_type, reductions
       )
     })
 
@@ -363,16 +351,17 @@ minimalSeuratApp <- function(seu_list, appTitle = NULL, feature_types = "gene",
             for (i in names(seu)[!(names(seu) %in% c("monocle", "active"))]) {
               message(paste0("reintegrating ", i, " expression"))
               seu[[i]] <- reintegrate_seu(seu[[i]],
-                feature = i,
-                resolution = seq(0.2, 2, by = 0.2)
+                                          feature = i,
+                                          resolution = seq(0.2, 2, by = 0.2),
+                                          organism = seu[[i]]@misc$experiment$organism
               )
             }
           }
           else {
             for (i in names(seu)[!(names(seu) %in% c("monocle", "active"))]) {
               seu[[i]] <- seurat_pipeline(seu[[i]], resolution = seq(0.2,
-                2,
-                by = 0.2
+                                                                     2,
+                                                                     by = 0.2
               ))
             }
           }
@@ -404,16 +393,17 @@ minimalSeuratApp <- function(seu_list, appTitle = NULL, feature_types = "gene",
             for (i in names(seu)[!(names(seu) %in% c("monocle", "active"))]) {
               message(paste0("reintegrating ", i, " expression"))
               seu[[i]] <- reintegrate_seu(seu[[i]],
-                feature = i,
-                resolution = seq(0.2, 2, by = 0.2)
+                                          feature = i,
+                                          resolution = seq(0.2, 2, by = 0.2),
+                                          organism = seu[[i]]@misc$experiment$organism
               )
             }
           }
           else {
             for (i in names(seu)[!(names(seu) %in% c("monocle", "active"))]) {
               seu[[i]] <- seurat_pipeline(seu[[i]], resolution = seq(0.2,
-                2,
-                by = 0.2
+                                                                     2,
+                                                                     by = 0.2
               ))
             }
           }
@@ -500,9 +490,9 @@ minimalSeuratApp <- function(seu_list, appTitle = NULL, feature_types = "gene",
 
     observe({
       updateSelectizeInput(session, "geneSet",
-        choices = rownames(seu$active),
-        selected = prior_gene_set(),
-        server = TRUE
+                           choices = rownames(seu$active),
+                           selected = prior_gene_set(),
+                           server = TRUE
       )
     })
     observeEvent(input$regressAction, {
@@ -512,8 +502,8 @@ minimalSeuratApp <- function(seu_list, appTitle = NULL, feature_types = "gene",
         "This process may take a minute or two!"
       ))
       seu$gene <- seuratTools::regress_by_features(seu$gene,
-        feature_set = list(input$geneSet), set_name = janitor::make_clean_names(input$geneSetName),
-        regress = input$runRegression
+                                                   feature_set = list(input$geneSet), set_name = janitor::make_clean_names(input$geneSetName),
+                                                   regress = input$runRegression
       )
       seu$active <- seu[[input$feature_type]]
       removeModal()

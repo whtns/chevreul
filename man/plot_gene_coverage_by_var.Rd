@@ -8,11 +8,14 @@ plot_gene_coverage_by_var(
   genes_of_interest = "RXRG",
   cell_metadata,
   bigwig_tbl,
-  var_of_interest = NULL,
+  var_of_interest = "batch",
   values_of_interest = NULL,
-  edb = EnsDb.Hsapiens.v86::EnsDb.Hsapiens.v86,
+  organism = "human",
+  edb = NULL,
   heights = c(3, 1),
   scale_y = "log10",
+  start = NULL,
+  end = NULL,
   ...
 )
 }

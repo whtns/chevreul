@@ -4,10 +4,10 @@
 \alias{format_new_metadata}
 \title{Title}
 \usage{
-format_new_metadata(datapath)
+format_new_metadata(seu, datapath)
 }
 \arguments{
-\item{row.names}{}
+\item{datapath}{}
 }
 \value{
 
