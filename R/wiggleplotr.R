@@ -28,6 +28,7 @@ load_bigwigs <- function(seu, bigwig_db = "~/.cache/seuratTools/bw-files.db"){
 
   return(bigwigfiles)
 
+
 }
 
 #' Plot BigWig Coverage for Genes of Interest Colored by a Given Variable

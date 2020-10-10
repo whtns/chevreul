@@ -31,6 +31,7 @@ plotClustree_UI <- function(id) {
 #' @examples
 plotClustree <- function(input, output, session, seu) {
 
+
   # set appropriate assay
   # default_assay = reactive({
   #   ifelse("integrated" %in% names(seu$active@assays), "integrated", "RNA")
@@ -43,6 +44,7 @@ plotClustree <- function(input, output, session, seu) {
 
   output$clustree <- renderPlot({
     req(seu$active)
+
     default_assay <- ifelse("integrated" %in% names(seu$active@assays), "integrated", "RNA")
     # DefaultAssay(seu$active) <- default_assay
     clustree::clustree(seu$active, assay = default_assay)
@@ -276,6 +278,7 @@ reformatMetadataui <- function(id) {
 #' @export
 #'
 #' @examples
+
 reformatMetadata <- function(input, output, session, seu, featureType = "gene") {
   ns <- session$ns
 
@@ -313,6 +316,7 @@ reformatMetadata <- function(input, output, session, seu, featureType = "gene") 
     meta$new %||% meta$old
   })
 
+
   output$seuTable <- rhandsontable::renderRHandsontable({
 
     rhandsontable::rhandsontable(table_out(), rowHeaderWidth = 200, height = 700) %>%
@@ -322,7 +326,6 @@ reformatMetadata <- function(input, output, session, seu, featureType = "gene") 
                      callback = htmlwidgets::JS(
                        "function (key, options) {
                          var csv = csvString(this, sep=',', dec='.');
-
                          var link = document.createElement('a');
                          link.setAttribute('href', 'data:text/plain;charset=utf-8,' +
                            encodeURIComponent(csv));
@@ -346,6 +349,7 @@ reformatMetadata <- function(input, output, session, seu, featureType = "gene") 
   return(seu)
 
 }
+
 
 
 #' Integrate Project UI
@@ -529,7 +533,6 @@ integrateProj <- function(input, output, session, proj_matrices, seu, proj_dir, 
             velocyto_dir <- fs::path(integratedProjectSavePath(), "output", "velocyto")
             fs::dir_create(velocyto_dir)
             new_loom_path <- fs::path(velocyto_dir, fs::path_file(integratedProjectSavePath()))
-
             # need to configure conda for line below
             combine_looms(selectedProjects(), new_loom_path)
 
@@ -1385,6 +1388,24 @@ plotVelocity <- function(input, output, session, seu, loom_path, featureType){
   ns <- session$ns
 
   observeEvent(input$calc_velocity, {
+
+    req(seu$active)
+    print(loom_path)
+
+    check_loom_dim <- function(seu){
+      all(rownames(seu@misc$vel$cellKNN) == colnames(seu))
+    }
+
+    showModal(modalDialog("calculating velocity", footer=NULL))
+    seu[[featureType()]] <- velocyto_assay(seu[[featureType()]], loom_path)
+    seu$active@misc$vel <- seu[[featureType()]]@misc$vel
+    removeModal()
+
+
+  })
+
+  velocity <- reactive({
+
     req(seu$active)
     print(loom_path)
 
@@ -1409,6 +1430,27 @@ plotVelocity <- function(input, output, session, seu, loom_path, featureType){
       FALSE
     }
   })
+
+  velocity_flag <- eventReactive(input$calc_velocity, {
+    req(seu$active)
+    req(seu$active@misc$vel)
+    "Velocity Calculated for this dataset"
+  })
+
+  output$velocityFlag <- renderText({
+    req(velocity())
+    velocity_flag()
+  })
+
+
+  # plotInput <- function(plot_format = "grid"){
+  #
+  #   if(!is.null(seu$active@misc$vel)){
+  #     return(seu$active@misc$vel)
+  #   } else {
+  #     FALSE
+  #   }
+  # }
 
   velocity_flag <- eventReactive(input$calc_velocity, {
     req(seu$active)
@@ -1746,6 +1788,7 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
       # select only first partition
       cds$traj <- cds$traj[,monocle3::partitions(cds$traj) == 1]
 
+
       if(input$flipPtime){
         cds$traj <- flip_pseudotime(cds$traj)
       }
@@ -1776,6 +1819,7 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
       if (req(cds$selected) == "diff_genes"){
         cds_pr_test_res <- cds$traj@metadata$diff_genes
 
+
         cds_pr_test_res <-
           cds_pr_test_res %>%
           # subset(q_value < 0.05) %>%
@@ -1798,7 +1842,6 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
 
       output$ptimeGenesLinePlot <- plotly::renderPlotly({
         genes_in_pseudotime <- prep_plot_genes_in_pseudotime(cds$traj, input$genePlotQuery1, input$cdsResolution)
-
         genes_in_pseudotime <-
           genes_in_pseudotime %>%
           plotly::ggplotly(height = 600) %>%
@@ -1968,6 +2011,7 @@ pathwayEnrichment <- function(input, output, session, seu, featureType){
       }
     })
 
+
     # UI element: choose cluster
     output$enriched_pathways_by_cluster_select_cluster_UI <- renderUI({
       req(seu$active)
@@ -2040,7 +2084,6 @@ pathwayEnrichment <- function(input, output, session, seu, featureType){
     output$enriched_pathways_by_cluster_table_missing_gsva <- renderText({
       "Data not available. Possible reason: Data not generated."
     })
-
     # info box
     observeEvent(input$enriched_pathways_by_cluster_info, {
       showModal(
@@ -2221,6 +2264,7 @@ plotCoverage_UI <- function(id) {
     )
 }
 
+
 #' Title
 #'
 #' @param input
@@ -2261,6 +2305,7 @@ plotCoverage <- function(input, output, session, seu, plot_types, proj_dir, orga
   })
 
     bigwig_tbl <- reactive({
+
       load_bigwigs(seu$active)
     })
 
@@ -2273,16 +2318,19 @@ plotCoverage <- function(input, output, session, seu, plot_types, proj_dir, orga
                                 bigwig_tbl = bigwig_tbl(),
                                 var_of_interest = input$varSelect,
                                 values_of_interest = input$displayvalues,
+
                                 organism = seu$active@misc$experiment$organism,
                                 mean_only = input$meanCoverage,
                                 rescale_introns = input$collapseIntrons,
                                 scale_y = input$yScale,
                                 start = input$start,
                                 end = input$end)
+
     })
 
     output$coveragePlot <- renderPlot({
       w$show()
+
       coverage_return()$plot
     })
 
@@ -2290,6 +2338,7 @@ plotCoverage <- function(input, output, session, seu, plot_types, proj_dir, orga
 
       DT::datatable(coverage_return()$table, extensions = "Buttons",
                     options = list(dom = "Bft", buttons = c("copy", "csv"), scrollY = "400px"))
+
 
     })
 
