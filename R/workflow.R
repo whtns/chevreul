@@ -26,10 +26,7 @@ integration_workflow <- function(batches, excluded_cells = NULL, resolution = se
 
   checkmate::check_character(excluded_cells)
 
-  # names(child_proj_dirs) <- gsub("_proj", "", fs::path_file(child_proj_dirs))
-
-  # load seurat objects from 'child' projects
-  # seus <- purrr::map(child_proj_dirs, load_seurat_from_proj)
+  # organisms <- purrr::map(batches, Misc, c("experiment", "organism"))
 
   organisms <- purrr::map(batches, list(1, "meta.data", "organism", 1))
 

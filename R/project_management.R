@@ -91,6 +91,7 @@ combine_looms <- function(projectPaths, newProjectPath){
   loom_filenames <- stringr::str_replace(fs::path_file(projectPaths), "_proj", ".loom")
 
   selected_looms <- fs::path(projectPaths, "output", "velocyto", loom_filenames)
-  loompy$combine(selected_looms, newProjectPath)
+
+  if (all(is_file(selected_looms))) loompy$combine(selected_looms, newProjectPath)
 }
 

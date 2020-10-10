@@ -212,7 +212,7 @@ prep_slider_values <- function(default_val) {
 #'
 #' @examples
 seuratApp <- function(preset_project, appTitle = "seuratTools", feature_types = "gene",
-                      organism_type = "human", db_path = "~/.cache/seuratTools/single-cell-projects.db", futureMb = 13000) {
+                      organism_type = "human", db_path = "~/.cache/seuratTools/single-cell-projects.db", futureMb = 13000){
   print(feature_types)
   future::plan(strategy = "multicore", workers = 6)
   future_size <- futureMb * 1024^2
@@ -530,9 +530,15 @@ seuratApp <- function(preset_project, appTitle = "seuratTools", feature_types = 
           shiny::incProgress(6 / 10)
           seu_names <- names(dataset)[!names(dataset) ==
             "active"]
+
+          organism <- case_when(
+            stringr::str_detect(uploadSeuratPath(), "Hs") ~ "human",
+            stringr::str_detect(uploadSeuratPath(), "Mm") ~ "mouse"
+          )
+
           for (i in seu_names) {
             seu[[i]] <- dataset[[i]]
-            seu[[i]] <- update_seuratTools_object(seu[[i]], i)
+            seu[[i]] <- update_seuratTools_object(seu[[i]], i, organism = organism)
           }
           seu$active <- seu[["gene"]]
           print(uploadSeuratPath())
@@ -615,7 +621,7 @@ seuratApp <- function(preset_project, appTitle = "seuratTools", feature_types = 
 
     reformatted_seu <- reactive({
       req(seu$active)
-      callModule(reformatMetadata, "reformatmetadata", seu)
+      callModule(reformatMetadata, "reformatmetadata", seu, featureType)
     })
 
     observe({
@@ -689,7 +695,8 @@ seuratApp <- function(preset_project, appTitle = "seuratTools", feature_types = 
               seu[[i]] <- reintegrate_seu(seu[[i]],
                 feature = i,
                 resolution = seq(0.2, 2, by = 0.2),
-                legacy_settings = input$legacySettingsSubset
+                legacy_settings = input$legacySettingsSubset,
+                organism = seu[[i]]@misc$experiment$organism
               )
             }
           }
@@ -728,7 +735,8 @@ seuratApp <- function(preset_project, appTitle = "seuratTools", feature_types = 
               seu[[i]] <- reintegrate_seu(seu[[i]],
                 feature = i,
                 resolution = seq(0.2, 2, by = 0.2),
-                legacy_settings = input$legacySettingsSubset
+                legacy_settings = input$legacySettingsSubset,
+                organism = seu[[i]]@misc$experiment$organism
               )
             }
           }

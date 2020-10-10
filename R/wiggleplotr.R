@@ -1,27 +1,32 @@
 #' Create a tibble of big file paths by sample
 #'
 #' @param seu
-#' @param proj_dir
+#' @param bigwig_db
 #'
 #' @return
 #' @export
 #'
 #' @examples
-load_bigwigs <- function(seu, proj_dir){
+load_bigwigs <- function(seu, bigwig_db = "~/.cache/seuratTools/bw-files.db"){
 
-  bigwig_dir <- fs::path(proj_dir, "output", "HISAT2bigwig")
+  con <- DBI::dbConnect(RSQLite::SQLite(), dbname = bigwig_db)
 
-  if(!dir.exists(bigwig_dir)) stop("Sample coverage files (.bw) do not exist in the selected project")
+  bigwigfiles <- DBI::dbReadTable(con, "bigwigfiles") %>%
+    dplyr::filter(sample_id %in% colnames(seu)) %>%
+    identity()
 
-  bigwig_tbl <-
-    bigwig_dir %>%
-    fs::dir_ls(glob = "*.bw", recurse = TRUE) %>%
-    purrr::set_names(stringr::str_remove(fs::path_file(.), "_Aligned.sortedByCoord.out.bw")) %>%
-    tibble::enframe("sample_id", "bigWig")
+  missing_bigwigs <- colnames(seu)[!(colnames(seu) %in% bigwigfiles$sample_id)] %>%
+    paste(collapse = ", ")
 
-  if(!all(colnames(seu) %in% bigwig_tbl$sample_id)) stop("Sample coverage files (.bw) do not match samples in seurat object (check file names)")
+  warning(paste0("Sample coverage files ", missing_bigwigs, "(.bw) do not match samples in seurat object (check file names)"))
 
-  return(bigwig_tbl)
+  DBI::dbDisconnect(con)
+
+  bigwigfiles <-
+    bigwigfiles %>%
+    dplyr::filter(sample_id %in% colnames(seu))
+
+  return(bigwigfiles)
 
 }
 
@@ -32,6 +37,7 @@ load_bigwigs <- function(seu, proj_dir){
 #' @param bigwig_tbl
 #' @param var_of_interest
 #' @param values_of_interest
+#' @param organism
 #' @param edb
 #' @param heights
 #' @param ...
@@ -43,14 +49,24 @@ load_bigwigs <- function(seu, proj_dir){
 plot_gene_coverage_by_var <- function(genes_of_interest = "RXRG",
                                       cell_metadata,
                                       bigwig_tbl,
-                                      var_of_interest = NULL,
+                                      var_of_interest = "batch",
                                       values_of_interest = NULL,
-                                      edb = EnsDb.Hsapiens.v86::EnsDb.Hsapiens.v86,
+                                      organism = "human",
+                                      edb = NULL,
                                       heights = c(3,1),
                                       scale_y = "log10",
+                                      start = NULL,
+                                      end = NULL,
                                       ...) {
 
+  if (organism == "mouse") {
+    edb <- EnsDb.Mmusculus.v79::EnsDb.Mmusculus.v79
+  } else {
+    edb <- EnsDb.Hsapiens.v86::EnsDb.Hsapiens.v86
+  }
+
   cell_metadata["sample_id"] <- NULL
+
 
   new_track_data <-
     cell_metadata %>%
@@ -60,14 +76,21 @@ plot_gene_coverage_by_var <- function(genes_of_interest = "RXRG",
                   track_id = {{var_of_interest}},
                   colour_group = {{var_of_interest}},
                   everything()) %>%
-    dplyr::mutate(scaling_factor = 1, condition = as.factor(condition), colour_group = as.factor(colour_group)) %>%
+    dplyr::mutate(scaling_factor = scales::rescale(nCount_RNA), condition = as.factor(condition), colour_group = as.factor(colour_group)) %>%
     dplyr::left_join(bigwig_tbl, by = "sample_id") %>%
+    dplyr::filter(!is.na(bigWig)) %>%
     identity()
 
   if (!is.null(values_of_interest)){
     new_track_data <-
       new_track_data %>%
       dplyr::filter(condition %in% values_of_interest)
+  }
+
+  if(is.na(start) | is.na(end) | list(...)$rescale_introns == TRUE){
+    region_coords <- NULL
+  } else {
+    region_coords <- c(start, end)
   }
 
   coverage_plot_list <- wiggleplotr::plotCoverageFromEnsembldb(ensembldb = edb,
@@ -77,6 +100,7 @@ plot_gene_coverage_by_var <- function(genes_of_interest = "RXRG",
                             alpha = 0.5,
                             fill_palette = scales::hue_pal()(length(levels(new_track_data$colour_group))),
                             return_subplots_list = TRUE,
+                            region_coords = region_coords,
                             ...
                             )
 
@@ -87,38 +111,20 @@ plot_gene_coverage_by_var <- function(genes_of_interest = "RXRG",
       NULL
   }
 
+  x_lim <- ggplot2::ggplot_build(coverage_plot_list$coverage_plot)$layout$panel_params[[1]]$x.range
+
+  base_coverage <- coverage_plot_list$coverage_plot$data %>%
+    dplyr::filter(!is.na(coverage)) %>%
+    # tidyr::drop_na() %>%
+    dplyr::group_by(sample_id, colour_group) %>%
+    dplyr::summarize(sum = signif(sum(coverage), 4)) %>%
+    dplyr::mutate(sum = sum/diff(x_lim)) %>%
+    identity()
+
   coverage_plot = patchwork::wrap_plots(coverage_plot_list, heights = heights, ncol = 1)
 
-  return(coverage_plot)
+  return(list(plot = coverage_plot, table = base_coverage))
 
 }
 
-#' Retrieve Metadata from Batch
-#'
-#' @param batch
-#' @param projects_dir
-#' @param db_path
-#'
-#' @return
-#'
-#' @examples
-metadata_from_batch <- function(batch, projects_dir = "/dataVolume/storage/single_cell_projects",
-                                db_path = "single-cell-projects.db"){
-
-    mydb <- DBI::dbConnect(RSQLite::SQLite(), fs::path(projects_dir, db_path))
-
-    projects_tbl <- DBI::dbReadTable(mydb, "projects_tbl") %>%
-      dplyr::filter(!project_type %in% c("integrated_projects", "resources"))
-
-    DBI::dbDisconnect(mydb)
-
-    metadata <-
-      projects_tbl %>%
-      dplyr::filter(project_slug == batch) %>%
-      dplyr::pull(project_path) %>%
-      fs::path("data") %>%
-      fs::dir_ls(glob = "*.csv") %>%
-      identity()
-
-}
 

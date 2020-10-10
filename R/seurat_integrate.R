@@ -31,7 +31,7 @@ merge_small_seus <- function(seu_list, k.filter = 50){
 #' @export
 #'
 #' @examples
-seurat_integrate <- function(seu_list, method = "cca", ...) {
+seurat_integrate <- function(seu_list, method = "cca", organism = "human", ...) {
   #browser()
   # To construct a reference we will identify ‘anchors’ between the individual datasets. First, we split the combined object into a list, with each dataset as an element.
 
@@ -71,6 +71,8 @@ seurat_integrate <- function(seu_list, method = "cca", ...) {
   # Run the standard workflow for visualization and clustering
   seu_list.integrated <- Seurat::ScaleData(object = seu_list.integrated, verbose = FALSE)
   seu_list.integrated <- seurat_reduce_dimensions(seu_list.integrated, ...)
+
+  seu_list.integrated <- record_experiment_data(seu_list.integrated, experiment_name = "integrated", organism = organism)
 
   return(seu_list.integrated)
 }
@@ -303,7 +305,7 @@ reintegrate_seu <- function(seu, feature = "gene", suffix = "", reduction = "pca
   seu <- Seurat::DietSeurat(seu, counts = TRUE, data = TRUE, scale.data = FALSE)
   seus <- Seurat::SplitObject(seu, split.by = "batch")
   seu <- seurat_integration_pipeline(seus, feature = feature, suffix = suffix, algorithm = algorithm, ...)
-
+  # integration_workflow <- function(batches, excluded_cells = NULL, resolution = seq(0.2, 2.0, by = 0.2), experiment_name = "default_experiment", organism = "human", ...) {
 
 }
 

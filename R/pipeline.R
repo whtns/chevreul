@@ -20,20 +20,32 @@
 #' @examples
 seurat_integration_pipeline <- function(seu_list, feature, resolution = seq(0.2, 2.0, by = 0.2), suffix = '', algorithm = 1, organism, annotate_cell_cycle = FALSE, annotate_percent_mito = FALSE, ...) {
 
-  integrated_seu <- seurat_integrate(seu_list, ...)
+  organisms <- purrr::map(seu_list, Misc, c("experiment", "organism"))
+
+  if (any(map_lgl(organisms, is.null))){
+    organisms <- case_when(
+      grepl("Hs", names(seu_list)) ~ "human",
+      grepl("Mm", names(seu_list)) ~ "mouse"
+    )
+    names(organisms) <- names(seu_list)
+  }
+
+  experiment_names <- names(seu_list)
+
+  integrated_seu <- seurat_integrate(seu_list, organism = organism, ...)
 
   # cluster merged seurat objects
   integrated_seu <- seurat_cluster(integrated_seu, resolution = resolution, algorithm = algorithm, ...)
 
   integrated_seu <- find_all_markers(integrated_seu)
 
-  if (feature == "gene"){
-    enriched_seu <- tryCatch(getEnrichedPathways(integrated_seu), error = function(e) e)
-    enrichr_available <- !any(class(enriched_seu) == "error")
-    if(enrichr_available){
-      integrated_seu <- enriched_seu
-    }
-  }
+  # if (feature == "gene"){
+  #   enriched_seu <- tryCatch(getEnrichedPathways(integrated_seu), error = function(e) e)
+  #   enrichr_available <- !any(class(enriched_seu) == "error")
+  #   if(enrichr_available){
+  #     integrated_seu <- enriched_seu
+  #   }
+  # }
 
   # add read count column
   integrated_seu <- add_read_count_col(integrated_seu)
