@@ -38,7 +38,6 @@ seurat_integration_pipeline <- function(seu_list, feature, resolution = seq(0.2,
   integrated_seu <- seurat_cluster(integrated_seu, resolution = resolution, algorithm = algorithm, ...)
 
   integrated_seu <- find_all_markers(integrated_seu)
-
   # if (feature == "gene"){
   #   enriched_seu <- tryCatch(getEnrichedPathways(integrated_seu), error = function(e) e)
   #   enrichr_available <- !any(class(enriched_seu) == "error")
@@ -46,7 +45,6 @@ seurat_integration_pipeline <- function(seu_list, feature, resolution = seq(0.2,
   #     integrated_seu <- enriched_seu
   #   }
   # }
-
   # add read count column
   integrated_seu <- add_read_count_col(integrated_seu)
 

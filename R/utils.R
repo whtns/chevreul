@@ -295,6 +295,7 @@ prep_plot_genes_in_pseudotime <- function(cds, mygenes, resolution, partition = 
   return(gene_ptime_plot)
 }
 
+
 #' Record Experiment Metadata
 #'
 #' @param object
