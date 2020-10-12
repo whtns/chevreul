@@ -1247,21 +1247,30 @@ ccScore <- function(input, output, session) {
 #' @examples
 allTranscriptsui <- function(id) {
   ns <- NS(id)
-  tagList(fluidRow(seuratToolsBox(
-    title = "Transcript Expression per Gene",
-    selectizeInput(ns("feature"), "Gene or transcript expression by which to color the plot; eg. 'RXRG'", choices = NULL, selected = NULL),
-    selectizeInput(ns("groupby"), "Group by:", choices = NULL, selected = NULL),
-    actionButton(ns("plotComposition"), "Plot transcript composition"),
-    checkboxInput(ns("standardizeExpression"), "Standardize Expression", value = FALSE),
-    checkboxInput(ns("dropZero"), "Drop Zero Values", value = FALSE),
-    plotly::plotlyOutput(ns("compositionPlot")),
-    DT::DTOutput(ns("compositionDT")),
-    actionButton(ns("plotTrx"), "Plot all transcripts"),
-    selectizeInput(ns("embedding"), "Embedding", choices = NULL, selected = NULL),
-    uiOutput(ns("plotlys")),
-    width = 6) %>%
-      default_helper(type = "markdown", content = "allTranscripts"),
-  ))
+  tagList(
+    default_helper(
+      seuratToolsBox(
+        title = "Transcript Expression per Gene",
+        selectizeInput(ns("feature"), "Gene or transcript expression by which to color the plot; eg. 'RXRG'", choices = NULL, selected = NULL),
+        selectizeInput(ns("groupby"), "Group by:", choices = NULL, selected = NULL),
+        actionButton(ns("plotComposition"), "Plot transcript composition"),
+        checkboxInput(ns("standardizeExpression"), "Standardize Expression", value = FALSE),
+        checkboxInput(ns("dropZero"), "Drop Zero Values", value = FALSE),
+        plotly::plotlyOutput(ns("compositionPlot")),
+        DT::DTOutput(ns("compositionDT")),
+      width = 6),
+      type = "markdown", content = "allTranscripts"),
+    default_helper(
+      seuratToolsBox(
+        title = "Transcript Expression per Gene",
+        actionButton(ns("plotTrx"), "Plot all transcripts"),
+        downloadButton(ns("downloadPlot"), "Download Transcript Plots"),
+        selectizeInput(ns("embedding"), "Embedding", choices = NULL, selected = NULL),
+        uiOutput(ns("plotlys")),
+        width = 6),
+    type = "markdown", content = "allTranscripts"),
+  )
+
 }
 
 #' Plot All Transcripts
@@ -1340,6 +1349,14 @@ allTranscripts <- function(input, output, session, seu,
 
     do.call(tagList, plot_output_list)
   })
+
+  output$downloadPlot <- downloadHandler(
+    filename = function() { paste(input$feature, '_transcripts.pdf', sep='') },
+    content = function(file) {
+      pdf(file)
+      map(pList(), print)
+      dev.off()
+    })
 
 }
 
