@@ -77,7 +77,8 @@ plot_gene_coverage_by_var <- function(genes_of_interest = "RXRG",
                   track_id = {{var_of_interest}},
                   colour_group = {{var_of_interest}},
                   everything()) %>%
-    dplyr::mutate(scaling_factor = scales::rescale(nCount_RNA), condition = as.factor(condition), colour_group = as.factor(colour_group)) %>%
+    dplyr::mutate(scaling_factor = 1) %>% #scales::rescale(nCount_RNA)
+    dplyr::mutate(condition = as.factor(condition), colour_group = as.factor(colour_group)) %>%
     dplyr::left_join(bigwig_tbl, by = "sample_id") %>%
     dplyr::filter(!is.na(bigWig)) %>%
     identity()
