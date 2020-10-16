@@ -505,9 +505,6 @@ update_project_db <- function(projects_dir = NULL,
 
   con <- DBI::dbConnect(RSQLite::SQLite(), fs::path(destdir, destfile))
 
-  current_projects_tbl <-
-    DBI::dbReadTable(con, "projects_tbl")
-
   projects_tbl <-
     fs::dir_ls(projects_dir, glob = "*.here", recurse = TRUE, fail = FALSE, all = TRUE) %>%
     fs::path_dir(.) %>%
@@ -515,9 +512,14 @@ update_project_db <- function(projects_dir = NULL,
     tibble::enframe("project_name", "project_path") %>%
     dplyr::mutate(project_slug = stringr::str_remove(project_name, "_proj$")) %>%
     dplyr::mutate(project_type = fs::path_file(fs::path_dir(project_path))) %>%
-    dplyr::bind_rows(current_projects_tbl) %>%
-    dplyr::distinct(.keep_all = TRUE) %>%
     identity()
+
+  current_projects_tbl <-
+    DBI::dbReadTable(con, "projects_tbl") %>%
+    dplyr::filter(fs::file_exists(project_path)) %>%
+    dplyr::filter(!project_path %in% projects_tbl$project_path) %>%
+    dplyr::bind_rows(projects_tbl) %>%
+    dplyr::distinct(project_path, .keep_all = TRUE)
 
   DBI::dbWriteTable(con, "projects_tbl", projects_tbl, overwrite = TRUE)
 

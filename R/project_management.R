@@ -37,21 +37,6 @@ create_proj_matrix <- function(proj_list){
 }
 
 
-#' Create Project database
-#'
-#' @return
-#' @export
-#'
-#' @examples
-create_proj_db <- function(projects_dir = "/dataVolume/storage/single_cell_projects/"){
-
-  system_command <- "updatedb -l 0 -U /dataVolume/storage/single_cell_projects/ -o /dataVolume/storage/single_cell_projects/single_cell_projects.db"
-  system(system_command, wait = TRUE)
-  print(system_command)
-
-}
-
-
 #' subset by new metadata
 #'
 #' @param meta_path
