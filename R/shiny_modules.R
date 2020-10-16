@@ -71,6 +71,7 @@ plotViolinui <- function(id){
                      "Gene or transcript expression by which to color the plot eg. 'RXRG' or 'ENST00000488147'",
                      choices = NULL, multiple = TRUE),
       radioButtons(ns("slot"), "Data Type", choices = c("transformed" = "data", "raw counts" = "counts")),
+      downloadButton(ns("downloadPlot")),
       plotly::plotlyOutput(ns("vplot"), height = 750),
       width = 12)
     )
@@ -122,11 +123,32 @@ plotViolin <- function(input, output, session, seu, featureType, organism_type){
     selectizeInput(ns("vlnGroup"), "Grouping variable",
                    choices = colnames(seu$active[[]]), selected = "batch")
   })
-  output$vplot <- plotly::renderPlotly({
+
+  vln_plot <- reactive({
     req(input$customFeature)
     req(input$vlnGroup)
 
-    plot_violin(seu$active, plot_var = input$vlnGroup, features = input$customFeature, slot = input$slot)
+    vln_plot <- plot_violin(seu$active, plot_var = input$vlnGroup, features = input$customFeature, slot = input$slot)
+
+  })
+
+  output$downloadPlot <- downloadHandler(
+    filename = function() { paste("violin", '.pdf', sep='') },
+    content = function(file) {
+      ggsave(file, vln_plot(), width = 16, height = 12)
+    })
+
+  output$vplot <- plotly::renderPlotly({
+    req(seu$active)
+    req(input$vlnGroup)
+    exclude_trace_number = length(unique(seu$active[[]][[input$vlnGroup]]))*2
+
+    vln_plot <- plotly::ggplotly(vln_plot(), height = 700) %>%
+      plotly::style(opacity = 0.5) %>%
+      plotly::style(hoverinfo = "skip", traces = c(1:exclude_trace_number)) %>%
+      plotly_settings(width = 1200) %>%
+      plotly::toWebGL() %>%
+      identity()
   })
 }
 
@@ -146,7 +168,7 @@ plotHeatmapui <- function(id){
       title = "Heatmap",
       uiOutput(ns("colAnnoVarui")),
       radioButtons(ns("slot"), "Data Scaling", choices = c(scaled = "scale.data", unscaled = "data"), selected = "scale.data", inline = TRUE),
-      selectizeInput(ns("dendroSelect"), "Clustering algorigthm for column dendrogram or metadata for annotation", choices = NULL, selected = NULL),
+      selectizeInput(ns("dendroSelect"), "Clustering algorithm or metadata for column arrangement", choices = NULL, selected = NULL),
       actionButton(ns("actionHeatmap"), "Plot Heatmap"),
       downloadButton(ns("downloadPlot"), "Download Heatmap"),
       selectizeInput(ns("customFeature"), "Gene or transcript expression by which to color the plot; eg. 'RXRG' or 'ENST00000488147'",
@@ -172,6 +194,10 @@ plotHeatmapui <- function(id){
 #' @examples
 plotHeatmap <- function(input, output, session, seu, featureType, organism_type){
   ns <- session$ns
+
+  w <- waiter::Waiter$new(ns("heatmap"),
+                          html = waiter::spin_loaders(id = 1, color = "black", style = "position:relative;margin:auto;"),
+                          color = waiter::transparent(.5))
 
   observe({
     req(seu$active)
@@ -219,6 +245,7 @@ plotHeatmap <- function(input, output, session, seu, featureType, organism_type)
   })
 
   output$heatmap <- renderPlot({
+    w$show()
     heatmap_plot()
   })
 
@@ -2368,4 +2395,3 @@ plotCoverage <- function(input, output, session, seu, plot_types, proj_dir, orga
       })
 
 }
-

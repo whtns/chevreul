@@ -360,20 +360,22 @@ plot_var <- function(seu, embedding = "umap", group = "batch", dims = c(1,2), hi
 #' Plotly settings
 #'
 #' @param plotly_plot
+#' @param width
+#' @param height
 #'
 #' @return
 #' @export
 #'
 #' @examples
-plotly_settings <- function(plotly_plot){
+plotly_settings <- function(plotly_plot, width = 600, height = 700){
   plotly_plot %>%
     plotly::layout(dragmode = "lasso") %>%
     plotly::config(
       toImageButtonOptions = list(
         format = "png",
         filename = "myplot",
-        width = 600,
-        height = 700
+        width = width,
+        height = height
       )) %>%
     identity()
 }
@@ -401,23 +403,11 @@ plot_violin <- function(seu, plot_var = "batch", plot_vals = NULL, features = "R
   }
   seu <- seu[, seu[[]][[plot_var]] %in% plot_vals]
   vln_plot <- Seurat::VlnPlot(seu, features = features, group.by = plot_var, assay = assay, pt.size = 1, ...) +
-    geom_boxplot() +
+    geom_boxplot(width = 0.2) +
     # labs(title = "Expression Values for each cell are normalized by that cell's total expression then multiplied by 10,000 and natural-log transformed") +
     # stat_summary(fun.y = mean, geom = "line", size = 4, colour = "black") +
     NULL
 
-  if (!return_plotly) return(vln_plot)
-
-  exclude_trace_number = length(unique(seu[[]][[plot_var]]))*2
-
-  vln_plot <- plotly::ggplotly(vln_plot, height = 700) %>%
-    plotly::style(opacity = 0.5) %>%
-    plotly::style(hoverinfo = "skip", traces = c(1:exclude_trace_number)) %>%
-    plotly_settings() %>%
-    plotly::toWebGL() %>%
-    identity()
-
-  return(vln_plot)
 }
 
 
