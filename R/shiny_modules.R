@@ -128,14 +128,15 @@ plotViolin <- function(input, output, session, seu, featureType, organism_type){
     req(input$customFeature)
     req(input$vlnGroup)
 
-    vln_plot <- plot_violin(seu$active, plot_var = input$vlnGroup, features = input$customFeature, slot = input$slot)
+    vln_plot <-
+      plot_violin(seu$active, plot_var = input$vlnGroup, features = input$customFeature, slot = input$slot)
 
   })
 
   output$downloadPlot <- downloadHandler(
     filename = function() { paste("violin", '.pdf', sep='') },
     content = function(file) {
-      ggsave(file, vln_plot(), width = 16, height = 12)
+      ggsave(file, vln_plot() + ggpubr::theme_pubr(base_size = 20, x.text.angle = 45), width = 16, height = 12)
     })
 
   output$vplot <- plotly::renderPlotly({
@@ -252,7 +253,7 @@ plotHeatmap <- function(input, output, session, seu, featureType, organism_type)
   output$downloadPlot <- downloadHandler(
     filename = function() { paste("heatmap", '.pdf', sep='') },
     content = function(file) {
-      ggsave(file, ggplotify::as.ggplot(heatmap_plot()), width = 16, height = 12)
+      ggsave(file, ggplotify::as.ggplot(heatmap_plot()) + ggpubr::theme_pubr(base_size = 20, x.text.angle = 45), width = 16, height = 12)
     })
 
 
@@ -1278,7 +1279,18 @@ allTranscriptsui <- function(id) {
     default_helper(
       seuratToolsBox(
         title = "Transcript Expression per Gene",
-        selectizeInput(ns("feature"), "Gene or transcript expression by which to color the plot; eg. 'RXRG'", choices = NULL, selected = NULL),
+        selectizeInput(ns("embeddingGene"), "Gene or transcript expression by which to color the plot; eg. 'RXRG'", choices = NULL, selected = NULL),
+        selectizeInput(ns("transcriptSelect"), "Transcript to Plot", choices = NULL),
+        downloadButton(ns("downloadPlot"), "Download Transcript Plots"),
+        selectizeInput(ns("embedding"), "Embedding", choices = NULL, selected = NULL),
+        plotly::plotlyOutput(ns("transcriptPlot")),
+        # uiOutput(ns("plotlys")),
+        width = 6),
+      type = "markdown", content = "allTranscripts"),
+    default_helper(
+      seuratToolsBox(
+        title = "Transcript Expression per Gene",
+        selectizeInput(ns("compositionGene"), "Gene or transcript expression by which to color the plot; eg. 'RXRG'", choices = NULL, selected = NULL),
         selectizeInput(ns("groupby"), "Group by:", choices = NULL, selected = NULL),
         actionButton(ns("plotComposition"), "Plot transcript composition"),
         checkboxInput(ns("standardizeExpression"), "Standardize Expression", value = FALSE),
@@ -1286,16 +1298,7 @@ allTranscriptsui <- function(id) {
         plotly::plotlyOutput(ns("compositionPlot")),
         DT::DTOutput(ns("compositionDT")),
       width = 6),
-      type = "markdown", content = "allTranscripts"),
-    default_helper(
-      seuratToolsBox(
-        title = "Transcript Expression per Gene",
-        actionButton(ns("plotTrx"), "Plot all transcripts"),
-        downloadButton(ns("downloadPlot"), "Download Transcript Plots"),
-        selectizeInput(ns("embedding"), "Embedding", choices = NULL, selected = NULL),
-        uiOutput(ns("plotlys")),
-        width = 6),
-    type = "markdown", content = "allTranscripts"),
+      type = "markdown", content = "allTranscripts")
   )
 
 }
@@ -1318,21 +1321,23 @@ allTranscripts <- function(input, output, session, seu,
 
   observe({
     req(seu$gene)
-    updateSelectizeInput(session, "feature", choices = rownames(seu$gene@assays$RNA), selected = "RXRG", server = TRUE)
+    updateSelectizeInput(session, "compositionGene", choices = rownames(seu$gene@assays$RNA), selected = "RXRG", server = TRUE)
+    updateSelectizeInput(session, "embeddingGene", choices = rownames(seu$gene@assays$RNA), selected = "RXRG", server = TRUE)
     updateSelectizeInput(session, "groupby", choices = colnames(seu$gene@meta.data), selected = "batch", server = TRUE)
+  })
+
+  transcripts <- reactive({
+    get_transcripts_from_seu(seu$transcript, input$embeddingGene, organism = organism_type())
   })
 
   observe({
     req(seu$active)
     updateSelectizeInput(session, "embedding", choices = c("pca", "tsne", "umap"), selected = "umap", server = TRUE)
-  })
-
-  transcripts <- reactive({
-    get_transcripts_from_seu(seu$transcript, input$feature, organism = organism_type())
+    updateSelectizeInput(session, "transcriptSelect", choices = transcripts(), server = TRUE)
   })
 
   composition_plot <- eventReactive(input$plotComposition, {
-    plot_transcript_composition(seu$transcript, seu$gene, gene_symbol = input$feature, group.by = input$groupby, standardize = input$standardizeExpression, drop_zero = input$dropZero)
+    plot_transcript_composition(seu$transcript, seu$gene, gene_symbol = input$compositionGene, group.by = input$groupby, standardize = input$standardizeExpression, drop_zero = input$dropZero)
   })
 
   output$compositionPlot <- plotly::renderPlotly({
@@ -1351,34 +1356,42 @@ allTranscripts <- function(input, output, session, seu,
                                                           "csv"), scrollX = "100px", scrollY = "400px"))
   })
 
-  pList <- eventReactive(input$plotTrx, {
+  pList <- reactive({
+    req(transcripts())
     pList <- plot_all_transcripts(seu$transcript, seu$gene, transcripts(), input$embedding)
   })
 
-  observe({
+  # observe({
+  #
+  #   for (i in 1:length(pList())) {
+  #     local({
+  #       my_i <- i
+  #       plotname <- transcripts()[[my_i]]
+  #       output[[plotname]] <- renderPlot({
+  #         pList()[[my_i]]
+  #       })
+  #     })
+  #   }
+  #
+  # })
+  #
+  # output$plotlys <- renderUI({
+  #   req(pList())
+  #
+  #   plot_output_list <- purrr::map(names(pList()), ~plotOutput(ns(.x), height = 500))
+  #
+  #   do.call(tagList, plot_output_list)
+  # })
 
-    for (i in 1:length(pList())) {
-      local({
-        my_i <- i
-        plotname <- transcripts()[[my_i]]
-        output[[plotname]] <- renderPlot({
-          pList()[[my_i]]
-        })
-      })
-    }
-
-  })
-
-  output$plotlys <- renderUI({
-    req(pList())
-
-    plot_output_list <- purrr::map(names(pList()), ~plotOutput(ns(.x), height = 500))
-
-    do.call(tagList, plot_output_list)
+  output$transcriptPlot <- plotly::renderPlotly({
+    pList()[[input$transcriptSelect]] %>%
+      plotly::ggplotly(height = 400) %>%
+      plotly_settings() %>%
+      plotly::toWebGL()
   })
 
   output$downloadPlot <- downloadHandler(
-    filename = function() { paste(input$feature, '_transcripts.pdf', sep='') },
+    filename = function() { paste(input$embeddingGene, '_transcripts.pdf', sep='') },
     content = function(file) {
       pdf(file)
       map(pList(), print)
@@ -2395,3 +2408,5 @@ plotCoverage <- function(input, output, session, seu, plot_types, proj_dir, orga
       })
 
 }
+
+

@@ -804,7 +804,8 @@ plot_all_transcripts <- function(seu_transcript, seu_gene, features, embedding){
   seu_gene[[features]] <- transcript_cols
 
   pList <- purrr::map(features, ~plot_feature(seu_gene,
-                                              embedding = embedding, features = .x, return_plotly = FALSE))
+                                              embedding = embedding,
+                                              features = .x, return_plotly = FALSE))
   names(pList) <- features
 
   return(pList)

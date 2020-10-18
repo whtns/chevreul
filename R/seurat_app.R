@@ -873,6 +873,24 @@ seuratApp <- function(preset_project, appTitle = "seuratTools", feature_types = 
 
     callModule(techInfo, "techInfo", seu)
 
+    # Copy in server
+
+    mypalettes <- reactiveValues()
+
+    observe({
+      req(seu$active)
+
+      palette_list <-
+        seu$active@meta.data %>%
+        select(where(~is.character(.x) | is.factor(.x))) %>%
+        map(n_distinct) %>%
+        map(scales::hue_pal()) %>%
+        identity()
+      for (i in names(palette_list)){
+        mypalettes[[i]] <- palette_list[[i]]
+      }
+    })
+
 
   }
   # onStop(function() DBI::dbDisconnect(con))

@@ -54,7 +54,8 @@ Imports:
     shinyhelper,
     rhandsontable,
     checkmate,
-    Nebulosa
+    Nebulosa,
+    ggpubr
 Suggests: 
     ggplot2,
     testthat (>= 2.1.0),

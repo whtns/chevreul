@@ -578,4 +578,3 @@ metadata_from_batch <- function(batch, projects_dir = "/dataVolume/storage/singl
 
 }
 
-
