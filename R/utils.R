@@ -578,3 +578,18 @@ metadata_from_batch <- function(batch, projects_dir = "/dataVolume/storage/singl
 
 }
 
+swap_counts_from_feature <- function(cds, featureType){
+  print(featureType)
+#
+#   if (featureType == "transcript"){
+#     rowData(cds[[featureType]])$gene_short_name <- rownames(cds[[featureType]])
+#   }
+
+  assay(cds$traj, withDimnames=FALSE) <- assay(cds[[featureType]])
+  rowData(cds$traj) <- rowData(cds[[featureType]])
+  rownames(cds$traj) <- rownames(cds[[featureType]])
+  cds$traj@preprocess_aux$gene_loadings <- cds[[featureType]]@preprocess_aux$gene_loadings
+  # counts(cds$traj) <- counts(cds[[featureType]])
+  cds$traj
+
+}

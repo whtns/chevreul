@@ -322,7 +322,9 @@ plot_velocity_trajectory <- function(seu, reduction = "umap", format = "arrow", 
 #' @export
 #'
 #' @examples
-plot_var <- function(seu, embedding = "umap", group = "batch", dims = c(1,2), highlight = NULL, pt.size = 1.0, ...){
+#'
+#' plot_var(seurat_pancreas_reduced$gene, group = "batch")
+plot_var <- function(seu, embedding = "umap", group = "batch", dims = c(1,2), highlight = NULL, pt.size = 1.0, return_plotly = TRUE, ...){
 
   Seurat::DefaultAssay(seu) <- "RNA"
 
@@ -347,6 +349,8 @@ plot_var <- function(seu, embedding = "umap", group = "batch", dims = c(1,2), hi
     # theme(legend.text=element_text(size=10)) +
     NULL
 
+  if (return_plotly == FALSE) return(d)
+
   plotly_plot <- plotly::ggplotly(d, tooltip = "cellid", height  = 500) %>%
     # htmlwidgets::onRender(javascript) %>%
     # plotly::highlight(on = "plotly_selected", off = "plotly_relayout") %>%
@@ -364,7 +368,6 @@ plot_var <- function(seu, embedding = "umap", group = "batch", dims = c(1,2), hi
 #' @param height
 #'
 #' @return
-#' @export
 #'
 #' @examples
 plotly_settings <- function(plotly_plot, width = 600, height = 700){
@@ -387,7 +390,6 @@ plotly_settings <- function(plotly_plot, width = 600, height = 700){
 #' @param plot_var
 #' @param plot_vals
 #' @param features
-#' @param return_plotly
 #' @param assay
 #' @param ...
 #'
@@ -395,7 +397,10 @@ plotly_settings <- function(plotly_plot, width = 600, height = 700){
 #' @export
 #'
 #' @examples
-plot_violin <- function(seu, plot_var = "batch", plot_vals = NULL, features = "RXRG", return_plotly = TRUE, assay = "RNA", ...){
+#'
+#' plot_violin(seurat_pancreas_reduced$gene, plot_var = "batch", features = c("NRL"))
+#'
+plot_violin <- function(seu, plot_var = "batch", plot_vals = NULL, features = "RXRG", assay = "RNA", ...){
 
   if (is.null(plot_vals)) {
     plot_vals = unique(seu[[]][[plot_var]])
@@ -411,8 +416,12 @@ plot_violin <- function(seu, plot_var = "batch", plot_vals = NULL, features = "R
 }
 
 
-#' Plot Features
-#' This is a great function
+#' Plot Feature
+#'
+#' Plots gene or transcript expression overlaid on a given embedding.
+#' If multiple features are supplied the joint density of all features
+#' will be plotted using [Nebulosa](https://www.bioconductor.org/packages/devel/bioc/html/Nebulosa.html)
+#'
 #' @param seu
 #' @param embedding
 #' @param features
@@ -420,10 +429,17 @@ plot_violin <- function(seu, plot_var = "batch", plot_vals = NULL, features = "R
 #'
 #' @return
 #' @export
+#' @importFrom ggplot2 aes
 #'
 #' @examples
 #'
-plot_feature <- function(seu, embedding, features, dims = c(1,2), return_plotly = TRUE, pt.size = 1.0){
+#' plot_feature(seurat_pancreas_reduced, embedding = "umap", features = c("NRL"))
+#'
+#' plot_feature(seurat_pancreas_reduced, embedding = "umap", features = c("RXRG", "NRL"))
+#'
+#' plot_feature(seurat_pancreas_reduced, embedding = "umap", features = c("RXRG", "NRL"), return_plotly = FALSE)
+#'
+plot_feature <- function(seu, embedding = c("umap", "pca", "tsne"), features, dims = c(1,2), return_plotly = TRUE, pt.size = 1.0){
 
   Seurat::DefaultAssay(seu) <- "RNA"
 
@@ -439,12 +455,12 @@ plot_feature <- function(seu, embedding, features, dims = c(1,2), return_plotly 
   if(length(features) == 1){
 
   fp <- Seurat::FeaturePlot(object = seu, features = features, dims = dims, reduction = embedding, pt.size = pt.size, blend = FALSE)	+
-    aes(key = key, cellid = key, alpha = 0.7)
+    ggplot2::aes(key = key, cellid = key, alpha = 0.7)
   } else if(length(features) > 1){
     nebulosa_plots <- Nebulosa::plot_density(object = seu, features = features, dims = dims, reduction = embedding, size = pt.size, joint = TRUE, combine = FALSE)
 
     fp <- dplyr::last(nebulosa_plots) +
-      aes(key = key, cellid = key, alpha = 0.7)
+      ggplot2::aes(key = key, cellid = key, alpha = 0.7)
   }
 
   if (return_plotly == FALSE) return(fp)
@@ -457,7 +473,9 @@ plot_feature <- function(seu, embedding, features, dims = c(1,2), return_plotly 
 
 }
 
-#' Plot Rides
+#' Plot Ridges
+#'
+#' Plot ridge plots for cell cycle scoring
 #'
 #' @param seu
 #' @param features
@@ -485,12 +503,16 @@ plot_ridge <- function(seu, features){
 
 #' Plot Cluster Marker Genes
 #'
+#' Plot a dot plot of n marker features grouped by cell metadata
+#' available methods are wilcoxon rank-sum test implemented in
+#' [presto](https://github.com/immunogenomics/presto) and specificity scores implemented in [genesorteR](https://github.com/mahmoudibrahim/genesorteR)
+#'
 #' @param seu
 #' @param marker_method
 #' @param metavar
 #' @param num_markers
 #' @param selected_values
-#' @param return_plot
+#' @param return_plotly
 #' @param featureType
 #' @param hide_pseudo
 #' @param ...
@@ -499,7 +521,10 @@ plot_ridge <- function(seu, features){
 #' @export
 #'
 #' @examples
-plot_markers <- function(seu, metavar, num_markers = 5, selected_values = NULL, return_plot = FALSE, marker_method = "presto", featureType  = "gene", hide_pseudo = FALSE, ...){
+#'
+#' plot_markers(seurat_pancreas_reduced$gene, "tech", return_plot = TRUE)
+#'
+plot_markers <- function(seu, metavar, num_markers = 5, selected_values = NULL, return_plotly = TRUE, marker_method = c("presto", "genesorteR"), featureType  = "gene", hide_pseudo = FALSE, ...){
   Idents(seu) <- seu[[metavar]]
 
   # by default only resolution markers are calculated in pre-processing
@@ -547,7 +572,7 @@ plot_markers <- function(seu, metavar, num_markers = 5, selected_values = NULL, 
     coord_flip() +
     NULL
 
-  if (return_plot) return(markerplot)
+  if (return_plotly == FALSE) return(markerplot)
 
   plot_height = (150*num_markers)
   plot_width = (100*length(levels(Idents(seu))))
@@ -566,12 +591,18 @@ plot_markers <- function(seu, metavar, num_markers = 5, selected_values = NULL, 
 #' @param metavar
 #' @param color.by
 #' @param yscale
+#' @param return_plotly
 #'
 #' @return
 #' @export
 #'
 #' @examples
-plot_readcount <- function(seu, metavar = "nCount_RNA", color.by = "batch", yscale = "linear"){
+#'
+#' plot_readcount(seurat_pancreas_reduced$gene)
+#'
+#' plot_readcount(seurat_pancreas_reduced$gene, return_plotly = FALSE)
+#'
+plot_readcount <- function(seu, metavar = "nCount_RNA", color.by = "batch", yscale = "linear", return_plotly = TRUE, ...){
 
   seu_tbl <- tibble::rownames_to_column(seu[[]], "SID") %>%
     dplyr::select(SID, !!as.symbol(metavar), !!as.symbol(color.by))
@@ -590,7 +621,12 @@ plot_readcount <- function(seu, metavar = "nCount_RNA", color.by = "batch", ysca
       scale_y_log10()
   }
 
-  rc_plot <- rc_plot %>%
+  if (return_plotly == FALSE) return(rc_plot)
+
+  rc_plot <- plotly::ggplotly(rc_plot, tooltip = "cellid", height  = 500) %>%
+    # htmlwidgets::onRender(javascript) %>%
+    # plotly::highlight(on = "plotly_selected", off = "plotly_relayout") %>%
+    plotly_settings() %>%
     plotly::toWebGL() %>%
     # plotly::partial_bundle() %>%
     identity()
@@ -617,6 +653,11 @@ plot_readcount <- function(seu, metavar = "nCount_RNA", color.by = "batch", ysca
 #' @export
 #'
 #' @examples
+#'
+#' top_50_features <- VariableFeatures(seurat_pancreas_reduced$gene)[1:50]
+#'
+#' seu_complex_heatmap(seurat_pancreas_reduced$gene, features = top_50_features)
+#'
 seu_complex_heatmap <- function(seu, features = NULL, cells = NULL, group.by = "ident",
                                 slot = "scale.data", assay = NULL, group.bar.height = 0.01,
                                 cluster_columns = FALSE, column_split = NULL, col_dendrogram = "ward.D2", mm_col_dend = 30, ...)
@@ -713,7 +754,9 @@ seu_complex_heatmap <- function(seu, features = NULL, cells = NULL, group.by = "
 
 
 
-#' Title
+#' Plot Transcript Composition
+#'
+#' plot the proportion of reads of a given gene map to each transcript
 #'
 #' @param seu_transcript
 #' @param seu_gene
@@ -783,7 +826,7 @@ plot_transcript_composition <- function(seu_transcript, seu_gene, gene_symbol, g
 
 }
 
-#' Title
+#' Plot All Transcripts
 #'
 #' @param seu
 #' @param transcripts
@@ -792,6 +835,9 @@ plot_transcript_composition <- function(seu_transcript, seu_gene, gene_symbol, g
 #' @export
 #'
 #' @examples
+#'
+#' Plot all transcripts
+#'
 plot_all_transcripts <- function(seu_transcript, seu_gene, features, embedding){
 
 

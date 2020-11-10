@@ -338,6 +338,7 @@ minimalSeuratApp <- function(seu_list = seurat_pancreas_reduced, appTitle = NULL
       seu
     )
     observeEvent(input$subsetAction, {
+      req(input$subsetAction)
       req(subset_selected_cells())
       withCallingHandlers(
         {

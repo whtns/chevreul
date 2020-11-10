@@ -1327,6 +1327,7 @@ allTranscripts <- function(input, output, session, seu,
   })
 
   transcripts <- reactive({
+    req(seu$transcript)
     get_transcripts_from_seu(seu$transcript, input$embeddingGene, organism = organism_type())
   })
 
@@ -1627,6 +1628,7 @@ monocleui <- function(id){
       fluidRow(
         seuratToolsBox(
           title = "calculate pseudotime",
+          radioButtons(ns("diffexFeature"), "Feature for differential expression", choices = c("gene", "transcript")),
           actionButton(ns("calcPtimeGenes"), "Find Pseudotime Correlated Genes"),
           sliderInput(ns("qvalThreshold"), "Set q value threshold for module calculation", min = 0.01, 0.1, value = 0.05, step = 0.01),
           textOutput("pseudotimeMessages"),
@@ -1638,12 +1640,13 @@ monocleui <- function(id){
         seuratToolsBox(
           title = "Plot Feature Expression over Pseudotime",
           plotly::plotlyOutput(ns("ptimeGenesLinePlot")),
-          width = 6)
+          width = 6,
+          height = 650)
         ),
       seuratToolsBox(
           title = "Heatmap",
           uiOutput(ns("colAnnoVarui")),
-          radioButtons(ns("heatmapRows"), "annotate heatmap rows by genes or modules?", choices = c(genes = FALSE, modules = TRUE), selected = FALSE),
+          radioButtons(ns("heatmapRows"), "annotate heatmap rows by genes or modules?", choices = c(modules = TRUE, genes = FALSE), selected = TRUE),
           downloadButton(ns("downloadPlot"), "Download Heatmap"),
           plotOutput(ns("monocleHeatmap"), width = "800px", height = "1200px")
         ),
@@ -1680,9 +1683,9 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
     ns <- session$ns
 
     # markermarker
-    # w <- waiter::Waiter$new(ns("monocleHeatmap"),
-    #                         html = waiter::spin_loaders(id = 1, color = "black", style = "position:relative;margin:auto;"),
-    #                         color = waiter::transparent(.5))
+    w <- waiter::Waiter$new(ns("monocleHeatmap"),
+                            html = waiter::spin_loaders(id = 1, color = "black", style = "position:relative;margin:auto;"),
+                            color = waiter::transparent(.5))
 
     output$colAnnoVarui <- renderUI({
       req(seu$active)
@@ -1697,13 +1700,14 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
       c(purrr::flatten_chr(plot_types()), cds_plot_types())
     })
 
+    # to be able to subset, create a new copy of the seurat object
     observe({
       seu$monocle <- seu$active
     })
 
     seudimplot <- reactive({
       req(seu$monocle)
-      if ("integrated" %in% names(seu$active@assays)) {
+      if ("integrated" %in% names(seu$monocle@assays)) {
         active_assay <- "integrated"
       }
       else {
@@ -1743,14 +1747,19 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
 
     observeEvent(input$calcCDS, {
       req(seu$monocle)
-        cds$traj <- convert_seu_to_cds(seu$monocle, resolution = input$cdsResolution)
-        cds$traj <- learn_graph_by_resolution(cds$traj,
-                                              seu$monocle,
-                                              resolution = input$cdsResolution)
-        updateSelectizeInput(session, "plottype1", selected = "seurat", choices = myplot_types())
-        updateSelectizeInput(session, "customFeature1", choices = rownames(cds$traj), server = TRUE)
-        updateSelectizeInput(session, "plottype2", selected = "seurat", choices = myplot_types())
-        updateSelectizeInput(session, "customFeature2", choices = rownames(cds$traj), server = TRUE)
+        for (i in c("gene", "transcript")) {
+          if (i %in% names(seu)){
+          cds[[i]] <- convert_seu_to_cds(seu[[i]], resolution = input$cdsResolution)
+          cds[[i]] <- learn_graph_by_resolution(cds[[i]],
+                                                seu$monocle,
+                                                resolution = input$cdsResolution)
+          updateSelectizeInput(session, "plottype1", selected = "seurat", choices = myplot_types())
+          updateSelectizeInput(session, "customFeature1", choices = rownames(cds[[i]]), server = TRUE)
+          updateSelectizeInput(session, "plottype2", selected = "seurat", choices = myplot_types())
+          updateSelectizeInput(session, "customFeature2", choices = rownames(cds[[i]]), server = TRUE)
+          }
+        }
+      cds$traj <- cds[[featureType()]]
     })
 
     selected_plot <- reactiveVal()
@@ -1758,6 +1767,7 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
     output$monoclePlot1 <- plotly::renderPlotly({
       req(input$plottype1)
       req(cds$traj)
+      w$show()
       print(cds$selected)
       if (input$plottype1 == "seurat") {
         cluster_resolution = reactive({
@@ -1788,6 +1798,7 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
     output$monoclePlot2 <- plotly::renderPlotly({
       req(input$plottype2)
       req(cds$traj)
+      w$show()
       print(cds$selected)
       if (input$plottype2 == "seurat") {
         cluster_resolution = reactive({
@@ -1853,12 +1864,17 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
       }
       updateSelectizeInput(session, "plottype1", selected = "pseudotime", choices = myplot_types())
       updateSelectizeInput(session, "plottype2", selected = "pseudotime", choices = myplot_types())
-      cds$selected = "ptime"
+      cds$selected = c(ptime = TRUE, diff_features = FALSE)
+                       #markermarker
     })
 
     #markermarker
     observeEvent(input$calcPtimeGenes, {
-      if (req(cds$selected) == "ptime"){
+      req(input$diffexFeature)
+      if (req(cds$selected["ptime"])){
+
+        #markermarker
+        cds$traj  <- swap_counts_from_feature(cds, input$diffexFeature)
 
         showModal(modalDialog(
           title = "Calculating Pseudotime Correlated Features",
@@ -1866,8 +1882,8 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
         ))
             cds_pr_test_res = monocle3::graph_test(cds$traj, neighbor_graph="principal_graph", cores=4, expression_family = "negbinom")
 
-            cds$traj@metadata[["diff_genes"]] <- cds_pr_test_res
-            cds$selected = "diff_genes"
+            cds$traj@metadata[["diff_features"]] <- cds_pr_test_res
+            cds$selected["diff_features"] <- TRUE
 
             removeModal()
 
@@ -1875,8 +1891,8 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
     })
 
     cds_pr_test_res <- reactive({
-      if (req(cds$selected) == "diff_genes"){
-        cds_pr_test_res <- cds$traj@metadata$diff_genes
+      if (req(cds$selected["diff_features"])){
+        cds_pr_test_res <- cds$traj@metadata$diff_features
 
 
         cds_pr_test_res <-
@@ -1889,7 +1905,7 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
     })
 
     observe({
-      if (req(cds$selected) == "diff_genes"){
+      if (req(cds$selected["diff_features"])){
 
       output$genePlotQuery2 <- renderUI({
         selectizeInput(ns("genePlotQuery1"), "Pick Gene to Plot on Pseudotime", choices = rownames(cds_pr_test_res()), multiple = TRUE, selected = rownames(cds_pr_test_res())[1])
@@ -2176,7 +2192,7 @@ techInfo <- function(input, output, session, seu){
 
     misc <- reactive({
       req(seu$active)
-      seu$active@misc
+      Seurat::Misc(seu$active)
       })
 
     observe({

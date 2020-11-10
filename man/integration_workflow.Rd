@@ -34,8 +34,8 @@ Integrate multiple seurat objects and save to file
 }
 \examples{
 batches <- seurat_pancreas_reduced \%>\%
-  purrr::map(Seurat::SplitObject, split.by = "dataset") \%>\%
+  purrr::map(Seurat::SplitObject, split.by = "tech") \%>\%
   purrr::transpose()
 
-inegrated_seu <- integration_workflow(batches)
+integrated_seu <- integration_workflow(batches)
 }

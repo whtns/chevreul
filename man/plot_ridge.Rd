@@ -2,7 +2,7 @@
 % Please edit documentation in R/plotting.R
 \name{plot_ridge}
 \alias{plot_ridge}
-\title{Plot Rides}
+\title{Plot Ridges}
 \usage{
 plot_ridge(seu, features)
 }
@@ -13,5 +13,5 @@ plot_ridge(seu, features)
 
 }
 \description{
-Plot Rides
+Plot ridge plots for cell cycle scoring
 }

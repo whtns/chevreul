@@ -197,7 +197,8 @@ seurat_reduce_dimensions <- function(seu, reduction = "pca", legacy_settings = F
     message("using legacy settings")
     seu <- Seurat::RunPCA(seu, features = rownames(seu))
   } else {
-    seu <- Seurat::RunPCA(object = seu, do.print = FALSE, npcs = npcs, ...)
+    # seu <- Seurat::RunPCA(object = seu, do.print = FALSE, npcs = npcs, ...)
+    seu <- Seurat::RunPCA(object = seu, features = Seurat::VariableFeatures(object = seu), do.print = FALSE, npcs = npcs, ...)
   }
 
   if (reduction == "harmony"){
@@ -298,13 +299,23 @@ filter_merged_seu <- function(seu, filter_var, filter_val, .drop = .drop) {
 #' @export
 #'
 #' @examples
+#'
+#' seurat_pancreas_reduced$gene$batch <- seurat_pancreas_reduced$gene$tech
+#' reintegrate_seu(seurat_pancreas_reduced)
+#'
 reintegrate_seu <- function(seu, feature = "gene", suffix = "", reduction = "pca", algorithm = 1, ...){
 
   Seurat::DefaultAssay(seu) <- "RNA"
 
+  organism = Misc(seu)$experiment$organism
+  experiment_name = Misc(seu)$experiment$experiment_name
+
   seu <- Seurat::DietSeurat(seu, counts = TRUE, data = TRUE, scale.data = FALSE)
   seus <- Seurat::SplitObject(seu, split.by = "batch")
   seu <- seurat_integration_pipeline(seus, feature = feature, suffix = suffix, algorithm = algorithm, ...)
+
+  seu <- record_experiment_data(seu, experiment_name, organism)
+
   # integration_workflow <- function(batches, excluded_cells = NULL, resolution = seq(0.2, 2.0, by = 0.2), experiment_name = "default_experiment", organism = "human", ...) {
 
 }
