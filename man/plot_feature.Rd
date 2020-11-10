@@ -2,12 +2,11 @@
 % Please edit documentation in R/plotting.R
 \name{plot_feature}
 \alias{plot_feature}
-\title{Plot Features
-This is a great function}
+\title{Plot Feature}
 \usage{
 plot_feature(
   seu,
-  embedding,
+  embedding = c("umap", "pca", "tsne"),
   features,
   dims = c(1, 2),
   return_plotly = TRUE,
@@ -21,9 +20,16 @@ plot_feature(
 
 }
 \description{
-Plot Features
-This is a great function
+Plots gene or transcript expression overlaid on a given embedding.
+If multiple features are supplied the joint density of all features
+will be plotted using \href{https://www.bioconductor.org/packages/devel/bioc/html/Nebulosa.html}{Nebulosa}
 }
 \examples{
+
+plot_feature(seurat_pancreas_reduced, embedding = "umap", features = c("NRL"))
+
+plot_feature(seurat_pancreas_reduced, embedding = "umap", features = c("RXRG", "NRL"))
+
+plot_feature(seurat_pancreas_reduced, embedding = "umap", features = c("RXRG", "NRL"), return_plotly = FALSE)
 
 }

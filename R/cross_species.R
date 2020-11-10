@@ -10,6 +10,9 @@
 #' @export
 #'
 #' @examples
+#'
+#' convert_mouse_seu_to_human(seurat_mouse_data)
+#'
 convert_mouse_seu_to_human <- function(seu){
   new_rownames <- convert_symbols_by_species(src_genes = rownames(seu$gene), src_species = "mouse")
 
@@ -118,7 +121,7 @@ convert_symbols_by_biomart <- function(src_genes, src_species, host = "uswest.en
   return(dest_symbols)
 }
 
-#' Title
+#' Convert gene symbols between mouse and human
 #'
 #' @param src_genes
 #' @param src_species
@@ -169,7 +172,7 @@ convert_symbols_by_species <- function(src_genes, src_species){
   return(dest_symbols)
 }
 
-#' Integrate Seurat Objects from Moust to Human
+#' Integrate Seurat Objects from Mouse to Human
 #'
 #' @param mouse_seu_list
 #' @param human_seu_list
@@ -178,6 +181,9 @@ convert_symbols_by_species <- function(src_genes, src_species){
 #' @export
 #'
 #' @examples
+#'
+#'
+#'
 cross_species_integrate <- function(mouse_seu_list, human_seu_list, excluded_cells = NULL, ...){
   mouse_seu_list <- purrr::map(mouse_seu_list, convert_mouse_seu_to_human)
 

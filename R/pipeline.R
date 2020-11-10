@@ -18,19 +18,18 @@
 #'
 #'
 #' @examples
-seurat_integration_pipeline <- function(seu_list, feature, resolution = seq(0.2, 2.0, by = 0.2), suffix = '', algorithm = 1, organism, annotate_cell_cycle = FALSE, annotate_percent_mito = FALSE, ...) {
-
-  organisms <- purrr::map(seu_list, Misc, c("experiment", "organism"))
-
-  if (any(map_lgl(organisms, is.null))){
-    organisms <- case_when(
-      grepl("Hs", names(seu_list)) ~ "human",
-      grepl("Mm", names(seu_list)) ~ "mouse"
-    )
-    names(organisms) <- names(seu_list)
-  }
+seurat_integration_pipeline <- function(seu_list, feature, resolution = seq(0.2, 2.0, by = 0.2), suffix = '', algorithm = 1, organism = "human", annotate_cell_cycle = FALSE, annotate_percent_mito = FALSE, ...) {
 
   experiment_names <- names(seu_list)
+
+  organisms <- case_when(
+    grepl("Hs", experiment_names) ~ "human",
+    grepl("Mm", experiment_names) ~ "mouse"
+  )
+
+  names(organisms) <- experiment_names
+
+  organisms[is.na(organisms)] <- organism
 
   integrated_seu <- seurat_integrate(seu_list, organism = organism, ...)
 

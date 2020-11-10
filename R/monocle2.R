@@ -338,6 +338,7 @@ arrange_ptime_heatmaps <- function(cds_list, cds_name) {
 #' Plot Expression of a Given Feature of a set of Pseudotimes
 #'
 #' @param cds_list
+#' @param selected_cds
 #' @param features
 #' @param color_by
 #' @param relative_expr
@@ -348,7 +349,7 @@ arrange_ptime_heatmaps <- function(cds_list, cds_name) {
 #' @export
 #'
 #' @examples
-plot_feature_in_ref_query_ptime <- function(cds_list, features = c("RXRG"), color_by = "State", relative_expr = FALSE, min_expr = 0.5, ...){
+plot_feature_in_ref_query_ptime <- function(cds_list, selected_cds, features = c("RXRG"), color_by = "State", relative_expr = FALSE, min_expr = 0.5, ...){
   sub_cds_list <- purrr::map(cds_list, ~.x$monocle_cds[features,])
 
   string_NA_meta <- function(cds){
@@ -367,9 +368,11 @@ plot_feature_in_ref_query_ptime <- function(cds_list, features = c("RXRG"), colo
 
   feature_plots_in_ptime <- purrr::map(sub_cds_list, monocle::plot_genes_in_pseudotime, trend_formula = "~sm.ns(Pseudotime, df=3)", color_by = color_by, relative_expr = relative_expr, min_expr = min_expr)
 
-  refquery_ptime_plot <- cowplot::plot_grid(plotlist = feature_plots_in_ptime, ncol = 2, labels = names(feature_plots_in_ptime))
+  feature_plots_in_ptime[selected_cds]
 
-  plot(refquery_ptime_plot)
+  # refquery_ptime_plot <- cowplot::plot_grid(plotlist = feature_plots_in_ptime, ncol = 2, labels = names(feature_plots_in_ptime))
+  #
+  # plot(refquery_ptime_plot)
 
 }
 

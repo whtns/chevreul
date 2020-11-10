@@ -2,7 +2,7 @@
 % Please edit documentation in R/plotting.R
 \name{plot_all_transcripts}
 \alias{plot_all_transcripts}
-\title{Title}
+\title{Plot All Transcripts}
 \usage{
 plot_all_transcripts(seu_transcript, seu_gene, features, embedding)
 }
@@ -13,5 +13,10 @@ plot_all_transcripts(seu_transcript, seu_gene, features, embedding)
 
 }
 \description{
-Title
+Plot All Transcripts
+}
+\examples{
+
+Plot all transcripts
+
 }
