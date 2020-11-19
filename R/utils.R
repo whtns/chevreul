@@ -320,18 +320,17 @@ record_experiment_data <- function(object, experiment_name = "default_experiment
          call. = FALSE)
   }
 
-  organism <- object@misc$experiment$organism %||% organism
+  organism <- Seurat::Misc(object, "experiment")[["organism"]] %||% organism
 
-  experiment_name <- object@misc$experiment$experiment_name %||% experiment_name
+  experiment_name <- Seurat::Misc(object, "experiment")[["experiment_name"]] %||% experiment_name
 
   message(paste0("[", format(Sys.time(), "%H:%M:%S"), "] Logging Technical Details..."))
-  export <- list(experiment = list(experiment_name = experiment_name,
-                                   organism = organism))
-  export$experiment$date_of_analysis <- object@misc$experiment$date_of_analysis
-  export$experiment$date_of_export <- Sys.Date()
-  export$experiment$date_of_analysis <- Sys.Date()
+  experiment = list(experiment_name = experiment_name,
+                                   organism = organism)
+  experiment$date_of_export <- Sys.Date()
+  experiment$date_of_analysis <- Sys.Date()
 
-  export$experiment$parameters <- list(
+  experiment$parameters <- list(
     gene_nomenclature = 'gene_symbol',
     discard_genes_expressed_in_fewer_cells_than = 10,
     keep_mitochondrial_genes = TRUE,
@@ -340,23 +339,22 @@ record_experiment_data <- function(object, experiment_name = "default_experiment
     tSNE_perplexity = 30,
     cluster_resolution = seq(0.2, 2.0, by = 0.2)
   )
-  export$experiment$filtering <- list(
+  experiment$filtering <- list(
     UMI_min = 50,
-    UMI_max = Inf,
-    genes_min = 10,
-    genes_max = Inf
+    genes_min = 10
   )
-  export$experiment$technical_info <- list(
-    # capture.output(sessioninfo::session_info())
+  experiment$session_info <- list(
+    capture.output(sessioninfo::session_info())
   )
 
   if (!is.null(object@version)) {
-    export$experiment$technical_info$seurat_version <- object@version
+    experiment$seurat_version <- object@version
   }
 
-  export$experiment$technical_info$seuratTools_version <- utils::packageVersion("seuratTools")
+  experiment$seuratTools_version <- utils::packageVersion("seuratTools")
 
-  object@misc <- c(object@misc, export)
+  Seurat::Misc(object, "experiment") <- NULL
+  Seurat::Misc(object, "experiment") <- experiment
 
   return(object)
 }

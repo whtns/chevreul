@@ -1420,11 +1420,11 @@ plotVelocityui <- function(id){
                                      selected = "umap"),
     sliderInput(ns("resolution"), "Resolution of clustering algorithm (affects number of clusters)", min = 0.2, max = 2, step = 0.2, value = 0.6),
     actionButton(ns("calc_velocity"), "calculate velocity"),
-    textOutput(ns("velocityFlag")),
     actionButton(ns("plot_velocity"), "plot velocity"),
     radioButtons(ns("plotFormat"), "velocity format", choices = c("arrow", "grid"), selected = "grid"),
     downloadButton(ns("downloadPlot"), label = "Download plots"),
-    plotOutput(ns("velocityPlot"), height = "800px")
+    plotOutput(ns("velocityEmbeddingPlot"), height = "800px"),
+    plotOutput(ns("velocityExpressionPlot"), height = "400px")
   ),
   width = 12
   )%>%
@@ -1438,95 +1438,33 @@ plotVelocityui <- function(id){
 #' @param session
 #' @param seu
 #' @param loom_path
-#' @param featureType
 #'
 #' @return
 #' @export
 #'
 #' @examples
-plotVelocity <- function(input, output, session, seu, loom_path, featureType){
+plotVelocity <- function(input, output, session, seu, loom_path){
   ns <- session$ns
 
-  observeEvent(input$calc_velocity, {
-
+  adata <- eventReactive(input$calc_velocity, {
     req(seu$active)
-    print(loom_path)
+    showModal(modalDialog("Calculating Velocity", footer=NULL))
 
-    check_loom_dim <- function(seu){
-      all(rownames(seu@misc$vel$cellKNN) == colnames(seu))
-    }
-
-    showModal(modalDialog("calculating velocity", footer=NULL))
-    seu[[featureType()]] <- velocyto_assay(seu[[featureType()]], loom_path)
-    seu$active@misc$vel <- seu[[featureType()]]@misc$vel
-    removeModal()
-
-
-  })
-
-  velocity <- reactive({
-
-    req(seu$active)
-    print(loom_path)
-
-    check_loom_dim <- function(seu){
-      all(rownames(seu@misc$vel$cellKNN) == colnames(seu))
-    }
-
-    showModal(modalDialog("calculating velocity", footer=NULL))
-    seu[[featureType()]] <- velocyto_assay(seu[[featureType()]], loom_path)
-    seu$active@misc$vel <- seu[[featureType()]]@misc$vel
-    removeModal()
-
-
-  })
-
-  velocity <- reactive({
-    req(seu$active)
-
-    if(!is.null(seu$active@misc$vel)){
-      return(seu$active@misc$vel)
+    if ("integrated" %in% names(seu$active@assays)) {
+      default_assay = "integrated"
     } else {
-      FALSE
+      default_assay = "RNA"
     }
+
+    adata = prep_scvelo(seu$active, loom_path)
+
+    removeModal()
+    return(adata)
+
   })
 
-  velocity_flag <- eventReactive(input$calc_velocity, {
-    req(seu$active)
-    req(seu$active@misc$vel)
-    "Velocity Calculated for this dataset"
-  })
-
-  output$velocityFlag <- renderText({
-    req(velocity())
-    velocity_flag()
-  })
-
-
-  # plotInput <- function(plot_format = "grid"){
-  #
-  #   if(!is.null(seu$active@misc$vel)){
-  #     return(seu$active@misc$vel)
-  #   } else {
-  #     FALSE
-  #   }
-  # }
-
-  velocity_flag <- eventReactive(input$calc_velocity, {
-    req(seu$active)
-    req(seu$active@misc$vel)
-    "Velocity Calculated for this dataset"
-  })
-
-  output$velocityFlag <- renderText({
-    req(velocity())
-    velocity_flag()
-  })
-
-
-  plotInput <- function(plot_format = "grid"){
-
-    showModal(modalDialog("Loading Plots", footer=NULL))
+  velocityEmbeddingPlot <- eventReactive(input$plot_velocity, {
+    req(adata())
 
     if ("integrated" %in% names(seu$active@assays)) {
       default_assay = "integrated"
@@ -1536,43 +1474,42 @@ plotVelocity <- function(input, output, session, seu, loom_path, featureType){
 
     cluster_resolution = paste0(default_assay, "_snn_res.", input$resolution)
 
-    cell.colors <- tibble::as_tibble(seu$active[[cluster_resolution]], rownames = "cellid") %>%
-      tibble::deframe() %>%
-      as.factor()
+    plot_scvelo(adata(), loom_path, group.by = cluster_resolution)
 
-    levels(cell.colors) <- scales::hue_pal()(length(levels(cell.colors)))
+  })
 
-    if (!is.null(seu$active@misc$cc)){
-      plot_velocity_arrows(seu$active, velocity(), reduction = input$embedding, cell.colors, plot_format = plot_format, cc = seu$active@misc$cc)
+  velocityExpressionPlot <- eventReactive(input$plot_velocity, {
+    req(adata())
+
+    if ("integrated" %in% names(seu$active@assays)) {
+      default_assay = "integrated"
     } else {
-      plot_velocity_arrows(seu$active, velocity(), reduction = input$embedding, cell.colors, plot_format = plot_format)
+      default_assay = "RNA"
     }
 
-    removeModal()
-  }
+    cluster_resolution = paste0(default_assay, "_snn_res.", input$resolution)
 
-  velocityPlot <- eventReactive(input$plot_velocity, {
-    req(seu$active)
+    scvelo_expression(adata(), features = "RXRG")
 
-    validate(
-      need(velocity(), "Please calculate velocity")
-    )
-    plotInput(plot_format = input$plotFormat)
   })
 
   output$downloadPlot <- downloadHandler(
     filename = function() { paste("velocity", '.pdf', sep='') },
     content = function(file) {
       pdf(file)
-      plotInput(plot_format = input$plotFormat)
+      velocityEmbeddingPlot()
+      velocityExpressionPlot()
       dev.off()
     })
 
-  output$velocityPlot <- renderPlot({
-    velocityPlot()
+  output$velocityEmbeddingPlot <- renderPlot({
+    velocityEmbeddingPlot()
   })
 
-  return(seu[[featureType()]])
+  output$velocityExpressionPlot <- renderPlot({
+    velocityExpressionPlot()
+  })
+
 }
 
 

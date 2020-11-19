@@ -4,10 +4,10 @@
 \alias{plotVelocity}
 \title{RNA Velocity}
 \usage{
-plotVelocity(input, output, session, seu, loom_path, featureType)
+plotVelocity(input, output, session, seu, loom_path)
 }
 \arguments{
-\item{featureType}{}
+\item{loom_path}{}
 }
 \value{
 

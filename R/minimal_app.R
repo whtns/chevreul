@@ -524,7 +524,7 @@ minimalSeuratApp <- function(seu_list = seurat_pancreas_reduced, appTitle = NULL
       req(input$feature_type)
       req(loom_path())
 
-      seu$active <- callModule(plotVelocity, "plotvelocity", seu, loom_path(), featureType)
+      seu$active <- callModule(plotVelocity, "plotvelocity", seu, loom_path())
     })
   }
   shinyApp(ui, server, enableBookmarking = "server")
