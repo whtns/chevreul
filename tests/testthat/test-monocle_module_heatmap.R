@@ -17,7 +17,7 @@ test_that("heatmap is ordered by pseudotime", {
 
   # debug(convert_seu_to_cds)
   # debug(monocle3::preprocess_cds)
-  debug(monocle_module_heatmap)
+  # debug(monocle_module_heatmap)
 
   resolution <- 1.6
 

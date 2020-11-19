@@ -214,6 +214,7 @@ prep_slider_values <- function(default_val) {
 seuratApp <- function(preset_project, appTitle = "seuratTools", feature_types = "gene",
                       organism_type = "human", db_path = "~/.cache/seuratTools/single-cell-projects.db", futureMb = 13000){
   print(feature_types)
+  print(packageVersion("seuratTools"))
   future::plan(strategy = "multicore", workers = 6)
   future_size <- futureMb * 1024^2
   options(future.globals.maxSize = future_size)
@@ -413,6 +414,7 @@ seuratApp <- function(preset_project, appTitle = "seuratTools", feature_types = 
     ), shinydashboard::tabItem(
       tabName = "techInfo",
       h2("Technical Information"),
+      h3(paste0("seuratTools version: ", packageVersion("seuratTools"))),
       techInfoui("techInfo")
     )
   ))
