@@ -870,7 +870,7 @@ seuratApp <- function(preset_project, appTitle = "seuratTools", feature_types = 
 
       loom_path <- fs::path(proj_path, "output", "velocyto", paste0(proj_name, ".loom"))
 
-      seu$active <- callModule(plotVelocity, "plotvelocity", seu, loom_path, featureType)
+      seu$active <- callModule(plotVelocity, "plotvelocity", seu, loom_path)
     })
 
     callModule(techInfo, "techInfo", seu)
