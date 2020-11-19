@@ -8,7 +8,19 @@
 #' @examples
 convert_seu_to_cds <- function(seu, resolution = 1) {
 
-  ### Building the necessary parts for a basic cds
+  print(resolution)
+
+  # # drop sample_name metadata column as that is reserved by monocle3
+  # seu$sample_name <- NULL
+  #
+  # cds <- SeuratWrappers::as.cell_data_set(seu) %>%
+  #   monocle3::estimate_size_factors()
+  #
+  # rowData(cds)$gene_short_name <- rownames(cds)
+  #
+  # return(cds)
+
+  # Building the necessary parts for a basic cds
 
   # part two, counts sparse matrix
 

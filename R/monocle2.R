@@ -6,11 +6,13 @@
 #' @export
 #'
 #' @examples
-convert_seuv3_to_monoclev2 <- function(seu, return_census = FALSE, sig_slice = 1000) {
+convert_seuv3_to_monoclev2 <- function(seu, assay = "RNA", slot = "data", return_census = FALSE, sig_slice = 1000) {
 
   # Load Seurat object
   # Extract data, phenotype data, and feature data from the SeuratObject
-  data <- as(as.matrix(seu@assays$RNA@data), "sparseMatrix")
+  # data <- as(as.matrix(seu@assays$RNA@counts), "sparseMatrix")
+
+  data <- Seurat::GetAssayData(seu, assay = assay, slot = slot)
 
   data <- floor(data)
 
@@ -57,7 +59,7 @@ convert_seuv3_to_monoclev2 <- function(seu, return_census = FALSE, sig_slice = 1
   # look at distribution of mRNA totals across cells
   phenoData(monocle_cds)$Total_mRNAs <- Matrix::colSums(Biobase::exprs(monocle_cds))
 
-  monocle_cds <- monocle_cds[, phenoData(monocle_cds)$Total_mRNAs < 1e6]
+  # monocle_cds <- monocle_cds[, phenoData(monocle_cds)$Total_mRNAs < 1e6]
 
   upper_bound <- 10^(mean(log10(phenoData(monocle_cds)$Total_mRNAs)) +
                        2 * sd(log10(phenoData(monocle_cds)$Total_mRNAs)))
@@ -134,7 +136,7 @@ convert_seuv3_to_monoclev2 <- function(seu, return_census = FALSE, sig_slice = 1
   monocle_cds_expressed_genes <- rownames(subset(Biobase::featureData(monocle_cds), Biobase::featureData(monocle_cds)$num_cells_expressed >= 10))
 
   print("running differential expression test")
-  tictoc::tic("finished differentiial expression with")
+  tictoc::tic("finished differential expression with")
 
   diff_test_res <- differentialGeneTest(monocle_cds_red[monocle_cds_expressed_genes, ],
                                         fullModelFormulaStr = "~Cluster",
@@ -266,7 +268,11 @@ cross_check_heatmaps <- function(monocle_list, query_name, set_row_order = F, cl
   reference_names = names(monocle_list)[!names(monocle_list) == query_name]
 
   if (!set_row_order == F){
-    monocle_list[[query_name]]$heatmap_matrix <- monocle_list[[query_name]]$heatmap_matrix[set_row_order,]
+    set_row_order = set_row_order[set_row_order != ""]
+
+    heatmap_matrix <- monocle_list[[query_name]]$heatmap_matrix
+
+    monocle_list[[query_name]]$heatmap_matrix <- heatmap_matrix[rownames(heatmap_matrix) %in% set_row_order,]
   }
 
   common_genes <- purrr::map(monocle_list, ~rownames(purrr::pluck(.x, "heatmap_matrix"))) %>%

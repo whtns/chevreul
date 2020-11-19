@@ -1694,7 +1694,7 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
                      choices = colnames(seu$active[[]]), selected = "batch", multiple = TRUE)
     })
 
-    cds <- reactiveValues(selected = "traj")
+    cds <- reactiveValues(selected = c(traj = TRUE, ptime = FALSE, diff_features = FALSE))
     cds_plot_types <- reactiveVal(c(Pseudotime = "pseudotime", Module = "module"))
     myplot_types <- reactive({
       c(purrr::flatten_chr(plot_types()), cds_plot_types())
@@ -1747,9 +1747,11 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
 
     observeEvent(input$calcCDS, {
       req(seu$monocle)
+      cds$selected = c(traj = TRUE, ptime = FALSE, diff_features = FALSE)
         for (i in c("gene", "transcript")) {
           if (i %in% names(seu)){
           cds[[i]] <- convert_seu_to_cds(seu[[i]], resolution = input$cdsResolution)
+          cds[[i]] <- cds[[i]][,colnames(seu$monocle)]
           cds[[i]] <- learn_graph_by_resolution(cds[[i]],
                                                 seu$monocle,
                                                 resolution = input$cdsResolution)
@@ -1864,7 +1866,7 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
       }
       updateSelectizeInput(session, "plottype1", selected = "pseudotime", choices = myplot_types())
       updateSelectizeInput(session, "plottype2", selected = "pseudotime", choices = myplot_types())
-      cds$selected = c(ptime = TRUE, diff_features = FALSE)
+      cds$selected = c(traj = FALSE, ptime = TRUE, diff_features = FALSE)
                        #markermarker
     })
 
@@ -1883,7 +1885,7 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
             cds_pr_test_res = monocle3::graph_test(cds$traj, neighbor_graph="principal_graph", cores=4, expression_family = "negbinom")
 
             cds$traj@metadata[["diff_features"]] <- cds_pr_test_res
-            cds$selected["diff_features"] <- TRUE
+            cds$selected = c(traj = FALSE, ptime = FALSE, diff_features = TRUE)
 
             removeModal()
 
