@@ -2331,7 +2331,7 @@ plotCoverage_UI <- function(id) {
         checkboxInput(ns("collapseIntrons"), "Collapse Introns", value = TRUE),
         checkboxInput(ns("meanCoverage"), "Summarize Coverage to Mean", value = TRUE),
         radioButtons(ns("yScale"), "Scale Y Axis", choices = c("absolute", "log10"), selected = "log10"),
-        checkboxInput(ns("flipX"), "Reverse X Axis", value = TRUE),
+        checkboxInput(ns("flipX"), "Reverse X Axis", value = FALSE),
         numericInput(ns("start"), "start coordinate", value = NULL),
         numericInput(ns("end"), "end coordinate", value = NULL)
       ),
@@ -2343,7 +2343,7 @@ plotCoverage_UI <- function(id) {
 }
 
 
-#' Title
+#' Plot Coverage Module
 #'
 #' @param input
 #' @param output
