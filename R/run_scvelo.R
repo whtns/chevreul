@@ -61,33 +61,35 @@ prep_scvelo <- function(seu, loom_path, plot_method = c("stream", "arrow", "dyna
 
   h5ad_path <- fs::path_ext_set(loom_path, ".h5ad")
 
-  adata_matches_seu <- function(seu, adata){
-    all(adata$obs_names$values %in% colnames(seu))
-  }
+    scvelo <- reticulate::import("scvelo")
 
-  if (fs::file_exists(h5ad_path)){
-    adata = scvelo$read(fs::path_expand(h5ad_path))
-
-    if(!adata_matches_seu(seu, adata)){
-      run_scvelo(seu, loom_path)
+    adata_matches_seu <- function(seu, adata){
+      all(adata$obs_names$values %in% colnames(seu))
     }
 
-  } else {
-    seu <- run_scvelo(seu, loom_path)
-  }
+    if (fs::file_exists(h5ad_path)){
+      adata = scvelo$read(fs::path_expand(h5ad_path))
 
-  adata = scvelo$read(fs::path_expand(h5ad_path))
+      if(!adata_matches_seu(seu, adata)){
+        run_scvelo(seu, loom_path)
+      }
 
-  scvelo$pp$moments(adata, n_pcs=30L, n_neighbors=30L)
+    } else {
+      seu <- run_scvelo(seu, loom_path)
+    }
 
-  scvelo$tl$velocity(adata)
+    adata = scvelo$read(fs::path_expand(h5ad_path))
 
-  scvelo$tl$velocity_graph(adata)
+    scvelo$pp$moments(adata, n_pcs=30L, n_neighbors=30L)
 
-  if(plot_method == "dynamics"){
-    scvelo$tl$recover_dynamics(adata)
-    scvelo$tl$latent_time(adata)
-  }
+    scvelo$tl$velocity(adata)
+
+    scvelo$tl$velocity_graph(adata)
+
+    if(plot_method == "dynamics"){
+      scvelo$tl$recover_dynamics(adata)
+      scvelo$tl$latent_time(adata)
+    }
 
   return(adata)
 

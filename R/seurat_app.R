@@ -213,6 +213,7 @@ prep_slider_values <- function(default_val) {
 #' @examples
 seuratApp <- function(preset_project, appTitle = "seuratTools", feature_types = "gene",
                       organism_type = "human", db_path = "~/.cache/seuratTools/single-cell-projects.db", futureMb = 13000){
+
   print(feature_types)
   print(packageVersion("seuratTools"))
   future::plan(strategy = "multicore", workers = 6)
@@ -870,7 +871,7 @@ seuratApp <- function(preset_project, appTitle = "seuratTools", feature_types = 
 
       loom_path <- fs::path(proj_path, "output", "velocyto", paste0(proj_name, ".loom"))
 
-      seu$active <- callModule(plotVelocity, "plotvelocity", seu, loom_path)
+      callModule(plotVelocity, "plotvelocity", seu, loom_path)
     })
 
     callModule(techInfo, "techInfo", seu)
