@@ -17,7 +17,6 @@ Imports:
     fs,
     rlang,
     magrittr,
-    velocyto.R (>= 0.6),
     future,
     DT,
     plotly,
@@ -54,7 +53,8 @@ Imports:
     checkmate,
     Nebulosa,
     ggpubr,
-    formattable
+    formattable,
+    reticulate
 Suggests: 
     ggplot2,
     testthat (>= 2.1.0),
@@ -66,7 +66,6 @@ Remotes:
     immunogenomics/presto,
     satijalab/seurat-wrappers,
     cole-trapnell-lab/monocle3,
-    velocyto-team/velocyto.R,
     stephenturner/annotables,
     mahmoudibrahim/genesorteR,
     jokergoo/ComplexHeatmap

@@ -1413,21 +1413,35 @@ allTranscripts <- function(input, output, session, seu,
 #' @examples
 plotVelocityui <- function(id){
   ns <- NS(id)
-  seuratToolsBox(
-    title = "RNA Velocity",
   tagList(
-    selectizeInput(ns("embedding"), "dimensional reduction method", choices = c("pca", "tsne", "umap"),
-                                     selected = "umap"),
-    sliderInput(ns("resolution"), "Resolution of clustering algorithm (affects number of clusters)", min = 0.2, max = 2, step = 0.2, value = 0.6),
-    actionButton(ns("calc_velocity"), "calculate velocity"),
-    actionButton(ns("plot_velocity"), "plot velocity"),
-    radioButtons(ns("plotFormat"), "velocity format", choices = c("arrow", "grid"), selected = "grid"),
-    downloadButton(ns("downloadPlot"), label = "Download plots"),
-    plotOutput(ns("velocityEmbeddingPlot"), height = "800px"),
-    plotOutput(ns("velocityExpressionPlot"), height = "400px")
-  ),
-  width = 12
-  )%>%
+    fluidRow(
+      seuratToolsBox(
+        title = "Calculate Velocity",
+        width = 6,
+        textOutput(ns("velocityFlag")),
+        actionButton(ns("calc_velocity"), "calculate velocity")
+      )
+    ),
+    seuratToolsBox(
+      title = "Plot Veloctiy on Embedding",
+      width = 6,
+      selectizeInput(ns("embedding"), "dimensional reduction method", choices = c("pca", "tsne", "umap"),
+                     selected = "umap"),
+      sliderInput(ns("resolution"), "Resolution of clustering algorithm (affects number of clusters)", min = 0.2, max = 2, step = 0.2, value = 0.6),
+      radioButtons(ns("plotFormat"), "velocity format", choices = c("stream", "arrow", "dynamics"), selected = "stream", inline = TRUE),
+      actionButton(ns("plot_velocity_embedding"), "plot velocity on embedding"),
+      downloadButton(ns("downloadEmbeddingPlot"), label = "Download Plot"),
+      plotOutput(ns("velocityEmbeddingPlot"), height = "800px")
+    ),
+    seuratToolsBox(
+      title = "Plot Velocity and Expression",
+      width = 6,
+      selectizeInput(ns("geneSelect"), "Select a Gene", choices = NULL, selected = "RXRG", multiple = TRUE),
+      actionButton(ns("plot_velocity_expression"), "plot velocity and expression"),
+      downloadButton(ns("downloadExpressionPlot"), label = "Download Plot"),
+      plotOutput(ns("velocityExpressionPlot"), height = "800px")
+    )
+  ) %>%
     default_helper(type = "markdown", content = "plotVelocity")
 }
 
@@ -1446,6 +1460,11 @@ plotVelocityui <- function(id){
 plotVelocity <- function(input, output, session, seu, loom_path){
   ns <- session$ns
 
+  observe({
+    req(seu$active)
+    updateSelectizeInput(session, "geneSelect", choices = rownames(seu$active), server = TRUE)
+  })
+
   adata <- eventReactive(input$calc_velocity, {
     req(seu$active)
     showModal(modalDialog("Calculating Velocity", footer=NULL))
@@ -1456,14 +1475,24 @@ plotVelocity <- function(input, output, session, seu, loom_path){
       default_assay = "RNA"
     }
 
-    adata = prep_scvelo(seu$active, loom_path)
+    adata = seuratTools::prep_scvelo(seu$active, loom_path)
 
     removeModal()
     return(adata)
 
   })
 
-  velocityEmbeddingPlot <- eventReactive(input$plot_velocity, {
+  velocity_flag <- eventReactive(input$calc_velocity, {
+    req(adata())
+    "Velocity Calculated for this dataset"
+  })
+
+  output$velocityFlag <- renderText({
+    req(adata())
+    velocity_flag()
+  })
+
+  velocityEmbeddingPlot <- eventReactive(input$plot_velocity_embedding, {
     req(adata())
 
     if ("integrated" %in% names(seu$active@assays)) {
@@ -1474,11 +1503,13 @@ plotVelocity <- function(input, output, session, seu, loom_path){
 
     cluster_resolution = paste0(default_assay, "_snn_res.", input$resolution)
 
-    plot_scvelo(adata(), loom_path, group.by = cluster_resolution)
+    plot_scvelo(adata(), group.by = cluster_resolution, plot_method = input$plotFormat)
+
+    pyplot$savefig("velocity_embedding.pdf")
 
   })
 
-  velocityExpressionPlot <- eventReactive(input$plot_velocity, {
+  velocityExpressionPlot <- eventReactive(input$plot_velocity_expression, {
     req(adata())
 
     if ("integrated" %in% names(seu$active@assays)) {
@@ -1487,19 +1518,21 @@ plotVelocity <- function(input, output, session, seu, loom_path){
       default_assay = "RNA"
     }
 
-    cluster_resolution = paste0(default_assay, "_snn_res.", input$resolution)
-
-    scvelo_expression(adata(), features = "RXRG")
+    scvelo_expression(adata(), features = input$geneSelect)
+    pyplot$savefig("velocity_expression.pdf")
 
   })
 
-  output$downloadPlot <- downloadHandler(
-    filename = function() { paste("velocity", '.pdf', sep='') },
+  output$downloadEmbeddingPlot <- downloadHandler(
+    filename = function() { paste("velocity_embedding", '.pdf', sep='') },
     content = function(file) {
-      pdf(file)
-      velocityEmbeddingPlot()
-      velocityExpressionPlot()
-      dev.off()
+      file.copy("velocity_embedding.pdf", file, overwrite=TRUE)
+    })
+
+  output$downloadExpressionPlot <- downloadHandler(
+    filename = function() { paste("velocity_expression", '.pdf', sep='') },
+    content = function(file) {
+      file.copy("velocity_expression.pdf", file, overwrite=TRUE)
     })
 
   output$velocityEmbeddingPlot <- renderPlot({
