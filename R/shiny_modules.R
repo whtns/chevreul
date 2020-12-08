@@ -1085,6 +1085,8 @@ findMarkersui <- function(id) {
       uiOutput(ns("valueSelect")),
       radioButtons(ns("markerMethod"), "Method of Marker Selection", choices = c("presto", "genesorteR"), selected = "presto", inline = TRUE),
       actionButton(ns("plotDots"), "Plot Markers!"),
+      downloadButton(ns("downloadMarkerTable"), "Download Markers!"),
+      checkboxInput(ns("uniqueMarkers"), "Make Markers Unique", value = FALSE),
       checkboxInput(ns("hidePseudo"), "Hide Pseudogenes", value = TRUE),
       plotly::plotlyOutput(ns("markerplot"), height = 800),
       width = 6
@@ -1150,14 +1152,23 @@ findMarkers <- function(input, output, session, seu, plot_types, featureType) {
     Seurat::DefaultAssay(seu$active) <- "RNA"
   })
 
-  marker_plot <- eventReactive(input$plotDots, {
-    plot_markers(seu = seu$active, metavar = metavar(), num_markers = input$num_markers, selected_values = input$displayValues, marker_method = input$markerMethod, featureType = featureType(), hide_pseudo = input$hidePseudo)
+  marker_plot_return <- eventReactive(input$plotDots, {
+    plot_markers(seu = seu$active, metavar = metavar(), num_markers = input$num_markers, selected_values = input$displayValues, marker_method = input$markerMethod, featureType = featureType(), hide_pseudo = input$hidePseudo, unique_markers = input$uniqueMarkers)
   })
 
   output$markerplot <- plotly::renderPlotly({
     # req(input$displayClusters)
-    marker_plot()
+    marker_plot_return()$plot
   })
+
+  output$downloadMarkerTable <- downloadHandler(
+    filename = function() {
+      paste(metavar(), "_markers.csv", sep="")
+    },
+    content = function(file) {
+      write_csv(marker_plot_return()$markers, file)
+    })
+
 }
 
 #' Plot Read Count UI
@@ -2331,7 +2342,6 @@ plotCoverage_UI <- function(id) {
         checkboxInput(ns("collapseIntrons"), "Collapse Introns", value = TRUE),
         checkboxInput(ns("meanCoverage"), "Summarize Coverage to Mean", value = TRUE),
         radioButtons(ns("yScale"), "Scale Y Axis", choices = c("absolute", "log10"), selected = "log10"),
-        checkboxInput(ns("flipX"), "Reverse X Axis", value = FALSE),
         numericInput(ns("start"), "start coordinate", value = NULL),
         numericInput(ns("end"), "end coordinate", value = NULL)
       ),
@@ -2401,7 +2411,6 @@ plotCoverage <- function(input, output, session, seu, plot_types, proj_dir, orga
                                 mean_only = input$meanCoverage,
                                 rescale_introns = input$collapseIntrons,
                                 scale_y = input$yScale,
-                                reverse_x = input$flipX,
                                 start = input$start,
                                 end = input$end)
 
@@ -2424,7 +2433,7 @@ plotCoverage <- function(input, output, session, seu, plot_types, proj_dir, orga
     output$downloadPlot <- downloadHandler(
       filename = function() { paste("coverage", '.pdf', sep='') },
       content = function(file) {
-        ggsave(file, coverage_plot(), width = 16, height = 12)
+        ggsave(file, coverage_return()$plot, width = 16, height = 12)
       })
 
 }

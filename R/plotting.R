@@ -524,13 +524,11 @@ plot_ridge <- function(seu, features){
 #'
 #' plot_markers(seurat_pancreas_reduced$gene, "tech", return_plot = TRUE)
 #'
-plot_markers <- function(seu, metavar, num_markers = 5, selected_values = NULL, return_plotly = TRUE, marker_method = c("presto", "genesorteR"), featureType  = "gene", hide_pseudo = FALSE, ...){
+plot_markers <- function(seu, metavar = "batch", num_markers = 5, selected_values = NULL, return_plotly = TRUE, marker_method = c("presto", "genesorteR"), featureType  = "gene", hide_pseudo = FALSE, unique_markers = FALSE, ...){
   Idents(seu) <- seu[[metavar]]
 
   # by default only resolution markers are calculated in pre-processing
-  if (!metavar %in% names(seu@misc$markers)){
-    seu <- find_all_markers(seu, metavar)
-  }
+  seu <- find_all_markers(seu, metavar)
 
   markers <- seu@misc$markers[[metavar]][[marker_method]] %>%
     dplyr::mutate(dplyr::across(.fns = as.character))
@@ -547,7 +545,23 @@ plot_markers <- function(seu, metavar, num_markers = 5, selected_values = NULL, 
 
   }
 
-  markers <-
+  if(unique_markers){
+    markers <-
+      markers %>%
+      dplyr::mutate(precedence = row_number()) %>%
+      pivot_longer(-precedence, names_to = "group", values_to = "markers") %>%
+      dplyr::arrange(markers, precedence) %>%
+      dplyr::group_by(markers) %>%
+      dplyr::filter(row_number() == 1) %>%
+      dplyr::arrange(group, precedence) %>%
+      tidyr::drop_na() %>%
+      dplyr::group_by(group) %>%
+      dplyr::mutate(precedence = row_number()) %>%
+      tidyr::pivot_wider(names_from = "group", values_from = "markers") %>%
+      dplyr::select(-precedence)
+  }
+
+  sliced_markers <-
     markers %>%
     dplyr::slice_head(n = num_markers) %>%
     tidyr::pivot_longer(everything(), names_to = "group", values_to = "feature") %>%
@@ -557,15 +571,18 @@ plot_markers <- function(seu, metavar, num_markers = 5, selected_values = NULL, 
 
   if(!is.null(selected_values)){
     seu <- seu[,Idents(seu) %in% selected_values]
-    markers <- markers %>%
+    sliced_markers <- sliced_markers %>%
       dplyr::filter(group %in% selected_values)
   }
 
-  markers <- dplyr::pull(markers, feature)
+  sliced_markers <- dplyr::pull(sliced_markers, feature)
 
-  markers <- unique(markers[markers %in% rownames(seu)])
+  sliced_markers <- unique(sliced_markers[sliced_markers %in% rownames(seu)])
 
-  markerplot <- DotPlot(seu, features = markers, group.by = metavar, dot.scale = 3) +
+  seu[[metavar]][is.na(seu[[metavar]])] <- "NA"
+  Idents(seu) <- metavar
+
+  markerplot <- DotPlot(seu, features = sliced_markers, group.by = metavar, dot.scale = 3) +
     theme(axis.text.x = element_text(size = 10, angle = 45, vjust = 1, hjust=1),
           axis.text.y = element_text(size = 10)) +
     scale_y_discrete(position = "right") +
@@ -577,11 +594,13 @@ plot_markers <- function(seu, metavar, num_markers = 5, selected_values = NULL, 
   plot_height = (150*num_markers)
   plot_width = (100*length(levels(Idents(seu))))
 
-  plotly_plot <- plotly::ggplotly(markerplot, height = plot_height, width = plot_width) %>%
+  markerplot <- plotly::ggplotly(markerplot, height = plot_height, width = plot_width) %>%
     plotly_settings() %>%
     plotly::toWebGL() %>%
     # plotly::partial_bundle() %>%
     identity()
+
+  return(list(plot = markerplot, markers = markers))
 
 }
 

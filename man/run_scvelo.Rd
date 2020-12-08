@@ -4,7 +4,14 @@
 \alias{run_scvelo}
 \title{scvelo_assay}
 \usage{
-run_scvelo(seu, loom_path, fit.quantile = 0.05, check_loom = FALSE, ...)
+run_scvelo(
+  seu,
+  loom_path,
+  group.by = "batch",
+  fit.quantile = 0.05,
+  check_loom = FALSE,
+  ...
+)
 }
 \arguments{
 \item{seu}{a seurat object}
