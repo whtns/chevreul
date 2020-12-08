@@ -2,7 +2,7 @@
 % Please edit documentation in R/shiny_modules.R
 \name{plotCoverage}
 \alias{plotCoverage}
-\title{Title}
+\title{Plot Coverage Module}
 \usage{
 plotCoverage(
   input,
@@ -21,7 +21,7 @@ plotCoverage(
 
 }
 \description{
-Title
+Plot Coverage Module
 }
 \examples{
 
