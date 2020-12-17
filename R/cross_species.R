@@ -170,7 +170,7 @@ convert_symbols_by_species <- function(src_genes, src_species){
       dplyr::mutate(HGNC.symbol = dplyr::case_when(is.na(HGNC.symbol) ~ stringr::str_to_upper(MGI.symbol),
                                                    TRUE ~ HGNC.symbol)) %>%
       dplyr::select(-gene_index) %>%
-      dplyr::mutate(HGNC.symbol = make.unique(HGNC.symbol)) %>%
+      # dplyr::mutate(HGNC.symbol = make.unique(HGNC.symbol)) %>%
       identity()
 
   }
