@@ -4,10 +4,10 @@
 \alias{convert_human_seu_to_mouse}
 \title{Convert Seurat Objects from Human to Mouse}
 \usage{
-convert_human_seu_to_mouse(seu)
+convert_human_seu_to_mouse(seu, ...)
 }
 \arguments{
-\item{seu}{}
+\item{...}{to be passed to \code{convert_symbols_by_species}}
 }
 \value{
 

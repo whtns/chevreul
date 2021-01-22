@@ -1,7 +1,7 @@
 Package: seuratTools
 Type: Package
 Title: Tools for Managing Seurat Objects
-Version: 0.4.11
+Version: 0.4.10
 Authors@R: c(
     person("Kevin", "Stachelek", email = "kevin.stachelek@gmail.com", role = c("aut", "cre")),
     person("Roman", "Hillje", role = c("ctb"), comment = "Author of included Cerebro fragments")
@@ -54,7 +54,8 @@ Imports:
     checkmate,
     Nebulosa,
     ggpubr,
-    formattable
+    formattable,
+    DataEditR
 Suggests: 
     ggplot2,
     testthat (>= 2.1.0),

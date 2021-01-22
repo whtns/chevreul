@@ -175,7 +175,7 @@ convert_symbols_by_species <- function(src_genes, src_species){
 
   }
 
-  return(dest_symbols[[2]])
+  return(make.unique(dest_symbols[[2]]))
 }
 
 #' Integrate Seurat Objects from Mouse to Human
