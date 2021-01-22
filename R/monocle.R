@@ -836,3 +836,18 @@ flip_pseudotime <- function(cds){
 
   return(cds)
 }
+
+export_pseudotime <- function(cds, root_cells){
+
+  root_cells <- root_cells %>%
+    set_names(.) %>%
+    tibble::enframe("sample_id", "root_cell") %>%
+    dplyr::mutate(root_cell = 1)
+
+  monocle_pt <- monocle3::pseudotime(cds) %>%
+    tibble::enframe("sample_id", "pseudotime") %>%
+    dplyr::arrange(pseudotime) %>%
+    dplyr::left_join(root_cells, by = "sample_id")
+
+  return(monocle_pt)
+}

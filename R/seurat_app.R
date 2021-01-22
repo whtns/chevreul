@@ -247,7 +247,7 @@ seuratApp <- function(preset_project, appTitle = "seuratTools", feature_types = 
       shinydashboard::menuItem("Integrate Projects",
       tabName = "integrateProjects", icon = icon("object-group")
     ), shinydashboard::menuItem("Reformat Metadata",
-      tabName = "reformatMetadata", icon = icon("columns")
+      tabName = "reformatMetadataDR", icon = icon("columns")
     ), shinydashboard::menuItem("Plot Data",
       tabName = "comparePlots", icon = icon("chart-bar"), selected = TRUE
     ), shinydashboard::menuItem("Heatmap/Violin Plots",
@@ -319,9 +319,9 @@ seuratApp <- function(preset_project, appTitle = "seuratTools", feature_types = 
         )
     ),
     shinydashboard::tabItem(
-      tabName = "reformatMetadata",
+      tabName = "reformatMetadataDR",
       fluidRow(
-        reformatMetadataui("reformatmetadata")
+        reformatMetadataDRui("reformatMetadataDR")
         )
     ),
     shinydashboard::tabItem(
@@ -621,17 +621,19 @@ seuratApp <- function(preset_project, appTitle = "seuratTools", feature_types = 
       )
     })
 
-    reformatted_seu <- reactive({
-      req(seu$active)
-      callModule(reformatMetadata, "reformatmetadata", seu, featureType)
-    })
+    callModule(reformatMetadataDR, "reformatMetadataDR", seu, featureType)
 
-    observe({
-      req(reformatted_seu())
-      for (i in names(seu)){
-        seu[[i]] <- reformatted_seu()[[i]]
-      }
-    })
+    # reformatted_seu <- reactive({
+    #   req(seu$active)
+    #   callModule(reformatMetadataDR, "reformatMetadataDR", seu, featureType)
+    # })
+    #
+    # observe({
+    #   req(reformatted_seu())
+    #   for (i in names(seu)){
+    #     seu[[i]] <- reformatted_seu()[[i]]
+    #   }
+    # })
 
     reductions <- reactive({
       req(seu$active)

@@ -1614,6 +1614,7 @@ monocleui <- function(id){
           actionButton(ns("subsetCells"), "Subset Monocle Object After Pseudotime Calculation"),
           uiOutput(ns("rootCellsui")),
           actionButton(ns("plotPseudotime"), "Calculate Pseudotime With Root Cells"),
+          downloadButton(ns("downloadPT"), "Export Pseudotime"),
           checkboxInput(ns("flipPtime"), "Invert Pseudotime", value = TRUE),
           width = 6
         )
@@ -1759,8 +1760,7 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
     observeEvent(input$calcCDS, {
       req(seu$monocle)
       cds$selected = c(traj = TRUE, ptime = FALSE, diff_features = FALSE)
-        for (i in c("gene", "transcript")) {
-          if (i %in% names(seu)){
+        for (i in names(seu)[names(seu) %in% c("gene", "transcript")]) {
           cds[[i]] <- convert_seu_to_cds(seu[[i]], resolution = input$cdsResolution)
           cds[[i]] <- cds[[i]][,colnames(seu$monocle)]
           cds[[i]] <- learn_graph_by_resolution(cds[[i]],
@@ -1770,7 +1770,6 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
           updateSelectizeInput(session, "customFeature1", choices = rownames(cds[[i]]), server = TRUE)
           updateSelectizeInput(session, "plottype2", selected = "seurat", choices = myplot_types())
           updateSelectizeInput(session, "customFeature2", choices = rownames(cds[[i]]), server = TRUE)
-          }
         }
       cds$traj <- cds[[featureType()]]
     })
@@ -1863,6 +1862,8 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
       selectizeInput(ns("rootCells"), "Choose Root Cells", choices = c("Choose Root Cells" = "", colnames(cds$traj)), multiple = TRUE)
     })
 
+    exported_pseudotime <- reactiveVal()
+
     observeEvent(input$plotPseudotime, {
       req(cds$traj)
       req(input$rootCells)
@@ -1879,7 +1880,19 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
       updateSelectizeInput(session, "plottype2", selected = "pseudotime", choices = myplot_types())
       cds$selected = c(traj = FALSE, ptime = TRUE, diff_features = FALSE)
                        #markermarker
+
+      exported_pseudotime(export_pseudotime(cds$traj, input$rootCells))
+
     })
+
+
+    output$downloadPT <- downloadHandler(
+      filename = function() {
+        paste("pseudotime-", Sys.Date(), ".csv", sep="")
+      },
+      content = function(file) {
+        readr::write_csv(exported_pseudotime(), file)
+      })
 
     #markermarker
     observeEvent(input$calcPtimeGenes, {
@@ -2341,6 +2354,7 @@ plotCoverage_UI <- function(id) {
         ns("coveragePlotSettings"),
         checkboxInput(ns("collapseIntrons"), "Collapse Introns", value = TRUE),
         checkboxInput(ns("meanCoverage"), "Summarize Coverage to Mean", value = TRUE),
+        checkboxInput(ns("summarizeTranscripts"), "Summarize transcript models to gene", value = FALSE),
         radioButtons(ns("yScale"), "Scale Y Axis", choices = c("absolute", "log10"), selected = "log10"),
         numericInput(ns("start"), "start coordinate", value = NULL),
         numericInput(ns("end"), "end coordinate", value = NULL)
@@ -2412,7 +2426,8 @@ plotCoverage <- function(input, output, session, seu, plot_types, proj_dir, orga
                                 rescale_introns = input$collapseIntrons,
                                 scale_y = input$yScale,
                                 start = input$start,
-                                end = input$end)
+                                end = input$end,
+                                summarize_transcripts = input$summarizeTranscripts)
 
     })
 
