@@ -31,6 +31,7 @@ set_colnames_txi <- function(txi, colnames){
 load_counts_by_tximport <- function(proj_dir, type = "salmon", countsFromAbundance = "scaledTPM", edb = EnsDb.Hsapiens.v86::EnsDb.Hsapiens.v86){
 
   sample_glob <- switch(type,
+                        kallist0 = "*abundance.h5",
                         salmon = "*quant.sf",
                         stringtie = "*t_data.ctab")
 

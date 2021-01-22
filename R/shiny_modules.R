@@ -1085,6 +1085,8 @@ findMarkersui <- function(id) {
       uiOutput(ns("valueSelect")),
       radioButtons(ns("markerMethod"), "Method of Marker Selection", choices = c("presto", "genesorteR"), selected = "presto", inline = TRUE),
       actionButton(ns("plotDots"), "Plot Markers!"),
+      downloadButton(ns("downloadMarkerTable"), "Download Markers!"),
+      checkboxInput(ns("uniqueMarkers"), "Make Markers Unique", value = FALSE),
       checkboxInput(ns("hidePseudo"), "Hide Pseudogenes", value = TRUE),
       plotly::plotlyOutput(ns("markerplot"), height = 800),
       width = 6
@@ -1150,14 +1152,23 @@ findMarkers <- function(input, output, session, seu, plot_types, featureType) {
     Seurat::DefaultAssay(seu$active) <- "RNA"
   })
 
-  marker_plot <- eventReactive(input$plotDots, {
-    plot_markers(seu = seu$active, metavar = metavar(), num_markers = input$num_markers, selected_values = input$displayValues, marker_method = input$markerMethod, featureType = featureType(), hide_pseudo = input$hidePseudo)
+  marker_plot_return <- eventReactive(input$plotDots, {
+    plot_markers(seu = seu$active, metavar = metavar(), num_markers = input$num_markers, selected_values = input$displayValues, marker_method = input$markerMethod, featureType = featureType(), hide_pseudo = input$hidePseudo, unique_markers = input$uniqueMarkers)
   })
 
   output$markerplot <- plotly::renderPlotly({
     # req(input$displayClusters)
-    marker_plot()
+    marker_plot_return()$plot
   })
+
+  output$downloadMarkerTable <- downloadHandler(
+    filename = function() {
+      paste(metavar(), "_markers.csv", sep="")
+    },
+    content = function(file) {
+      write_csv(marker_plot_return()$markers, file)
+    })
+
 }
 
 #' Plot Read Count UI
@@ -1573,6 +1584,7 @@ monocleui <- function(id){
           actionButton(ns("subsetCells"), "Subset Monocle Object After Pseudotime Calculation"),
           uiOutput(ns("rootCellsui")),
           actionButton(ns("plotPseudotime"), "Calculate Pseudotime With Root Cells"),
+          downloadButton(ns("downloadPT"), "Export Pseudotime"),
           checkboxInput(ns("flipPtime"), "Invert Pseudotime", value = TRUE),
           width = 6
         )
@@ -1718,8 +1730,7 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
     observeEvent(input$calcCDS, {
       req(seu$monocle)
       cds$selected = c(traj = TRUE, ptime = FALSE, diff_features = FALSE)
-        for (i in c("gene", "transcript")) {
-          if (i %in% names(seu)){
+        for (i in names(seu)[names(seu) %in% c("gene", "transcript")]) {
           cds[[i]] <- convert_seu_to_cds(seu[[i]], resolution = input$cdsResolution)
           cds[[i]] <- cds[[i]][,colnames(seu$monocle)]
           cds[[i]] <- learn_graph_by_resolution(cds[[i]],
@@ -1729,7 +1740,6 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
           updateSelectizeInput(session, "customFeature1", choices = rownames(cds[[i]]), server = TRUE)
           updateSelectizeInput(session, "plottype2", selected = "seurat", choices = myplot_types())
           updateSelectizeInput(session, "customFeature2", choices = rownames(cds[[i]]), server = TRUE)
-          }
         }
       cds$traj <- cds[[featureType()]]
     })
@@ -1822,6 +1832,8 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
       selectizeInput(ns("rootCells"), "Choose Root Cells", choices = c("Choose Root Cells" = "", colnames(cds$traj)), multiple = TRUE)
     })
 
+    exported_pseudotime <- reactiveVal()
+
     observeEvent(input$plotPseudotime, {
       req(cds$traj)
       req(input$rootCells)
@@ -1838,7 +1850,19 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
       updateSelectizeInput(session, "plottype2", selected = "pseudotime", choices = myplot_types())
       cds$selected = c(traj = FALSE, ptime = TRUE, diff_features = FALSE)
                        #markermarker
+
+      exported_pseudotime(export_pseudotime(cds$traj, input$rootCells))
+
     })
+
+
+    output$downloadPT <- downloadHandler(
+      filename = function() {
+        paste("pseudotime-", Sys.Date(), ".csv", sep="")
+      },
+      content = function(file) {
+        readr::write_csv(exported_pseudotime(), file)
+      })
 
     #markermarker
     observeEvent(input$calcPtimeGenes, {
@@ -2300,6 +2324,7 @@ plotCoverage_UI <- function(id) {
         ns("coveragePlotSettings"),
         checkboxInput(ns("collapseIntrons"), "Collapse Introns", value = TRUE),
         checkboxInput(ns("meanCoverage"), "Summarize Coverage to Mean", value = TRUE),
+        checkboxInput(ns("summarizeTranscripts"), "Summarize transcript models to gene", value = FALSE),
         radioButtons(ns("yScale"), "Scale Y Axis", choices = c("absolute", "log10"), selected = "log10"),
         numericInput(ns("start"), "start coordinate", value = NULL),
         numericInput(ns("end"), "end coordinate", value = NULL)
@@ -2312,7 +2337,7 @@ plotCoverage_UI <- function(id) {
 }
 
 
-#' Title
+#' Plot Coverage Module
 #'
 #' @param input
 #' @param output
@@ -2371,7 +2396,8 @@ plotCoverage <- function(input, output, session, seu, plot_types, proj_dir, orga
                                 rescale_introns = input$collapseIntrons,
                                 scale_y = input$yScale,
                                 start = input$start,
-                                end = input$end)
+                                end = input$end,
+                                summarize_transcripts = input$summarizeTranscripts)
 
     })
 
@@ -2392,7 +2418,7 @@ plotCoverage <- function(input, output, session, seu, plot_types, proj_dir, orga
     output$downloadPlot <- downloadHandler(
       filename = function() { paste("coverage", '.pdf', sep='') },
       content = function(file) {
-        ggsave(file, coverage_plot(), width = 16, height = 12)
+        ggsave(file, coverage_return()$plot, width = 16, height = 12)
       })
 
 }

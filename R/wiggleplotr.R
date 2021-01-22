@@ -56,6 +56,7 @@ plot_gene_coverage_by_var <- function(genes_of_interest = "RXRG",
                                       edb = NULL,
                                       heights = c(3,1),
                                       scale_y = "log10",
+                                      reverse_x = FALSE,
                                       start = NULL,
                                       end = NULL,
                                       ...) {
@@ -110,6 +111,29 @@ plot_gene_coverage_by_var <- function(genes_of_interest = "RXRG",
     coverage_plot_list$coverage_plot <-
       coverage_plot_list$coverage_plot +
       scale_y_continuous(trans = scales::pseudo_log_trans(base = 10), breaks = 10^(0:4)) +
+      NULL
+  }
+
+  if(reverse_x){
+    transformed_x_lim <- ggplot2::ggplot_build(coverage_plot_list$coverage_plot)$layout$panel_params[[1]]$x.range
+    # transformed_x_lim[1] <- transformed_x_lim[1] - diff(transformed_x_lim)*0.2
+
+    coverage_plot_list$coverage_plot <-
+      coverage_plot_list$coverage_plot +
+      coord_cartesian(
+        xlim = rev(transformed_x_lim),
+        expand = FALSE) +
+      NULL
+
+    transformed_x_lim <- ggplot2::ggplot_build(coverage_plot_list$tx_structure)$layout$panel_params[[1]]$x.range
+    # transformed_x_lim[1] <- transformed_x_lim[1] - diff(transformed_x_lim)*0.2
+
+    coverage_plot_list$tx_structure <-
+      coverage_plot_list$tx_structure +
+      scale_x_reverse() +
+      coord_cartesian(
+        xlim = rev(transformed_x_lim),
+        expand = FALSE) +
       NULL
   }
 

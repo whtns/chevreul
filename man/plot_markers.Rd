@@ -6,13 +6,14 @@
 \usage{
 plot_markers(
   seu,
-  metavar,
+  metavar = "batch",
   num_markers = 5,
   selected_values = NULL,
   return_plotly = TRUE,
   marker_method = c("presto", "genesorteR"),
   featureType = "gene",
   hide_pseudo = FALSE,
+  unique_markers = FALSE,
   ...
 )
 }

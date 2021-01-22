@@ -13,20 +13,24 @@
 #'
 #' convert_mouse_seu_to_human(seurat_mouse_data)
 #'
+
 convert_mouse_seu_to_human <- function(seu){
+
+  # transfer default species expression data to a species-specific assay
+  seu$gene$mouse <- seu$gene$RNA
+
   new_rownames <- convert_symbols_by_species(src_genes = rownames(seu$gene), src_species = "mouse")
 
-  new_rownames <- new_rownames %>%
-    dplyr::group_by(human) %>%
-    dplyr::mutate(duplicate_symbol = dplyr::row_number()) %>%
-    dplyr::filter()
-
-  keep_rows <- new_rownames$duplicate_symbol == 1 & !is.na(new_rownames$human)
-
-  seu$gene <- seu$gene[keep_rows,]
-
-  new_rownames <- new_rownames[keep_rows,] %>%
-    dplyr::pull(human)
+  # new_rownames <- new_rownames %>%
+  #   dplyr::group_by(human) %>%
+  #   dplyr::mutate(duplicate_symbol = dplyr::row_number()) %>%
+  #   dplyr::filter()
+  #
+  # keep_rows <- new_rownames$duplicate_symbol == 1 & !is.na(new_rownames$human)
+  #
+  # subset_seu <- seu$gene[keep_rows,]
+  #
+  # seu$gene$RNA <- subset_seu$RNA
 
   seu_slots <- c("counts", "data", "scale.data", "meta.features")
 
@@ -42,25 +46,15 @@ convert_mouse_seu_to_human <- function(seu){
 
 #' Convert Seurat Objects from Human to Mouse
 #' @param seu
+#' @param ... to be passed to \code{convert_symbols_by_species}
 #'
 #' @return
 #' @export
 #'
 #' @examples
-convert_human_seu_to_mouse <- function(seu){
+convert_human_seu_to_mouse <- function(seu, ...){
+
   new_rownames <- convert_symbols_by_species(src_genes = rownames(seu$gene), src_species = "human")
-
-  new_rownames <- new_rownames %>%
-    dplyr::group_by(mouse) %>%
-    dplyr::mutate(duplicate_symbol = dplyr::row_number()) %>%
-    dplyr::filter()
-
-  keep_rows <- new_rownames$duplicate_symbol == 1 & !is.na(new_rownames$mouse)
-
-  seu$gene <- seu$gene[keep_rows,]
-
-  new_rownames <- new_rownames[keep_rows,] %>%
-    dplyr::pull(mouse)
 
   seu_slots <- c("counts", "data", "scale.data", "meta.features")
 
@@ -157,19 +151,31 @@ convert_symbols_by_species <- function(src_genes, src_species){
   if(src_species == "human"){
     dest_species = "mouse"
 
-    genesV2 <- human_to_mouse_homologs
+    dest_symbols <- src_genes %>%
+      tibble::enframe("gene_index", "HGNC.symbol") %>%
+      dplyr::left_join(human_to_mouse_homologs, by = "HGNC.symbol") %>%
+      dplyr::distinct(HGNC.symbol, .keep_all = TRUE) %>%
+      dplyr::mutate(MGI.symbol = dplyr::case_when(is.na(MGI.symbol) ~ stringr::str_to_sentence(HGNC.symbol),
+                                                   TRUE ~ MGI.symbol)) %>%
+      dplyr::select(-gene_index) %>%
+      identity()
 
   } else if (src_species == "mouse"){
     dest_species = "human"
 
-    genesV2 <- mouse_to_human_homologs
+    dest_symbols <- src_genes %>%
+      tibble::enframe("gene_index", "MGI.symbol") %>%
+      dplyr::left_join(mouse_to_human_homologs, by = "MGI.symbol") %>%
+      dplyr::distinct(MGI.symbol, .keep_all = TRUE) %>%
+      dplyr::mutate(HGNC.symbol = dplyr::case_when(is.na(HGNC.symbol) ~ stringr::str_to_upper(MGI.symbol),
+                                                   TRUE ~ HGNC.symbol)) %>%
+      dplyr::select(-gene_index) %>%
+      # dplyr::mutate(HGNC.symbol = make.unique(HGNC.symbol)) %>%
+      identity()
 
   }
 
-  dest_symbols <- genesV2[match(src_genes, genesV2[,1]),]
-  names(dest_symbols) <- c(src_species, dest_species)
-
-  return(dest_symbols)
+  return(make.unique(dest_symbols[[2]]))
 }
 
 #' Integrate Seurat Objects from Mouse to Human
