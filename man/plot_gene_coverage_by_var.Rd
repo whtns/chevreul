@@ -14,6 +14,7 @@ plot_gene_coverage_by_var(
   edb = NULL,
   heights = c(3, 1),
   scale_y = "log10",
+  reverse_x = FALSE,
   start = NULL,
   end = NULL,
   ...
