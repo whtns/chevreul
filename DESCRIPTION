@@ -54,8 +54,8 @@ Imports:
     Nebulosa,
     ggpubr,
     formattable,
-    reticulate
-    DataEditR
+    reticulate,
+    DataEditR (>= 0.0.9)
 Suggests: 
     ggplot2,
     testthat (>= 2.1.0),
@@ -63,13 +63,14 @@ Suggests:
     rmarkdown
 URL: https://github.com/cobriniklab/seuratTools
 BugReports: https://github.com/cobriniklab/seuratTools/issues
-Remotes: 
+Remotes:  
     immunogenomics/presto,
     satijalab/seurat-wrappers,
     cole-trapnell-lab/monocle3,
     stephenturner/annotables,
     mahmoudibrahim/genesorteR,
-    jokergoo/ComplexHeatmap
+    jokergoo/ComplexHeatmap,
+    DillonHammill/DataEditR
 Depends: 
     Seurat,
     R (>= 2.10),

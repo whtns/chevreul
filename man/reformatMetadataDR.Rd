@@ -19,7 +19,21 @@ reformatMetadataDR(
   col_factor = FALSE,
   row_bind = NULL,
   row_edit = TRUE,
+  save_as = NULL,
+  title = NULL,
+  logo = NULL,
+  logo_size = 30,
+  logo_side = "left",
+  viewer = "dialog",
+  viewer_height = 800,
+  viewer_width = 1200,
+  theme = "yeti",
+  read_fun = "read.csv",
+  read_args = NULL,
+  write_fun = "write.csv",
+  write_args = NULL,
   quiet = FALSE,
+  code = FALSE,
   hide = FALSE
 )
 }
