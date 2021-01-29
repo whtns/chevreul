@@ -11,6 +11,7 @@ plot_var(
   dims = c(1, 2),
   highlight = NULL,
   pt.size = 1,
+  return_plotly = TRUE,
   ...
 )
 }
@@ -22,4 +23,8 @@ plot_var(
 }
 \description{
 Plot Metadata Variables
+}
+\examples{
+
+plot_var(seurat_pancreas_reduced$gene, group = "batch")
 }

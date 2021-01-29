@@ -9,7 +9,6 @@ plot_violin(
   plot_var = "batch",
   plot_vals = NULL,
   features = "RXRG",
-  return_plotly = TRUE,
   assay = "RNA",
   ...
 )
@@ -22,4 +21,9 @@ plot_violin(
 }
 \description{
 plot Violin plot
+}
+\examples{
+
+plot_violin(seurat_pancreas_reduced$gene, plot_var = "batch", features = c("NRL"))
+
 }

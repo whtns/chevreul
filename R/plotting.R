@@ -245,72 +245,6 @@ plot_multiple_branches_heatmap <- function(cds,
   }
 }
 
-
-#' Plot RNA velocity Computed by Velocyto.R
-#'
-#' @param seu
-#' @param reduction
-#' @param arrow.scale
-#' @param cell.colors
-#' @param plot_format
-#' @param velocity
-#'
-#' @return
-#' @export
-#'
-#' @examples
-plot_velocity_arrows <- function(seu, velocity, reduction = "umap", cell.colors, plot_format = "grid", arrow.scale = 3, ...){
-
-  # velocity <- seu@misc$vel
-
-  emb <- Embeddings(object = seu, reduction = reduction)
-
-  cell.alpha=1.0; cell.cex=1; fig.height=4; fig.width=4.5;
-
-  if (plot_format == "arrow") {
-    velocyto.R::show.velocity.on.embedding.cor(emb, velocity, n=100, scale='sqrt',
-                                               cell.colors=velocyto.R::ac(cell.colors, alpha=cell.alpha),
-                                               cex=cell.cex, arrow.scale=arrow.scale, arrow.lwd=1, ...)
-  } else if (plot_format == "grid"){
-    #Alternatively, the same function can be used to calculate a velocity vector field:
-    velocyto.R::show.velocity.on.embedding.cor(emb, velocity, n=100, scale='sqrt',
-                                               cell.colors=velocyto.R::ac(cell.colors, alpha=cell.alpha),
-                                               cex=cell.cex, arrow.scale=arrow.scale,
-                                               show.grid.flow=TRUE, min.grid.cell.mass=0.5,
-                                               grid.n=20, arrow.lwd=2, ...)
-  }
-
-
-}
-
-#' Plot RNA velocity trajectory computed by Velocyto.R
-#'
-#' @param seu
-#' @param reduction
-#' @param format either an arrow or grid format
-#' @param arrow.scale
-#'
-#' @return
-#' @export
-#'
-#' @examples
-plot_velocity_trajectory <- function(seu, reduction = "umap", format = "arrow", arrow.scale = 3){
-
-  emb <- Embeddings(object = seu, reduction = reduction)
-  ident.colors <- (scales::hue_pal())(n = length(x = levels(x = seu)))
-  names(x = ident.colors) <- levels(x = seu)
-  cell.colors <- ident.colors[Idents(object = seu)]
-  names(x = cell.colors) <- colnames(x = seu)
-
-  cell.alpha=1.0; cell.cex=1; fig.height=4; fig.width=4.5;
-
-  velocyto.R::show.velocity.on.embedding.eu(emb, seu@misc$vel, n=40, scale='sqrt', cell.colors=ac(cell.colors,alpha=cell.alpha),
-                                            cex=cell.cex, nPcs=30, sigma=2.5, show.trajectories=TRUE, diffusion.steps=400,
-                                            n.trajectory.clusters=15, ntop.trajectories=1,
-                                            embedding.knn=T, control.for.neighborhood.density=TRUE,n.cores=6)
-
-}
-
 #' Plot Metadata Variables
 #'
 #' @param seu
@@ -322,7 +256,9 @@ plot_velocity_trajectory <- function(seu, reduction = "umap", format = "arrow", 
 #' @export
 #'
 #' @examples
-plot_var <- function(seu, embedding = "umap", group = "batch", dims = c(1,2), highlight = NULL, pt.size = 1.0, ...){
+#'
+#' plot_var(seurat_pancreas_reduced$gene, group = "batch")
+plot_var <- function(seu, embedding = "umap", group = "batch", dims = c(1,2), highlight = NULL, pt.size = 1.0, return_plotly = TRUE, ...){
 
   Seurat::DefaultAssay(seu) <- "RNA"
 
@@ -347,6 +283,8 @@ plot_var <- function(seu, embedding = "umap", group = "batch", dims = c(1,2), hi
     # theme(legend.text=element_text(size=10)) +
     NULL
 
+  if (return_plotly == FALSE) return(d)
+
   plotly_plot <- plotly::ggplotly(d, tooltip = "cellid", height  = 500) %>%
     # htmlwidgets::onRender(javascript) %>%
     # plotly::highlight(on = "plotly_selected", off = "plotly_relayout") %>%
@@ -360,20 +298,21 @@ plot_var <- function(seu, embedding = "umap", group = "batch", dims = c(1,2), hi
 #' Plotly settings
 #'
 #' @param plotly_plot
+#' @param width
+#' @param height
 #'
 #' @return
-#' @export
 #'
 #' @examples
-plotly_settings <- function(plotly_plot){
+plotly_settings <- function(plotly_plot, width = 600, height = 700){
   plotly_plot %>%
     plotly::layout(dragmode = "lasso") %>%
     plotly::config(
       toImageButtonOptions = list(
         format = "png",
         filename = "myplot",
-        width = 600,
-        height = 700
+        width = width,
+        height = height
       )) %>%
     identity()
 }
@@ -385,7 +324,6 @@ plotly_settings <- function(plotly_plot){
 #' @param plot_var
 #' @param plot_vals
 #' @param features
-#' @param return_plotly
 #' @param assay
 #' @param ...
 #'
@@ -393,36 +331,31 @@ plotly_settings <- function(plotly_plot){
 #' @export
 #'
 #' @examples
-plot_violin <- function(seu, plot_var = "batch", plot_vals = NULL, features = "RXRG", return_plotly = TRUE, assay = "RNA", ...){
+#'
+#' plot_violin(seurat_pancreas_reduced$gene, plot_var = "batch", features = c("NRL"))
+#'
+plot_violin <- function(seu, plot_var = "batch", plot_vals = NULL, features = "RXRG", assay = "RNA", ...){
 
   if (is.null(plot_vals)) {
     plot_vals = unique(seu[[]][[plot_var]])
     plot_vals <- plot_vals[!is.na(plot_vals)]
   }
   seu <- seu[, seu[[]][[plot_var]] %in% plot_vals]
-  vln_plot <- Seurat::VlnPlot(seu, features = features, group.by = plot_var, assay = assay, pt.size = 0.1, ...) +
-    geom_boxplot() +
+  vln_plot <- Seurat::VlnPlot(seu, features = features, group.by = plot_var, assay = assay, pt.size = 1, ...) +
+    geom_boxplot(width = 0.2) +
     # labs(title = "Expression Values for each cell are normalized by that cell's total expression then multiplied by 10,000 and natural-log transformed") +
     # stat_summary(fun.y = mean, geom = "line", size = 4, colour = "black") +
     NULL
 
-  if (!return_plotly) return(vln_plot)
-
-  exclude_trace_number = length(unique(seu[[]][[plot_var]]))*2
-
-  vln_plot <- plotly::ggplotly(vln_plot, height = 700) %>%
-    plotly::style(opacity = 0.5) %>%
-    plotly::style(hoverinfo = "skip", traces = c(1:exclude_trace_number)) %>%
-    plotly_settings() %>%
-    plotly::toWebGL() %>%
-    identity()
-
-  return(vln_plot)
 }
 
 
-#' Plot Features
-#' This is a great function
+#' Plot Feature
+#'
+#' Plots gene or transcript expression overlaid on a given embedding.
+#' If multiple features are supplied the joint density of all features
+#' will be plotted using [Nebulosa](https://www.bioconductor.org/packages/devel/bioc/html/Nebulosa.html)
+#'
 #' @param seu
 #' @param embedding
 #' @param features
@@ -430,10 +363,17 @@ plot_violin <- function(seu, plot_var = "batch", plot_vals = NULL, features = "R
 #'
 #' @return
 #' @export
+#' @importFrom ggplot2 aes
 #'
 #' @examples
 #'
-plot_feature <- function(seu, embedding, features, dims = c(1,2), return_plotly = TRUE, pt.size = 1.0){
+#' plot_feature(seurat_pancreas_reduced, embedding = "umap", features = c("NRL"))
+#'
+#' plot_feature(seurat_pancreas_reduced, embedding = "umap", features = c("RXRG", "NRL"))
+#'
+#' plot_feature(seurat_pancreas_reduced, embedding = "umap", features = c("RXRG", "NRL"), return_plotly = FALSE)
+#'
+plot_feature <- function(seu, embedding = c("umap", "pca", "tsne"), features, dims = c(1,2), return_plotly = TRUE, pt.size = 1.0){
 
   Seurat::DefaultAssay(seu) <- "RNA"
 
@@ -446,8 +386,16 @@ plot_feature <- function(seu, embedding, features, dims = c(1,2), return_plotly 
 
   dims <- as.numeric(dims)
 
+  if(length(features) == 1){
+
   fp <- Seurat::FeaturePlot(object = seu, features = features, dims = dims, reduction = embedding, pt.size = pt.size, blend = FALSE)	+
-    aes(key = key, cellid = key, alpha = 0.7)
+    ggplot2::aes(key = key, cellid = key, alpha = 0.7)
+  } else if(length(features) > 1){
+    nebulosa_plots <- Nebulosa::plot_density(object = seu, features = features, dims = dims, reduction = embedding, size = pt.size, joint = TRUE, combine = FALSE)
+
+    fp <- dplyr::last(nebulosa_plots) +
+      ggplot2::aes(key = key, cellid = key, alpha = 0.7)
+  }
 
   if (return_plotly == FALSE) return(fp)
 
@@ -459,7 +407,9 @@ plot_feature <- function(seu, embedding, features, dims = c(1,2), return_plotly 
 
 }
 
-#' Plot Rides
+#' Plot Ridges
+#'
+#' Plot ridge plots for cell cycle scoring
 #'
 #' @param seu
 #' @param features
@@ -487,12 +437,16 @@ plot_ridge <- function(seu, features){
 
 #' Plot Cluster Marker Genes
 #'
+#' Plot a dot plot of n marker features grouped by cell metadata
+#' available methods are wilcoxon rank-sum test implemented in
+#' [presto](https://github.com/immunogenomics/presto) and specificity scores implemented in [genesorteR](https://github.com/mahmoudibrahim/genesorteR)
+#'
 #' @param seu
 #' @param marker_method
 #' @param metavar
 #' @param num_markers
 #' @param selected_values
-#' @param return_plot
+#' @param return_plotly
 #' @param featureType
 #' @param hide_pseudo
 #' @param ...
@@ -501,13 +455,14 @@ plot_ridge <- function(seu, features){
 #' @export
 #'
 #' @examples
-plot_markers <- function(seu, metavar, num_markers = 5, selected_values = NULL, return_plot = FALSE, marker_method = "presto", featureType  = "gene", hide_pseudo = FALSE, ...){
+#'
+#' plot_markers(seurat_pancreas_reduced$gene, "tech", return_plot = TRUE)
+#'
+plot_markers <- function(seu, metavar = "batch", num_markers = 5, selected_values = NULL, return_plotly = TRUE, marker_method = c("presto", "genesorteR"), featureType  = "gene", hide_pseudo = FALSE, unique_markers = FALSE, ...){
   Idents(seu) <- seu[[metavar]]
 
   # by default only resolution markers are calculated in pre-processing
-  if (!metavar %in% names(seu@misc$markers)){
-    seu <- find_all_markers(seu, metavar)
-  }
+  seu <- find_all_markers(seu, metavar)
 
   markers <- seu@misc$markers[[metavar]][[marker_method]] %>%
     dplyr::mutate(dplyr::across(.fns = as.character))
@@ -524,7 +479,23 @@ plot_markers <- function(seu, metavar, num_markers = 5, selected_values = NULL, 
 
   }
 
-  markers <-
+  if(unique_markers){
+    markers <-
+      markers %>%
+      dplyr::mutate(precedence = row_number()) %>%
+      pivot_longer(-precedence, names_to = "group", values_to = "markers") %>%
+      dplyr::arrange(markers, precedence) %>%
+      dplyr::group_by(markers) %>%
+      dplyr::filter(row_number() == 1) %>%
+      dplyr::arrange(group, precedence) %>%
+      tidyr::drop_na() %>%
+      dplyr::group_by(group) %>%
+      dplyr::mutate(precedence = row_number()) %>%
+      tidyr::pivot_wider(names_from = "group", values_from = "markers") %>%
+      dplyr::select(-precedence)
+  }
+
+  sliced_markers <-
     markers %>%
     dplyr::slice_head(n = num_markers) %>%
     tidyr::pivot_longer(everything(), names_to = "group", values_to = "feature") %>%
@@ -534,31 +505,36 @@ plot_markers <- function(seu, metavar, num_markers = 5, selected_values = NULL, 
 
   if(!is.null(selected_values)){
     seu <- seu[,Idents(seu) %in% selected_values]
-    markers <- markers %>%
+    sliced_markers <- sliced_markers %>%
       dplyr::filter(group %in% selected_values)
   }
 
-  markers <- dplyr::pull(markers, feature)
+  sliced_markers <- dplyr::pull(sliced_markers, feature)
 
-  markers <- unique(markers[markers %in% rownames(seu)])
+  sliced_markers <- unique(sliced_markers[sliced_markers %in% rownames(seu)])
 
-  markerplot <- DotPlot(seu, features = markers, group.by = metavar, dot.scale = 3) +
+  seu[[metavar]][is.na(seu[[metavar]])] <- "NA"
+  Idents(seu) <- metavar
+
+  markerplot <- DotPlot(seu, features = sliced_markers, group.by = metavar, dot.scale = 3) +
     theme(axis.text.x = element_text(size = 10, angle = 45, vjust = 1, hjust=1),
           axis.text.y = element_text(size = 10)) +
     scale_y_discrete(position = "right") +
     coord_flip() +
     NULL
 
-  if (return_plot) return(markerplot)
+  if (return_plotly == FALSE) return(markerplot)
 
   plot_height = (150*num_markers)
   plot_width = (100*length(levels(Idents(seu))))
 
-  plotly_plot <- plotly::ggplotly(markerplot, height = plot_height, width = plot_width) %>%
+  markerplot <- plotly::ggplotly(markerplot, height = plot_height, width = plot_width) %>%
     plotly_settings() %>%
     plotly::toWebGL() %>%
     # plotly::partial_bundle() %>%
     identity()
+
+  return(list(plot = markerplot, markers = markers))
 
 }
 
@@ -567,12 +543,19 @@ plot_markers <- function(seu, metavar, num_markers = 5, selected_values = NULL, 
 #' @param seu
 #' @param metavar
 #' @param color.by
+#' @param yscale
+#' @param return_plotly
 #'
 #' @return
 #' @export
 #'
 #' @examples
-plot_readcount <- function(seu, metavar = "nCount_RNA", color.by = "batch"){
+#'
+#' plot_readcount(seurat_pancreas_reduced$gene)
+#'
+#' plot_readcount(seurat_pancreas_reduced$gene, return_plotly = FALSE)
+#'
+plot_readcount <- function(seu, metavar = "nCount_RNA", color.by = "batch", yscale = "linear", return_plotly = TRUE, ...){
 
   seu_tbl <- tibble::rownames_to_column(seu[[]], "SID") %>%
     dplyr::select(SID, !!as.symbol(metavar), !!as.symbol(color.by))
@@ -580,11 +563,23 @@ plot_readcount <- function(seu, metavar = "nCount_RNA", color.by = "batch"){
   rc_plot <-
     ggplot(seu_tbl, aes(x = reorder(SID, -!!as.symbol(metavar)),
                         y = !!as.symbol(metavar), fill = !!as.symbol(color.by))) +
-    scale_y_log10() + geom_bar(position = "identity", stat = "identity") +
+    geom_bar(position = "identity", stat = "identity") +
     theme(axis.text.x = element_blank()) + labs(title = metavar,
-                                                x = "Sample") + NULL
+                                                x = "Sample") +
+    NULL
 
-  rc_plot <- rc_plot %>%
+  if(yscale == "log"){
+    rc_plot <-
+      rc_plot +
+      scale_y_log10()
+  }
+
+  if (return_plotly == FALSE) return(rc_plot)
+
+  rc_plot <- plotly::ggplotly(rc_plot, tooltip = "cellid", height  = 500) %>%
+    # htmlwidgets::onRender(javascript) %>%
+    # plotly::highlight(on = "plotly_selected", off = "plotly_relayout") %>%
+    plotly_settings() %>%
     plotly::toWebGL() %>%
     # plotly::partial_bundle() %>%
     identity()
@@ -611,6 +606,11 @@ plot_readcount <- function(seu, metavar = "nCount_RNA", color.by = "batch"){
 #' @export
 #'
 #' @examples
+#'
+#' top_50_features <- VariableFeatures(seurat_pancreas_reduced$gene)[1:50]
+#'
+#' seu_complex_heatmap(seurat_pancreas_reduced$gene, features = top_50_features)
+#'
 seu_complex_heatmap <- function(seu, features = NULL, cells = NULL, group.by = "ident",
                                 slot = "scale.data", assay = NULL, group.bar.height = 0.01,
                                 cluster_columns = FALSE, column_split = NULL, col_dendrogram = "ward.D2", mm_col_dend = 30, ...)
@@ -706,7 +706,10 @@ seu_complex_heatmap <- function(seu, features = NULL, cells = NULL, group.by = "
 }
 
 
-#' Title
+
+#' Plot Transcript Composition
+#'
+#' plot the proportion of reads of a given gene map to each transcript
 #'
 #' @param seu_transcript
 #' @param seu_gene
@@ -718,7 +721,7 @@ seu_complex_heatmap <- function(seu, features = NULL, cells = NULL, group.by = "
 #' @export
 #'
 #' @examples
-plot_transcript_composition <- function(seu_transcript, seu_gene, gene_symbol, group.by = "batch", standardize = FALSE){
+plot_transcript_composition <- function(seu_transcript, seu_gene, gene_symbol, group.by = "batch", standardize = FALSE, drop_zero = FALSE){
   # browser()
 
   transcripts <- annotables::grch38 %>%
@@ -733,10 +736,12 @@ plot_transcript_composition <- function(seu_transcript, seu_gene, gene_symbol, g
     tibble::rownames_to_column("sample_id") %>%
     dplyr::select(sample_id, group.by = {{group.by}})
 
+  data <- GetAssayData(seu_transcript, assay = "RNA", slot = "data")[transcripts,]
+
+  data <- t(expm1(as.matrix(data)))
+
   data <-
-    GetAssayData(seu_transcript, assay = "RNA", slot = "counts")[transcripts,] %>%
-    as.matrix() %>%
-    t() %>%
+    data %>%
     as.data.frame() %>%
     tibble::rownames_to_column("sample_id") %>%
     tidyr::pivot_longer(cols = starts_with("ENST"),
@@ -746,10 +751,15 @@ plot_transcript_composition <- function(seu_transcript, seu_gene, gene_symbol, g
     dplyr::mutate(group.by = as.factor(group.by),
                   transcript = as.factor(transcript))
 
-  data <-
-    data %>%
-    dplyr::group_by(group.by, transcript) %>%
-    dplyr::summarize(expression = mean(expression))
+  data <- dplyr::group_by(data, group.by, transcript)
+
+  # drop zero values
+
+  if(drop_zero){
+    data <- dplyr::filter(data, expression != 0)
+  }
+
+  data <- dplyr::summarize(data, expression = mean(expression))
 
   position <- ifelse(standardize, "fill", "stack")
 
@@ -761,15 +771,15 @@ plot_transcript_composition <- function(seu_transcript, seu_gene, gene_symbol, g
     theme_minimal() +
     theme(axis.title.x = element_blank(),
           axis.text.x = element_text(
-      angle=45, hjust = 1, vjust = 1, size=12)) +
+            angle=45, hjust = 1, vjust = 1, size=12)) +
     labs(title = paste("Mean expression by", group.by, "-", gene_symbol), subtitle = "data scaled by library size then ln transformed") +
     NULL
 
-  return(p)
+  return(list(plot = p, data = data))
 
 }
 
-#' Title
+#' Plot All Transcripts
 #'
 #' @param seu
 #' @param transcripts
@@ -778,6 +788,9 @@ plot_transcript_composition <- function(seu_transcript, seu_gene, gene_symbol, g
 #' @export
 #'
 #' @examples
+#'
+#' Plot all transcripts
+#'
 plot_all_transcripts <- function(seu_transcript, seu_gene, features, embedding){
 
 
@@ -790,7 +803,8 @@ plot_all_transcripts <- function(seu_transcript, seu_gene, features, embedding){
   seu_gene[[features]] <- transcript_cols
 
   pList <- purrr::map(features, ~plot_feature(seu_gene,
-                                              embedding = embedding, features = .x, return_plotly = FALSE))
+                                              embedding = embedding,
+                                              features = .x, return_plotly = FALSE))
   names(pList) <- features
 
   return(pList)

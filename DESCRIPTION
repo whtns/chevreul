@@ -1,7 +1,7 @@
 Package: seuratTools
 Type: Package
 Title: Tools for Managing Seurat Objects
-Version: 0.3.0
+Version: 0.4.10
 Authors@R: c(
     person("Kevin", "Stachelek", email = "kevin.stachelek@gmail.com", role = c("aut", "cre")),
     person("Roman", "Hillje", role = c("ctb"), comment = "Author of included Cerebro fragments")
@@ -17,7 +17,6 @@ Imports:
     fs,
     rlang,
     magrittr,
-    velocyto.R (>= 0.6),
     future,
     DT,
     plotly,
@@ -27,11 +26,9 @@ Imports:
     SeuratWrappers (>= 0.1.0),
     monocle3 (>= 0.2.1),
     unglue,
-    shinyjqui,
     Biobase,
     tximport,
     clustree,
-    shinylogs,
     annotables (>= 0.1.91),
     presto (>= 1.0.0),
     DBI,
@@ -45,14 +42,22 @@ Imports:
     httr,
     patchwork,
     ComplexHeatmap (>= 2.5.4),
-    wiggleplotr (>= 1.12.1),
+    wiggleplotr (>= 1.13.1),
     ensembldb,
     Rcpp,
     SingleCellExperiment,
     dplyr,
     tidyr,
     shinyhelper,
-    rhandsontable
+    rhandsontable,
+    checkmate,
+    Nebulosa,
+    ggpubr,
+    formattable,
+    reticulate,
+    DataEditR (>= 0.0.9),
+    memoise,
+    cachem
 Suggests: 
     ggplot2,
     testthat (>= 2.1.0),
@@ -64,10 +69,10 @@ Remotes:
     immunogenomics/presto,
     satijalab/seurat-wrappers,
     cole-trapnell-lab/monocle3,
-    velocyto-team/velocyto.R,
     stephenturner/annotables,
     mahmoudibrahim/genesorteR,
-    jokergoo/ComplexHeatmap
+    jokergoo/ComplexHeatmap,
+    DillonHammill/DataEditR
 Depends: 
     Seurat,
     R (>= 2.10),

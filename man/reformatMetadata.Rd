@@ -4,7 +4,7 @@
 \alias{reformatMetadata}
 \title{Reformat Seurat Object Metadata Server}
 \usage{
-reformatMetadata(input, output, session, seu)
+reformatMetadata(input, output, session, seu, featureType = "gene")
 }
 \arguments{
 \item{seu}{}

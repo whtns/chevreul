@@ -18,23 +18,32 @@
 #'
 #'
 #' @examples
-seurat_integration_pipeline <- function(seu_list, feature, resolution = seq(0.2, 2.0, by = 0.2), suffix = '', algorithm = 1, organism, annotate_cell_cycle = FALSE, annotate_percent_mito = FALSE, ...) {
+seurat_integration_pipeline <- function(seu_list, feature, resolution = seq(0.2, 2.0, by = 0.2), suffix = '', algorithm = 1, organism = "human", annotate_cell_cycle = FALSE, annotate_percent_mito = FALSE, ...) {
 
-  integrated_seu <- seurat_integrate(seu_list, ...)
+  experiment_names <- names(seu_list)
+
+  organisms <- case_when(
+    grepl("Hs", experiment_names) ~ "human",
+    grepl("Mm", experiment_names) ~ "mouse"
+  )
+
+  names(organisms) <- experiment_names
+
+  organisms[is.na(organisms)] <- organism
+
+  integrated_seu <- seurat_integrate(seu_list, organism = organism, ...)
 
   # cluster merged seurat objects
   integrated_seu <- seurat_cluster(integrated_seu, resolution = resolution, algorithm = algorithm, ...)
 
   integrated_seu <- find_all_markers(integrated_seu)
-
-  if (feature == "gene"){
-    enriched_seu <- tryCatch(getEnrichedPathways(integrated_seu), error = function(e) e)
-    enrichr_available <- !any(class(enriched_seu) == "error")
-    if(enrichr_available){
-      integrated_seu <- enriched_seu
-    }
-  }
-
+  # if (feature == "gene"){
+  #   enriched_seu <- tryCatch(getEnrichedPathways(integrated_seu), error = function(e) e)
+  #   enrichr_available <- !any(class(enriched_seu) == "error")
+  #   if(enrichr_available){
+  #     integrated_seu <- enriched_seu
+  #   }
+  # }
   # add read count column
   integrated_seu <- add_read_count_col(integrated_seu)
 
@@ -61,12 +70,14 @@ seurat_integration_pipeline <- function(seu_list, feature, resolution = seq(0.2,
 #'
 #' @param seu
 #' @param resolution
+#' @param reduction
+#' @param organism
 #'
 #' @return
 #' @export
 #'
 #' @examples
-seurat_pipeline <- function(seu, feature = "gene", resolution=0.6, reduction = "pca", annotate_cell_cycle = TRUE, annotate_percent_mito = TRUE, organism = "human", ...){
+seurat_pipeline <- function(seu, feature = "gene", resolution=0.6, reduction = "pca", organism = "human", ...){
 
   seu <- seurat_preprocess(seu, scale = T, ...)
 
@@ -89,14 +100,30 @@ seurat_pipeline <- function(seu, feature = "gene", resolution=0.6, reduction = "
   seu <- seuratTools::add_read_count_col(seu)
 
   # annotate cell cycle scoring to seurat objects
-  if (annotate_cell_cycle){
-    seu <- annotate_cell_cycle(seu, feature, ...)
-  }
+  seu <- tryCatch({
+    annotate_cell_cycle(seu, feature, ...)
+  }, warning = function(w) {
+    message(sprintf("Warning in %s: %s", deparse(w[["call"]]), w[["message"]]))
+    return(seu)
+  }, error = function(e) {
+    message(sprintf("Error in %s: %s", deparse(e[["call"]]), e[["message"]]))
+    return(seu)
+  }, finally = {
+      message("done")
+  })
 
   # annotate mitochondrial percentage in seurat metadata
-  if (annotate_percent_mito){
-    seu <- add_percent_mito(seu, feature, organism)
-  }
+  seu <- tryCatch({
+    add_percent_mito(seu, feature, organism)
+  }, warning = function(w) {
+    message(sprintf("Warning in %s: %s", deparse(w[["call"]]), w[["message"]]))
+    return(seu)
+  }, error = function(e) {
+    message(sprintf("Error in %s: %s", deparse(e[["call"]]), e[["message"]]))
+    return(seu)
+  }, finally = {
+    message("done")
+  })
 
   return(seu)
 }

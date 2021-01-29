@@ -8,10 +8,21 @@
 #' @examples
 convert_seu_to_cds <- function(seu, resolution = 1) {
 
-  ### Building the necessary parts for a basic cds
+  print(resolution)
+
+  # # drop sample_name metadata column as that is reserved by monocle3
+  # seu$sample_name <- NULL
+  #
+  # cds <- SeuratWrappers::as.cell_data_set(seu) %>%
+  #   monocle3::estimate_size_factors()
+  #
+  # rowData(cds)$gene_short_name <- rownames(cds)
+  #
+  # return(cds)
+
+  # Building the necessary parts for a basic cds
 
   # part two, counts sparse matrix
-
 
   if ("integrated" %in% names(seu@assays)) {
     default_assay = "integrated"
@@ -36,8 +47,10 @@ convert_seu_to_cds <- function(seu, resolution = 1) {
   # part one, cell information
   cell_metadata <- seu[[]][colnames(count_matrix),]
 
-  # drop metadata column 'sample_name' for monocle plotting functions
-  cell_metadata <- subset(cell_metadata, select=-sample_name)
+  # drop metadata column 'sample_name' for monocle plotting functions if present
+  if (any(stringr::str_detect(colnames(cell_metadata), "sample_name"))){
+    cell_metadata <- subset(cell_metadata, select=-sample_name)
+  }
 
   seu <- seu[,colnames(count_matrix)]
 
@@ -65,7 +78,7 @@ convert_seu_to_cds <- function(seu, resolution = 1) {
   cds_from_seurat@clusters@listData[["UMAP"]][["louvain_res"]] <- "NA"
 
 
-  cds_from_seurat <- monocle3::preprocess_cds(cds_from_seurat, method = "PCA")
+  cds_from_seurat <- monocle3::preprocess_cds(cds_from_seurat, method = "PCA", norm_method = "none")
   cds_from_seurat <- monocle3::reduce_dimension(cds_from_seurat, reduction_method = "UMAP")
 
   # reducedDim(cds_from_seurat, "PCA") <- Embeddings(seu, "pca")
@@ -689,9 +702,9 @@ plot_cells <- function(cds, x = 1, y = 2, reduction_method = c("UMAP", "tSNE",
 #' @examples
 monocle_module_heatmap <- function(cds, pr_deg_ids, seu_resolution, cells = NULL, collapse_rows = TRUE,
                                        resolution = 10^seq(-6,-1), group.by = "batch", group.bar.height = 0.01,
-                                       cluster_columns = FALSE, cluster_rows = FALSE,
+                                       cluster_columns = FALSE, cluster_rows = TRUE,
                                    column_split = NULL, col_dendrogram = "ward.D2", mm_col_dend = 30, ...){
-  browser()
+  # browser()
   if (any(grepl("integrated", colnames(cds@colData)))){
     default_assay = "integrated"
   } else {
@@ -713,14 +726,30 @@ monocle_module_heatmap <- function(cds, pr_deg_ids, seu_resolution, cells = NULL
       dplyr::select(gene_module_df, id) %>%
       dplyr::mutate(module = id)
 
-    row_ha <- ComplexHeatmap::rowAnnotation(module = gene_module_df$module)
+    module_levels <- levels(gene_module_df$module)
+    col = scales::hue_pal()(length(module_levels))
+    names(col) <- module_levels
+
+    col <- list(module = col[gene_module_df$module])
+
+    row_ha <- ComplexHeatmap::rowAnnotation(module = gene_module_df$module, col = col)
   } else{
     heatmap_row_df <- gene_module_df
 
-    row_ha <- ComplexHeatmap::rowAnnotation(module = unique(gene_module_df$module))
+    module_levels <- levels(gene_module_df$module)
+    col = scales::hue_pal()(length(module_levels))
+    names(col) <- module_levels
+
+    col <- list(module = col[gene_module_df$module])
+
+    row_ha <- ComplexHeatmap::rowAnnotation(module = unique(gene_module_df$module), col = col)
   }
 
   agg_mat <- monocle3::aggregate_gene_expression(cds, heatmap_row_df)
+
+  # reorder aggregation matrix by pseudotime
+  col_order <- sort(monocle3::pseudotime(cds))
+  agg_mat <- agg_mat[,names(col_order)]
 
   group.by <- group.by %||% "batch"
   cells <- cells %||% colnames(x = cds)
@@ -735,6 +764,9 @@ monocle_module_heatmap <- function(cds, pr_deg_ids, seu_resolution, cells = NULL
     dplyr::left_join(pseudotime_tbl, by = "sample_id") %>%
     dplyr::arrange(pseudotime) %>%
     data.frame(row.names = 1) %>% identity()
+
+
+  groups.use[is.na(groups.use)] <- min(groups.use$pseudotime, na.rm = TRUE)
 
   groups.use.factor <- groups.use[sapply(groups.use, is.factor)]
   ha_cols.factor <- NULL
@@ -785,13 +817,16 @@ monocle_module_heatmap <- function(cds, pr_deg_ids, seu_resolution, cells = NULL
 flip_pseudotime <- function(cds){
   # pull original ptime
   orig_pseudotime <- monocle3::pseudotime(cds)
+  orig_pseudotime[is.infinite(orig_pseudotime)] <- NA
 
   # sort ptime
-  forward_pseudotime <- sort(orig_pseudotime)
+  forward_pseudotime <- sort(orig_pseudotime[!is.na(orig_pseudotime)])
 
   # rev ptime and flip names
   rev_pseudotime <- rev(forward_pseudotime)
   names(rev_pseudotime) <- names(forward_pseudotime)
+
+  rev_pseudotime <- c(rev_pseudotime, orig_pseudotime[is.na(orig_pseudotime)])
 
   # sort rev ptime by original order
   rev_pseudotime <- rev_pseudotime[names(orig_pseudotime)]
@@ -800,4 +835,19 @@ flip_pseudotime <- function(cds){
   cds@principal_graph_aux$UMAP$pseudotime <- rev_pseudotime
 
   return(cds)
+}
+
+export_pseudotime <- function(cds, root_cells){
+
+  root_cells <- root_cells %>%
+    set_names(.) %>%
+    tibble::enframe("sample_id", "root_cell") %>%
+    dplyr::mutate(root_cell = 1)
+
+  monocle_pt <- monocle3::pseudotime(cds) %>%
+    tibble::enframe("sample_id", "pseudotime") %>%
+    dplyr::arrange(pseudotime) %>%
+    dplyr::left_join(root_cells, by = "sample_id")
+
+  return(monocle_pt)
 }

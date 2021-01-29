@@ -63,6 +63,7 @@ RUN R -e 'BiocManager::install("ensembldb")'
 RUN R -e 'install.packages("Seurat")'
 RUN R -e 'install.packages("shiny")'
 RUN R -e 'install.packages("shinydashboard")'
+RUN R -e 'remotes::install_github("whtns/seuratTools")'
 
 COPY seuratTools_*.tar.gz /app.tar.gz
 RUN remotes::install_local('/app.tar.gz')

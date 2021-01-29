@@ -27,13 +27,36 @@ default_helper <- function(ui_element, title = "", content = "test", type = "inl
 #' @export
 #'
 #' @examples
-seuratToolsBox <- function(content, title = "", ...) {
+seuratToolsBox <- function(title = "", ...) {
   shinydashboard::box(
     title = title,
     status = "primary",
     solidHeader = TRUE,
     collapsible = TRUE,
-    content,
     ...
+  )
+}
+
+
+
+#' Custom Dropdown Button
+#'
+#' @param content
+#' @param title
+#' @param ...
+#'
+#' @return
+#' @export
+#'
+#' @examples
+dropdownButton <- function(inputId, ...) {
+  tagList(
+    shinyWidgets::dropdownButton(
+      inputId = inputId,
+      ...,
+      circle = TRUE, status = "info",
+      icon = icon("bars"), width = "300px"
+    ),
+    br()
   )
 }

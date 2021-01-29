@@ -2,14 +2,15 @@
 % Please edit documentation in R/plotting.R
 \name{plot_transcript_composition}
 \alias{plot_transcript_composition}
-\title{Title}
+\title{Plot Transcript Composition}
 \usage{
 plot_transcript_composition(
   seu_transcript,
   seu_gene,
   gene_symbol,
   group.by = "batch",
-  standardize = FALSE
+  standardize = FALSE,
+  drop_zero = FALSE
 )
 }
 \arguments{
@@ -19,5 +20,5 @@ plot_transcript_composition(
 
 }
 \description{
-Title
+plot the proportion of reads of a given gene map to each transcript
 }

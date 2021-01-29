@@ -15,16 +15,18 @@
 #'
 #' @examples
 #' batches <- seurat_pancreas_reduced %>%
-#'   purrr::map(Seurat::SplitObject, split.by = "dataset") %>%
+#'   purrr::map(Seurat::SplitObject, split.by = "tech") %>%
 #'   purrr::transpose()
 #'
-#' inegrated_seu <- integration_workflow(batches)
-integration_workflow <- function(batches, excluded_cells, resolution = seq(0.2, 2.0, by = 0.2), experiment_name = "default_experiment", organism = "human", ...) {
+#' integrated_seu <- integration_workflow(batches)
 
-  # names(child_proj_dirs) <- gsub("_proj", "", fs::path_file(child_proj_dirs))
+integration_workflow <- function(batches, excluded_cells = NULL, resolution = seq(0.2, 2.0, by = 0.2), experiment_name = "default_experiment", organism = "human", ...) {
 
-  # load seurat objects from 'child' projects
-  # seus <- purrr::map(child_proj_dirs, load_seurat_from_proj)
+  checkmate::check_list(batches)
+
+  checkmate::check_character(excluded_cells)
+
+  # organisms <- purrr::map(batches, Misc, c("experiment", "organism"))
 
   organisms <- purrr::map(batches, list(1, "meta.data", "organism", 1))
 
@@ -81,7 +83,7 @@ integration_workflow <- function(batches, excluded_cells, resolution = seq(0.2, 
 #'
 #' Cluster and Reduce Dimensions of a seurat object
 #'
-#' @param feature_seus list of seurat objedevelcts named according to feature of interest ("gene" or "transcript")
+#' @param feature_seus list of seurat objects named according to feature of interest ("gene" or "transcript")
 #' @param excluded_cells named list of cells to exclude
 #' @param resolution resolution(s) to use for clustering cells
 #' @param organism
@@ -92,7 +94,7 @@ integration_workflow <- function(batches, excluded_cells, resolution = seq(0.2, 
 #' @export
 #'
 #' @examples
-#' clustered_seu <- clustering_workflow(seurat_pancrease_reduced)
+#' clustered_seu <- clustering_workflow(seurat_pancreas_reduced)
 clustering_workflow <- function(feature_seus = NULL, excluded_cells, resolution = seq(0.2, 2.0, by = 0.2), organism = "human", experiment_name = "default_experiment", ...){
 
   feature_seus <- purrr::imap(feature_seus, seuratTools::seurat_pipeline, resolution = resolution, organism = organism, ...)
