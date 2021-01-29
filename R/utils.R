@@ -590,3 +590,22 @@ swap_counts_from_feature <- function(cds, featureType){
   cds$traj
 
 }
+
+#' convert seurat list to multimodal object
+#'
+#' @param seu_list
+#'
+#' @return
+#' @export
+#'
+#' @examples
+convert_seu_list_to_multimodal <- function(seu_list){
+  multimodal_seu <- seu_list$gene
+
+  multimodal_seu[["gene"]] <- multimodal_seu$RNA
+  multimodal_seu[["transcript"]] <- seu_list$transcript$RNA
+  multimodal_seu[["RNA"]] <- NULL
+  DefaultAssay(multimodal_seu) <- "gene"
+
+  return(multimodal_seu)
+}

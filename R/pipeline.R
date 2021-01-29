@@ -69,6 +69,7 @@ seurat_integration_pipeline <- function(seu_list, feature, resolution = seq(0.2,
 #' Preprocess, Cluster and Reduce Dimensions for a single seurat object
 #'
 #' @param seu
+#' @param assay
 #' @param resolution
 #' @param reduction
 #' @param organism
@@ -77,9 +78,9 @@ seurat_integration_pipeline <- function(seu_list, feature, resolution = seq(0.2,
 #' @export
 #'
 #' @examples
-seurat_pipeline <- function(seu, feature = "gene", resolution=0.6, reduction = "pca", organism = "human", ...){
+seurat_pipeline <- function(seu, assay = "gene", resolution=0.6, reduction = "pca", organism = "human", ...){
 
-  seu <- seurat_preprocess(seu, scale = T, ...)
+  seu <- seurat_preprocess(seu, scale = T, assay = assay, ...)
 
   # PCA
   seu <- seurat_reduce_dimensions(seu, check_duplicates = FALSE, reduction = reduction, ...)
