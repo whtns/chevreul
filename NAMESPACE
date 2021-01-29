@@ -171,16 +171,11 @@ export(tableSelected)
 export(tableSelectedui)
 export(transcripts_to_genes)
 export(update_exp_meta)
+export(update_human_gene_symbols)
 export(update_project_db)
 export(update_seu_meta)
 export(update_seuratTools_object)
-<<<<<<< HEAD
-export(velocyto_assay)
-export(velocyto_seu)
-export(velocyto_seurat_from_loom)
 exportClasses(Seurat)
-=======
->>>>>>> master
 import(dplyr)
 importFrom(DataEditR,dataEditServer)
 importFrom(DataEditR,dataEditUI)

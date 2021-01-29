@@ -10,10 +10,6 @@ plot_gene_coverage_by_var(
   bigwig_tbl,
   var_of_interest = "batch",
   values_of_interest = NULL,
-<<<<<<< HEAD
-  edb = EnsDb.Hsapiens.v86::EnsDb.Hsapiens.v86,
-  heights = c(2, 1),
-=======
   organism = "human",
   edb = NULL,
   heights = c(3, 1),
@@ -21,7 +17,6 @@ plot_gene_coverage_by_var(
   reverse_x = FALSE,
   start = NULL,
   end = NULL,
->>>>>>> master
   ...
 )
 }
