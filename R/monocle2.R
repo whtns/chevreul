@@ -1,3 +1,51 @@
+#' add census assay to a seurat object
+#'
+#' @param seu
+#' @param assay
+#' @param slot
+#'
+#' @return
+#' @export
+#'
+#' @examples
+add_census_slot <- function(seu, assay = "RNA", slot = "abundance"){
+
+  data <- Seurat::GetAssayData(seu, assay = assay, slot = slot)
+
+  data <- floor(data)
+
+  pd <- new("AnnotatedDataFrame", data = seu@meta.data)
+
+  fData <- data.frame(gene_short_name = row.names(data), row.names = row.names(data))
+  fd <- new("AnnotatedDataFrame", data = fData)
+
+  # Construct monocle cds
+  monocle_cds <- monocle::newCellDataSet(data,
+                                         phenoData = pd,
+                                         featureData = fd,
+                                         lowerDetectionLimit = 0.5,
+                                         expressionFamily = VGAM::negbinomial.size()
+  )
+
+  rpc_matrix <- monocle::relative2abs(monocle_cds, method = "num_genes")
+
+  rpc_matrix[is.na(rpc_matrix)] <- 0
+
+  monocle_cds <- monocle::newCellDataSet(as(rpc_matrix, "sparseMatrix"),
+                                         phenoData = pd,
+                                         featureData = fd,
+                                         lowerDetectionLimit = 0.5,
+                                         expressionFamily = VGAM::negbinomial.size()
+  )
+
+  attributes(seu[['RNA']])$census <- Biobase::exprs(monocle_cds)
+  attributes(seu[['RNA']])$raw <- seu$RNA@counts
+  seu[['RNA']]@counts <- seu$RNA@census
+
+  return(seu)
+
+}
+
 #' Convert a Seurat V3 object to a Monocle v2 object
 #'
 #' @param seu
@@ -6,11 +54,13 @@
 #' @export
 #'
 #' @examples
-convert_seuv3_to_monoclev2 <- function(seu, return_census = FALSE, sig_slice = 1000) {
+convert_seuv3_to_monoclev2 <- function(seu, assay = "RNA", slot = "data", return_census = FALSE, sig_slice = 1000) {
 
   # Load Seurat object
   # Extract data, phenotype data, and feature data from the SeuratObject
-  data <- as(as.matrix(seu@assays$RNA@data), "sparseMatrix")
+  # data <- as(as.matrix(seu@assays$RNA@counts), "sparseMatrix")
+
+  data <- Seurat::GetAssayData(seu, assay = assay, slot = slot)
 
   data <- floor(data)
 
@@ -30,12 +80,16 @@ convert_seuv3_to_monoclev2 <- function(seu, return_census = FALSE, sig_slice = 1
   if(return_census){
     rpc_matrix <- monocle::relative2abs(monocle_cds, method = "num_genes")
 
+    rpc_matrix[is.na(rpc_matrix)] <- 0
+
     monocle_cds <- monocle::newCellDataSet(as(rpc_matrix, "sparseMatrix"),
                                            phenoData = pd,
                                            featureData = fd,
                                            lowerDetectionLimit = 0.5,
                                            expressionFamily = VGAM::negbinomial.size()
     )
+
+    return(monocle_cds)
 
   }
 
@@ -57,7 +111,7 @@ convert_seuv3_to_monoclev2 <- function(seu, return_census = FALSE, sig_slice = 1
   # look at distribution of mRNA totals across cells
   phenoData(monocle_cds)$Total_mRNAs <- Matrix::colSums(Biobase::exprs(monocle_cds))
 
-  monocle_cds <- monocle_cds[, phenoData(monocle_cds)$Total_mRNAs < 1e6]
+  # monocle_cds <- monocle_cds[, phenoData(monocle_cds)$Total_mRNAs < 1e6]
 
   upper_bound <- 10^(mean(log10(phenoData(monocle_cds)$Total_mRNAs)) +
                        2 * sd(log10(phenoData(monocle_cds)$Total_mRNAs)))
@@ -134,7 +188,165 @@ convert_seuv3_to_monoclev2 <- function(seu, return_census = FALSE, sig_slice = 1
   monocle_cds_expressed_genes <- rownames(subset(Biobase::featureData(monocle_cds), Biobase::featureData(monocle_cds)$num_cells_expressed >= 10))
 
   print("running differential expression test")
-  tictoc::tic("finished differentiial expression with")
+  tictoc::tic("finished differential expression with")
+
+  diff_test_res <- differentialGeneTest(monocle_cds_red[monocle_cds_expressed_genes, ],
+                                        fullModelFormulaStr = "~Cluster",
+                                        cores = 6
+  )
+  tictoc::toc()
+
+
+  # select top 1000 signif. genes
+  ordering_genes <- row.names(diff_test_res)[order(diff_test_res$qval)][1:sig_slice]
+
+  monocle_cds <- setOrderingFilter(monocle_cds, ordering_genes = ordering_genes)
+
+  monocle_cds <- reduceDimension(monocle_cds, method = "DDRTree")
+
+  monocle_cds <- orderCells(monocle_cds)
+
+}
+
+#' Convert a Seurat V3 object to a Monocle v2 object
+#'
+#' @param seu
+#'
+#' @return
+#' @export
+#'
+#' @examples
+convert_monoclev2_to_seuv3 <- function(seu, assay = "RNA", slot = "data", return_census = FALSE, sig_slice = 1000) {
+
+  # Load Seurat object
+  # Extract data, phenotype data, and feature data from the SeuratObject
+  # data <- as(as.matrix(seu@assays$RNA@counts), "sparseMatrix")
+
+  data <- Seurat::GetAssayData(seu, assay = assay, slot = slot)
+
+  data <- floor(data)
+
+  pd <- new("AnnotatedDataFrame", data = seu@meta.data)
+
+  fData <- data.frame(gene_short_name = row.names(data), row.names = row.names(data))
+  fd <- new("AnnotatedDataFrame", data = fData)
+
+  # Construct monocle cds
+  monocle_cds <- monocle::newCellDataSet(data,
+                                         phenoData = pd,
+                                         featureData = fd,
+                                         lowerDetectionLimit = 0.5,
+                                         expressionFamily = VGAM::negbinomial.size()
+  )
+
+  if(return_census){
+    rpc_matrix <- monocle::relative2abs(monocle_cds, method = "num_genes")
+
+    monocle_cds <- monocle::newCellDataSet(as(rpc_matrix, "sparseMatrix"),
+                                           phenoData = pd,
+                                           featureData = fd,
+                                           lowerDetectionLimit = 0.5,
+                                           expressionFamily = VGAM::negbinomial.size()
+    )
+
+  }
+
+
+  # filter by gene expression
+  # # keep genes that are expressed in at least 5 cells
+  # min_expression <- 0.1
+  # monocle_cds <- detectGenes(monocle_cds, min_expr=min_expression)
+  # expressed_genes <- row.names(subset(featureData(monocle_cds), num_cells_expressed >= 5))
+
+  # filter by gene expression (default monocle settings)
+  monocle_cds <- detectGenes(monocle_cds, min_expr = 0.1)
+
+  expressed_genes <- row.names(subset(
+    Biobase::featureData(monocle_cds)@data,
+    num_cells_expressed >= 10
+  ))
+
+  # look at distribution of mRNA totals across cells
+  phenoData(monocle_cds)$Total_mRNAs <- Matrix::colSums(Biobase::exprs(monocle_cds))
+
+  # monocle_cds <- monocle_cds[, phenoData(monocle_cds)$Total_mRNAs < 1e6]
+
+  upper_bound <- 10^(mean(log10(phenoData(monocle_cds)$Total_mRNAs)) +
+                       2 * sd(log10(phenoData(monocle_cds)$Total_mRNAs)))
+  lower_bound <- 10^(mean(log10(phenoData(monocle_cds)$Total_mRNAs)) -
+                       2 * sd(log10(phenoData(monocle_cds)$Total_mRNAs)))
+
+  # remove cells outside safe range of plot ---------------------------------
+
+  monocle_cds <- monocle_cds[, phenoData(monocle_cds)$Total_mRNAs > lower_bound &
+                               phenoData(monocle_cds)$Total_mRNAs < upper_bound]
+  monocle_cds <- detectGenes(monocle_cds, min_expr = 0.1)
+
+  monocle_cds <- estimateSizeFactors(monocle_cds)
+  monocle_cds <- estimateDispersions(monocle_cds)
+
+  # verify lognormal distribution of expression values ----------------------
+
+  # Log-transform each value in the expression matrix.
+  L <- log(Biobase::exprs(monocle_cds[expressed_genes, ]))
+
+  # Standardize each gene, so that they are all on the same scale,
+  # Then melt the data with plyr so we can plot it easily
+  # melted_dens_df <- melt(Matrix::t(scale(Matrix::t(L))))
+
+
+  # use dpFeature -----------------------------------------------------------
+
+  monocle_cds <- detectGenes(monocle_cds, min_expr = 0.1)
+  Biobase::featureData(monocle_cds)$use_for_ordering <- Biobase::featureData(monocle_cds)$num_cells_expressed > 0.05 * ncol(monocle_cds)
+
+  # print(plot_pc_variance_explained(monocle_cds, return_all = F))
+
+  monocle_cds_red <- reduceDimension(monocle_cds,
+                                     max_components = 2,
+                                     norm_method = "log",
+                                     num_dim = 3,
+                                     reduction_method = "tSNE",
+                                     verbose = T
+  )
+
+  monocle_cds_red <- clusterCells(monocle_cds_red, verbose = F)
+
+  # check clustering results
+  print(plot_cell_clusters(monocle_cds_red, color_by = "as.factor(Cluster)"))
+
+  # for (i in colorval){
+  #   print(plot_cell_clusters(monocle_cds_red, color_by = paste0('as.factor(', i, ')')))
+  # }
+
+
+  # provide decision plot
+  print(plot_rho_delta(monocle_cds_red, rho_threshold = 2, delta_threshold = 4))
+
+  # rerun based on user-defined threshold
+  monocle_cds_red <- clusterCells(monocle_cds_red,
+                                  rho_threshold = 2,
+                                  delta_threshold = 4,
+                                  skip_rho_sigma = T,
+                                  verbose = F
+  )
+
+  # check final clustering
+  print(plot_cell_clusters(monocle_cds_red, color_by = "as.factor(Cluster)"))
+  #
+  # for (i in colorval){
+  #   print(plot_cell_clusters(monocle_cds_red, color_by = paste0('as.factor(', i, ')')))
+  # }
+
+
+
+  # perform differential expression -----------------------------------------
+
+  # find expressed genes
+  monocle_cds_expressed_genes <- rownames(subset(Biobase::featureData(monocle_cds), Biobase::featureData(monocle_cds)$num_cells_expressed >= 10))
+
+  print("running differential expression test")
+  tictoc::tic("finished differential expression with")
 
   diff_test_res <- differentialGeneTest(monocle_cds_red[monocle_cds_expressed_genes, ],
                                         fullModelFormulaStr = "~Cluster",
@@ -164,7 +376,9 @@ convert_seuv3_to_monoclev2 <- function(seu, return_census = FALSE, sig_slice = 1
 #'
 #' @examples
 process_monocle_child <- function(ptime, monocle_cds, trend_formula = "~sm.ns(Pseudotime, df=3)") {
-  monocle_cds <- monocle_cds[, ptime$sample_id]
+  monocle_cds <- monocle_cds[, colnames(monocle_cds) %in% ptime$sample_id]
+
+  ptime <- ptime[ptime$sample_id %in% colnames(monocle_cds),]
 
   old_ptime <- phenoData(monocle_cds)$Pseudotime
 
@@ -264,7 +478,11 @@ cross_check_heatmaps <- function(monocle_list, query_name, set_row_order = F, cl
   reference_names = names(monocle_list)[!names(monocle_list) == query_name]
 
   if (!set_row_order == F){
-    monocle_list[[query_name]]$heatmap_matrix <- monocle_list[[query_name]]$heatmap_matrix[set_row_order,]
+    set_row_order = set_row_order[set_row_order != ""]
+
+    heatmap_matrix <- monocle_list[[query_name]]$heatmap_matrix
+
+    monocle_list[[query_name]]$heatmap_matrix <- heatmap_matrix[rownames(heatmap_matrix) %in% set_row_order,]
   }
 
   common_genes <- purrr::map(monocle_list, ~rownames(purrr::pluck(.x, "heatmap_matrix"))) %>%
@@ -336,6 +554,7 @@ arrange_ptime_heatmaps <- function(cds_list, cds_name) {
 #' Plot Expression of a Given Feature of a set of Pseudotimes
 #'
 #' @param cds_list
+#' @param selected_cds
 #' @param features
 #' @param color_by
 #' @param relative_expr
@@ -346,11 +565,30 @@ arrange_ptime_heatmaps <- function(cds_list, cds_name) {
 #' @export
 #'
 #' @examples
-plot_feature_in_ref_query_ptime <- function(cds_list, features = c("RXRG"), color_by = "State", relative_expr = FALSE, min_expr = 0.5, ...){
+plot_feature_in_ref_query_ptime <- function(cds_list, selected_cds, features = c("RXRG"), color_by = "State", relative_expr = FALSE, min_expr = 0.5, ...){
   sub_cds_list <- purrr::map(cds_list, ~.x$monocle_cds[features,])
+
+  string_NA_meta <- function(cds){
+    # fix metadata with only NA
+    metadata <- Biobase::pData(cds)
+
+    metadata[is.na(metadata)] <- "NA"
+
+    Biobase::pData(Biobase:::phenoData(cds)) <- metadata
+
+    cds
+
+  }
+
+  sub_cds_list <- purrr::map(sub_cds_list, string_NA_meta)
+
   feature_plots_in_ptime <- purrr::map(sub_cds_list, monocle::plot_genes_in_pseudotime, trend_formula = "~sm.ns(Pseudotime, df=3)", color_by = color_by, relative_expr = relative_expr, min_expr = min_expr)
-  refquery_ptime_plot <- cowplot::plot_grid(plotlist = feature_plots_in_ptime, ncol = 2, labels = names(feature_plots_in_ptime))
-  plot(refquery_ptime_plot)
+
+  feature_plots_in_ptime[selected_cds]
+
+  # refquery_ptime_plot <- cowplot::plot_grid(plotlist = feature_plots_in_ptime, ncol = 2, labels = names(feature_plots_in_ptime))
+  #
+  # plot(refquery_ptime_plot)
 
 }
 
@@ -668,16 +906,6 @@ run_census <- function(sce, census_output_file){
                          featureData = fd,
                          lowerDetectionLimit=1,
                          expressionFamily=negbinomial.size())
-
-  return(HSMM)
-
-  #print output of census to csv prior to monocle workflow
-
-  write.csv(as.matrix(Biobase::exprs(HSMM)), census_output_file)
-
-  census_meta_file <- gsub("census_matrix.csv", "census_meta.csv", census_output_file)
-
-  write.csv(pData(HSMM), census_meta_file, row.names = FALSE)
 
   return(as.matrix(Biobase::exprs(HSMM)))
 

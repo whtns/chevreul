@@ -17,6 +17,7 @@ seurat_preprocess <- function(seu, scale=TRUE, normalize = TRUE, features = NULL
   # Normalize data
 
   if (legacy_settings){
+    message("using legacy settings")
 
     logtransform_exp <- as.matrix(log1p(Seurat::GetAssayData(seu)))
 

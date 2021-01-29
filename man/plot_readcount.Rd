@@ -4,14 +4,28 @@
 \alias{plot_readcount}
 \title{Plot Read Count}
 \usage{
-plot_readcount(seu, metavar = "nCount_RNA", color.by = "batch")
+plot_readcount(
+  seu,
+  metavar = "nCount_RNA",
+  color.by = "batch",
+  yscale = "linear",
+  return_plotly = TRUE,
+  ...
+)
 }
 \arguments{
-\item{color.by}{}
+\item{return_plotly}{}
 }
 \value{
 
 }
 \description{
 Plot Read Count
+}
+\examples{
+
+plot_readcount(seurat_pancreas_reduced$gene)
+
+plot_readcount(seurat_pancreas_reduced$gene, return_plotly = FALSE)
+
 }

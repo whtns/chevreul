@@ -37,21 +37,6 @@ create_proj_matrix <- function(proj_list){
 }
 
 
-#' Create Project database
-#'
-#' @return
-#' @export
-#'
-#' @examples
-create_proj_db <- function(projects_dir = "/dataVolume/storage/single_cell_projects/"){
-
-  system_command <- "updatedb -l 0 -U /dataVolume/storage/single_cell_projects/ -o /dataVolume/storage/single_cell_projects/single_cell_projects.db"
-  system(system_command, wait = TRUE)
-  print(system_command)
-
-}
-
-
 #' subset by new metadata
 #'
 #' @param meta_path
@@ -91,6 +76,7 @@ combine_looms <- function(projectPaths, newProjectPath){
   loom_filenames <- stringr::str_replace(fs::path_file(projectPaths), "_proj", ".loom")
 
   selected_looms <- fs::path(projectPaths, "output", "velocyto", loom_filenames)
-  loompy$combine(selected_looms, newProjectPath)
+
+  if (all(fs::is_file(selected_looms))) loompy$combine(selected_looms, newProjectPath)
 }
 

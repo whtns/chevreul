@@ -4,7 +4,7 @@
 \alias{seurat_integrate}
 \title{Batch Correct Multiple Seurat Objects}
 \usage{
-seurat_integrate(seu_list, method = "cca", ...)
+seurat_integrate(seu_list, method = "cca", organism = "human", ...)
 }
 \arguments{
 \item{...}{}

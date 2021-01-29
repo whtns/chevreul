@@ -14,7 +14,7 @@ clustering_workflow(
 )
 }
 \arguments{
-\item{feature_seus}{list of seurat objedevelcts named according to feature of interest ("gene" or "transcript")}
+\item{feature_seus}{list of seurat objects named according to feature of interest ("gene" or "transcript")}
 
 \item{excluded_cells}{named list of cells to exclude}
 
@@ -29,5 +29,5 @@ clustering_workflow(
 Cluster and Reduce Dimensions of a seurat object
 }
 \examples{
-clustered_seu <- clustering_workflow(seurat_pancrease_reduced)
+clustered_seu <- clustering_workflow(seurat_pancreas_reduced)
 }

@@ -1,15 +1,14 @@
 
 #' Title
 #'
+#' @param seu
 #' @param datapath
-#' @param header
-#' @param row.names
 #'
 #' @return
 #' @export
 #'
 #' @examples
-format_new_metadata <- function(datapath){
+format_new_metadata <- function(seu, datapath){
   new_meta <- read_csv(datapath) %>%
     dplyr::mutate(across(contains("snn"), as.factor) )
 
@@ -17,7 +16,13 @@ format_new_metadata <- function(datapath){
 
   new_meta <- tibble::column_to_rownames(new_meta, rowname_col)
 
-  return(new_meta)
+  seu <- Seurat::AddMetaData(seu, new_meta)
+  DefaultAssay(seu) <- "RNA"
+  ncalc <- Seurat:::CalcN(seu)
+  seu$nFeature_RNA <- ncalc$nFeature
+  seu$nCount_RNA <- ncalc$nCount
+
+  return(seu)
 }
 
 #' Rename cell ids from annoying old notation
@@ -289,6 +294,7 @@ prep_plot_genes_in_pseudotime <- function(cds, mygenes, resolution, partition = 
   return(gene_ptime_plot)
 }
 
+
 #' Record Experiment Metadata
 #'
 #' @param object
@@ -306,24 +312,24 @@ prep_plot_genes_in_pseudotime <- function(cds, mygenes, resolution, partition = 
 #' @export
 #'
 #' @examples
+#' @importFrom purrr %||%
 record_experiment_data <- function(object, experiment_name = "default_experiment", organism = "human"){
   if (!requireNamespace("Seurat", quietly = TRUE)) {
     stop("Package 'Seurat' needed for this function to work. Please install it.",
          call. = FALSE)
   }
 
-  organism = ifelse(!is.null(object@misc$experiment$organism), object@misc$experiment$organism, organism)
+  organism <- Seurat::Misc(object, "experiment")[["organism"]] %||% organism
 
-  experiment_name = ifelse(!is.null(object@misc$experiment$experiment_name), object@misc$experiment$experiment_name, experiment_name)
+  experiment_name <- Seurat::Misc(object, "experiment")[["experiment_name"]] %||% experiment_name
 
   message(paste0("[", format(Sys.time(), "%H:%M:%S"), "] Logging Technical Details..."))
-  export <- list(experiment = list(experiment_name = experiment_name,
-                                   organism = organism))
-  export$experiment$date_of_analysis <- object@misc$experiment$date_of_analysis
-  export$experiment$date_of_export <- Sys.Date()
-  export$experiment$date_of_analysis <- Sys.Date()
+  experiment = list(experiment_name = experiment_name,
+                                   organism = organism)
+  experiment$date_of_export <- Sys.Date()
+  experiment$date_of_analysis <- Sys.Date()
 
-  export$experiment$parameters <- list(
+  experiment$parameters <- list(
     gene_nomenclature = 'gene_symbol',
     discard_genes_expressed_in_fewer_cells_than = 10,
     keep_mitochondrial_genes = TRUE,
@@ -332,23 +338,22 @@ record_experiment_data <- function(object, experiment_name = "default_experiment
     tSNE_perplexity = 30,
     cluster_resolution = seq(0.2, 2.0, by = 0.2)
   )
-  export$experiment$filtering <- list(
+  experiment$filtering <- list(
     UMI_min = 50,
-    UMI_max = Inf,
-    genes_min = 10,
-    genes_max = Inf
+    genes_min = 10
   )
-  export$experiment$technical_info <- list(
-    # capture.output(sessioninfo::session_info())
+  experiment$session_info <- list(
+    capture.output(sessioninfo::session_info())
   )
 
   if (!is.null(object@version)) {
-    export$experiment$technical_info$seurat_version <- object@version
+    experiment$seurat_version <- object@version
   }
 
-  export$experiment$technical_info$seuratTools_version <- utils::packageVersion("seuratTools")
+  experiment$seuratTools_version <- utils::packageVersion("seuratTools")
 
-  object@misc <- c(object@misc, export)
+  Seurat::Misc(object, "experiment") <- NULL
+  Seurat::Misc(object, "experiment") <- experiment
 
   return(object)
 }
@@ -387,7 +392,7 @@ update_seuratTools_object <- function(seu, feature, resolution = seq(0.2, 2.0, b
 
     }
       seu <- find_all_markers(seu, resolution = resolution)
-      seu <- record_experiment_data(seu)
+      seu <- record_experiment_data(seu, ...)
       seu <- seu_calcn(seu)
   }
 
@@ -440,9 +445,62 @@ propagate_spreadsheet_changes <- function(changes){
   return(meta)
 }
 
-create_project_db <- function(projects_dir = "/dataVolume/storage/single_cell_projects",
-                              db_path = "single-cell-projects.db"){
-  mydb <- DBI::dbConnect(RSQLite::SQLite(), fs::path(projects_dir, db_path))
+#' Create a database of seuratTools projects
+#'
+#' @param destdir
+#' @param destfile
+#' @param verbose
+#'
+#' @return
+#' @export
+#'
+#' @examples
+create_project_db <- function(destdir = "~/.cache/seuratTools",
+          destfile = "single-cell-projects.db", verbose = TRUE){
+
+  if (!dir.exists(destdir)) {
+    dir.create(destdir)
+  }
+
+    con <- DBI::dbConnect(RSQLite::SQLite(), fs::path(destdir, destfile))
+
+    projects_tbl <- tibble::tibble(
+        project_name = character(),
+        project_path = character(),
+        project_slug = character(),
+        project_type = character(),
+      )
+
+    message(paste0("building table of seuratTools projects at ", fs::path(destdir, destfile)))
+
+    DBI::dbWriteTable(con, "projects_tbl", projects_tbl)
+
+    DBI::dbDisconnect(con)
+
+}
+
+#' Update a database of seuratTools projects
+#'
+#' @param projects_dir
+#' @param destdir
+#' @param destfile
+#' @param verbose
+#'
+#' @return
+#' @export
+#'
+#' @examples
+update_project_db <- function(projects_dir = NULL,
+                              destdir = "~/.cache/seuratTools",
+                              destfile = "single-cell-projects.db",
+                              verbose = TRUE){
+
+
+  if (!dir.exists(destdir)) {
+    dir.create(destdir)
+  }
+
+  con <- DBI::dbConnect(RSQLite::SQLite(), fs::path(destdir, destfile))
 
   projects_tbl <-
     fs::dir_ls(projects_dir, glob = "*.here", recurse = TRUE, fail = FALSE, all = TRUE) %>%
@@ -450,10 +508,85 @@ create_project_db <- function(projects_dir = "/dataVolume/storage/single_cell_pr
     purrr::set_names(fs::path_file(.)) %>%
     tibble::enframe("project_name", "project_path") %>%
     dplyr::mutate(project_slug = stringr::str_remove(project_name, "_proj$")) %>%
-    dplyr::mutate(project_type = map_chr(fs::path_split(fs::path_dir(project_path)), 5)) %>%
+    dplyr::mutate(project_type = fs::path_file(fs::path_dir(project_path))) %>%
     identity()
 
-  DBI::dbWriteTable(mydb, "projects_tbl", projects_tbl)
+  current_projects_tbl <-
+    DBI::dbReadTable(con, "projects_tbl") %>%
+    dplyr::filter(fs::file_exists(project_path)) %>%
+    dplyr::filter(!project_path %in% projects_tbl$project_path) %>%
+    dplyr::bind_rows(projects_tbl) %>%
+    dplyr::distinct(project_path, .keep_all = TRUE)
+
+  DBI::dbWriteTable(con, "projects_tbl", projects_tbl, overwrite = TRUE)
+
+  DBI::dbDisconnect(con)
+}
+
+#' Make Bigwig Database
+#'
+#' @param destdir
+#' @param destfile
+#'
+#' @return
+#' @export
+#'
+#' @examples
+make_bigwig_db <- function(destdir = "~/.cach/seuratTools/", destfile = "bw-files.db") {
+  bigwigfiles <- dir_ls(destdir, glob = "*.bw", recurse = TRUE) %>%
+    set_names(path_file(.)) %>%
+    enframe("name", "bigWig") %>%
+    dplyr::mutate(sample_id = str_remove(name, "_Aligned.sortedByCoord.out.bw")) %>%
+    dplyr::filter(!str_detect(path, "integrated")) %>%
+    dplyr::distinct(sample_id, .keep_all = TRUE) %>%
+    identity()
+
+  con <- dbConnect(RSQLite::SQLite(), dbname = fs::path(destdir, destfile))
+
+  DBI::dbWriteTable(con, "bigwigfiles", bigwigfiles)
+}
+
+#' Retrieve Metadata from Batch
+#'
+#' @param batch
+#' @param projects_dir
+#' @param db_path
+#'
+#' @return
+#'
+#' @examples
+metadata_from_batch <- function(batch, projects_dir = "/dataVolume/storage/single_cell_projects",
+                                db_path = "single-cell-projects.db"){
+
+  mydb <- DBI::dbConnect(RSQLite::SQLite(), fs::path(projects_dir, db_path))
+
+  projects_tbl <- DBI::dbReadTable(mydb, "projects_tbl") %>%
+    dplyr::filter(!project_type %in% c("integrated_projects", "resources"))
 
   DBI::dbDisconnect(mydb)
+
+  metadata <-
+    projects_tbl %>%
+    dplyr::filter(project_slug == batch) %>%
+    dplyr::pull(project_path) %>%
+    fs::path("data") %>%
+    fs::dir_ls(glob = "*.csv") %>%
+    identity()
+
+}
+
+swap_counts_from_feature <- function(cds, featureType){
+  print(featureType)
+#
+#   if (featureType == "transcript"){
+#     rowData(cds[[featureType]])$gene_short_name <- rownames(cds[[featureType]])
+#   }
+
+  assay(cds$traj, withDimnames=FALSE) <- assay(cds[[featureType]])
+  rowData(cds$traj) <- rowData(cds[[featureType]])
+  rownames(cds$traj) <- rownames(cds[[featureType]])
+  cds$traj@preprocess_aux$gene_loadings <- cds[[featureType]]@preprocess_aux$gene_loadings
+  # counts(cds$traj) <- counts(cds[[featureType]])
+  cds$traj
+
 }

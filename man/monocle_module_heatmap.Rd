@@ -14,7 +14,7 @@ monocle_module_heatmap(
   group.by = "batch",
   group.bar.height = 0.01,
   cluster_columns = FALSE,
-  cluster_rows = FALSE,
+  cluster_rows = TRUE,
   column_split = NULL,
   col_dendrogram = "ward.D2",
   mm_col_dend = 30,

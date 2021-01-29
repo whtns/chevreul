@@ -31,7 +31,7 @@ merge_small_seus <- function(seu_list, k.filter = 50){
 #' @export
 #'
 #' @examples
-seurat_integrate <- function(seu_list, method = "cca", ...) {
+seurat_integrate <- function(seu_list, method = "cca", organism = "human", ...) {
   #browser()
   # To construct a reference we will identify ‘anchors’ between the individual datasets. First, we split the combined object into a list, with each dataset as an element.
 
@@ -71,6 +71,8 @@ seurat_integrate <- function(seu_list, method = "cca", ...) {
   # Run the standard workflow for visualization and clustering
   seu_list.integrated <- Seurat::ScaleData(object = seu_list.integrated, verbose = FALSE)
   seu_list.integrated <- seurat_reduce_dimensions(seu_list.integrated, ...)
+
+  seu_list.integrated <- record_experiment_data(seu_list.integrated, experiment_name = "integrated", organism = organism)
 
   return(seu_list.integrated)
 }
@@ -192,9 +194,11 @@ seurat_reduce_dimensions <- function(seu, reduction = "pca", legacy_settings = F
   }
 
   if (legacy_settings){
+    message("using legacy settings")
     seu <- Seurat::RunPCA(seu, features = rownames(seu))
   } else {
-    seu <- Seurat::RunPCA(object = seu, do.print = FALSE, npcs = npcs, ...)
+    # seu <- Seurat::RunPCA(object = seu, do.print = FALSE, npcs = npcs, ...)
+    seu <- Seurat::RunPCA(object = seu, features = Seurat::VariableFeatures(object = seu), do.print = FALSE, npcs = npcs, ...)
   }
 
   if (reduction == "harmony"){
@@ -295,14 +299,24 @@ filter_merged_seu <- function(seu, filter_var, filter_val, .drop = .drop) {
 #' @export
 #'
 #' @examples
+#'
+#' seurat_pancreas_reduced$gene$batch <- seurat_pancreas_reduced$gene$tech
+#' reintegrate_seu(seurat_pancreas_reduced)
+#'
 reintegrate_seu <- function(seu, feature = "gene", suffix = "", reduction = "pca", algorithm = 1, ...){
 
   Seurat::DefaultAssay(seu) <- "RNA"
+
+  organism = Misc(seu)$experiment$organism
+  experiment_name = Misc(seu)$experiment$experiment_name
 
   seu <- Seurat::DietSeurat(seu, counts = TRUE, data = TRUE, scale.data = FALSE)
   seus <- Seurat::SplitObject(seu, split.by = "batch")
   seu <- seurat_integration_pipeline(seus, feature = feature, suffix = suffix, algorithm = algorithm, ...)
 
+  seu <- record_experiment_data(seu, experiment_name, organism)
+
+  # integration_workflow <- function(batches, excluded_cells = NULL, resolution = seq(0.2, 2.0, by = 0.2), experiment_name = "default_experiment", organism = "human", ...) {
 
 }
 

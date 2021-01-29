@@ -31,14 +31,23 @@ plotClustree_UI <- function(id) {
 #' @examples
 plotClustree <- function(input, output, session, seu) {
 
+
+  # set appropriate assay
+  # default_assay = reactive({
+  #   ifelse("integrated" %in% names(seu$active@assays), "integrated", "RNA")
+  # })
+
   output$checkSeu <- renderText({
     req(seu())
     "test"
   })
 
   output$clustree <- renderPlot({
-    req(seu())
-    clustree::clustree(seu(), assay =)
+    req(seu$active)
+
+    default_assay <- ifelse("integrated" %in% names(seu$active@assays), "integrated", "RNA")
+    # DefaultAssay(seu$active) <- default_assay
+    clustree::clustree(seu$active, assay = default_assay)
   })
 
 }
@@ -61,6 +70,8 @@ plotViolinui <- function(id){
       selectizeInput(ns("customFeature"),
                      "Gene or transcript expression by which to color the plot eg. 'RXRG' or 'ENST00000488147'",
                      choices = NULL, multiple = TRUE),
+      radioButtons(ns("slot"), "Data Type", choices = c("transformed" = "data", "raw counts" = "counts")),
+      downloadButton(ns("downloadPlot")),
       plotly::plotlyOutput(ns("vplot"), height = 750),
       width = 12)
     )
@@ -112,11 +123,33 @@ plotViolin <- function(input, output, session, seu, featureType, organism_type){
     selectizeInput(ns("vlnGroup"), "Grouping variable",
                    choices = colnames(seu()[[]]), selected = "batch")
   })
-  output$vplot <- plotly::renderPlotly({
+
+  vln_plot <- reactive({
     req(input$customFeature)
     req(input$vlnGroup)
 
-    plot_violin(seu(), plot_var = input$vlnGroup, features = input$customFeature)
+    vln_plot <-
+      plot_violin(seu$active, plot_var = input$vlnGroup, features = input$customFeature, slot = input$slot)
+
+  })
+
+  output$downloadPlot <- downloadHandler(
+    filename = function() { paste("violin", '.pdf', sep='') },
+    content = function(file) {
+      ggsave(file, vln_plot() + ggpubr::theme_pubr(base_size = 20, x.text.angle = 45), width = 16, height = 12)
+    })
+
+  output$vplot <- plotly::renderPlotly({
+    req(seu$active)
+    req(input$vlnGroup)
+    exclude_trace_number = length(unique(seu$active[[]][[input$vlnGroup]]))*2
+
+    vln_plot <- plotly::ggplotly(vln_plot(), height = 700) %>%
+      plotly::style(opacity = 0.5) %>%
+      plotly::style(hoverinfo = "skip", traces = c(1:exclude_trace_number)) %>%
+      plotly_settings(width = 1200) %>%
+      plotly::toWebGL() %>%
+      identity()
   })
 }
 
@@ -136,7 +169,7 @@ plotHeatmapui <- function(id){
       title = "Heatmap",
       uiOutput(ns("colAnnoVarui")),
       radioButtons(ns("slot"), "Data Scaling", choices = c(scaled = "scale.data", unscaled = "data"), selected = "scale.data", inline = TRUE),
-      selectizeInput(ns("dendroSelect"), "Clustering algorigthm for column dendrogram or metadata for annotation", choices = NULL, selected = NULL),
+      selectizeInput(ns("dendroSelect"), "Clustering algorithm or metadata for column arrangement", choices = NULL, selected = NULL),
       actionButton(ns("actionHeatmap"), "Plot Heatmap"),
       downloadButton(ns("downloadPlot"), "Download Heatmap"),
       selectizeInput(ns("customFeature"), "Gene or transcript expression by which to color the plot; eg. 'RXRG' or 'ENST00000488147'",
@@ -162,6 +195,10 @@ plotHeatmapui <- function(id){
 #' @examples
 plotHeatmap <- function(input, output, session, seu, featureType, organism_type){
   ns <- session$ns
+
+  w <- waiter::Waiter$new(ns("heatmap"),
+                          html = waiter::spin_loaders(id = 1, color = "black", style = "position:relative;margin:auto;"),
+                          color = waiter::transparent(.5))
 
   observe({
     req(seu())
@@ -208,13 +245,14 @@ plotHeatmap <- function(input, output, session, seu, featureType, organism_type)
   })
 
   output$heatmap <- renderPlot({
+    w$show()
     heatmap_plot()
   })
 
   output$downloadPlot <- downloadHandler(
     filename = function() { paste("heatmap", '.pdf', sep='') },
     content = function(file) {
-      ggsave(file, ggplotify::as.ggplot(heatmap_plot()), width = 16, height = 12)
+      ggsave(file, ggplotify::as.ggplot(heatmap_plot()) + ggpubr::theme_pubr(base_size = 20, x.text.angle = 45), width = 16, height = 12)
     })
 
 
@@ -247,7 +285,7 @@ reformatMetadataui <- function(id) {
     ),
     actionButton(ns("updateMetadata"), "Update Metadata"),
     radioButtons(ns("updateMethod"), "Update By:", choices = c("table (below)" = "spreadsheet", "uploaded file" = "file"), inline = TRUE),
-    # downloadLink(ns("downloadMetadata"), "Download Metadata"),
+    downloadLink(ns("downloadMetadata"), "Download Metadata"),
     rhandsontable::rHandsontableOutput(ns("seuTable")),
     width = 12
     ) %>%
@@ -267,7 +305,8 @@ reformatMetadataui <- function(id) {
 #' @export
 #'
 #' @examples
-reformatMetadata <- function(input, output, session, seu) {
+
+reformatMetadata <- function(input, output, session, seu, featureType = "gene") {
   ns <- session$ns
 
   meta <- reactiveValues()
@@ -277,22 +316,25 @@ reformatMetadata <- function(input, output, session, seu) {
   })
 
   observeEvent(input$updateMetadata, {
+    req(featureType())
 
     if (input$updateMethod == "file"){
       inFile <- input$metaFile
 
-      if (is.null(inFile))
+      if (is.null(inFile)){
         return(NULL)
+      }
 
-      meta$new <- format_new_metadata(inFile$datapath)
+      for (i in names(seu)){
+        print(i)
+        seu[[i]] <- format_new_metadata(seu[[i]], inFile$datapath)
+      }
 
     } else if (input$updateMethod == "spreadsheet"){
       meta$new <- propagate_spreadsheet_changes(input$seuTable)
     }
 
-    for (i in names(seu)){
-      seu[[i]] <- Seurat::AddMetaData(seu[[i]], meta$new)
-    }
+    meta$new <- seu[[featureType()]]@meta.data
 
   })
 
@@ -300,6 +342,7 @@ reformatMetadata <- function(input, output, session, seu) {
   table_out <- reactive({
     meta$new %||% meta$old
   })
+
 
   output$seuTable <- rhandsontable::renderRHandsontable({
 
@@ -310,7 +353,6 @@ reformatMetadata <- function(input, output, session, seu) {
                      callback = htmlwidgets::JS(
                        "function (key, options) {
                          var csv = csvString(this, sep=',', dec='.');
-
                          var link = document.createElement('a');
                          link.setAttribute('href', 'data:text/plain;charset=utf-8,' +
                            encodeURIComponent(csv));
@@ -323,17 +365,18 @@ reformatMetadata <- function(input, output, session, seu) {
 
   })
 
-  # output$downloadMetadata <- downloadHandler(
-  #   filename = function() {
-  #     paste("data-", Sys.Date(), ".csv", sep="")
-  #   },
-  #   content = function(file) {
-  #     write.csv(table_out(), file)
-  #   })
+  output$downloadMetadata <- downloadHandler(
+    filename = function() {
+      paste("data-", Sys.Date(), ".csv", sep="")
+    },
+    content = function(file) {
+      write.csv(table_out(), file)
+    })
 
   return(seu)
 
 }
+
 
 
 #' Integrate Project UI
@@ -351,8 +394,10 @@ integrateProjui <- function(id){
         title = "Integrate Projects",
         actionButton(ns("integrateAction"), "Integrate Selected Projects"),
         textOutput(ns("integrationComplete")),
-        shinyjs::useShinyjs(),
+        # shinyjs::useShinyjs(),
+        # shinyjs::runcodeUI(code = "shinyjs::alert('Hello!')", id = "subsetcode"),
         textOutput(ns("integrationMessages")),
+        checkboxInput(ns("legacySettings"), "Use Legacy Settings", value = FALSE),
         textOutput(ns("integrationResult")),
         shinyFiles::shinySaveButton(ns("saveIntegratedProject"), "Save Integrated Project", "Save project as..."),
         DT::dataTableOutput(ns("myDatatable")),
@@ -390,7 +435,7 @@ integrateProj <- function(input, output, session, proj_matrices, seu, proj_dir, 
 
 
 
-    output$myDatatable <- DT::renderDataTable(clean_proj_matrix(),
+    output$myDatatable <- DT::renderDT(clean_proj_matrix(),
                                               server = FALSE,
                                               rownames=TRUE)
 
@@ -423,7 +468,7 @@ integrateProj <- function(input, output, session, proj_matrices, seu, proj_dir, 
 
             names(batches) <- names(selectedProjects())
 
-            mergedSeus(integration_workflow(batches))
+            mergedSeus(integration_workflow(batches, legacy_settings = input$legacySettings))
 
             message("Integration Complete!")
 
@@ -502,7 +547,12 @@ integrateProj <- function(input, output, session, proj_matrices, seu, proj_dir, 
             system(set_permissions_call)
             writeLines(character(), fs::path(integratedProjectSavePath(), ".here"))
             # create_proj_db()
-            DBI::dbAppendTable(con, "projects", data.frame(project_name = fs::path_file(integratedProjectSavePath()), project_path = integratedProjectSavePath()))
+            DBI::dbAppendTable(con, "projects_tbl", data.frame(project_name = fs::path_file(integratedProjectSavePath()),
+                                                               project_path = integratedProjectSavePath(),
+                                                               project_slug = stringr::str_remove(fs::path_file(integratedProjectSavePath()), "_proj$"),
+                                                               project_type = "integrated_projects"
+                                                               )
+                               )
             # system("updatedb -l 0 -U /dataVolume/storage/single_cell_projects/ -o /dataVolume/storage/single_cell_projects/single_cell_projects.db", wait = TRUE)
             # # print(set_permissions_call)
             shiny::incProgress(8/10)
@@ -510,6 +560,7 @@ integrateProj <- function(input, output, session, proj_matrices, seu, proj_dir, 
             velocyto_dir <- fs::path(integratedProjectSavePath(), "output", "velocyto")
             fs::dir_create(velocyto_dir)
             new_loom_path <- fs::path(velocyto_dir, fs::path_file(integratedProjectSavePath()))
+            # need to configure conda for line below
             combine_looms(selectedProjects(), new_loom_path)
 
           })
@@ -585,21 +636,18 @@ changeEmbedParams <- function(input, output, session, seu){
 plotDimRedui <- function(id){
   ns <- NS(id)
   seuratToolsBox(title = "Embedding",
-                 uiOutput(ns("dplottype")),
-          uiOutput(ns("embeddings")),
-          sliderInput(ns("dotSize"), "Size of Points in UMAP", min = 1, max = 3, step = 0.5, value = 1),
-          fluidRow(
-            column(2,
-                   selectizeInput(ns("dim1"), "Dimension 1", choices = seq(1, 99), selected = 1)
-                   ),
-            column(2,
+                 dropdownButton(
+                   ns("dimPlotSettings"),
+                   selectizeInput(ns("embedding"), "Embedding", choices = NULL, selected = NULL),
+                   sliderInput(ns("dotSize"), "Size of Points in UMAP", min = 0.5, max = 2, step = 0.1, value = 1),
+                   selectizeInput(ns("dim1"), "Dimension 1", choices = seq(1, 99), selected = 1),
                    selectizeInput(ns("dim2"), "Dimension 2", choices = seq(1, 99), selected = 2)
-                   )
-            ),
+                 ),
+                 selectizeInput(ns("plottype"), "Variable to Plot", choices = NULL, multiple = TRUE),
           selectizeInput(ns("customFeature"), "Gene or transcript expression by which to color the plot; eg. 'RXRG' or 'ENST00000488147'", choices = NULL, multiple = TRUE),
           sliderInput(ns("resolution"), "Resolution of clustering algorithm (affects number of clusters)", min = 0.2, max = 2, step = 0.2, value = 0.6),
           plotly::plotlyOutput(ns("dplot"), height = 500),
-          width = 12)
+          width = 6)
 }
 
 #' Plot Dimensional Reduduction
@@ -621,18 +669,33 @@ plotDimRed <- function(input, output, session, seu, plot_types, featureType,
                        organism_type, reductions){
   ns <- session$ns
 
-  output$embeddings <- renderUI({
-    req(seu())
-    selectizeInput(ns("embedding"), "dimensional reduction method", choices = reductions(), selected = rev(reductions())[1])
+  output$myPanel <- renderUI({
+    req()
+    lev <- sort(unique(input$select)) # sorting so that "things" are unambigious
+    cols <- gg_fill_hue(length(lev))
+
+    # New IDs "colX1" so that it partly coincide with input$select...
+    lapply(seq_along(lev), function(i) {
+      colourInput(inputId = paste0("col", lev[i]),
+                  label = paste0("Choose colour for ", lev[i]),
+                  value = cols[i]
+      )
+    })
+  })
+
+  observe({
+    req(seu$active)
+    updateSelectizeInput(session, "embedding", choices = reductions(),
+                         selected = rev(reductions())[1], server = TRUE)
   })
 
   selected_plot <- reactiveVal()
-  output$dplottype <- renderUI({
-    req(seu())
+  observe({
+    req(seu$active)
     # selected_plot <- ifelse(is.null(selected_plot()), "seurat",
     #                         selected_plot())
-    selectizeInput(ns("plottype"), "Variable to Plot", choices = purrr::flatten_chr(plot_types()),
-                   selected = "seurat", multiple = TRUE)
+    updateSelectizeInput(session, "plottype", choices = purrr::flatten_chr(plot_types()),
+                   selected = "seurat")
   })
   prefill_feature <- reactive({
     req(featureType())
@@ -679,9 +742,10 @@ plotDimRed <- function(input, output, session, seu, plot_types, featureType,
     }
     else {
       if (input$plottype == "custom") {
-        plot_feature(seu(), dims = c(input$dim1,
+        plot_feature(seu$active, dims = c(input$dim1,
                                           input$dim2), embedding = input$embedding,
                      features = input$customFeature, pt.size = input$dotSize)
+
       }
       else if (input$plottype %in% plot_types()$continuous_vars) {
         plot_feature(seu(), dims = c(input$dim1,
@@ -780,7 +844,7 @@ tableSelected <- function(input, output, session, seu) {
 # subsetSeurat <- function(input, output, session, seu, selected_rows) {
 #   ns <- session$ns
 #   sub_seu <- reactive({
-#     showModal(modalDialog(title = "Subsetting and Recalculating Embeddings",
+#     showModal(modalDialog(title = "Subsetting and Recalculating embedding",
 #                           "This process may take a minute or two!"))
 #     seu <- seu()[, selected_rows()]
 #     seu <- seuratTools::seurat_pipeline(seu(), resolution = seq(0.6, 2, by = 0.2))
@@ -804,13 +868,12 @@ tableSelected <- function(input, output, session, seu) {
 #' @examples
 diffexui <- function(id) {
   ns <- NS(id)
-  tagList(seuratToolsBox(title = "Differential Expression Settings",
-                         shinyWidgets::prettyRadioButtons(ns("diffex_scheme"),
-    "Cells to Compare",
-    choiceNames = c(
-      "Seurat Cluster",
-      "Custom"
-    ), choiceValues = c("seurat", "custom"),
+  tagList(
+    seuratToolsBox(
+      title = "Differential Expression Settings",
+      shinyWidgets::prettyRadioButtons(ns("diffex_scheme"),
+                                       "Cells to Compare",
+                                       choiceNames = c("Seurat Cluster", "Custom"), choiceValues = c("seurat", "custom"),
     selected = "seurat",
     inline = TRUE
   ), conditionalPanel(
@@ -846,13 +909,19 @@ diffexui <- function(id) {
   ),
   downloadLink(ns("downloadData"), "Download Complete DE Results"),
   DT::dataTableOutput(ns("DT1")),
-  width = 12
-  ), seuratToolsBox(
+  width = 6
+  ),
+  seuratToolsBox(
+    title = "Selected Cells",
+    tableSelectedui("diffex"),
+    width = 6
+  ),
+  seuratToolsBox(
     title = "Custom Cluster 1", DT::DTOutput(ns("cc1")),
-    width = 12
+    width = 6
   ), seuratToolsBox(
     title = "Custom Cluster 2", DT::DTOutput(ns("cc2")),
-    width = 12
+    width = 6
   ))
 
 }
@@ -1013,9 +1082,11 @@ findMarkersui <- function(id) {
       uiOutput(ns("valueSelect")),
       radioButtons(ns("markerMethod"), "Method of Marker Selection", choices = c("presto", "genesorteR"), selected = "presto", inline = TRUE),
       actionButton(ns("plotDots"), "Plot Markers!"),
+      downloadButton(ns("downloadMarkerTable"), "Download Markers!"),
+      checkboxInput(ns("uniqueMarkers"), "Make Markers Unique", value = FALSE),
       checkboxInput(ns("hidePseudo"), "Hide Pseudogenes", value = TRUE),
       plotly::plotlyOutput(ns("markerplot"), height = 800),
-      width = 12
+      width = 6
     )
   ) %>%
     default_helper(type = "markdown", content = "findMarkers")
@@ -1078,14 +1149,23 @@ findMarkers <- function(input, output, session, seu, plot_types, featureType) {
     Seurat::DefaultAssay(seu()) <- "gene"
   })
 
-  marker_plot <- eventReactive(input$plotDots, {
-    plot_markers(seu = seu(), metavar = metavar(), num_markers = input$num_markers, selected_values = input$displayValues, marker_method = input$markerMethod, featureType = featureType(), hide_pseudo = input$hidePseudo)
+  marker_plot_return <- eventReactive(input$plotDots, {
+    plot_markers(seu = seu$active, metavar = metavar(), num_markers = input$num_markers, selected_values = input$displayValues, marker_method = input$markerMethod, featureType = featureType(), hide_pseudo = input$hidePseudo, unique_markers = input$uniqueMarkers)
   })
 
   output$markerplot <- plotly::renderPlotly({
     # req(input$displayClusters)
-    marker_plot()
+    marker_plot_return()$plot
   })
+
+  output$downloadMarkerTable <- downloadHandler(
+    filename = function() {
+      paste(metavar(), "_markers.csv", sep="")
+    },
+    content = function(file) {
+      write_csv(marker_plot_return()$markers, file)
+    })
+
 }
 
 #' Plot Read Count UI
@@ -1106,6 +1186,7 @@ plotReadCountui <- function(id) {
     sliderInput(ns("resolution"), "Resolution of clustering algorithm (affects number of clusters)",
       min = 0.2, max = 2, step = 0.2, value = 0.6
     ),
+    radioButtons(ns("yScale"), "Y axis transforamtion", choices = c("log", "linear"), selected = "linear", inline = TRUE),
     plotly::plotlyOutput(ns("rcplot"), height = 500),
     collapsed = TRUE)
 }
@@ -1152,10 +1233,10 @@ plotReadCount <- function(input, output, session, seu, plot_types) {
       }
 
       louvain_resolution = paste0(active_assay, "_snn_res.", input$resolution)
-      plot_readcount(seu(), metavar = input$metavar, color.by = louvain_resolution)
+      plot_readcount(seu$active, metavar = input$metavar, color.by = louvain_resolution, yscale = input$yScale)
     }
     else if (input$colorby %in% purrr::flatten_chr(plot_types())) {
-      plot_readcount(seu(), metavar = input$metavar, color.by = input$colorby)
+      plot_readcount(seu$active, metavar = input$metavar, color.by = input$colorby, yscale = input$yScale)
     }
   })
 }
@@ -1202,19 +1283,32 @@ ccScore <- function(input, output, session) {
 #' @examples
 allTranscriptsui <- function(id) {
   ns <- NS(id)
-  tagList(fluidRow(seuratToolsBox(
-   title = "Transcript Expression per Gene",
-   selectizeInput(ns("feature"), "Gene or transcript expression by which to color the plot; eg. 'RXRG'", choices = NULL, selected = NULL),
-   selectizeInput(ns("groupby"), "Group by:", choices = NULL, selected = NULL),
-   actionButton(ns("plotComposition"), "Plot transcript composition"),
-   checkboxInput(ns("standardizeExpression"), "Standardize Expression", value = TRUE),
-   plotly::plotlyOutput(ns("compositionPlot")),
-   actionButton(ns("plotTrx"), "Plot all transcripts"),
-   uiOutput(ns("embeddings")),
-   uiOutput(ns("plotlys")),
-   width = 12) %>%
-     default_helper(type = "markdown", content = "allTranscripts"),
-   ))
+  tagList(
+    default_helper(
+      seuratToolsBox(
+        title = "Transcript Expression per Gene",
+        selectizeInput(ns("embeddingGene"), "Gene or transcript expression by which to color the plot; eg. 'RXRG'", choices = NULL, selected = NULL),
+        selectizeInput(ns("transcriptSelect"), "Transcript to Plot", choices = NULL),
+        downloadButton(ns("downloadPlot"), "Download Transcript Plots"),
+        selectizeInput(ns("embedding"), "Embedding", choices = NULL, selected = NULL),
+        plotly::plotlyOutput(ns("transcriptPlot")),
+        # uiOutput(ns("plotlys")),
+        width = 6),
+      type = "markdown", content = "allTranscripts"),
+    default_helper(
+      seuratToolsBox(
+        title = "Transcript Expression per Gene",
+        selectizeInput(ns("compositionGene"), "Gene or transcript expression by which to color the plot; eg. 'RXRG'", choices = NULL, selected = NULL),
+        selectizeInput(ns("groupby"), "Group by:", choices = NULL, selected = NULL),
+        actionButton(ns("plotComposition"), "Plot transcript composition"),
+        checkboxInput(ns("standardizeExpression"), "Standardize Expression", value = FALSE),
+        checkboxInput(ns("dropZero"), "Drop Zero Values", value = FALSE),
+        plotly::plotlyOutput(ns("compositionPlot")),
+        DT::DTOutput(ns("compositionDT")),
+      width = 6),
+      type = "markdown", content = "allTranscripts")
+  )
+
 }
 
 #' Plot All Transcripts
@@ -1234,58 +1328,86 @@ allTranscripts <- function(input, output, session, seu,
   ns <- session$ns
 
   observe({
-    req(seu())
-    updateSelectizeInput(session, "feature", choices = rownames(seu()@assays$RNA), selected = "RXRG", server = TRUE)
-    updateSelectizeInput(session, "groupby", choices = colnames(seu()@meta.data), server = TRUE)
-  })
-
-  output$embeddings <- renderUI({
-    req(seu())
-    selectizeInput(ns("embedding"), "dimensional reduction method", choices = c("pca", "tsne", "umap"), selected = "umap")
+    req(seu$gene)
+    updateSelectizeInput(session, "compositionGene", choices = rownames(seu$gene@assays$RNA), selected = "RXRG", server = TRUE)
+    updateSelectizeInput(session, "embeddingGene", choices = rownames(seu$gene@assays$RNA), selected = "RXRG", server = TRUE)
+    updateSelectizeInput(session, "groupby", choices = colnames(seu$gene@meta.data), selected = "batch", server = TRUE)
   })
 
   transcripts <- reactive({
-    get_transcripts_from_seu(seu(), input$feature, organism = organism_type())
-  })
-
-  composition_plot <- eventReactive(input$plotComposition, {
-    plot_transcript_composition(seu(), seu(), gene_symbol = input$feature, group.by = input$groupby, standardize = input$standardizeExpression) %>%
-      plotly::ggplotly(height = 400) %>%
-      plotly_settings() %>%
-      plotly::toWebGL() %>%
-      plotly::partial_bundle() %>%
-      identity()
-  })
-
-  output$compositionPlot <- plotly::renderPlotly({
-    composition_plot()
-  })
-
-  pList <- eventReactive(input$plotTrx, {
-    pList <- plot_all_transcripts(seu(), seu(), transcripts(), input$embedding)
+    req(seu$transcript)
+    get_transcripts_from_seu(seu$transcript, input$embeddingGene, organism = organism_type())
   })
 
   observe({
-
-    for (i in 1:length(pList())) {
-      local({
-        my_i <- i
-        plotname <- transcripts()[[my_i]]
-        output[[plotname]] <- renderPlot({
-          pList()[[my_i]]
-        })
-      })
-    }
-
+    req(seu$active)
+    updateSelectizeInput(session, "embedding", choices = c("pca", "tsne", "umap"), selected = "umap", server = TRUE)
+    updateSelectizeInput(session, "transcriptSelect", choices = transcripts(), server = TRUE)
   })
 
-  output$plotlys <- renderUI({
-    req(pList())
-
-    plot_output_list <- purrr::map(names(pList()), ~plotOutput(ns(.x), height = 500))
-
-    do.call(tagList, plot_output_list)
+  composition_plot <- eventReactive(input$plotComposition, {
+    plot_transcript_composition(seu$transcript, seu$gene, gene_symbol = input$compositionGene, group.by = input$groupby, standardize = input$standardizeExpression, drop_zero = input$dropZero)
   })
+
+  output$compositionPlot <- plotly::renderPlotly({
+    composition_plot()$plot %>%
+    plotly::ggplotly(height = 400) %>%
+    plotly_settings() %>%
+    plotly::toWebGL() %>%
+    # plotly::partial_bundle() %>%
+    identity()
+  })
+
+  output$compositionDT <- DT::renderDT({
+
+    DT::datatable(composition_plot()$data, extensions = "Buttons",
+                  options = list(dom = "Bft", buttons = c("copy",
+                                                          "csv"), scrollX = "100px", scrollY = "400px"))
+  })
+
+  pList <- reactive({
+    req(transcripts())
+    pList <- plot_all_transcripts(seu$transcript, seu$gene, transcripts(), input$embedding)
+  })
+
+  # observe({
+  #
+  #   for (i in 1:length(pList())) {
+  #     local({
+  #       my_i <- i
+  #       plotname <- transcripts()[[my_i]]
+  #       output[[plotname]] <- renderPlot({
+  #         pList()[[my_i]]
+  #       })
+  #     })
+  #   }
+  #
+  # })
+  #
+  # output$plotlys <- renderUI({
+  #   req(pList())
+  #
+  #   plot_output_list <- purrr::map(names(pList()), ~plotOutput(ns(.x), height = 500))
+  #
+  #   do.call(tagList, plot_output_list)
+  # })
+
+  output$transcriptPlot <- plotly::renderPlotly({
+    pList()[[input$transcriptSelect]] %>%
+      plotly::ggplotly(height = 400) %>%
+      plotly_settings() %>%
+      plotly::toWebGL()
+  })
+
+  output$downloadPlot <- downloadHandler(
+    filename = function() { paste(input$embeddingGene, '_transcripts.pdf', sep='') },
+    content = function(file) {
+      pdf(file)
+      map(pList(), print)
+      dev.off()
+    })
+
+
 
 }
 
@@ -1300,17 +1422,34 @@ allTranscripts <- function(input, output, session, seu,
 plotVelocityui <- function(id){
   ns <- NS(id)
   tagList(
-    selectizeInput(ns("embedding"), "dimensional reduction method", choices = c("pca", "tsne", "umap"),
-                                     selected = "umap"),
-    sliderInput(ns("resolution"), "Resolution of clustering algorithm (affects number of clusters)", min = 0.2, max = 2, step = 0.2, value = 0.6),
-    actionButton(ns("calc_velocity"), "calculate velocity"),
-    textOutput(ns("velocityFlag")),
-    actionButton(ns("plot_velocity"), "plot velocity"),
-    radioButtons(ns("plotFormat"), "velocity format", choices = c("arrow", "grid"), selected = "grid"),
-    downloadButton(ns("downloadPlot"), label = "Download plots"),
-    plotOutput(ns("velocityPlot"), height = "800px")
-  ) %>%
-    default_helper(type = "markdown", content = "plotVelocity")
+      seuratToolsBox(
+        title = "Calculate Velocity",
+        width = 4,
+        textOutput(ns("velocityFlag")),
+        radioButtons(ns("velocityMode"), "Velocity Mode", choices = c("deterministic (velocyto)" = "deterministic", "stochastic" = "stochastic", "dynamical" = "dynamical")),
+        actionButton(ns("calc_velocity"), "calculate velocity"),
+        textOutput(ns("scveloMessages")),
+      ),
+    seuratToolsBox(
+      title = "Plot Veloctiy on Embedding",
+      width = 12,
+      selectizeInput(ns("embedding"), "dimensional reduction method", choices = c("pca", "tsne", "umap"),
+                     selected = "umap"),
+      sliderInput(ns("resolution"), "Resolution of clustering algorithm (affects number of clusters)", min = 0.2, max = 2, step = 0.2, value = 0.6),
+      radioButtons(ns("plotFormat"), "velocity format", choices = c("arrow", "stream"), selected = "arrow", inline = TRUE),
+      actionButton(ns("plot_velocity_embedding"), "plot velocity on embedding"),
+      downloadButton(ns("downloadEmbeddingPlot"), label = "Download Plot"),
+      imageOutput(ns("velocityEmbeddingPlot"), height = "800px")
+    ),
+    seuratToolsBox(
+      title = "Plot Velocity and Expression",
+      width = 12,
+      selectizeInput(ns("geneSelect"), "Select a Gene", choices = NULL, selected = NULL, multiple = TRUE),
+      actionButton(ns("plot_velocity_expression"), "plot velocity and expression"),
+      downloadButton(ns("downloadExpressionPlot"), label = "Download Plot"),
+      imageOutput(ns("velocityExpressionPlot"), height = "700px")
+    ) %>%
+    default_helper(type = "markdown", content = "plotVelocity"))
 }
 
 #' RNA Velocity
@@ -1320,57 +1459,93 @@ plotVelocityui <- function(id){
 #' @param session
 #' @param seu
 #' @param loom_path
-#' @param featureType
 #'
 #' @return
 #' @export
 #'
 #' @examples
-plotVelocity <- function(input, output, session, seu, loom_path, featureType){
+plotVelocity <- function(input, output, session, seu, loom_path){
   ns <- session$ns
 
-  observeEvent(input$calc_velocity, {
-    req(seu())
-    print(loom_path)
+  print("running scvelo")
 
-    if(is.null(seu()@misc$vel)){
-      if(is.null(seu[[featureType()]]@misc$vel)){
-        showModal(modalDialog("calculating velocity", footer=NULL))
-        seu[[featureType()]] <- velocyto_assay(seu[[featureType()]], loom_path)
-        seu()@misc$vel <- seu[[featureType()]]@misc$vel
-        removeModal()
-      } else if (!is.null(seu[[featureType()]]@misc$vel)) {
-        seu()@misc$vel <- seu[[featureType()]]@misc$vel
-      }
-
-    }
+  observe({
+    req(seu$active)
+    updateSelectizeInput(session, "geneSelect", choices = rownames(seu$active), selected = "RXRG", server = TRUE)
   })
 
+  # reactive val adata ------------------------------
+
+  adata <- reactiveVal()
+
+  observeEvent(input$calc_velocity, {
+    req(seu$active)
+    withCallingHandlers({
+      shinyjs::html("scveloMessages", "")
+      message("Beginning")
+
+      if ("integrated" %in% names(seu$active@assays)) {
+        default_assay = "integrated"
+      } else {
+        default_assay = "RNA"
+      }
+
+      # sc <- reticulate::import("scanpy")
+
+      # cdb <- cachem::cache_disk("/dataVolume/storage/.rcache")
+      #
+      # memo_prep <- memoise::memoise(prep_scvelo, cache = cdb)
+
+      adata = prep_scvelo(seu$active, loom_path, velocity_mode = input$velocityMode)
+
+      # implement caching in the future via lru cache?
+      # adata$write_h5ad(gsub(".h5ad", "_scvelo.h5ad", loom_path))
+
+      adata(adata)
+      message("scvelo Complete!")
+
+    },
+    message = function(m) {
+      shinyjs::html(id = "scveloMessages", html = paste0("Running scvelo: ", m$message), add = FALSE)
+    })
+  })
+  # reactive adata------------------------------
+
+  # adata <- eventReactive(input$calc_velocity, {
+  #   req(seu$active)
+  #   showModal(modalDialog("Calculating Velocity", footer=NULL))
+  #
+  #   if ("integrated" %in% names(seu$active@assays)) {
+  #     default_assay = "integrated"
+  #   } else {
+  #     default_assay = "RNA"
+  #   }
+  #
+  #   # sc <- reticulate::import("scanpy")
+  #
+  #   adata = prep_scvelo(seu$active, loom_path, velocity_mode = input$velocityMode)
+  #
+  #   # implement caching in the future via lru cache?
+  #   # adata$write_h5ad(gsub(".h5ad", "_scvelo.h5ad", loom_path))
+  #
+  #   removeModal()
+  #
+  #   return(adata)
+  #
+  # })
+
   velocity_flag <- eventReactive(input$calc_velocity, {
-    req(seu())
-    if(!is.null(seu()@misc$vel)){
-      "Velocity Calculated for this dataset"
-    }
+    req(adata())
+    "Velocity Calculated for this dataset"
   })
 
   output$velocityFlag <- renderText({
+    req(adata())
     velocity_flag()
   })
 
-  velocity <- reactive({
-    req(seu())
-
-    if(!is.null(seu()@misc$vel)){
-      return(seu()@misc$vel)
-    } else {
-      FALSE
-    }
-  })
-
-
-  plotInput <- function(plot_format = "grid"){
-
-    showModal(modalDialog("Loading Plots", footer=NULL))
+  observe({
+    req(adata())
 
     if ("integrated" %in% names(seu()@assays)) {
       default_assay = "gene.integrated"
@@ -1380,43 +1555,79 @@ plotVelocity <- function(input, output, session, seu, loom_path, featureType){
 
     cluster_resolution = paste0(default_assay, "_snn_res.", input$resolution)
 
-    cell.colors <- tibble::as_tibble(seu()[[cluster_resolution]], rownames = "cellid") %>%
-      tibble::deframe() %>%
-      as.factor()
-
-    levels(cell.colors) <- scales::hue_pal()(length(levels(cell.colors)))
-
-    if (!is.null(seu()@misc$cc)){
-      plot_velocity_arrows(seu(), velocity(), reduction = input$embedding, cell.colors, plot_format = plot_format, cc = seu()@misc$cc)
-    } else {
-      plot_velocity_arrows(seu(), velocity(), reduction = input$embedding, cell.colors, plot_format = plot_format)
-    }
-
-    removeModal()
-  }
-
-  velocityPlot <- eventReactive(input$plot_velocity, {
-    req(seu())
-
-    validate(
-      need(velocity(), "Please calculate velocity")
-    )
-    plotInput(plot_format = input$plotFormat)
+    plot_scvelo(adata(), group.by = cluster_resolution, plot_method = input$plotFormat)
+    fig = pyplot$gcf()
+    # fig$savefig("velocity_embedding.pdf")
+    fig$savefig("velocity_embedding.png")
   })
 
-  output$downloadPlot <- downloadHandler(
-    filename = function() { paste("velocity", '.pdf', sep='') },
+  observe({
+    req(adata())
+    req(input$geneSelect)
+
+    if ("integrated" %in% names(seu$active@assays)) {
+      default_assay = "integrated"
+    } else {
+      default_assay = "RNA"
+    }
+    scvelo_expression(adata(), features = input$geneSelect)
+    fig = pyplot$gcf()
+    # fig$savefig("velocity_expression.pdf")
+    fig$savefig("velocity_expression.png")
+  })
+
+  output$downloadEmbeddingPlot <- downloadHandler(
+    filename = function() { paste("velocity_embedding", '.png', sep='') },
     content = function(file) {
-      pdf(file)
-      plotInput(plot_format = input$plotFormat)
-      dev.off()
+      file.copy("velocity_embedding.png", file, overwrite=TRUE)
     })
 
-  output$velocityPlot <- renderPlot({
-    velocityPlot()
+  output$downloadExpressionPlot <- downloadHandler(
+    filename = function() { paste("velocity_expression", '.png', sep='') },
+    content = function(file) {
+      file.copy("velocity_expression.png", file, overwrite=TRUE)
+    })
+
+  expression_path <- eventReactive(input$plot_velocity_expression, {
+    "velocity_expression.png"
   })
 
-  return(seu[[featureType()]])
+  embedding_path <- eventReactive(input$plot_velocity_embedding, {
+    "velocity_embedding.png"
+  })
+
+  output$velocityEmbeddingPlot <- renderImage({
+    # req(velocityExpressionPlot())
+    # Get width and height of image output
+    width  <- session$clientData$output_image_width
+    height <- session$clientData$output_image_height
+
+    # Return a list containing information about the image
+    list(
+      src = embedding_path(),
+      contentType = "image/png",
+      width = 1200,
+      height = 800,
+      alt = "This is alternate text"
+    )
+  }, deleteFile = FALSE)
+
+  output$velocityExpressionPlot <- renderImage({
+    # req(velocityExpressionPlot())
+    # Get width and height of image output
+    width  <- session$clientData$output_image_width
+    height <- session$clientData$output_image_height
+
+    # Return a list containing information about the image
+    list(
+      src = expression_path(),
+      contentType = "image/png",
+      width = 2100,
+      height = 700,
+      alt = "This is alternate text"
+    )
+  }, deleteFile = FALSE)
+
 }
 
 
@@ -1436,7 +1647,7 @@ monocleui <- function(id){
           title = "Seurat Data",
           plotly::plotlyOutput(ns("seudimplot"), height = 500),
           width = 6
-          # plotDimRedui(ns("plotdimred"))
+          # plotDimRedui(ns("plotdimred")
         ),
         seuratToolsBox(
           title = "Pseudotime Settings",
@@ -1447,11 +1658,11 @@ monocleui <- function(id){
           actionButton(ns("subsetCells"), "Subset Monocle Object After Pseudotime Calculation"),
           uiOutput(ns("rootCellsui")),
           actionButton(ns("plotPseudotime"), "Calculate Pseudotime With Root Cells"),
+          downloadButton(ns("downloadPT"), "Export Pseudotime"),
           checkboxInput(ns("flipPtime"), "Invert Pseudotime", value = TRUE),
           width = 6
         )
       ),
-      fluidRow(
         seuratToolsBox(
           title = "Embedding Plot",
           selectizeInput(ns("plottype1"), "Variable to Plot", choices = c(Seurat = "seurat"), selected = "Seurat", multiple = TRUE),
@@ -1469,30 +1680,42 @@ monocleui <- function(id){
           uiOutput(ns("moduleSelect2")),
           plotly::plotlyOutput(ns("monoclePlot2")),
           width = 6
-        )
-      ),
-      fluidRow(
-        seuratToolsBox(title = "calculate pseudotime",
-                       actionButton(ns("calcPtimeGenes"), "Find Pseudotime Correlated Genes"),
-            uiOutput(ns("partitionSelect")),
-            uiOutput(ns("genePlotQuery2")),
-            uiOutput(ns("ptimeGenes")),
-            width = 12
-            )
-      ),
+          ),
       fluidRow(
         seuratToolsBox(
+          title = "calculate pseudotime",
+          radioButtons(ns("diffexFeature"), "Feature for differential expression", choices = c("gene", "transcript")),
+          actionButton(ns("calcPtimeGenes"), "Find Pseudotime Correlated Genes"),
+          sliderInput(ns("qvalThreshold"), "Set q value threshold for module calculation", min = 0.01, 0.1, value = 0.05, step = 0.01),
+          textOutput("pseudotimeMessages"),
+          uiOutput(ns("partitionSelect")),
+          uiOutput(ns("genePlotQuery2")),
+          DT::DTOutput(ns("ptimeGenesDT")),
+          # uiOutput(ns("ptimeGenes")),
+          width = 6),
+        seuratToolsBox(
+          title = "Plot Feature Expression over Pseudotime",
+          plotly::plotlyOutput(ns("ptimeGenesLinePlot")),
+          width = 6,
+          height = 650)
+        ),
+      seuratToolsBox(
           title = "Heatmap",
           uiOutput(ns("colAnnoVarui")),
-          radioButtons(ns("heatmapRows"), "annotate heatmap rows by genes or modules?", choices = c(genes = FALSE, modules = TRUE), selected = FALSE),
-          plotOutput(ns("monocleHeatmap"), width = "800px", height = "600px")
+          radioButtons(ns("heatmapRows"), "annotate heatmap rows by genes or modules?", choices = c(modules = TRUE, genes = FALSE), selected = TRUE),
+          downloadButton(ns("downloadPlot"), "Download Heatmap"),
+          plotOutput(ns("monocleHeatmap"), width = "800px", height = "1200px")
         ),
         seuratToolsBox(
+          title = "Modules",
+          plotOutput(ns("modulePlot")),
           div(DT::dataTableOutput(ns("moduleTable")), style = "font-size: 75%")
         )
       )
-      )
 }
+
+
+
 
 #' Title
 #'
@@ -1515,6 +1738,11 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
                     organism_type, reductions){
     ns <- session$ns
 
+    # markermarker
+    w <- waiter::Waiter$new(ns("monocleHeatmap"),
+                            html = waiter::spin_loaders(id = 1, color = "black", style = "position:relative;margin:auto;"),
+                            color = waiter::transparent(.5))
+
     output$colAnnoVarui <- renderUI({
       req(seu())
 
@@ -1522,21 +1750,22 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
                      choices = colnames(seu()[[]]), selected = "batch", multiple = TRUE)
     })
 
-    cds <- reactiveValues(selected = "traj")
+    cds <- reactiveValues(selected = c(traj = TRUE, ptime = FALSE, diff_features = FALSE))
     cds_plot_types <- reactiveVal(c(Pseudotime = "pseudotime", Module = "module"))
     myplot_types <- reactive({
       c(purrr::flatten_chr(plot_types()), cds_plot_types())
     })
 
+    # to be able to subset, create a new copy of the seurat object
     observe({
       seu_monocle <- reactiveVal()
       seu_monocle(seu())
     })
 
     seudimplot <- reactive({
-      req(seu_monocle())
-      if ("integrated" %in% names(seu()@assays)) {
-        active_assay <- "gene.integrated"
+      req(seu$monocle)
+      if ("integrated" %in% names(seu$monocle@assays)) {
+        active_assay <- "integrated"
       }
       else {
         active_assay <- "gene"
@@ -1574,15 +1803,20 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
     })
 
     observeEvent(input$calcCDS, {
-      req(seu_monocle())
-        cds$traj <- convert_seu_to_cds(seu_monocle(), resolution = input$cdsResolution)
-        cds$traj <- learn_graph_by_resolution(cds$traj,
-                                              seu_monocle(),
-                                              resolution = input$cdsResolution)
-        updateSelectizeInput(session, "plottype1", selected = "seurat", choices = myplot_types())
-        updateSelectizeInput(session, "customFeature1", choices = rownames(cds$traj), server = TRUE)
-        updateSelectizeInput(session, "plottype2", selected = "seurat", choices = myplot_types())
-        updateSelectizeInput(session, "customFeature2", choices = rownames(cds$traj), server = TRUE)
+      req(seu$monocle)
+      cds$selected = c(traj = TRUE, ptime = FALSE, diff_features = FALSE)
+        for (i in names(seu)[names(seu) %in% c("gene", "transcript")]) {
+          cds[[i]] <- convert_seu_to_cds(seu[[i]], resolution = input$cdsResolution)
+          cds[[i]] <- cds[[i]][,colnames(seu$monocle)]
+          cds[[i]] <- learn_graph_by_resolution(cds[[i]],
+                                                seu$monocle,
+                                                resolution = input$cdsResolution)
+          updateSelectizeInput(session, "plottype1", selected = "seurat", choices = myplot_types())
+          updateSelectizeInput(session, "customFeature1", choices = rownames(cds[[i]]), server = TRUE)
+          updateSelectizeInput(session, "plottype2", selected = "seurat", choices = myplot_types())
+          updateSelectizeInput(session, "customFeature2", choices = rownames(cds[[i]]), server = TRUE)
+        }
+      cds$traj <- cds[[featureType()]]
     })
 
     selected_plot <- reactiveVal()
@@ -1590,10 +1824,16 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
     output$monoclePlot1 <- plotly::renderPlotly({
       req(input$plottype1)
       req(cds$traj)
+      w$show()
       print(cds$selected)
       if (input$plottype1 == "seurat") {
         cluster_resolution = reactive({
-          paste0("integrated", "_snn_res.", input$cdsResolution)
+          if(any(stringr::str_detect(colnames(colData(cds$traj)), "integrated"))){
+            paste0("integrated", "_snn_res.", input$cdsResolution)
+          } else {
+            paste0("RNA", "_snn_res.", input$cdsResolution)
+          }
+
         })
         plot_cds(cds$traj, color_cells_by = cluster_resolution())
       } else if (input$plottype1 == "pseudotime"){
@@ -1615,10 +1855,16 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
     output$monoclePlot2 <- plotly::renderPlotly({
       req(input$plottype2)
       req(cds$traj)
+      w$show()
       print(cds$selected)
       if (input$plottype2 == "seurat") {
         cluster_resolution = reactive({
-          paste0("integrated", "_snn_res.", input$cdsResolution)
+          if(any(stringr::str_detect(colnames(colData(cds$traj)), "integrated"))){
+            paste0("integrated", "_snn_res.", input$cdsResolution)
+          } else {
+            paste0("RNA", "_snn_res.", input$cdsResolution)
+          }
+
         })
         plot_cds(cds$traj, color_cells_by = cluster_resolution())
       } else if (input$plottype2 == "pseudotime"){
@@ -1661,40 +1907,68 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
       selectizeInput(ns("rootCells"), "Choose Root Cells", choices = c("Choose Root Cells" = "", colnames(cds$traj)), multiple = TRUE)
     })
 
+    exported_pseudotime <- reactiveVal()
+
     observeEvent(input$plotPseudotime, {
       req(cds$traj)
       req(input$rootCells)
       cds$traj <- monocle3::order_cells(cds$traj, root_cells = input$rootCells)
+
+      # select only first partition
+      cds$traj <- cds$traj[,monocle3::partitions(cds$traj) == 1]
+
+
       if(input$flipPtime){
         cds$traj <- flip_pseudotime(cds$traj)
       }
       updateSelectizeInput(session, "plottype1", selected = "pseudotime", choices = myplot_types())
       updateSelectizeInput(session, "plottype2", selected = "pseudotime", choices = myplot_types())
-      cds$selected = "ptime"
+      cds$selected = c(traj = FALSE, ptime = TRUE, diff_features = FALSE)
+                       #markermarker
+
+      exported_pseudotime(export_pseudotime(cds$traj, input$rootCells))
+
     })
 
+
+    output$downloadPT <- downloadHandler(
+      filename = function() {
+        paste("pseudotime-", Sys.Date(), ".csv", sep="")
+      },
+      content = function(file) {
+        readr::write_csv(exported_pseudotime(), file)
+      })
+
+    #markermarker
     observeEvent(input$calcPtimeGenes, {
-      if (req(cds$selected) == "ptime"){
+      req(input$diffexFeature)
+      if (req(cds$selected["ptime"])){
+
+        #markermarker
+        cds$traj  <- swap_counts_from_feature(cds, input$diffexFeature)
+
         showModal(modalDialog(
-          title = "Calculating features that vary over pseudotime",
-          "This process may take a minute or two!"
+          title = "Calculating Pseudotime Correlated Features",
+          "This may take a few minutes!"
         ))
+            cds_pr_test_res = monocle3::graph_test(cds$traj, neighbor_graph="principal_graph", cores=4, expression_family = "negbinom")
 
-        cds_pr_test_res = monocle3::graph_test(cds$traj, neighbor_graph="principal_graph", cores=4, expression_family = "negbinom")
-        removeModal()
+            cds$traj@metadata[["diff_features"]] <- cds_pr_test_res
+            cds$selected = c(traj = FALSE, ptime = FALSE, diff_features = TRUE)
 
-        cds$traj@metadata[["diff_genes"]] <- cds_pr_test_res
-        cds$selected = "diff_genes"
+            removeModal()
 
       }
     })
+
     cds_pr_test_res <- reactive({
-      if (req(cds$selected) == "diff_genes"){
-        cds_pr_test_res <- cds$traj@metadata$diff_genes
+      if (req(cds$selected["diff_features"])){
+        cds_pr_test_res <- cds$traj@metadata$diff_features
+
 
         cds_pr_test_res <-
           cds_pr_test_res %>%
-          subset(q_value < 0.05) %>%
+          # subset(q_value < 0.05) %>%
           dplyr::arrange(q_value) %>%
           dplyr::select(-status)
 
@@ -1702,7 +1976,7 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
     })
 
     observe({
-      if (req(cds$selected) == "diff_genes"){
+      if (req(cds$selected["diff_features"])){
 
       output$genePlotQuery2 <- renderUI({
         selectizeInput(ns("genePlotQuery1"), "Pick Gene to Plot on Pseudotime", choices = rownames(cds_pr_test_res()), multiple = TRUE, selected = rownames(cds_pr_test_res())[1])
@@ -1713,12 +1987,10 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
       })
 
       output$ptimeGenesLinePlot <- plotly::renderPlotly({
-
         genes_in_pseudotime <- prep_plot_genes_in_pseudotime(cds$traj, input$genePlotQuery1, input$cdsResolution)
-
         genes_in_pseudotime <-
           genes_in_pseudotime %>%
-          plotly::ggplotly(height = 400) %>%
+          plotly::ggplotly(height = 600) %>%
           plotly_settings() %>%
           plotly::toWebGL() %>%
           # plotly::partial_bundle() %>%
@@ -1735,22 +2007,18 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
 
       })
 
-      output$ptimeGenes <- renderUI({
-        tagList(
-          seuratToolsBox(
-            div(DT::DTOutput(ns("ptimeGenesDT")), style = "font-size: 75%"),
-              width = 4),
-          seuratToolsBox(plotly::plotlyOutput(ns("ptimeGenesLinePlot")),
-              width = 8)
-                )
-      })
       }
     })
 
       monocle_heatmap <- reactive({
         req(cds$traj)
         req(cds_pr_test_res())
-        monocle_module_heatmap(cds$traj, rownames(cds_pr_test_res()), input$cdsResolution, collapse_rows = input$heatmapRows, group.by = input$colAnnoVarui)
+        req(input$colAnnoVar)
+
+        heatmap_genes <- cds_pr_test_res() %>%
+          dplyr::filter(q_value < input$qvalThreshold)
+
+        monocle_module_heatmap(cds$traj, rownames(heatmap_genes), input$cdsResolution, collapse_rows = input$heatmapRows, group.by = input$colAnnoVar)
       })
 
       module_choices <- reactive({
@@ -1770,14 +2038,25 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
           monocle_heatmap()$module_heatmap
         })
 
-        output$moduleTable <- DT::renderDataTable({
+        output$moduleTable <- DT::renderDT({
           DT::datatable(monocle_heatmap()$module_table,
                         extensions = "Buttons",
                         options = list(dom = "Bft", buttons = c("copy",
                                                                 "csv"), scrollX = "100px", scrollY = "400px"))
         })
 
+        output$modulePlot <- renderPlot({
+          ggplot(monocle_heatmap()$module_table, aes(dim_1, dim_2, color = module)) +
+                   geom_point()
+        })
+
       })
+
+      output$downloadPlot <- downloadHandler(
+        filename = function() { paste("heatmap", '.pdf', sep='') },
+        content = function(file) {
+          ggsave(file, ggplotify::as.ggplot(monocle_heatmap()$module_heatmap), width = 16, height = 12)
+        })
 
 }
 
@@ -1878,6 +2157,7 @@ pathwayEnrichment <- function(input, output, session, seu, featureType){
       }
     })
 
+
     # UI element: choose cluster
     output$enriched_pathways_by_cluster_select_cluster_UI <- renderUI({
       req(seu())
@@ -1950,7 +2230,6 @@ pathwayEnrichment <- function(input, output, session, seu, featureType){
     output$enriched_pathways_by_cluster_table_missing_gsva <- renderText({
       "Data not available. Possible reason: Data not generated."
     })
-
     # info box
     observeEvent(input$enriched_pathways_by_cluster_info, {
       showModal(
@@ -1983,8 +2262,8 @@ techInfo <- function(input, output, session, seu){
     ##----------------------------------------------------------------------------##
 
     misc <- reactive({
-      req(seu())
-      seu()@misc
+      req(seu$active)
+      Seurat::Misc(seu$active)
       })
 
     observe({
@@ -2115,15 +2394,25 @@ plotCoverage_UI <- function(id) {
       actionButton(ns("plotCoverage"), "Plot Coverage"),
       downloadButton(ns("downloadPlot"), "Download Coverage Plot"),
       uiOutput(ns("displayvaluesui")),
-      checkboxInput(ns("collapseIntrons"), "Collapse Introns", value = TRUE),
-      checkboxInput(ns("meanCoverage"), "Summarize Coverage to Mean", value = TRUE),
-      plotOutput(ns("coveragePlot"), height = "1000px"),
+      br(),
+      dropdownButton(
+        ns("coveragePlotSettings"),
+        checkboxInput(ns("collapseIntrons"), "Collapse Introns", value = TRUE),
+        checkboxInput(ns("meanCoverage"), "Summarize Coverage to Mean", value = TRUE),
+        checkboxInput(ns("summarizeTranscripts"), "Summarize transcript models to gene", value = FALSE),
+        radioButtons(ns("yScale"), "Scale Y Axis", choices = c("absolute", "log10"), selected = "log10"),
+        numericInput(ns("start"), "start coordinate", value = NULL),
+        numericInput(ns("end"), "end coordinate", value = NULL)
+      ),
+      DT::DTOutput(ns("coverageTable")),
+      plotOutput(ns("coveragePlot"), height = "1500px"),
       width = 12
       )
     )
 }
 
-#' Title
+
+#' Plot Coverage Module
 #'
 #' @param input
 #' @param output
@@ -2140,10 +2429,15 @@ plotCoverage_UI <- function(id) {
 #'
 plotCoverage <- function(input, output, session, seu, plot_types, proj_dir, organism_type = "human") {
   ns <- session$ns
+
+  w <- waiter::Waiter$new(ns("coveragePlot"),
+                          html = waiter::spin_loaders(id = 1, color = "black", style = "position:relative;margin:auto;"),
+                          color = waiter::transparent(.5))
+
     observe({
-      req(seu())
-      updateSelectizeInput(session, "geneSelect", choices = rownames(seu()), server = TRUE)
-      updateSelectizeInput(session, "varSelect", choices = colnames(seu()@meta.data))
+      req(seu$active)
+      updateSelectizeInput(session, "geneSelect", choices = rownames(seu$active), server = TRUE)
+      updateSelectizeInput(session, "varSelect", choices = colnames(seu$active@meta.data), selected = "batch")
     })
 
   displayvalues <- reactive({
@@ -2158,11 +2452,12 @@ plotCoverage <- function(input, output, session, seu, plot_types, proj_dir, orga
   })
 
     bigwig_tbl <- reactive({
-      load_bigwigs(seu(), proj_dir())
+
+      load_bigwigs(seu$active)
     })
 
-    coverage_plot <- eventReactive(input$plotCoverage, {
-      req(seu())
+    coverage_return <- eventReactive(input$plotCoverage, {
+      req(seu$active)
       req(bigwig_tbl())
 
       plot_gene_coverage_by_var(genes_of_interest = input$geneSelect,
@@ -2170,20 +2465,37 @@ plotCoverage <- function(input, output, session, seu, plot_types, proj_dir, orga
                                 bigwig_tbl = bigwig_tbl(),
                                 var_of_interest = input$varSelect,
                                 values_of_interest = input$displayvalues,
-                                edb = EnsDb.Hsapiens.v86::EnsDb.Hsapiens.v86,
+
+                                organism = seu$active@misc$experiment$organism,
                                 mean_only = input$meanCoverage,
-                                rescale_introns = input$collapseIntrons)
+                                rescale_introns = input$collapseIntrons,
+                                scale_y = input$yScale,
+                                start = input$start,
+                                end = input$end,
+                                summarize_transcripts = input$summarizeTranscripts)
+
     })
 
     output$coveragePlot <- renderPlot({
-      coverage_plot()
+      w$show()
+
+      coverage_return()$plot
+    })
+
+    output$coverageTable <- DT::renderDT({
+
+      DT::datatable(coverage_return()$table, extensions = "Buttons",
+                    options = list(dom = "Bft", buttons = c("copy", "csv"), scrollY = "400px"))
+
+
     })
 
     output$downloadPlot <- downloadHandler(
       filename = function() { paste("coverage", '.pdf', sep='') },
       content = function(file) {
-        ggsave(file, coverage_plot(), width = 16, height = 12)
+        ggsave(file, coverage_return()$plot, width = 16, height = 12)
       })
 
 }
+
 
