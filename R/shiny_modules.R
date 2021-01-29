@@ -1425,35 +1425,34 @@ allTranscripts <- function(input, output, session, seu,
 plotVelocityui <- function(id){
   ns <- NS(id)
   tagList(
-    fluidRow(
       seuratToolsBox(
         title = "Calculate Velocity",
-        width = 6,
+        width = 4,
         textOutput(ns("velocityFlag")),
-        actionButton(ns("calc_velocity"), "calculate velocity")
-      )
-    ),
+        radioButtons(ns("velocityMode"), "Velocity Mode", choices = c("deterministic (velocyto)" = "deterministic", "stochastic" = "stochastic", "dynamical" = "dynamical")),
+        actionButton(ns("calc_velocity"), "calculate velocity"),
+        textOutput(ns("scveloMessages")),
+      ),
     seuratToolsBox(
       title = "Plot Veloctiy on Embedding",
-      width = 6,
+      width = 12,
       selectizeInput(ns("embedding"), "dimensional reduction method", choices = c("pca", "tsne", "umap"),
                      selected = "umap"),
       sliderInput(ns("resolution"), "Resolution of clustering algorithm (affects number of clusters)", min = 0.2, max = 2, step = 0.2, value = 0.6),
-      radioButtons(ns("plotFormat"), "velocity format", choices = c("stream", "arrow", "dynamics"), selected = "stream", inline = TRUE),
+      radioButtons(ns("plotFormat"), "velocity format", choices = c("arrow", "stream"), selected = "arrow", inline = TRUE),
       actionButton(ns("plot_velocity_embedding"), "plot velocity on embedding"),
       downloadButton(ns("downloadEmbeddingPlot"), label = "Download Plot"),
-      plotOutput(ns("velocityEmbeddingPlot"), height = "800px")
+      imageOutput(ns("velocityEmbeddingPlot"), height = "800px")
     ),
     seuratToolsBox(
       title = "Plot Velocity and Expression",
-      width = 6,
-      selectizeInput(ns("geneSelect"), "Select a Gene", choices = NULL, selected = "RXRG", multiple = TRUE),
+      width = 12,
+      selectizeInput(ns("geneSelect"), "Select a Gene", choices = NULL, selected = NULL, multiple = TRUE),
       actionButton(ns("plot_velocity_expression"), "plot velocity and expression"),
       downloadButton(ns("downloadExpressionPlot"), label = "Download Plot"),
-      plotOutput(ns("velocityExpressionPlot"), height = "800px")
-    )
-  ) %>%
-    default_helper(type = "markdown", content = "plotVelocity")
+      imageOutput(ns("velocityExpressionPlot"), height = "700px")
+    ) %>%
+    default_helper(type = "markdown", content = "plotVelocity"))
 }
 
 #' RNA Velocity
@@ -1471,27 +1470,72 @@ plotVelocityui <- function(id){
 plotVelocity <- function(input, output, session, seu, loom_path){
   ns <- session$ns
 
+  print("running scvelo")
+
   observe({
     req(seu$active)
-    updateSelectizeInput(session, "geneSelect", choices = rownames(seu$active), server = TRUE)
+    updateSelectizeInput(session, "geneSelect", choices = rownames(seu$active), selected = "RXRG", server = TRUE)
   })
 
-  adata <- eventReactive(input$calc_velocity, {
+  # reactive val adata ------------------------------
+
+  adata <- reactiveVal()
+
+  observeEvent(input$calc_velocity, {
     req(seu$active)
-    showModal(modalDialog("Calculating Velocity", footer=NULL))
+    withCallingHandlers({
+      shinyjs::html("scveloMessages", "")
+      message("Beginning")
 
-    if ("integrated" %in% names(seu$active@assays)) {
-      default_assay = "integrated"
-    } else {
-      default_assay = "RNA"
-    }
+      if ("integrated" %in% names(seu$active@assays)) {
+        default_assay = "integrated"
+      } else {
+        default_assay = "RNA"
+      }
 
-    adata = seuratTools::prep_scvelo(seu$active, loom_path)
+      # sc <- reticulate::import("scanpy")
 
-    removeModal()
-    return(adata)
+      # cdb <- cachem::cache_disk("/dataVolume/storage/.rcache")
+      #
+      # memo_prep <- memoise::memoise(prep_scvelo, cache = cdb)
 
+      adata = prep_scvelo(seu$active, loom_path, velocity_mode = input$velocityMode)
+
+      # implement caching in the future via lru cache?
+      # adata$write_h5ad(gsub(".h5ad", "_scvelo.h5ad", loom_path))
+
+      adata(adata)
+      message("scvelo Complete!")
+
+    },
+    message = function(m) {
+      shinyjs::html(id = "scveloMessages", html = paste0("Running scvelo: ", m$message), add = FALSE)
+    })
   })
+  # reactive adata------------------------------
+
+  # adata <- eventReactive(input$calc_velocity, {
+  #   req(seu$active)
+  #   showModal(modalDialog("Calculating Velocity", footer=NULL))
+  #
+  #   if ("integrated" %in% names(seu$active@assays)) {
+  #     default_assay = "integrated"
+  #   } else {
+  #     default_assay = "RNA"
+  #   }
+  #
+  #   # sc <- reticulate::import("scanpy")
+  #
+  #   adata = prep_scvelo(seu$active, loom_path, velocity_mode = input$velocityMode)
+  #
+  #   # implement caching in the future via lru cache?
+  #   # adata$write_h5ad(gsub(".h5ad", "_scvelo.h5ad", loom_path))
+  #
+  #   removeModal()
+  #
+  #   return(adata)
+  #
+  # })
 
   velocity_flag <- eventReactive(input$calc_velocity, {
     req(adata())
@@ -1503,7 +1547,7 @@ plotVelocity <- function(input, output, session, seu, loom_path){
     velocity_flag()
   })
 
-  velocityEmbeddingPlot <- eventReactive(input$plot_velocity_embedding, {
+  observe({
     req(adata())
 
     if ("integrated" %in% names(seu$active@assays)) {
@@ -1515,44 +1559,78 @@ plotVelocity <- function(input, output, session, seu, loom_path){
     cluster_resolution = paste0(default_assay, "_snn_res.", input$resolution)
 
     plot_scvelo(adata(), group.by = cluster_resolution, plot_method = input$plotFormat)
-
-    pyplot$savefig("velocity_embedding.pdf")
-
+    fig = pyplot$gcf()
+    # fig$savefig("velocity_embedding.pdf")
+    fig$savefig("velocity_embedding.png")
   })
 
-  velocityExpressionPlot <- eventReactive(input$plot_velocity_expression, {
+  observe({
     req(adata())
+    req(input$geneSelect)
 
     if ("integrated" %in% names(seu$active@assays)) {
       default_assay = "integrated"
     } else {
       default_assay = "RNA"
     }
-
     scvelo_expression(adata(), features = input$geneSelect)
-    pyplot$savefig("velocity_expression.pdf")
+    fig = pyplot$gcf()
+    # fig$savefig("velocity_expression.pdf")
+    fig$savefig("velocity_expression.png")
 
   })
 
   output$downloadEmbeddingPlot <- downloadHandler(
-    filename = function() { paste("velocity_embedding", '.pdf', sep='') },
+    filename = function() { paste("velocity_embedding", '.png', sep='') },
     content = function(file) {
-      file.copy("velocity_embedding.pdf", file, overwrite=TRUE)
+      file.copy("velocity_embedding.png", file, overwrite=TRUE)
     })
 
   output$downloadExpressionPlot <- downloadHandler(
-    filename = function() { paste("velocity_expression", '.pdf', sep='') },
+    filename = function() { paste("velocity_expression", '.png', sep='') },
     content = function(file) {
-      file.copy("velocity_expression.pdf", file, overwrite=TRUE)
+      file.copy("velocity_expression.png", file, overwrite=TRUE)
     })
 
-  output$velocityEmbeddingPlot <- renderPlot({
-    velocityEmbeddingPlot()
+  expression_path <- eventReactive(input$plot_velocity_expression, {
+    "velocity_expression.png"
   })
 
-  output$velocityExpressionPlot <- renderPlot({
-    velocityExpressionPlot()
+  embedding_path <- eventReactive(input$plot_velocity_embedding, {
+    "velocity_embedding.png"
   })
+
+  output$velocityEmbeddingPlot <- renderImage({
+    # req(velocityExpressionPlot())
+    # Get width and height of image output
+    width  <- session$clientData$output_image_width
+    height <- session$clientData$output_image_height
+
+    # Return a list containing information about the image
+    list(
+      src = embedding_path(),
+      contentType = "image/png",
+      width = 1200,
+      height = 800,
+      alt = "This is alternate text"
+    )
+  }, deleteFile = FALSE)
+
+  output$velocityExpressionPlot <- renderImage({
+    # req(velocityExpressionPlot())
+    # Get width and height of image output
+    width  <- session$clientData$output_image_width
+    height <- session$clientData$output_image_height
+
+    # Return a list containing information about the image
+    list(
+      src = expression_path(),
+      contentType = "image/png",
+      width = 2100,
+      height = 700,
+      alt = "This is alternate text"
+    )
+  }, deleteFile = FALSE)
 
 }
 

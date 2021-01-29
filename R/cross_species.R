@@ -224,4 +224,40 @@ cross_species_integrate <- function(mouse_seu_list, human_seu_list, excluded_cel
 
 }
 
+#' Update human gene symbols in seurat object
+#'
+#' @param seu
+#'
+#' @return
+#' @export
+#'
+#' @examples
+update_human_gene_symbols <- function(seu, assay = "RNA"){
+  browser()
+  ensdb <- EnsDb.Hsapiens.v86::EnsDb.Hsapiens.v86
+
+  symbols <- rownames(seu[[assay]])
+
+  new_rownames <-
+    AnnotationDbi::mapIds(ensdb, symbols, keytype = "SYMBOL", columns = c("SYMBOL", "GENEID")) %>%
+    tibble::enframe("old_symbol", "ensgene") %>%
+    dplyr::left_join(annotables::grch38, by = "ensgene") %>%
+    dplyr::distinct(old_symbol, .keep_all = TRUE) %>%
+    dplyr::mutate(symbol = dplyr::coalesce(symbol, old_symbol)) %>%
+    # tidyr::drop_na(symbol) %>%
+    dplyr::pull(symbol) %>%
+    identity()
+
+  seu_slots <- c("counts", "data", "scale.data", "meta.features")
+
+  for (i in seu_slots){
+    if (length(slot(seu@assays[[assay]], i)) > 0){
+      rownames(slot(seu@assays[[assay]], i)) <- new_rownames
+    }
+  }
+
+  return(seu)
+
+}
+
 
