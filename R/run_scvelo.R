@@ -56,22 +56,22 @@ convert_to_h5ad <- function(seu, file_path){
 #' @export
 #'
 #' @examples
-prep_scvelo <- function(seu, loom_path, plot_method = c("stream", "arrow", "dynamics"), ...){
-  # browser()
+prep_scvelo <- function(seu, loom_path, velocity_mode = c("deterministic", "stochastic", "dynamical"), ...){
+  browser()
 
   h5ad_path <- fs::path_ext_set(loom_path, ".h5ad")
 
     scvelo <- reticulate::import("scvelo")
 
     adata_matches_seu <- function(seu, adata){
-      all(adata$obs_names$values %in% colnames(seu))
+      identical(sort(adata$obs_names$values), sort(colnames(seu)))
     }
 
     if (fs::file_exists(h5ad_path)){
       adata = scvelo$read(fs::path_expand(h5ad_path))
 
       if(!adata_matches_seu(seu, adata)){
-        run_scvelo(seu, loom_path)
+        seu <- run_scvelo(seu, loom_path)
       }
 
     } else {
@@ -79,17 +79,24 @@ prep_scvelo <- function(seu, loom_path, plot_method = c("stream", "arrow", "dyna
     }
 
     adata = scvelo$read(fs::path_expand(h5ad_path))
+    # reticulate::source_python("scripts/rename_raw.py")
+    # adata$raw$var$rename(columns = list('_index' = 'symbol'), inplace = True)
 
     scvelo$pp$moments(adata, n_pcs=30L, n_neighbors=30L)
 
-    scvelo$tl$velocity(adata)
+    if(velocity_mode == "dynamical"){
+      if(!"recover_dynamics" %in% adata$uns_keys()){
+        scvelo$tl$recover_dynamics(adata)
+        reticulate::py_del_attr(adata, "raw")
+        adata$write_h5ad(h5ad_path)
+      }
+      scvelo$tl$latent_time(adata)
+    }
+
+    scvelo$tl$velocity(adata, mode = velocity_mode)
 
     scvelo$tl$velocity_graph(adata)
 
-    if(plot_method == "dynamics"){
-      scvelo$tl$recover_dynamics(adata)
-      scvelo$tl$latent_time(adata)
-    }
 
   return(adata)
 
@@ -112,19 +119,19 @@ plot_scvelo <- function(adata, group.by = "batch", plot_method = c("stream", "ar
   mycols <- scales::hue_pal()(num_cols)
 
   if(plot_method == "stream"){
-    scvelo$pl$velocity_embedding_stream(adata, basis="umap", palette = mycols, color=group.by)
+    scvelo$pl$velocity_embedding_stream(adata, basis="umap", palette = mycols, color=group.by, dpi = 200, figsize=c(20,12))
   } else if(plot_method == "arrow"){
-    scvelo$pl$velocity_embedding(adata, basis="umap", palette = mycols, color=group.by, arrow_length=3, arrow_size=2, dpi=120)
+    scvelo$pl$velocity_embedding(adata, basis="umap", palette = mycols, color=group.by, arrow_length=3, arrow_size=2, dpi=200, figsize=c(20,12))
   } else if(plot_method == "dynamics"){
-    scvelo$pl$scatter(adata, color="latent_time", color_map="gnuplot")
+    scvelo$pl$scatter(adata, color="latent_time", color_map="gnuplot", figsize=c(20,12), dpi = 200)
   }
 
-  pyplot$show()
+  # pyplot$show()
 
 }
 
 scvelo_expression <- function(adata, features = c("RXRG")){
-  scvelo$pl$velocity(adata, var_names = features)
+  scvelo$pl$velocity(adata, var_names = features, figsize = c(10,10), dpi = 200)
 
-  pyplot$show()
+  # pyplot$show()
 }

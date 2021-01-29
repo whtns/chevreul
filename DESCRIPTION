@@ -55,7 +55,9 @@ Imports:
     ggpubr,
     formattable,
     reticulate,
-    DataEditR (>= 0.0.9)
+    DataEditR (>= 0.0.9),
+    memoise,
+    cachem
 Suggests: 
     ggplot2,
     testthat (>= 2.1.0),
@@ -63,7 +65,7 @@ Suggests:
     rmarkdown
 URL: https://github.com/cobriniklab/seuratTools
 BugReports: https://github.com/cobriniklab/seuratTools/issues
-Remotes:  
+Remotes: 
     immunogenomics/presto,
     satijalab/seurat-wrappers,
     cole-trapnell-lab/monocle3,

@@ -7,7 +7,7 @@
 prep_scvelo(
   seu,
   loom_path,
-  plot_method = c("stream", "arrow", "dynamics"),
+  velocity_mode = c("deterministic", "stochastic", "dynamical"),
   ...
 )
 }
@@ -16,11 +16,11 @@ prep_scvelo(
 
 \item{loom_path}{path to matching loom file}
 
-\item{plot_method}{plotting method to use from scvelo}
-
 \item{...}{}
 
 \item{group.by}{metadata to color plot}
+
+\item{plot_method}{plotting method to use from scvelo}
 }
 \value{
 
