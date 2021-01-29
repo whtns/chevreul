@@ -3,6 +3,7 @@
 #' Preprocess Seurat Object
 #'
 #' @param seu
+#' @param assay
 #' @param scale
 #' @param normalize
 #' @param features
@@ -13,7 +14,7 @@
 #' @export
 #'
 #' @examples
-seurat_preprocess <- function(seu, scale=TRUE, normalize = TRUE, features = NULL, legacy_settings = FALSE, ...){
+seurat_preprocess <- function(seu, assay = "gene", scale=TRUE, normalize = TRUE, features = NULL, legacy_settings = FALSE, ...){
   # Normalize data
 
   if (legacy_settings){
@@ -28,15 +29,15 @@ seurat_preprocess <- function(seu, scale=TRUE, normalize = TRUE, features = NULL
   }
 
   if (normalize){
-    seu <- Seurat::NormalizeData(object = seu, verbose = FALSE, ...)
+    seu <- Seurat::NormalizeData(object = seu, assay = assay, verbose = FALSE, ...)
   }
 
   # Filter out only variable genes
-  seu <- Seurat::FindVariableFeatures(object = seu, selection.method = "vst", verbose = FALSE, ...)
+  seu <- Seurat::FindVariableFeatures(object = seu, assay = assay, selection.method = "vst", verbose = FALSE, ...)
 
   # Regress out unwanted sources of variation
   if (scale){
-    seu <- Seurat::ScaleData(object = seu, features = rownames(x = seu), ...)
+    seu <- Seurat::ScaleData(object = seu, assay = assay, features = rownames(x = seu), ...)
 
   }
 
