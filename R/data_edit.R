@@ -116,7 +116,7 @@ reformatMetadataDR <- function(input, output, session, seu, featureType = "gene"
   table_out <- reactive({
     req(seu$active)
     seu$active@meta.data
-    seu$gene@meta.data
+    # seu$gene@meta.data
     # mtcars
   })
 
@@ -177,6 +177,28 @@ reformatMetadataDR <- function(input, output, session, seu, featureType = "gene"
   observe({
     values$data_active <- data_update()
   })
+
+  observeEvent(input$updateMetadata, {
+    if (input$updateMethod == "file"){
+      inFile <- input$metaFile
+
+      if (is.null(inFile)){
+        return(NULL)
+      }
+
+      for (i in names(seu)){
+        print(i)
+        seu[[i]] <- format_new_metadata(seu[[i]], inFile$datapath)
+      }
+
+    } else if (input$updateMethod == "spreadsheet"){
+      for (i in names(seu)){
+        seu[[i]] <- propagate_spreadsheet_changes(values$data_active, seu[[i]])
+      }
+    }
+
+  })
+
 
   observeEvent(input$sync, {
     if (length(values$rows) == 0 & length(values$columns) == 0) {

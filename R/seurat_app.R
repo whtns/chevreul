@@ -622,19 +622,20 @@ seuratApp <- function(preset_project, appTitle = "seuratTools", feature_types = 
       )
     })
 
-    callModule(reformatMetadataDR, "reformatMetadataDR", seu, featureType)
+    # callModule(reformatMetadataDR, "reformatMetadataDR", seu, featureType)
 
-    # reformatted_seu <- reactive({
-    #   req(seu$active)
-    #   callModule(reformatMetadataDR, "reformatMetadataDR", seu, featureType)
-    # })
-    #
-    # observe({
-    #   req(reformatted_seu())
-    #   for (i in names(seu)){
-    #     seu[[i]] <- reformatted_seu()[[i]]
-    #   }
-    # })
+    reformatted_seu <- reactive({
+      req(seu$active)
+      callModule(reformatMetadataDR, "reformatMetadataDR", seu, featureType)
+    })
+
+    observe({
+      req(reformatted_seu())
+      reformatted_seu <- isolate(reformatted_seu())
+      for (i in names(seu)){
+        seu[[i]] <- reformatted_seu[[i]]
+      }
+    })
 
     reductions <- reactive({
       req(seu$active)
