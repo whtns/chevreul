@@ -424,15 +424,15 @@ seu_calcn <- function(seu, assay = "RNA", slot = "counts"){
 
 #' Propagate Metadata Changes
 #'
-#' @param meta
-#' @param changes
+#' @param updated_table
+#' @param seu
 #'
 #' @return
 #' @export
 #'
 #' @examples
-propagate_spreadsheet_changes <- function(changes){
-  meta <- rhandsontable::hot_to_r(changes)
+propagate_spreadsheet_changes <- function(updated_table, seu){
+  meta <- updated_table
 
   sample_ids <- rownames(meta)
 
@@ -442,7 +442,9 @@ propagate_spreadsheet_changes <- function(changes){
 
   rownames(meta) <- sample_ids
 
-  return(meta)
+  seu@meta.data <- meta
+
+  return(seu)
 }
 
 #' Create a database of seuratTools projects
