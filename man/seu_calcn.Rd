@@ -4,7 +4,7 @@
 \alias{seu_calcn}
 \title{recalculate counts/features per cell for a seurat object}
 \usage{
-seu_calcn(seu, assay = "RNA", slot = "counts")
+seu_calcn(seu, assay = "gene", slot = "counts")
 }
 \arguments{
 \item{slot}{}

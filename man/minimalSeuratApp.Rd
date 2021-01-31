@@ -2,27 +2,23 @@
 % Please edit documentation in R/minimal_app.R
 \name{minimalSeuratApp}
 \alias{minimalSeuratApp}
-\title{Create Seurat App}
+\title{Create a minimal seurat app}
 \usage{
 minimalSeuratApp(
-  seu_list = seurat_pancreas_reduced,
+  object = seurat_pancreas_reduced,
+  loom_path = NULL,
   appTitle = NULL,
   feature_types = "gene",
   organism_type = "human",
-  loom_path = NULL,
   futureMb = 13000
 )
 }
 \arguments{
-\item{appTitle}{A title of the App}
-
-\item{futureMb}{amount of Mb allocated to future package}
-
-\item{<-}{A preloaded project to start the app with}
+\item{futureMb}{}
 }
 \value{
 
 }
 \description{
-Create Seurat App
+Create a minimal seurat app
 }

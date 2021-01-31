@@ -5,7 +5,7 @@
 \title{Clustering Workflow}
 \usage{
 clustering_workflow(
-  feature_seus = NULL,
+  seu,
   excluded_cells,
   resolution = seq(0.2, 2, by = 0.2),
   organism = "human",
@@ -14,13 +14,13 @@ clustering_workflow(
 )
 }
 \arguments{
-\item{feature_seus}{list of seurat objects named according to feature of interest ("gene" or "transcript")}
-
 \item{excluded_cells}{named list of cells to exclude}
 
 \item{resolution}{resolution(s) to use for clustering cells}
 
 \item{...}{}
+
+\item{feature_seus}{list of seurat objects named according to feature of interest ("gene" or "transcript")}
 }
 \value{
 

@@ -95,11 +95,11 @@ integration_workflow <- function(batches, excluded_cells = NULL, resolution = se
 #'
 #' @examples
 #' clustered_seu <- clustering_workflow(seurat_pancreas_reduced)
-clustering_workflow <- function(feature_seus = NULL, excluded_cells, resolution = seq(0.2, 2.0, by = 0.2), organism = "human", experiment_name = "default_experiment", ...){
+clustering_workflow <- function(seu, excluded_cells, resolution = seq(0.2, 2.0, by = 0.2), organism = "human", experiment_name = "default_experiment", ...){
 
-  feature_seus <- purrr::imap(feature_seus, seuratTools::seurat_pipeline, resolution = resolution, organism = organism, ...)
+  seu <- seurat_pipeline(seu, resolution = resolution, organism = organism, ...)
 
-  feature_seus <- purrr::map(feature_seus, record_experiment_data, experiment_name, organism)
+  seu <- record_experiment_data(seu, experiment_name, organism)
 
   # save_seurat(feature_seus, proj_dir = proj_dir, ...)
 

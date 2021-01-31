@@ -17,9 +17,9 @@
 convert_mouse_seu_to_human <- function(seu){
 
   # transfer default species expression data to a species-specific assay
-  seu$gene$mouse <- seu$gene$RNA
+  seu[["mouse"]] <- seu[["gene"]]
 
-  new_rownames <- convert_symbols_by_species(src_genes = rownames(seu$gene), src_species = "mouse")
+  new_rownames <- convert_symbols_by_species(src_genes = rownames(seu), src_species = "mouse")
 
   # new_rownames <- new_rownames %>%
   #   dplyr::group_by(human) %>%
@@ -28,16 +28,16 @@ convert_mouse_seu_to_human <- function(seu){
   #
   # keep_rows <- new_rownames$duplicate_symbol == 1 & !is.na(new_rownames$human)
   #
-  # subset_seu <- seu$gene[keep_rows,]
+  # subset_seu <- seu[keep_rows,]
   #
-  # seu$gene$RNA <- subset_seu$RNA
+  # seu[["gene"]] <- subset_seu[["gene"]]
 
   seu_slots <- c("counts", "data", "scale.data", "meta.features")
 
   for (i in seu_slots){
-    current_slot <- slot(seu$gene@assays$RNA, i)
+    current_slot <- slot(seu@assays[["gene"]], i)
     if(!(dim(current_slot) == c(0,0))){
-      rownames(slot(seu$gene@assays$RNA, i)) <- new_rownames
+      rownames(slot(seu@assays[["gene"]], i)) <- new_rownames
     }
   }
 
@@ -54,14 +54,14 @@ convert_mouse_seu_to_human <- function(seu){
 #' @examples
 convert_human_seu_to_mouse <- function(seu, ...){
 
-  new_rownames <- convert_symbols_by_species(src_genes = rownames(seu$gene), src_species = "human")
+  new_rownames <- convert_symbols_by_species(src_genes = rownames(seu), src_species = "human")
 
   seu_slots <- c("counts", "data", "scale.data", "meta.features")
 
 
 
   for (i in seu_slots){
-    rownames(slot(seu$gene@assays$RNA, i)) <- new_rownames
+    rownames(slot(seu@assays[["gene"]], i)) <- new_rownames
   }
 
   return(seu)
@@ -130,7 +130,7 @@ convert_symbols_by_species <- function(src_genes, src_species){
   #
   # seu <- readRDS("~/single_cell_projects/integrated_projects/7-seq_050120/output/seurat/Final_dataset_duplicate_070320.rds")
   #
-  # hs_genes <- rownames(seu$gene)
+  # hs_genes <- rownames(seu)
   #
   # ## Not run:
   # ## The code to prepare the .Rda file file from the marker file is:
@@ -232,7 +232,7 @@ cross_species_integrate <- function(mouse_seu_list, human_seu_list, excluded_cel
 #' @export
 #'
 #' @examples
-update_human_gene_symbols <- function(seu, assay = "RNA"){
+update_human_gene_symbols <- function(seu, assay = "gene"){
   browser()
   ensdb <- EnsDb.Hsapiens.v86::EnsDb.Hsapiens.v86
 

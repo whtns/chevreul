@@ -17,7 +17,7 @@ format_new_metadata <- function(seu, datapath){
   new_meta <- tibble::column_to_rownames(new_meta, rowname_col)
 
   seu <- Seurat::AddMetaData(seu, new_meta)
-  DefaultAssay(seu) <- "RNA"
+  DefaultAssay(seu) <- "gene"
   ncalc <- Seurat:::CalcN(seu)
   seu$nFeature_RNA <- ncalc$nFeature
   seu$nCount_RNA <- ncalc$nCount
@@ -214,7 +214,7 @@ reorg_seurat_files <- function(proj_dir = NULL){
 get_transcripts_from_seu <- function(seu, gene, organism = "human") {
   transcripts <- genes_to_transcripts(gene, organism)
 
-  transcripts <- transcripts[transcripts %in% rownames(GetAssay(seu, "RNA"))]
+  transcripts <- transcripts[transcripts %in% rownames(GetAssay(seu, "transcript"))]
 }
 
 #' pad sample numbers to prep for armor
@@ -282,7 +282,7 @@ prep_plot_genes_in_pseudotime <- function(cds, mygenes, resolution, partition = 
   if (any(grepl("integrated", colnames(colData(cds))))){
     default_assay = "integrated"
   } else {
-    default_assay = "RNA"
+    default_assay = "gene"
   }
 
   color_cells_by = paste0(default_assay, "_snn_res.", resolution)
@@ -376,7 +376,7 @@ update_seuratTools_object <- function(seu, feature, resolution = seq(0.2, 2.0, b
   if ("integrated" %in% names(seu@assays)) {
     default_assay = "integrated"
   } else {
-    default_assay = "RNA"
+    default_assay = "gene"
   }
 
   DefaultAssay(seu) <- default_assay
@@ -411,7 +411,7 @@ update_seuratTools_object <- function(seu, feature, resolution = seq(0.2, 2.0, b
 #' @export
 #'
 #' @examples
-seu_calcn <- function(seu, assay = "RNA", slot = "counts"){
+seu_calcn <- function(seu, assay = "gene", slot = "counts"){
 
   n.calc <- Seurat:::CalcN(object = GetAssay(seu, assay))
   if (!is.null(x = n.calc)) {
@@ -602,12 +602,20 @@ swap_counts_from_feature <- function(cds, featureType){
 #'
 #' @examples
 convert_seu_list_to_multimodal <- function(seu_list){
-  multimodal_seu <- seu_list$gene
 
-  multimodal_seu[["gene"]] <- multimodal_seu$RNA
+  colnames(seu_list[["gene"]]@meta.data) <- gsub("RNA_", "gene_", colnames(seu_list[["gene"]]@meta.data))
+  colnames(seu_list[["transcript"]]@meta.data) <- gsub("RNA_", "transcript_", colnames(seu_list[["transcript"]]@meta.data))
+
+  multimodal_seu <- seu_list$gene
+  multimodal_seu <- RenameAssays(multimodal_seu, RNA = "gene")
   multimodal_seu[["transcript"]] <- seu_list$transcript$RNA
-  multimodal_seu[["RNA"]] <- NULL
-  DefaultAssay(multimodal_seu) <- "gene"
+
+  transcript_markers <- grepl("transcript_", names(seu_list$transcript@meta.data))
+  transcript_cluster_cols <- seu_list[["transcript"]]@meta.data[transcript_markers]
+  multimodal_seu <- AddMetaData(multimodal_seu, transcript_cluster_cols)
+
+  marker_names <- names(Misc(multimodal_seu)[["markers"]])
+  names(multimodal_seu@misc$markers) <- gsub("RNA", "gene", marker_names)
 
   return(multimodal_seu)
 }

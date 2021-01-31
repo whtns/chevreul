@@ -27,14 +27,14 @@ convert_seu_to_cds <- function(seu, resolution = 1) {
   if ("integrated" %in% names(seu@assays)) {
     default_assay = "integrated"
   } else {
-    default_assay = "RNA"
+    default_assay = "gene"
   }
 
   DefaultAssay(seu) <- default_assay
 
   expression_matrix <- Seurat::GetAssayData(seu, slot = "data", assay = default_assay)
 
-  count_matrix <- Seurat::GetAssayData(seu, slot = "counts", assay = "RNA")
+  count_matrix <- Seurat::GetAssayData(seu, slot = "counts", assay = "gene")
 
   count_matrix <- count_matrix[row.names(expression_matrix),]
   count_matrix <- count_matrix[,Matrix::colSums(count_matrix) != 0]
@@ -126,7 +126,7 @@ learn_graph_by_resolution <- function(cds, seu, resolution = 1){
 
   ### Assign the cluster info
   if (any(grepl("integrated", names(cds@colData)))){
-    default_assay = "gene.integrated"
+    default_assay = "integrated"
   } else {
     default_assay = "gene"
   }
@@ -162,7 +162,7 @@ plot_cds <- function(cds, color_cells_by = NULL, genes = NULL){
   if (any(grepl("integrated", names(cds@colData)))){
     default_assay = "integrated"
   } else {
-    default_assay = "RNA"
+    default_assay = "gene"
   }
 
   # if (color_cells_by == "louvain_cluster"){
@@ -212,7 +212,7 @@ plot_pseudotime <- function(cds, resolution, color_cells_by = NULL, genes = NULL
   if (any(grepl("integrated", colnames(cds@colData)))){
     default_assay = "integrated"
   } else {
-    default_assay = "RNA"
+    default_assay = "gene"
   }
 
 
@@ -260,7 +260,7 @@ plot_monocle_features <- function(cds, resolution, genes = NULL, ...){
   if (any(grepl("integrated", colnames(cds@colData)))){
     default_assay = "integrated"
   } else {
-    default_assay = "RNA"
+    default_assay = "gene"
   }
 
   cds_plot <- plot_cells(cds,
@@ -708,7 +708,7 @@ monocle_module_heatmap <- function(cds, pr_deg_ids, seu_resolution, cells = NULL
   if (any(grepl("integrated", colnames(cds@colData)))){
     default_assay = "integrated"
   } else {
-    default_assay = "RNA"
+    default_assay = "gene"
   }
 
   seu_resolution = paste0(default_assay, "_snn_res.", seu_resolution)

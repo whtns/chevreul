@@ -4,7 +4,7 @@
 \alias{update_human_gene_symbols}
 \title{Update human gene symbols in seurat object}
 \usage{
-update_human_gene_symbols(seu, assay = "RNA")
+update_human_gene_symbols(seu, assay = "gene")
 }
 \arguments{
 \item{seu}{}

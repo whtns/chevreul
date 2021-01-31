@@ -79,15 +79,23 @@ seurat_integration_pipeline <- function(seu_list, feature, resolution = seq(0.2,
 #'
 #' @examples
 seurat_pipeline <- function(seu, assay = "gene", resolution=0.6, reduction = "pca", organism = "human", ...){
+  # browser()
+  assays <- names(seu@assays)
 
-  seu <- seurat_preprocess(seu, scale = T, assay = assay, ...)
+  assays <- assays[assays %in% c("gene", "transcript")]
+
+  for (assay in assays){
+    seu[[assay]] <- seurat_preprocess(seu[[assay]], scale = TRUE)
+  }
 
   # PCA
   seu <- seurat_reduce_dimensions(seu, check_duplicates = FALSE, reduction = reduction, ...)
 
   seu <- seurat_cluster(seu = seu, resolution = resolution, reduction = reduction, ...)
 
-  seu <- find_all_markers(seu, resolution = resolution)
+  for (assay in assays){
+    seu <- find_all_markers(seu, resolution = resolution, seurat_assay = assay)
+  }
 
   if (feature == "gene"){
     enriched_seu <- tryCatch(getEnrichedPathways(seu), error = function(e) e)

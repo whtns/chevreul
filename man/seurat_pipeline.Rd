@@ -6,7 +6,7 @@
 \usage{
 seurat_pipeline(
   seu,
-  feature = "gene",
+  assay = "gene",
   resolution = 0.6,
   reduction = "pca",
   organism = "human",

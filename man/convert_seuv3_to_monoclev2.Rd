@@ -6,7 +6,7 @@
 \usage{
 convert_seuv3_to_monoclev2(
   seu,
-  assay = "RNA",
+  assay = "gene",
   slot = "data",
   return_census = FALSE,
   sig_slice = 1000
