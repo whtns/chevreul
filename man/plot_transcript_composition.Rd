@@ -5,8 +5,7 @@
 \title{Plot Transcript Composition}
 \usage{
 plot_transcript_composition(
-  seu_transcript,
-  seu_gene,
+  seu,
   gene_symbol,
   group.by = "batch",
   standardize = FALSE,

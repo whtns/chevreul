@@ -15,7 +15,7 @@ regress_by_features <- function(seu, feature_set, set_name, regress = TRUE, ...)
 
   if (!is.list(feature_set)) feature_set <- list(feature_set)
 
-  #set default assay to "RNA"
+  #set default assay to "gene"
   Seurat::DefaultAssay(seu) <- "gene"
 
   ctrl <- 100
@@ -26,7 +26,7 @@ regress_by_features <- function(seu, feature_set, set_name, regress = TRUE, ...)
   seu <- AddModuleScore(seu, feature_set, name = set_name, ctrl = ctrl)
 
   if ("integrated" %in% names(seu@assays)) {
-    default_assay = "gene.integrated"
+    default_assay = "integrated"
   } else {
     default_assay = "gene"
   }
@@ -46,7 +46,7 @@ regress_by_features <- function(seu, feature_set, set_name, regress = TRUE, ...)
     seu <- seurat_cluster(seu, resolution = resolutions)
   }
 
-  Seurat::DefaultAssay(seu) <- "RNA"
+  Seurat::DefaultAssay(seu) <- "gene"
 
   return(seu)
 }

@@ -1,19 +1,18 @@
-#' Create Seurat App
+#' Create a minimal seurat app
 #'
-#' @param <- A preloaded project to start the app with
-#' @param appTitle A title of the App
-#' @param futureMb amount of Mb allocated to future package
-#' @param preset_project
+#' @param object
+#' @param loom_path
+#' @param appTitle
 #' @param feature_types
 #' @param organism_type
-#' @loom_path
+#' @param futureMb
 #'
 #' @return
 #' @export
 #'
 #' @examples
-minimalSeuratApp <- function(seu_list = seurat_pancreas_reduced, appTitle = NULL, feature_types = "gene",
-                             organism_type = "human", loom_path = NULL, futureMb = 13000) {
+minimalSeuratApp <- function(object = seurat_pancreas_reduced, loom_path = NULL, appTitle = NULL, feature_types = "gene",
+                             organism_type = "human", futureMb = 13000) {
   print(feature_types)
   future::plan(strategy = "multicore", workers = 6)
   future_size <- futureMb * 1024^2
@@ -28,7 +27,8 @@ minimalSeuratApp <- function(seu_list = seurat_pancreas_reduced, appTitle = NULL
   sidebar <- shinydashboard::dashboardSidebar(
     textOutput("appTitle"),
     uiOutput("featureType"),
-    shinyWidgets::prettyRadioButtons("organism_type", inline = TRUE,
+    shinyWidgets::prettyRadioButtons("organism_type",
+                                     inline = TRUE,
                                      "Organism", choices = c("human", "mouse"), selected = organism_type
     ),
     shinydashboard::sidebarMenu(
@@ -60,9 +60,11 @@ minimalSeuratApp <- function(seu_list = seurat_pancreas_reduced, appTitle = NULL
                                   tabName = "regressFeatures", icon = icon("eraser")
       ), shinydashboard::menuItem("Technical Information",
                                   tabName = "techInfo", icon = icon("cogs")
-      )),
+      )
+    ),
     actionButton("changeEmbedAction",
-                 label = "Change Embedding Parameters"),
+                 label = "Change Embedding Parameters"
+    ),
     changeEmbedParamsui("changeembed"),
     width = 250
   )
@@ -124,7 +126,8 @@ minimalSeuratApp <- function(seu_list = seurat_pancreas_reduced, appTitle = NULL
           actionButton("subsetCsv", "subset seurat by uploaded csv"),
           fileInput("uploadCsv",
                     "Upload .csv file with cells to include",
-                    accept = c(".csv")),
+                    accept = c(".csv")
+          ),
           shinyjs::useShinyjs(),
           # shinyjs::runcodeUI(code = "shinyjs::alert('Hello!')"),
           textOutput("subsetMessages"),
@@ -204,7 +207,8 @@ minimalSeuratApp <- function(seu_list = seurat_pancreas_reduced, appTitle = NULL
         h2("Technical Information"),
         techInfoui("techInfo")
       )
-    ))
+    )
+  )
 
   ui <- function(request) {
     ui <- dashboardPage(
@@ -220,9 +224,7 @@ minimalSeuratApp <- function(seu_list = seurat_pancreas_reduced, appTitle = NULL
     # shinylogs::track_usage(storage_mode = shinylogs::store_json(path = "logs/"))
     # projects_db <- "/dataVolume/storage/single_cell_projects/single_cell_projects.db"
 
-    # <- <- update_seuratTools_object(seu)
-
-    seu <- reactiveVal(FALSE)
+    seu <- reactiveVal(NULL)
     observe({
       seu(object)
     })
@@ -241,17 +243,18 @@ minimalSeuratApp <- function(seu_list = seurat_pancreas_reduced, appTitle = NULL
     })
 
     output$featureType <- renderUI({
-      req(seu)
-      seu_names <- names(seu)[!(names(seu) %in% c("monocle", "active"))]
+      req(seu())
       shinyWidgets::prettyRadioButtons("feature_type",
                                        "Feature for Display",
-                                       choices = seu_names,
+                                       choices = c("gene", "transcript"),
                                        selected = "gene", inline = TRUE
       )
     })
+
     observeEvent(input$feature_type, {
       req(seu())
-      DefaultAssay(seu()) <- paste0(input$feature_type, ".", "integrated")
+      # DefaultAssay(seu()) <- paste0(input$feature_type, ".", "integrated")
+      # DefaultAssay(seu()) <- "gene"
     })
 
     featureType <- reactive({
@@ -263,6 +266,7 @@ minimalSeuratApp <- function(seu_list = seurat_pancreas_reduced, appTitle = NULL
       integrateProj, "integrateproj",
       proj_matrices, seu, proj_dir, con
     )
+
     newprojList <- reactive({
       req(integrationResults())
       integration_path <- paste0(integrationResults())
@@ -273,17 +277,16 @@ minimalSeuratApp <- function(seu_list = seurat_pancreas_reduced, appTitle = NULL
       )
       newprojList <- c(projList(), newintegrated_project)
     })
-
-    reformatted_seu <- reactive({
-      req(seu())
-      callModule(reformatMetadata, "reformatmetadata", seu)
-    })
-
-    observe({
-      req(reformatted_seu())
-      seu <- reformatted_seu()
-    })
-
+    #
+    # # reformatted_seu <- reactive({
+    # #   req(seu())
+    # #   callModule(reformatMetadata, "reformatmetadata", seu)
+    # # })
+    # #
+    # # observe({
+    # #   req(reformatted_seu())
+    # #   seu(reformatted_seu())
+    # # })
 
     reductions <- reactive({
       req(seu())
@@ -313,6 +316,7 @@ minimalSeuratApp <- function(seu_list = seurat_pancreas_reduced, appTitle = NULL
 
     callModule(plotReadCount, "plotreadcount1", seu, plot_types)
     callModule(plotReadCount, "plotreadcount2", seu, plot_types)
+
     callModule(
       plotViolin, "violinPlot", seu, featureType,
       organism_type
@@ -331,6 +335,40 @@ minimalSeuratApp <- function(seu_list = seurat_pancreas_reduced, appTitle = NULL
       tableSelected, "subset",
       seu
     )
+
+    observeEvent(input$changeEmbedAction, {
+      showModal(modalDialog(
+        title = "Recalculating Embedding",
+        "This process may take a minute or two!"
+      ))
+      seu <- callModule(
+        changeEmbedParams, "changeembed",
+        seu
+      )
+      removeModal()
+    })
+
+    callModule(findMarkers, "findmarkers", seu, plot_types, featureType)
+
+    callModule(pathwayEnrichment, "pathwayEnrichment", seu)
+
+    # plot all transcripts
+    observe({
+      req(featureType())
+      callModule(
+        allTranscripts, "alltranscripts1", seu, featureType,
+        organism_type
+      )
+
+      callModule(plotDimRed, "alltranscripts2", seu, plot_types, featureType,
+                 organism_type = organism_type, reductions
+      )
+    })
+
+    diffex_results <- callModule(
+      diffex, "diffex", seu, featureType,
+      diffex_selected_cells
+    )
     observeEvent(input$subsetAction, {
       req(input$subsetAction)
       req(subset_selected_cells())
@@ -338,27 +376,20 @@ minimalSeuratApp <- function(seu_list = seurat_pancreas_reduced, appTitle = NULL
         {
           shinyjs::html("subsetMessages", "")
           message("Beginning")
-          for (i in names(seu)[!(names(seu) %in% c("monocle", "active"))]) {
-            seu[[i]] <- seu[[i]][, colnames(seu[[i]]) %in% subset_selected_cells()]
-          }
+          subset_seu <- seu()[, colnames(seu()) %in% subset_selected_cells()]
+          seu(subset_seu)
           if (length(unique(seu()$batch)) > 1) {
-            print(names(seu)[!(names(seu) %in% c("monocle", "active"))])
-            for (i in names(seu)[!(names(seu) %in% c("monocle", "active"))]) {
-              message(paste0("reintegrating ", i, " expression"))
-              seu[[i]] <- reintegrate_seu(seu[[i]],
-                                          feature = i,
-                                          resolution = seq(0.2, 2, by = 0.2),
-                                          organism = seu[[i]]@misc$experiment$organism
-              )
-            }
+            message(paste0("reintegrating ", i, " expression"))
+            reintegrated_seu <- reintegrate_seu(seu(),
+                                                feature = i,
+                                                resolution = seq(0.2, 2, by = 0.2),
+                                                organism = seu()@misc$experiment$organism
+            )
+            seu(reintegrated_seu)
           }
           else {
-            for (i in names(seu)[!(names(seu) %in% c("monocle", "active"))]) {
-              seu[[i]] <- seurat_pipeline(seu[[i]], resolution = seq(0.2,
-                                                                     2,
-                                                                     by = 0.2
-              ))
-            }
+            processed_seu <- seurat_pipeline(seu(), resolution = seq(0.2, 2, by = 0.2))
+            seu(processed_seu)
           }
           message("Complete!")
         },
@@ -377,29 +408,24 @@ minimalSeuratApp <- function(seu_list = seurat_pancreas_reduced, appTitle = NULL
         {
           shinyjs::html("subsetMessages", "")
           message("Beginning")
-          for (i in names(seu)[!(names(seu) %in% c("monocle", "active"))]) {
-            seu[[i]] <- subset_by_meta(
-              input$uploadCsv$datapath,
-              seu[[i]]
+          subset_seu <- subset_by_meta(
+            input$uploadCsv$datapath,
+            seu()
+          )
+          seu(subset_seu)
+
+          if (length(unique(seu()[[]]$batch)) > 1) {
+            message(paste0("reintegrating ", i, " expression"))
+            reintegrated_seu <- reintegrate_seu(seu(),
+                                                feature = i,
+                                                resolution = seq(0.2, 2, by = 0.2),
+                                                organism = seu()@misc$experiment$organism
             )
-          }
-          if (length(unique(seu$gene[[]]$batch)) > 1) {
-            for (i in names(seu)[!(names(seu) %in% c("monocle", "active"))]) {
-              message(paste0("reintegrating ", i, " expression"))
-              seu[[i]] <- reintegrate_seu(seu[[i]],
-                                          feature = i,
-                                          resolution = seq(0.2, 2, by = 0.2),
-                                          organism = seu[[i]]@misc$experiment$organism
-              )
-            }
+            seu(reintegrated_seu)
           }
           else {
-            for (i in names(seu)[!(names(seu) %in% c("monocle", "active"))]) {
-              seu[[i]] <- seurat_pipeline(seu[[i]], resolution = seq(0.2,
-                                                                     2,
-                                                                     by = 0.2
-              ))
-            }
+            processed_seu <- seurat_pipeline(seu(), resolution = seq(0.2, 2, by = 0.2))
+            seu(processed_seu)
           }
           message("Complete!")
         },
@@ -410,36 +436,6 @@ minimalSeuratApp <- function(seu_list = seurat_pancreas_reduced, appTitle = NULL
           ), add = FALSE)
         }
       )
-    })
-    observeEvent(input$changeEmbedAction, {
-      showModal(modalDialog(
-        title = "Recalculating Embedding",
-        "This process may take a minute or two!"
-      ))
-      seu <- callModule(
-        changeEmbedParams, "changeembed",
-        seu
-      )
-      removeModal()
-    })
-    callModule(findMarkers, "findmarkers", seu, plot_types, featureType)
-
-    callModule(pathwayEnrichment, "pathwayEnrichment", seu)
-
-    diffex_results <- callModule(
-      diffex, "diffex", seu, featureType,
-      diffex_selected_cells
-    )
-
-    observe({
-      req(featureType())
-      callModule(
-        allTranscripts, "alltranscripts1", seu, featureType,
-        organism_type
-      )
-
-      callModule(plotDimRed, "alltranscripts2", seu, plot_types, featureType,
-                 organism_type = organism_type, reductions)
     })
 
     prior_gene_set <- reactive({
@@ -484,7 +480,7 @@ minimalSeuratApp <- function(seu_list = seurat_pancreas_reduced, appTitle = NULL
     observe({
       req(seu())
       updateSelectizeInput(session, "geneSet",
-                           choices = rownames(seu$active),
+                           choices = rownames(seu()),
                            selected = prior_gene_set(),
                            server = TRUE
       )
@@ -495,11 +491,11 @@ minimalSeuratApp <- function(seu_list = seurat_pancreas_reduced, appTitle = NULL
         title = "Regressing out provided list of features",
         "This process may take a minute or two!"
       ))
-      seu$gene <- seuratTools::regress_by_features(seu$gene,
-                                                   feature_set = list(input$geneSet), set_name = janitor::make_clean_names(input$geneSetName),
-                                                   regress = input$runRegression
+      regressed_seu <- seuratTools::regress_by_features(seu(),
+                                                        feature_set = list(input$geneSet), set_name = janitor::make_clean_names(input$geneSetName),
+                                                        regress = input$runRegression
       )
-      seu <- seu[[input$feature_type]]
+      seu(regressed_seu)
       removeModal()
     })
 
@@ -511,14 +507,13 @@ minimalSeuratApp <- function(seu_list = seurat_pancreas_reduced, appTitle = NULL
       )
     })
 
-
     observe({
       req(seu())
-      req(input$feature_type)
       req(loom_path())
 
-      seu$active <- callModule(plotVelocity, "plotvelocity", seu, loom_path())
+      callModule(plotVelocity, "plotvelocity", seu, loom_path())
     })
+
   }
   shinyApp(ui, server, enableBookmarking = "server")
 }

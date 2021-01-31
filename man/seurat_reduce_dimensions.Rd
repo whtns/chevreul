@@ -4,7 +4,13 @@
 \alias{seurat_reduce_dimensions}
 \title{Dimensional Reduction}
 \usage{
-seurat_reduce_dimensions(seu, reduction = "pca", legacy_settings = FALSE, ...)
+seurat_reduce_dimensions(
+  seu,
+  assay = "gene",
+  reduction = "pca",
+  legacy_settings = FALSE,
+  ...
+)
 }
 \arguments{
 \item{...}{}

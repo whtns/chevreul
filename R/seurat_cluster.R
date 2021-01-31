@@ -14,7 +14,8 @@
 #' @export
 #'
 #' @examples
-seurat_preprocess <- function(seu, assay = "gene", scale=TRUE, normalize = TRUE, features = NULL, legacy_settings = FALSE, ...){
+seurat_preprocess <- function(assay, scale=TRUE, normalize = TRUE, features = NULL, legacy_settings = FALSE, ...){
+  # browser()
   # Normalize data
 
   if (legacy_settings){
@@ -25,23 +26,23 @@ seurat_preprocess <- function(seu, assay = "gene", scale=TRUE, normalize = TRUE,
     seu <- Seurat::SetAssayData(seu, slot = "data", logtransform_exp) %>%
       Seurat::ScaleData(features = rownames(.))
 
-    return(seu)
+    return(assay)
   }
 
   if (normalize){
-    seu <- Seurat::NormalizeData(object = seu, assay = assay, verbose = FALSE, ...)
+    assay <- Seurat::NormalizeData(assay, verbose = FALSE, ...)
   }
 
   # Filter out only variable genes
-  seu <- Seurat::FindVariableFeatures(object = seu, assay = assay, selection.method = "vst", verbose = FALSE, ...)
+  assay <- Seurat::FindVariableFeatures(assay, selection.method = "vst", verbose = FALSE, ...)
 
   # Regress out unwanted sources of variation
   if (scale){
-    seu <- Seurat::ScaleData(object = seu, assay = assay, features = rownames(x = seu), ...)
+    assay <- Seurat::ScaleData(assay, features = rownames(assay), ...)
 
   }
 
-  return(seu)
+  return(assay)
 }
 
 #' Find All Markers at a range of resolutions
@@ -53,17 +54,13 @@ seurat_preprocess <- function(seu, assay = "gene", scale=TRUE, normalize = TRUE,
 #' @export
 #'
 #' @examples
-find_all_markers <- function(seu, metavar = NULL, ...){
+find_all_markers <- function(seu, metavar = NULL, seurat_assay = "gene", ...){
+  # browser()
   if (is.null(metavar)){
-    if ("integrated" %in% names(seu@assays)) {
-      default_assay = "integrated"
-    } else {
-      default_assay = "RNA"
-    }
 
-    resolutions <- colnames(seu[[]])[grepl(paste0(default_assay, "_snn_res."), colnames(seu[[]]))]
+    resolutions <- colnames(seu[[]])[grepl(paste0(seurat_assay, "_snn_res."), colnames(seu[[]]))]
 
-    cluster_index <- grepl(paste0(default_assay, "_snn_res."), colnames(seu[[]]))
+    cluster_index <- grepl(paste0(seurat_assay, "_snn_res."), colnames(seu[[]]))
 
     if(!any(cluster_index)) {
       stop("no clusters found in metadata. Please run seurat_cluster")
@@ -78,7 +75,7 @@ find_all_markers <- function(seu, metavar = NULL, ...){
     metavar = names(clusters)
   }
 
-  new_markers <- purrr::map(metavar, stash_marker_features, seu)
+  new_markers <- purrr::map(metavar, stash_marker_features, seu, seurat_assay = seurat_assay)
   names(new_markers) <- metavar
 
   old_markers <- seu@misc$markers[!names(seu@misc$markers) %in% names(new_markers)]
@@ -96,15 +93,18 @@ find_all_markers <- function(seu, metavar = NULL, ...){
 #'
 #' @param metavar
 #' @param seu
+#' @param seurat_assay
 #' @param top_n
 #'
 #' @return
 #' @export
 #'
 #' @examples
-stash_marker_features <- function(metavar, seu, top_n = 200){
+stash_marker_features <- function(metavar, seu, seurat_assay, top_n = 200){
+  # browser()
+
   markers <- list()
-    markers$presto <- presto::wilcoxauc(seu, metavar) %>%
+    markers$presto <- presto::wilcoxauc(seu, metavar, seurat_assay = seurat_assay) %>%
       dplyr::group_by(group) %>%
       dplyr::filter(padj < 0.05) %>%
       dplyr::top_n(n = top_n, wt = logFC) %>%
@@ -115,7 +115,7 @@ stash_marker_features <- function(metavar, seu, top_n = 200){
       dplyr::select(-rn)
 
     markers$genesorteR <- genesorteR::sortGenes(
-      Seurat::GetAssayData(seu, assay = "gene", slot = data),
+      Seurat::GetAssayData(seu, assay = seurat_assay, slot = "data"),
       seu[[]][[metavar]]
     )
 

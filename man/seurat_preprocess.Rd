@@ -5,7 +5,7 @@
 \title{Preprocess Seurat Object}
 \usage{
 seurat_preprocess(
-  seu,
+  assay,
   scale = TRUE,
   normalize = TRUE,
   features = NULL,

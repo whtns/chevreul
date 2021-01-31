@@ -4,7 +4,7 @@
 \alias{plot_all_transcripts}
 \title{Plot All Transcripts}
 \usage{
-plot_all_transcripts(seu_transcript, seu_gene, features, embedding)
+plot_all_transcripts(seu, features, embedding = "umap")
 }
 \arguments{
 \item{transcripts}{}

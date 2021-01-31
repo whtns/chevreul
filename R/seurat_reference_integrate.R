@@ -31,7 +31,7 @@ reference_integrate <- function(ref_seu, query_seu, query_name = 'fetal', ref_na
 
   seu.anchors <- FindTransferAnchors(reference = ref_seu, query = query_seu, dims = 1:30, project.query = TRUE)
 
-  reference_clusters <- colnames(ref_seu[[]])[grepl(paste0("RNA", "_snn_res."), colnames(ref_seu[[]]))]
+  reference_clusters <- colnames(ref_seu[[]])[grepl(paste0("gene", "_snn_res."), colnames(ref_seu[[]]))]
 
   refdata = t(ref_seu[[reference_clusters]])
 

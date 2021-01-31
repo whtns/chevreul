@@ -15,7 +15,7 @@ run_seurat_de <- function(seu, cluster1, cluster2, resolution, diffex_scheme = "
     if ("integrated" %in% names(seu@assays)) {
       active_assay <- "integrated"
     } else {
-      active_assay <- "RNA"
+      active_assay <- "gene"
     }
 
 
@@ -100,7 +100,7 @@ run_enrichmentbrowser <- function(seu, cluster_list, de_results, enrichment_meth
   seu <- seu[, c(cluster1_cells, cluster2_cells)]
   seu <- seu[rownames(seu) %in% de_results$t$symbol, ]
 
-  seu[["RNA"]]@meta.features <- test_diffex_results
+  seu[["gene"]]@meta.features <- test_diffex_results
 
   keep_cells <- c(cluster1_cells, cluster2_cells)
   new_idents <- c(rep(0, length(cluster1_cells)), rep(1, length(cluster2_cells)))
@@ -108,14 +108,14 @@ run_enrichmentbrowser <- function(seu, cluster_list, de_results, enrichment_meth
   new_idents <- new_idents[colnames(seu)]
   Idents(seu) <- new_idents
 
-  counts <- GetAssayData(seu, assay = "RNA", slot = "counts")
+  counts <- GetAssayData(seu, assay = "gene", slot = "counts")
   counts <- as.matrix(counts)
   mode(counts) <- "integer"
 
   rowData <- data.frame(
-    FC = seu[["RNA"]][[]]$FC,
-    ADJ.PVAL = seu[["RNA"]][[]]$ADJ.PVAL,
-    row.names = rownames(seu@assays$RNA)
+    FC = seu[["gene"]][[]]$FC,
+    ADJ.PVAL = seu[["gene"]][[]]$ADJ.PVAL,
+    row.names = rownames(seu@assays[["gene"]])
   )
 
   colData <- as.data.frame(seu[[]])
@@ -231,7 +231,6 @@ seuratApp <- function(preset_project, appTitle = "seuratTools", feature_types = 
     actionButton("loadProject", "Load Selected Project") %>%
       default_helper(type = "markdown", content = "overview"),
     textOutput("appTitle"),
-    uiOutput("featureType"),
     shinyWidgets::prettyRadioButtons("organism_type", inline = TRUE,
       "Organism", choices = c("human", "mouse"), selected = organism_type
     ),
@@ -472,7 +471,7 @@ seuratApp <- function(preset_project, appTitle = "seuratTools", feature_types = 
     proj_matrices <- reactive({
       create_proj_matrix(projList())
     })
-    seu <- reactiveValues()
+    seu <- reactiveVal()
     proj_dir <- reactiveVal()
     if (!is.null(preset_project)) {
       proj_dir(preset_project)
@@ -481,7 +480,7 @@ seuratApp <- function(preset_project, appTitle = "seuratTools", feature_types = 
       input$organism_type
     })
     plot_types <- reactive({
-      list_plot_types(seu$active)
+      list_plot_types(seu())
     })
     observeEvent(input$loadProject, {
       proj_dir(input$setProject)
@@ -529,42 +528,29 @@ seuratApp <- function(preset_project, appTitle = "seuratTools", feature_types = 
         {
           shiny::incProgress(2 / 10)
           print(uploadSeuratPath())
-          dataset <- readRDS(uploadSeuratPath())
+          seu(readRDS(uploadSeuratPath()))
           shiny::incProgress(6 / 10)
-          seu_names <- names(dataset)[!names(dataset) ==
-            "active"]
 
           organism <- case_when(
             stringr::str_detect(uploadSeuratPath(), "Hs") ~ "human",
             stringr::str_detect(uploadSeuratPath(), "Mm") ~ "mouse"
           )
 
-          for (i in seu_names) {
-            seu[[i]] <- dataset[[i]]
-            seu[[i]] <- update_seuratTools_object(seu[[i]], i, organism = organism)
-          }
-          seu$active <- seu[["gene"]]
+          updated_seu <- update_seuratTools_object(seu(), organism = organism)
+          seu(updated_seu)
+
           print(uploadSeuratPath())
           print(names(seu))
           shiny::incProgress(8 / 10)
         }
       )
     })
-    output$featureType <- renderUI({
-      req(seu)
-      seu_names <- names(seu)[!(names(seu) %in% c("monocle", "active"))]
-      shinyWidgets::prettyRadioButtons("feature_type",
-        "Feature for Display",
-        choices = seu_names,
-        selected = "gene", inline = TRUE
-      )
-    })
-    observeEvent(input$feature_type, {
-      seu$active <- seu[[input$feature_type]]
-    })
+
+
     featureType <- reactive({
-      featureType <- input$feature_type
+      "gene"
     })
+
     observe({
       shinyFiles::shinyFileSave(input, "saveSeurat",
         roots = dataset_volumes(),
@@ -572,7 +558,7 @@ seuratApp <- function(preset_project, appTitle = "seuratTools", feature_types = 
       )
     })
     subSeuratPath <- eventReactive(input$saveSeurat, {
-      req(seu$active)
+      req(seu())
       savefile <- shinyFiles::parseSavePath(
         dataset_volumes(),
         input$saveSeurat
@@ -580,11 +566,9 @@ seuratApp <- function(preset_project, appTitle = "seuratTools", feature_types = 
       return(savefile$datapath)
     })
     observeEvent(input$saveSeurat, {
-      req(seu$active)
+      req(seu())
       req(subSeuratPath())
 
-      save_seu <- shiny::reactiveValuesToList(seu)
-      save_seu <- save_seu[!names(save_seu) %in% c("monocle", "active")]
       shiny::withProgress(
         message = paste0("Saving Data"),
         value = 0,
@@ -592,7 +576,7 @@ seuratApp <- function(preset_project, appTitle = "seuratTools", feature_types = 
           Sys.sleep(6)
           shiny::incProgress(2 / 10)
           saveRDS(
-            save_seu,
+            seu(),
             subSeuratPath()
           )
           shiny::incProgress(10 / 10)
@@ -622,29 +606,19 @@ seuratApp <- function(preset_project, appTitle = "seuratTools", feature_types = 
       )
     })
 
-    # callModule(reformatMetadataDR, "reformatMetadataDR", seu, featureType)
-
-    reformatted_seu <- reactive({
-      req(seu$active)
-      callModule(reformatMetadataDR, "reformatMetadataDR", seu, featureType)
-    })
-
     observe({
-      req(reformatted_seu())
-      reformatted_seu <- isolate(reformatted_seu())
-      for (i in names(seu)){
-        seu[[i]] <- reformatted_seu[[i]]
-      }
+      reformatted_seu <- callModule(reformatMetadataDR, "reformatMetadataDR", seu, featureType)
+      seu(reformatted_seu())
     })
 
     reductions <- reactive({
-      req(seu$active)
-      names(seu$active@reductions)
+      req(seu())
+      names(seu()@reductions)
       # c("pca", "tsne", "umap")
     })
 
     observe({
-      req(seu$active)
+      req(seu())
 
       callModule(plotDimRed, "plotdimred1", seu, plot_types, featureType,
                  organism_type = organism_type, reductions)
@@ -695,7 +669,7 @@ seuratApp <- function(preset_project, appTitle = "seuratTools", feature_types = 
           for (i in names(seu)[!(names(seu) %in% c("active", "monocle"))]) {
             seu[[i]] <- seu[[i]][, colnames(seu[[i]]) %in% subset_selected_cells()]
           }
-          if (length(unique(seu$gene[[]]$batch)) > 1) {
+          if (length(unique(seu()[[]]$batch)) > 1) {
             for (i in names(seu)[!(names(seu) %in% c("monocle", "active"))]) {
               message(paste0("reintegrating ", i, " expression"))
               seu[[i]] <- reintegrate_seu(seu[[i]],
@@ -707,11 +681,9 @@ seuratApp <- function(preset_project, appTitle = "seuratTools", feature_types = 
             }
           }
           else {
-            for (i in names(seu)[!(names(seu) %in% c("monocle", "active"))]) {
-              seu[[i]] <- seurat_pipeline(seu[[i]], resolution = seq(0.2, 2, by = 0.2), legacy_settings = input$legacySettingsSubset) # markermarker
-            }
+              subset_seu <- seurat_pipeline(seu[[i]], resolution = seq(0.2, 2, by = 0.2), legacy_settings = input$legacySettingsSubset) # markermarker
+              seu(subset_seu)
           }
-          seu$active <- seu[[input$feature_type]]
           message("Complete!")
         },
         message = function(m) {
@@ -729,33 +701,31 @@ seuratApp <- function(preset_project, appTitle = "seuratTools", feature_types = 
         {
           shinyjs::html("subsetMessages", "")
           message("Beginning")
-          for (i in names(seu)[!(names(seu) %in% c("monocle", "active"))]) {
-            seu[[i]] <- subset_by_meta(
+            subset_seu <- subset_by_meta(
               input$uploadCsv$datapath,
-              seu[[i]]
+              seu()
             )
-          }
-          if (length(unique(seu$gene[[]]$batch)) > 1) {
+            seu(subset_seu)
+          if (length(unique(seu()[[]]$batch)) > 1) {
             for (i in names(seu)[!(names(seu) %in% c("monocle", "active"))]) {
               message(paste0("reintegrating ", i, " expression"))
-              seu[[i]] <- reintegrate_seu(seu[[i]],
+              reintegrated_seu <- reintegrate_seu(seu(),
                 feature = i,
                 resolution = seq(0.2, 2, by = 0.2),
                 legacy_settings = input$legacySettingsSubset,
                 organism = seu[[i]]@misc$experiment$organism
               )
+              seu(reintegrated_seu)
             }
           }
           else {
-            for (i in names(seu)[!(names(seu) %in% c("monocle", "active"))]) {
-              seu[[i]] <- seurat_pipeline(seu[[i]], resolution = seq(0.2,
+              subset_seu <- seurat_pipeline(seu(), resolution = seq(0.2,
                 2,
                 by = 0.2
               ),
               legacy_settings = input$legacySettingsSubset)
-            }
+              seu(subset_seu)
           }
-          seu$active <- seu[[input$feature_type]]
           message("Complete!")
         },
         message = function(m) {
@@ -785,7 +755,7 @@ seuratApp <- function(preset_project, appTitle = "seuratTools", feature_types = 
 
     observe({
       req(featureType())
-      req(seu$active)
+      req(seu())
         callModule(
           allTranscripts, "alltranscripts1", seu, featureType,
           organism_type
@@ -797,7 +767,7 @@ seuratApp <- function(preset_project, appTitle = "seuratTools", feature_types = 
 
     prior_gene_set <- reactive({
       # req(input$priorGeneSet)
-      req(seu$active)
+      req(seu())
 
       if (is.null(input$priorGeneSet)){
         ""
@@ -807,7 +777,7 @@ seuratApp <- function(preset_project, appTitle = "seuratTools", feature_types = 
           "BCL2", "MCL1"
         )
 
-        marker_genes[marker_genes %in% rownames(seu$active)]
+        marker_genes[marker_genes %in% rownames(seu())]
       }
       else if (input$priorGeneSet == "Cell Cycle") {
         marker_genes <- c(
@@ -821,37 +791,37 @@ seuratApp <- function(preset_project, appTitle = "seuratTools", feature_types = 
           "USP1", "CLSPN", "POLA1", "CHAF1B", "BRIP1",
           "E2F8")
 
-          marker_genes[marker_genes %in% rownames(seu$active)]
+          marker_genes[marker_genes %in% rownames(seu())]
       }  else if (input$priorGeneSet == "Mitochondrial") {
         marker_genes <- mito_features[[organism_type()]][["gene"]]
 
-        marker_genes[marker_genes %in% rownames(seu$active)]
+        marker_genes[marker_genes %in% rownames(seu())]
       } else if (input$priorGeneSet == "Ribosomal") {
         marker_genes <- ribo_features[[organism_type()]][["gene"]]
 
-        marker_genes[marker_genes %in% rownames(seu$active)]
+        marker_genes[marker_genes %in% rownames(seu())]
       }
     })
 
     observe({
 
       updateSelectizeInput(session, "geneSet",
-        choices = rownames(seu$active),
+        choices = rownames(seu()),
         selected = prior_gene_set(),
         server = TRUE
       )
     })
     observeEvent(input$regressAction, {
-      req(seu$active)
+      req(seu())
       showModal(modalDialog(
         title = "Regressing out provided list of features",
         "This process may take a minute or two!"
       ))
-      seu$gene <- seuratTools::regress_by_features(seu$gene,
+      regressed_seu <- seuratTools::regress_by_features(seu(),
         feature_set = list(input$geneSet), set_name = janitor::make_clean_names(input$geneSetName),
         regress = input$runRegression
       )
-      seu$active <- seu[[input$feature_type]]
+      seu(regressed_seu)
       removeModal()
     })
 
@@ -864,8 +834,7 @@ seuratApp <- function(preset_project, appTitle = "seuratTools", feature_types = 
 
     observe({
       req(uploadSeuratPath())
-      req(seu)
-      req(input$feature_type)
+      req(seu())
 
       proj_path <- stringr::str_replace(uploadSeuratPath(), "output.*", "")
 
@@ -878,24 +847,6 @@ seuratApp <- function(preset_project, appTitle = "seuratTools", feature_types = 
     })
 
     callModule(techInfo, "techInfo", seu)
-
-    # Copy in server
-
-    mypalettes <- reactiveValues()
-
-    observe({
-      req(seu$active)
-
-      palette_list <-
-        seu$active@meta.data %>%
-        select(where(~is.character(.x) | is.factor(.x))) %>%
-        map(n_distinct) %>%
-        map(scales::hue_pal()) %>%
-        identity()
-      for (i in names(palette_list)){
-        mypalettes[[i]] <- palette_list[[i]]
-      }
-    })
 
 
   }

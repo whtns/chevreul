@@ -8,7 +8,7 @@
 #' @export
 #'
 #' @examples
-add_census_slot <- function(seu, assay = "RNA", slot = "abundance"){
+add_census_slot <- function(seu, assay = "gene", slot = "abundance"){
 
   data <- Seurat::GetAssayData(seu, assay = assay, slot = slot)
 
@@ -38,9 +38,9 @@ add_census_slot <- function(seu, assay = "RNA", slot = "abundance"){
                                          expressionFamily = VGAM::negbinomial.size()
   )
 
-  attributes(seu[['RNA']])$census <- Biobase::exprs(monocle_cds)
-  attributes(seu[['RNA']])$raw <- seu$RNA@counts
-  seu[['RNA']]@counts <- seu$RNA@census
+  attributes(seu)$census <- Biobase::exprs(monocle_cds)
+  attributes(seu)$raw <- seu[["gene"]]@counts
+  seu@counts <- seu[["gene"]]@census
 
   return(seu)
 
@@ -54,11 +54,11 @@ add_census_slot <- function(seu, assay = "RNA", slot = "abundance"){
 #' @export
 #'
 #' @examples
-convert_seuv3_to_monoclev2 <- function(seu, assay = "RNA", slot = "data", return_census = FALSE, sig_slice = 1000) {
+convert_seuv3_to_monoclev2 <- function(seu, assay = "gene", slot = "data", return_census = FALSE, sig_slice = 1000) {
 
   # Load Seurat object
   # Extract data, phenotype data, and feature data from the SeuratObject
-  # data <- as(as.matrix(seu@assays$RNA@counts), "sparseMatrix")
+  # data <- as(as.matrix(seu@assays[["gene"]]@counts), "sparseMatrix")
 
   data <- Seurat::GetAssayData(seu, assay = assay, slot = slot)
 
@@ -216,11 +216,11 @@ convert_seuv3_to_monoclev2 <- function(seu, assay = "RNA", slot = "data", return
 #' @export
 #'
 #' @examples
-convert_monoclev2_to_seuv3 <- function(seu, assay = "RNA", slot = "data", return_census = FALSE, sig_slice = 1000) {
+convert_monoclev2_to_seuv3 <- function(seu, assay = "gene", slot = "data", return_census = FALSE, sig_slice = 1000) {
 
   # Load Seurat object
   # Extract data, phenotype data, and feature data from the SeuratObject
-  # data <- as(as.matrix(seu@assays$RNA@counts), "sparseMatrix")
+  # data <- as(as.matrix(seu@assays[["gene"]]@counts), "sparseMatrix")
 
   data <- Seurat::GetAssayData(seu, assay = assay, slot = slot)
 

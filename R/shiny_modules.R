@@ -33,8 +33,8 @@ plotClustree <- function(input, output, session, seu) {
 
 
   # set appropriate assay
-  # default_assay = reactive({
-  #   ifelse("integrated" %in% names(seu$active@assays), "integrated", "RNA")
+  # assay = reactive({
+  #   ifelse("integrated" %in% names(seu()@assays), "integrated", "gene")
   # })
 
   output$checkSeu <- renderText({
@@ -43,11 +43,11 @@ plotClustree <- function(input, output, session, seu) {
   })
 
   output$clustree <- renderPlot({
-    req(seu$active)
+    req(seu())
 
-    default_assay <- ifelse("integrated" %in% names(seu$active@assays), "integrated", "RNA")
-    # DefaultAssay(seu$active) <- default_assay
-    clustree::clustree(seu$active, assay = default_assay)
+    assay <- ifelse("integrated" %in% names(seu()@assays), "integrated", "gene")
+    # DefaultAssay(seu()) <- assay
+    clustree::clustree(seu(), assay = assay)
   })
 
 }
@@ -114,7 +114,7 @@ plotViolin <- function(input, output, session, seu, featureType, organism_type){
   observe({
     req(prefill_feature())
     req(seu())
-    updateSelectizeInput(session, "customFeature", choices = rownames(seu()@assays$RNA),
+    updateSelectizeInput(session, "customFeature", choices = rownames(seu()@assays[["gene"]]),
                          selected = prefill_feature(), server = TRUE)
   })
 
@@ -129,7 +129,7 @@ plotViolin <- function(input, output, session, seu, featureType, organism_type){
     req(input$vlnGroup)
 
     vln_plot <-
-      plot_violin(seu$active, plot_var = input$vlnGroup, features = input$customFeature, slot = input$slot)
+      plot_violin(seu(), plot_var = input$vlnGroup, features = input$customFeature, slot = input$slot)
 
   })
 
@@ -140,9 +140,9 @@ plotViolin <- function(input, output, session, seu, featureType, organism_type){
     })
 
   output$vplot <- plotly::renderPlotly({
-    req(seu$active)
+    req(seu())
     req(input$vlnGroup)
-    exclude_trace_number = length(unique(seu$active[[]][[input$vlnGroup]]))*2
+    exclude_trace_number = length(unique(seu()[[]][[input$vlnGroup]]))*2
 
     vln_plot <- plotly::ggplotly(vln_plot(), height = 700) %>%
       plotly::style(opacity = 0.5) %>%
@@ -203,14 +203,14 @@ plotHeatmap <- function(input, output, session, seu, featureType, organism_type)
   observe({
     req(seu())
     if ("integrated" %in% names(seu()@assays)) {
-      default_assay = "gene.integrated"
+      assay = "integrated"
     } else {
-      default_assay = "gene"
+      assay = "gene"
     }
 
-    preset_features <- VariableFeatures(seu(), assay = default_assay)[1:50]
+    preset_features <- VariableFeatures(seu(), assay = assay)[1:50]
 
-    updateSelectizeInput(session, "customFeature", choices = rownames(seu()@assays$RNA),
+    updateSelectizeInput(session, "customFeature", choices = rownames(seu()@assays[["gene"]]),
                          selected = preset_features, server = TRUE)
   })
 
@@ -234,12 +234,12 @@ plotHeatmap <- function(input, output, session, seu, featureType, organism_type)
     req(input$colAnnoVar)
 
     if ("integrated" %in% names(seu()@assays)) {
-      default_assay = "gene.integrated"
+      assay = "integrated"
     } else {
-      default_assay = "gene"
+      assay = "gene"
     }
 
-    hm <- seu_complex_heatmap(seu(), features = input$customFeature, assay = default_assay, group.by = input$colAnnoVar, slot = input$slot, col_dendrogram = input$dendroSelect)
+    hm <- seu_complex_heatmap(seu(), features = input$customFeature, assay = assay, group.by = input$colAnnoVar, slot = input$slot, col_dendrogram = input$dendroSelect)
 
     return(hm)
   })
@@ -684,14 +684,14 @@ plotDimRed <- function(input, output, session, seu, plot_types, featureType,
   })
 
   observe({
-    req(seu$active)
+    req(seu())
     updateSelectizeInput(session, "embedding", choices = reductions(),
                          selected = rev(reductions())[1], server = TRUE)
   })
 
   selected_plot <- reactiveVal()
   observe({
-    req(seu$active)
+    req(seu())
     # selected_plot <- ifelse(is.null(selected_plot()), "seurat",
     #                         selected_plot())
     updateSelectizeInput(session, "plottype", choices = purrr::flatten_chr(plot_types()),
@@ -720,7 +720,7 @@ plotDimRed <- function(input, output, session, seu, plot_types, featureType,
   observe({
     req(prefill_feature())
     req(seu())
-    updateSelectizeInput(session, "customFeature", choices = rownames(seu()@assays$RNA),
+    updateSelectizeInput(session, "customFeature", choices = rownames(seu()@assays[["gene"]]),
                          selected = prefill_feature(), server = TRUE)
   })
 
@@ -742,7 +742,7 @@ plotDimRed <- function(input, output, session, seu, plot_types, featureType,
     }
     else {
       if (input$plottype == "custom") {
-        plot_feature(seu$active, dims = c(input$dim1,
+        plot_feature(seu(), dims = c(input$dim1,
                                           input$dim2), embedding = input$embedding,
                      features = input$customFeature, pt.size = input$dotSize)
 
@@ -754,14 +754,14 @@ plotDimRed <- function(input, output, session, seu, plot_types, featureType,
       }
       else if (input$plottype == "seurat") {
         if ("integrated" %in% names(seu()@assays)) {
-          active_assay <- "gene.integrated"
+          assay <- "integrated"
         }
         else {
-          active_assay <- "gene"
+          assay <- "gene"
         }
 
         louvain_resolution = reactive({
-          paste0(active_assay, "_snn_res.", input$resolution)
+          paste0(assay, "_snn_res.", input$resolution)
         })
 
         plot_var(seu(), dims = c(input$dim1, input$dim2),
@@ -959,18 +959,13 @@ cells_selected <- function(input) {
 diffex <- function(input, output, session, seu, featureType, selected_cells, tests = c("t-test" = "t", "wilcoxon rank-sum test" = "wilcox", "Likelihood-ratio test (bimodal)" = "bimod", "MAST" = "MAST")) {
   ns <- session$ns
 
-  default_assay <- reactive({
+  assay <- reactive({
     req(seu())
     if ("integrated" %in% names(seu()@assays)){
-      active_assay <- "gene.integrated"
+      assay <- "integrated"
     } else {
-      active_assay <- "gene"
+      assay <- "gene"
     }
-  })
-
-  observe({
-    req(seu())
-    Seurat::DefaultAssay(seu()) <- "gene"
   })
 
   output$testChoices <- renderUI(
@@ -1115,12 +1110,12 @@ findMarkers <- function(input, output, session, seu, plot_types, featureType) {
                    selected = "seurat", multiple = TRUE)
   })
 
-  default_assay <- reactive({
+  assay <- reactive({
     req(seu())
     if ("integrated" %in% names(seu()@assays)){
-      active_assay <- "gene.integrated"
+      assay <- "integrated"
     } else {
-      active_assay <- "gene"
+      assay <- "gene"
     }
   })
 
@@ -1128,7 +1123,7 @@ findMarkers <- function(input, output, session, seu, plot_types, featureType) {
     req(input$plottype)
 
     if (input$plottype == "seurat"){
-      metavar <- paste0(default_assay(), "_snn_res.", input$resolution2)
+      metavar <- paste0(assay(), "_snn_res.", input$resolution2)
     } else {
       metavar <- input$plottype
     }
@@ -1144,13 +1139,13 @@ findMarkers <- function(input, output, session, seu, plot_types, featureType) {
     selectizeInput(ns("displayValues"), "Values to display", multiple = TRUE, choices = choices)
   })
 
-  observe({
-    req(default_assay())
-    Seurat::DefaultAssay(seu()) <- "gene"
-  })
+  # observe({
+  #   req(assay())
+  #   Seurat::DefaultAssay(seu()) <- "gene"
+  # })
 
   marker_plot_return <- eventReactive(input$plotDots, {
-    plot_markers(seu = seu$active, metavar = metavar(), num_markers = input$num_markers, selected_values = input$displayValues, marker_method = input$markerMethod, featureType = featureType(), hide_pseudo = input$hidePseudo, unique_markers = input$uniqueMarkers)
+    plot_markers(seu(), metavar = metavar(), num_markers = input$num_markers, selected_values = input$displayValues, marker_method = input$markerMethod, featureType = featureType(), hide_pseudo = input$hidePseudo, unique_markers = input$uniqueMarkers)
   })
 
   output$markerplot <- plotly::renderPlotly({
@@ -1227,16 +1222,16 @@ plotReadCount <- function(input, output, session, seu, plot_types) {
     if (input$colorby == "seurat") {
 
       if ("integrated" %in% names(seu()@assays)){
-        active_assay <- "gene.integrated"
+        assay <- "integrated"
       } else {
-        active_assay <- "gene"
+        assay <- "gene"
       }
 
-      louvain_resolution = paste0(active_assay, "_snn_res.", input$resolution)
-      plot_readcount(seu$active, metavar = input$metavar, color.by = louvain_resolution, yscale = input$yScale)
+      louvain_resolution = paste0(assay, "_snn_res.", input$resolution)
+      plot_readcount(seu(), metavar = input$metavar, color.by = louvain_resolution, yscale = input$yScale)
     }
     else if (input$colorby %in% purrr::flatten_chr(plot_types())) {
-      plot_readcount(seu$active, metavar = input$metavar, color.by = input$colorby, yscale = input$yScale)
+      plot_readcount(seu(), metavar = input$metavar, color.by = input$colorby, yscale = input$yScale)
     }
   })
 }
@@ -1328,25 +1323,25 @@ allTranscripts <- function(input, output, session, seu,
   ns <- session$ns
 
   observe({
-    req(seu$gene)
-    updateSelectizeInput(session, "compositionGene", choices = rownames(seu$gene@assays$RNA), selected = "RXRG", server = TRUE)
-    updateSelectizeInput(session, "embeddingGene", choices = rownames(seu$gene@assays$RNA), selected = "RXRG", server = TRUE)
-    updateSelectizeInput(session, "groupby", choices = colnames(seu$gene@meta.data), selected = "batch", server = TRUE)
+    req(seu())
+    updateSelectizeInput(session, "compositionGene", choices = rownames(seu()[["gene"]]), selected = "RXRG", server = TRUE)
+    updateSelectizeInput(session, "embeddingGene", choices = rownames(seu()[["gene"]]), selected = "RXRG", server = TRUE)
+    updateSelectizeInput(session, "groupby", choices = colnames(seu()@meta.data), selected = "batch", server = TRUE)
   })
 
   transcripts <- reactive({
-    req(seu$transcript)
-    get_transcripts_from_seu(seu$transcript, input$embeddingGene, organism = organism_type())
+    req(seu())
+    get_transcripts_from_seu(seu(), input$embeddingGene, organism = organism_type())
   })
 
   observe({
-    req(seu$active)
+    req(seu())
     updateSelectizeInput(session, "embedding", choices = c("pca", "tsne", "umap"), selected = "umap", server = TRUE)
     updateSelectizeInput(session, "transcriptSelect", choices = transcripts(), server = TRUE)
   })
 
   composition_plot <- eventReactive(input$plotComposition, {
-    plot_transcript_composition(seu$transcript, seu$gene, gene_symbol = input$compositionGene, group.by = input$groupby, standardize = input$standardizeExpression, drop_zero = input$dropZero)
+    plot_transcript_composition(seu(), gene_symbol = input$compositionGene, group.by = input$groupby, standardize = input$standardizeExpression, drop_zero = input$dropZero)
   })
 
   output$compositionPlot <- plotly::renderPlotly({
@@ -1367,7 +1362,7 @@ allTranscripts <- function(input, output, session, seu,
 
   pList <- reactive({
     req(transcripts())
-    pList <- plot_all_transcripts(seu$transcript, seu$gene, transcripts(), input$embedding)
+    pList <- plot_all_transcripts(seu(), transcripts(), input$embedding)
   })
 
   # observe({
@@ -1470,8 +1465,8 @@ plotVelocity <- function(input, output, session, seu, loom_path){
   print("running scvelo")
 
   observe({
-    req(seu$active)
-    updateSelectizeInput(session, "geneSelect", choices = rownames(seu$active), selected = "RXRG", server = TRUE)
+    req(seu())
+    updateSelectizeInput(session, "geneSelect", choices = rownames(seu()), selected = "RXRG", server = TRUE)
   })
 
   # reactive val adata ------------------------------
@@ -1479,15 +1474,15 @@ plotVelocity <- function(input, output, session, seu, loom_path){
   adata <- reactiveVal()
 
   observeEvent(input$calc_velocity, {
-    req(seu$active)
+    req(seu())
     withCallingHandlers({
       shinyjs::html("scveloMessages", "")
       message("Beginning")
 
-      if ("integrated" %in% names(seu$active@assays)) {
-        default_assay = "integrated"
+      if ("integrated" %in% names(seu()@assays)) {
+        assay = "integrated"
       } else {
-        default_assay = "RNA"
+        assay = "gene"
       }
 
       # sc <- reticulate::import("scanpy")
@@ -1496,7 +1491,7 @@ plotVelocity <- function(input, output, session, seu, loom_path){
       #
       # memo_prep <- memoise::memoise(prep_scvelo, cache = cdb)
 
-      adata = prep_scvelo(seu$active, loom_path, velocity_mode = input$velocityMode)
+      adata = prep_scvelo(seu(), loom_path, velocity_mode = input$velocityMode)
 
       # implement caching in the future via lru cache?
       # adata$write_h5ad(gsub(".h5ad", "_scvelo.h5ad", loom_path))
@@ -1512,18 +1507,18 @@ plotVelocity <- function(input, output, session, seu, loom_path){
   # reactive adata------------------------------
 
   # adata <- eventReactive(input$calc_velocity, {
-  #   req(seu$active)
+  #   req(seu())
   #   showModal(modalDialog("Calculating Velocity", footer=NULL))
   #
-  #   if ("integrated" %in% names(seu$active@assays)) {
-  #     default_assay = "integrated"
+  #   if ("integrated" %in% names(seu()@assays)) {
+  #     assay = "integrated"
   #   } else {
-  #     default_assay = "RNA"
+  #     assay = "gene"
   #   }
   #
   #   # sc <- reticulate::import("scanpy")
   #
-  #   adata = prep_scvelo(seu$active, loom_path, velocity_mode = input$velocityMode)
+  #   adata = prep_scvelo(seu(), loom_path, velocity_mode = input$velocityMode)
   #
   #   # implement caching in the future via lru cache?
   #   # adata$write_h5ad(gsub(".h5ad", "_scvelo.h5ad", loom_path))
@@ -1548,12 +1543,12 @@ plotVelocity <- function(input, output, session, seu, loom_path){
     req(adata())
 
     if ("integrated" %in% names(seu()@assays)) {
-      default_assay = "gene.integrated"
+      assay = "integrated"
     } else {
-      default_assay = "gene"
+      assay = "gene"
     }
 
-    cluster_resolution = paste0(default_assay, "_snn_res.", input$resolution)
+    cluster_resolution = paste0(assay, "_snn_res.", input$resolution)
 
     plot_scvelo(adata(), group.by = cluster_resolution, plot_method = input$plotFormat)
     fig = pyplot$gcf()
@@ -1565,10 +1560,10 @@ plotVelocity <- function(input, output, session, seu, loom_path){
     req(adata())
     req(input$geneSelect)
 
-    if ("integrated" %in% names(seu$active@assays)) {
-      default_assay = "integrated"
+    if ("integrated" %in% names(seu()@assays)) {
+      assay = "integrated"
     } else {
-      default_assay = "RNA"
+      assay = "gene"
     }
     scvelo_expression(adata(), features = input$geneSelect)
     fig = pyplot$gcf()
@@ -1750,29 +1745,32 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
                      choices = colnames(seu()[[]]), selected = "batch", multiple = TRUE)
     })
 
-    cds <- reactiveValues(selected = c(traj = TRUE, ptime = FALSE, diff_features = FALSE))
+    cds_rvs <- reactiveValues(selected = c(traj = TRUE, ptime = FALSE, diff_features = FALSE))
     cds_plot_types <- reactiveVal(c(Pseudotime = "pseudotime", Module = "module"))
     myplot_types <- reactive({
       c(purrr::flatten_chr(plot_types()), cds_plot_types())
     })
 
     # to be able to subset, create a new copy of the seurat object
+
+    seu_monocle <- reactiveVal()
+
     observe({
-      seu_monocle <- reactiveVal()
+      req(seu())
       seu_monocle(seu())
     })
 
     seudimplot <- reactive({
-      req(seu$monocle)
-      if ("integrated" %in% names(seu$monocle@assays)) {
-        active_assay <- "integrated"
+      req(seu_monocle())
+      if ("integrated" %in% names(seu_monocle()@assays)) {
+        assay <- "integrated"
       }
       else {
-        active_assay <- "gene"
+        assay <- "gene"
       }
 
       louvain_resolution = reactive({
-        paste0(active_assay, "_snn_res.", input$cdsResolution)
+        paste0(assay, "_snn_res.", input$cdsResolution)
       })
 
       plot_var(seu_monocle(), embedding = "umap", group = louvain_resolution())
@@ -1803,74 +1801,71 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
     })
 
     observeEvent(input$calcCDS, {
-      req(seu$monocle)
-      cds$selected = c(traj = TRUE, ptime = FALSE, diff_features = FALSE)
-        for (i in names(seu)[names(seu) %in% c("gene", "transcript")]) {
-          cds[[i]] <- convert_seu_to_cds(seu[[i]], resolution = input$cdsResolution)
-          cds[[i]] <- cds[[i]][,colnames(seu$monocle)]
-          cds[[i]] <- learn_graph_by_resolution(cds[[i]],
-                                                seu$monocle,
+      req(seu_monocle())
+      cds_rvs$selected = c(traj = TRUE, ptime = FALSE, diff_features = FALSE)
+          cds <- convert_seu_to_cds(seu(), resolution = input$cdsResolution)
+          cds <- cds[,colnames(seu_monocle())]
+          cds <- learn_graph_by_resolution(cds, seu_monocle(),
                                                 resolution = input$cdsResolution)
           updateSelectizeInput(session, "plottype1", selected = "seurat", choices = myplot_types())
-          updateSelectizeInput(session, "customFeature1", choices = rownames(cds[[i]]), server = TRUE)
+          updateSelectizeInput(session, "customFeature1", choices = rownames(cds), server = TRUE)
           updateSelectizeInput(session, "plottype2", selected = "seurat", choices = myplot_types())
-          updateSelectizeInput(session, "customFeature2", choices = rownames(cds[[i]]), server = TRUE)
-        }
-      cds$traj <- cds[[featureType()]]
+          updateSelectizeInput(session, "customFeature2", choices = rownames(cds), server = TRUE)
+      cds_rvs$traj <- cds
     })
 
     selected_plot <- reactiveVal()
 
     output$monoclePlot1 <- plotly::renderPlotly({
       req(input$plottype1)
-      req(cds$traj)
+      req(cds_rvs$traj)
       w$show()
-      print(cds$selected)
+      print(cds_rvs$selected)
       if (input$plottype1 == "seurat") {
         cluster_resolution = reactive({
-          if(any(stringr::str_detect(colnames(colData(cds$traj)), "integrated"))){
+          if(any(stringr::str_detect(colnames(colData(cds_rvs$traj)), "integrated"))){
             paste0("integrated", "_snn_res.", input$cdsResolution)
           } else {
-            paste0("RNA", "_snn_res.", input$cdsResolution)
+            paste0("gene", "_snn_res.", input$cdsResolution)
           }
 
         })
-        plot_cds(cds$traj, color_cells_by = cluster_resolution())
+        plot_cds(cds_rvs$traj, color_cells_by = cluster_resolution())
       } else if (input$plottype1 == "pseudotime"){
-        plot_pseudotime(cds$traj, color_cells_by = "pseudotime", resolution = input$cdsResolution)
+        plot_pseudotime(cds_rvs$traj, color_cells_by = "pseudotime", resolution = input$cdsResolution)
       } else if (input$plottype1 == "custom") {
-        plot_monocle_features(cds$traj, genes = input$customFeature1, monocle_heatmap()$agg_mat)
+        plot_monocle_features(cds_rvs$traj, genes = input$customFeature1, monocle_heatmap()$agg_mat)
       } else if (input$plottype1 == "module") {
         print(monocle_heatmap()$module_table)
         print(input$plotModule1)
         genes = monocle_heatmap()$module_table %>%
           filter(module %in% input$plotModule1) %>%
           dplyr::mutate(module = factor(module))
-        plot_monocle_features(cds$traj, genes = genes, monocle_heatmap()$agg_mat)
+        plot_monocle_features(cds_rvs$traj, genes = genes, monocle_heatmap()$agg_mat)
       } else {
-        plot_cds(cds$traj, color_cells_by = input$plottype1)
+        plot_cds(cds_rvs$traj, color_cells_by = input$plottype1)
       }
     })
 
     output$monoclePlot2 <- plotly::renderPlotly({
       req(input$plottype2)
-      req(cds$traj)
+      req(cds_rvs$traj)
       w$show()
-      print(cds$selected)
+      print(cds_rvs$selected)
       if (input$plottype2 == "seurat") {
         cluster_resolution = reactive({
-          if(any(stringr::str_detect(colnames(colData(cds$traj)), "integrated"))){
+          if(any(stringr::str_detect(colnames(colData(cds_rvs$traj)), "integrated"))){
             paste0("integrated", "_snn_res.", input$cdsResolution)
           } else {
-            paste0("RNA", "_snn_res.", input$cdsResolution)
+            paste0("gene", "_snn_res.", input$cdsResolution)
           }
 
         })
-        plot_cds(cds$traj, color_cells_by = cluster_resolution())
+        plot_cds(cds_rvs$traj, color_cells_by = cluster_resolution())
       } else if (input$plottype2 == "pseudotime"){
-        plot_pseudotime(cds$traj, color_cells_by = "pseudotime", resolution = input$cdsResolution)
+        plot_pseudotime(cds_rvs$traj, color_cells_by = "pseudotime", resolution = input$cdsResolution)
       } else if (input$plottype2 == "custom") {
-        plot_monocle_features(cds$traj, genes = input$customFeature2, monocle_heatmap()$agg_mat)
+        plot_monocle_features(cds_rvs$traj, genes = input$customFeature2, monocle_heatmap()$agg_mat)
       } else if (input$plottype2 == "module") {
         print(monocle_heatmap()$module_table)
         print(input$plotModule2)
@@ -1878,55 +1873,55 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
         genes = monocle_heatmap()$module_table %>%
           filter(module %in% input$plotModule2) %>%
           dplyr::mutate(module = factor(module))
-        plot_monocle_features(cds$traj, genes = genes, monocle_heatmap()$agg_mat)
+        plot_monocle_features(cds_rvs$traj, genes = genes, monocle_heatmap()$agg_mat)
       } else {
-        plot_cds(cds$traj, color_cells_by = input$plottype2)
+        plot_cds(cds_rvs$traj, color_cells_by = input$plottype2)
       }
     })
 
     cdsbrush <- reactive({
-      req(cds$traj)
+      req(cds_rvs$traj)
       d <- plotly::event_data("plotly_selected")
       if (is.null(d)) {
         msg <- "Click and drag events (i.e. select/lasso) appear here (double-click to clear)"
         return(d)
       }
       else {
-        # selected_cells <- colnames(cds$traj)[as.numeric(d$key)]
+        # selected_cells <- colnames(cds_rvs$traj)[as.numeric(d$key)]
         d$key
       }
     })
 
     observeEvent(input$subsetCells, {
-      req(cds$traj)
+      req(cds_rvs$traj)
       print(cdsbrush())
-      cds$traj <- cds$traj[,cdsbrush()]
+      cds_rvs$traj <- cds_rvs$traj[,cdsbrush()]
     })
 
     output$rootCellsui <- renderUI({
-      selectizeInput(ns("rootCells"), "Choose Root Cells", choices = c("Choose Root Cells" = "", colnames(cds$traj)), multiple = TRUE)
+      selectizeInput(ns("rootCells"), "Choose Root Cells", choices = c("Choose Root Cells" = "", colnames(cds_rvs$traj)), multiple = TRUE)
     })
 
     exported_pseudotime <- reactiveVal()
 
     observeEvent(input$plotPseudotime, {
-      req(cds$traj)
+      req(cds_rvs$traj)
       req(input$rootCells)
-      cds$traj <- monocle3::order_cells(cds$traj, root_cells = input$rootCells)
+      cds_rvs$traj <- monocle3::order_cells(cds_rvs$traj, root_cells = input$rootCells)
 
       # select only first partition
-      cds$traj <- cds$traj[,monocle3::partitions(cds$traj) == 1]
+      cds_rvs$traj <- cds_rvs$traj[,monocle3::partitions(cds_rvs$traj) == 1]
 
 
       if(input$flipPtime){
-        cds$traj <- flip_pseudotime(cds$traj)
+        cds_rvs$traj <- flip_pseudotime(cds_rvs$traj)
       }
       updateSelectizeInput(session, "plottype1", selected = "pseudotime", choices = myplot_types())
       updateSelectizeInput(session, "plottype2", selected = "pseudotime", choices = myplot_types())
-      cds$selected = c(traj = FALSE, ptime = TRUE, diff_features = FALSE)
+      cds_rvs$selected = c(traj = FALSE, ptime = TRUE, diff_features = FALSE)
                        #markermarker
 
-      exported_pseudotime(export_pseudotime(cds$traj, input$rootCells))
+      exported_pseudotime(export_pseudotime(cds_rvs$traj, input$rootCells))
 
     })
 
@@ -1942,19 +1937,19 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
     #markermarker
     observeEvent(input$calcPtimeGenes, {
       req(input$diffexFeature)
-      if (req(cds$selected["ptime"])){
+      if (req(cds_rvs$selected["ptime"])){
 
         #markermarker
-        cds$traj  <- swap_counts_from_feature(cds, input$diffexFeature)
+        # cds_rvs$traj  <- swap_counts_from_feature(cds_rvs$traj, input$diffexFeature)
 
         showModal(modalDialog(
           title = "Calculating Pseudotime Correlated Features",
           "This may take a few minutes!"
         ))
-            cds_pr_test_res = monocle3::graph_test(cds$traj, neighbor_graph="principal_graph", cores=4, expression_family = "negbinom")
+            cds_pr_test_res = monocle3::graph_test(cds_rvs$traj, neighbor_graph="principal_graph", cores=4, expression_family = "negbinom")
 
-            cds$traj@metadata[["diff_features"]] <- cds_pr_test_res
-            cds$selected = c(traj = FALSE, ptime = FALSE, diff_features = TRUE)
+            cds_rvs$traj@metadata[["diff_features"]] <- cds_pr_test_res
+            cds_rvs$selected = c(traj = FALSE, ptime = FALSE, diff_features = TRUE)
 
             removeModal()
 
@@ -1962,8 +1957,8 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
     })
 
     cds_pr_test_res <- reactive({
-      if (req(cds$selected["diff_features"])){
-        cds_pr_test_res <- cds$traj@metadata$diff_features
+      if (req(cds_rvs$selected["diff_features"])){
+        cds_pr_test_res <- cds_rvs$traj@metadata$diff_features
 
 
         cds_pr_test_res <-
@@ -1976,18 +1971,18 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
     })
 
     observe({
-      if (req(cds$selected["diff_features"])){
+      if (req(cds_rvs$selected["diff_features"])){
 
       output$genePlotQuery2 <- renderUI({
         selectizeInput(ns("genePlotQuery1"), "Pick Gene to Plot on Pseudotime", choices = rownames(cds_pr_test_res()), multiple = TRUE, selected = rownames(cds_pr_test_res())[1])
       })
 
       output$partitionSelect <- renderUI({
-        selectizeInput(ns("partitions"), "Select a Partition to Plot", choices = levels(monocle3::partitions(cds$traj)), multiple = FALSE)
+        selectizeInput(ns("partitions"), "Select a Partition to Plot", choices = levels(monocle3::partitions(cds_rvs$traj)), multiple = FALSE)
       })
 
       output$ptimeGenesLinePlot <- plotly::renderPlotly({
-        genes_in_pseudotime <- prep_plot_genes_in_pseudotime(cds$traj, input$genePlotQuery1, input$cdsResolution)
+        genes_in_pseudotime <- prep_plot_genes_in_pseudotime(cds_rvs$traj, input$genePlotQuery1, input$cdsResolution)
         genes_in_pseudotime <-
           genes_in_pseudotime %>%
           plotly::ggplotly(height = 600) %>%
@@ -2011,14 +2006,14 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
     })
 
       monocle_heatmap <- reactive({
-        req(cds$traj)
+        req(cds_rvs$traj)
         req(cds_pr_test_res())
         req(input$colAnnoVar)
 
         heatmap_genes <- cds_pr_test_res() %>%
           dplyr::filter(q_value < input$qvalThreshold)
 
-        monocle_module_heatmap(cds$traj, rownames(heatmap_genes), input$cdsResolution, collapse_rows = input$heatmapRows, group.by = input$colAnnoVar)
+        monocle_module_heatmap(cds_rvs$traj, rownames(heatmap_genes), input$cdsResolution, collapse_rows = input$heatmapRows, group.by = input$colAnnoVar)
       })
 
       module_choices <- reactive({
@@ -2262,8 +2257,8 @@ techInfo <- function(input, output, session, seu){
     ##----------------------------------------------------------------------------##
 
     misc <- reactive({
-      req(seu$active)
-      Seurat::Misc(seu$active)
+      req(seu())
+      Seurat::Misc(seu())
       })
 
     observe({
@@ -2435,9 +2430,9 @@ plotCoverage <- function(input, output, session, seu, plot_types, proj_dir, orga
                           color = waiter::transparent(.5))
 
     observe({
-      req(seu$active)
-      updateSelectizeInput(session, "geneSelect", choices = rownames(seu$active), server = TRUE)
-      updateSelectizeInput(session, "varSelect", choices = colnames(seu$active@meta.data), selected = "batch")
+      req(seu())
+      updateSelectizeInput(session, "geneSelect", choices = rownames(seu()), server = TRUE)
+      updateSelectizeInput(session, "varSelect", choices = colnames(seu()@meta.data), selected = "batch")
     })
 
   displayvalues <- reactive({
@@ -2453,11 +2448,11 @@ plotCoverage <- function(input, output, session, seu, plot_types, proj_dir, orga
 
     bigwig_tbl <- reactive({
 
-      load_bigwigs(seu$active)
+      load_bigwigs(seu())
     })
 
     coverage_return <- eventReactive(input$plotCoverage, {
-      req(seu$active)
+      req(seu())
       req(bigwig_tbl())
 
       plot_gene_coverage_by_var(genes_of_interest = input$geneSelect,
@@ -2466,7 +2461,7 @@ plotCoverage <- function(input, output, session, seu, plot_types, proj_dir, orga
                                 var_of_interest = input$varSelect,
                                 values_of_interest = input$displayvalues,
 
-                                organism = seu$active@misc$experiment$organism,
+                                organism = seu()@misc$experiment$organism,
                                 mean_only = input$meanCoverage,
                                 rescale_introns = input$collapseIntrons,
                                 scale_y = input$yScale,

@@ -7,7 +7,7 @@ test_that("seurat preprocessed", {
   expect_gt(length(Seurat::VariableFeatures(processed_seurat)), 0)
 
   # data scaled
-  expect_false(all(is.na(slot(processed_seurat$RNA, "scale.data"))))
+  expect_false(all(is.na(slot(processed_seurat[["gene"]], "scale.data"))))
 })
 
 test_that("clustering workflow works", {

@@ -17,7 +17,7 @@ run_scvelo <- function(seu, loom_path, fit.quantile = 0.05, check_loom = FALSE, 
   ldat <- SeuratWrappers::ReadVelocity(file = loom_path)
   bm <- Seurat::as.Seurat(x = ldat)
 
-  bm[["RNA"]] <- bm[["spliced"]]
+  bm[["gene"]] <- bm[["spliced"]]
 
   # subset bm by seurat object.size
   bm <- bm[,colnames(bm) %in% colnames(seu)]
@@ -26,7 +26,7 @@ run_scvelo <- function(seu, loom_path, fit.quantile = 0.05, check_loom = FALSE, 
   sub_seu <- seu[,colnames(seu) %in% colnames(bm)]
 
   sub_seu@assays[names(bm@assays)] <- bm@assays
-  DefaultAssay(sub_seu) <- "RNA"
+  DefaultAssay(sub_seu) <- "gene"
   sub_seu@misc$vel <- NULL
   sub_seu@misc[names(sub_seu@misc) == "experiment"] <- NULL
 

@@ -38,7 +38,9 @@ seurat_integrate <- function(seu_list, method = "cca", organism = "human", ...) 
   # Prior to finding anchors, we perform standard preprocessing (log-normalization), and identify variable features individually for each. Note that Seurat v3 implements an improved method for variable feature selection based on a variance stabilizing transformation ("vst")
 
   for (i in 1:length(x = seu_list)) {
-    seu_list[[i]] <- seurat_preprocess(seu_list[[i]], scale = TRUE, ...)
+
+    seu_list[[i]][["gene"]] <- seurat_preprocess(seu_list[[i]][["gene"]], scale = TRUE)
+
     seu_list[[i]]$batch <- names(seu_list)[[i]]
   }
 
@@ -175,6 +177,7 @@ load_seurat_from_proj <- function(proj_dir, ...){
 #' perplexity should not be bigger than 3 * perplexity < nrow(X) - 1, see details for interpretation
 #'
 #' @param seu
+#' @param assay
 #' @param reduction
 #' @param legacy_settings
 #' @param ...
@@ -183,7 +186,13 @@ load_seurat_from_proj <- function(proj_dir, ...){
 #' @export
 #'
 #' @examples
-seurat_reduce_dimensions <- function(seu, reduction = "pca", legacy_settings = FALSE, ...) {
+seurat_reduce_dimensions <- function(seu, assay = "gene", reduction = "pca", legacy_settings = FALSE, ...) {
+
+  if ("integrated" %in% names(seu@assays)) {
+    assay = "integrated"
+  } else {
+    assay = "gene"
+  }
 
   num_samples <- dim(seu)[[2]]
 
@@ -195,10 +204,10 @@ seurat_reduce_dimensions <- function(seu, reduction = "pca", legacy_settings = F
 
   if (legacy_settings){
     message("using legacy settings")
-    seu <- Seurat::RunPCA(seu, features = rownames(seu))
+    seu <- Seurat::RunPCA(seu, assay = assay, features = rownames(seu))
   } else {
     # seu <- Seurat::RunPCA(object = seu, do.print = FALSE, npcs = npcs, ...)
-    seu <- Seurat::RunPCA(object = seu, features = Seurat::VariableFeatures(object = seu), do.print = FALSE, npcs = npcs, ...)
+    seu <- Seurat::RunPCA(object = seu, assay = assay, features = Seurat::VariableFeatures(object = seu), do.print = FALSE, npcs = npcs, ...)
   }
 
   if (reduction == "harmony"){
@@ -206,8 +215,8 @@ seurat_reduce_dimensions <- function(seu, reduction = "pca", legacy_settings = F
   }
 
   if ((ncol(seu) -1) > 3*30){
-    seu <- Seurat::RunTSNE(object = seu, reduction = reduction, dims = 1:30, ...)
-    seu <- Seurat::RunUMAP(object = seu, reduction = reduction, dims = 1:30, ...)
+    seu <- Seurat::RunTSNE(object = seu, assay = assay, reduction = reduction, dims = 1:30, ...)
+    seu <- Seurat::RunUMAP(object = seu, assay = assay, reduction = reduction, dims = 1:30, ...)
   }
 
   return(seu)
@@ -246,7 +255,7 @@ SetDefaultAssay <- function(seu, new_assay){
 
 #' Filter a List of Seurat Objects
 #'
-#' Filter Seurat Objects by custom variable and reset assay to uncorrected "RNA"
+#' Filter Seurat Objects by custom variable and reset assay to uncorrected "gene"
 #'
 #' @param seus
 #' @param filter_var
@@ -305,7 +314,7 @@ filter_merged_seu <- function(seu, filter_var, filter_val, .drop = .drop) {
 #'
 reintegrate_seu <- function(seu, feature = "gene", suffix = "", reduction = "pca", algorithm = 1, ...){
 
-  Seurat::DefaultAssay(seu) <- "RNA"
+  Seurat::DefaultAssay(seu) <- "gene"
 
   organism = Misc(seu)$experiment$organism
   experiment_name = Misc(seu)$experiment$experiment_name

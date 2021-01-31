@@ -15,7 +15,7 @@ cross_plot_vars <- function(seu, resolution, mycols) {
     active_assay <- "integrated"
   }
   else {
-    active_assay <- "RNA"
+    active_assay <- "gene"
   }
 
   cluster_resolution = paste0(active_assay,
@@ -260,7 +260,7 @@ plot_multiple_branches_heatmap <- function(cds,
 #' plot_var(seurat_pancreas_reduced$gene, group = "batch")
 plot_var <- function(seu, embedding = "umap", group = "batch", dims = c(1,2), highlight = NULL, pt.size = 1.0, return_plotly = TRUE, ...){
 
-  Seurat::DefaultAssay(seu) <- "RNA"
+  Seurat::DefaultAssay(seu) <- "gene"
 
   # metadata <- tibble::as_tibble(seu[[]][Seurat::Cells(seu),], rownames = "sID")
   # cellid <- metadata[["sID"]]
@@ -334,7 +334,7 @@ plotly_settings <- function(plotly_plot, width = 600, height = 700){
 #'
 #' plot_violin(seurat_pancreas_reduced$gene, plot_var = "batch", features = c("NRL"))
 #'
-plot_violin <- function(seu, plot_var = "batch", plot_vals = NULL, features = "RXRG", assay = "RNA", ...){
+plot_violin <- function(seu, plot_var = "batch", plot_vals = NULL, features = "RXRG", assay = "gene", ...){
 
   if (is.null(plot_vals)) {
     plot_vals = unique(seu[[]][[plot_var]])
@@ -375,7 +375,7 @@ plot_violin <- function(seu, plot_var = "batch", plot_vals = NULL, features = "R
 #'
 plot_feature <- function(seu, embedding = c("umap", "pca", "tsne"), features, dims = c(1,2), return_plotly = TRUE, pt.size = 1.0){
 
-  Seurat::DefaultAssay(seu) <- "RNA"
+  Seurat::DefaultAssay(seu) <- "gene"
 
   metadata <- seu[[]][Seurat::Cells(seu),]
   key <- rownames(metadata)
@@ -462,7 +462,7 @@ plot_markers <- function(seu, metavar = "batch", num_markers = 5, selected_value
   Idents(seu) <- seu[[metavar]]
 
   # by default only resolution markers are calculated in pre-processing
-  seu <- find_all_markers(seu, metavar)
+  seu <- find_all_markers(seu, metavar, seurat_assay = "gene")
 
   markers <- seu@misc$markers[[metavar]][[marker_method]] %>%
     dplyr::mutate(dplyr::across(.fns = as.character))
@@ -711,8 +711,7 @@ seu_complex_heatmap <- function(seu, features = NULL, cells = NULL, group.by = "
 #'
 #' plot the proportion of reads of a given gene map to each transcript
 #'
-#' @param seu_transcript
-#' @param seu_gene
+#' @param seu
 #' @param gene_symbol
 #' @param group.by
 #' @param standardize
@@ -721,7 +720,7 @@ seu_complex_heatmap <- function(seu, features = NULL, cells = NULL, group.by = "
 #' @export
 #'
 #' @examples
-plot_transcript_composition <- function(seu_transcript, seu_gene, gene_symbol, group.by = "batch", standardize = FALSE, drop_zero = FALSE){
+plot_transcript_composition <- function(seu, gene_symbol, group.by = "batch", standardize = FALSE, drop_zero = FALSE){
   # browser()
 
   transcripts <- annotables::grch38 %>%
@@ -729,14 +728,14 @@ plot_transcript_composition <- function(seu_transcript, seu_gene, gene_symbol, g
     dplyr::left_join(annotables::grch38_tx2gene, by = "ensgene") %>%
     dplyr::pull(enstxp)
 
-  metadata <- seu_transcript@meta.data
+  metadata <- seu@meta.data
   metadata$sample_id <- NULL
   metadata <-
     metadata %>%
     tibble::rownames_to_column("sample_id") %>%
     dplyr::select(sample_id, group.by = {{group.by}})
 
-  data <- GetAssayData(seu_transcript, assay = "RNA", slot = "data")[transcripts,]
+  data <- GetAssayData(seu, assay = "transcript", slot = "data")[transcripts,]
 
   data <- t(expm1(as.matrix(data)))
 
@@ -791,18 +790,13 @@ plot_transcript_composition <- function(seu_transcript, seu_gene, gene_symbol, g
 #'
 #' Plot all transcripts
 #'
-plot_all_transcripts <- function(seu_transcript, seu_gene, features, embedding){
+plot_all_transcripts <- function(seu, features, embedding = "umap"){
 
+  transcript_cols <- as.data.frame(t(as.matrix(seu[["transcript"]][features,])))
 
-  transcript_cols <- as.data.frame(t(as.matrix(seu_transcript[["RNA"]][features,])))
+  seu <- AddMetaData(seu, transcript_cols)
 
-  cells <- rownames(transcript_cols)
-  transcript_cols <- as.list(transcript_cols) %>%
-    purrr::map(~purrr::set_names(.x, cells))
-
-  seu_gene[[features]] <- transcript_cols
-
-  pList <- purrr::map(features, ~plot_feature(seu_gene,
+  pList <- purrr::map(features, ~plot_feature(seu,
                                               embedding = embedding,
                                               features = .x, return_plotly = FALSE))
   names(pList) <- features
