@@ -5,7 +5,7 @@
 \title{Title}
 \usage{
 update_seuratTools_object(
-  seu,
+  seu_path,
   feature,
   resolution = seq(0.2, 2, by = 0.2),
   ...
