@@ -528,16 +528,14 @@ seuratApp <- function(preset_project, appTitle = "seuratTools", feature_types = 
         {
           shiny::incProgress(2 / 10)
           print(uploadSeuratPath())
-          seu(readRDS(uploadSeuratPath()))
+          updated_seu <- update_seuratTools_object(seu_path = uploadSeuratPath(), organism = organism)
+          seu(updated_seu)
           shiny::incProgress(6 / 10)
 
           organism <- case_when(
             stringr::str_detect(uploadSeuratPath(), "Hs") ~ "human",
             stringr::str_detect(uploadSeuratPath(), "Mm") ~ "mouse"
           )
-
-          updated_seu <- update_seuratTools_object(seu(), organism = organism)
-          seu(updated_seu)
 
           print(uploadSeuratPath())
           print(names(seu))

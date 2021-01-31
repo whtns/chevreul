@@ -361,7 +361,7 @@ record_experiment_data <- function(object, experiment_name = "default_experiment
 
 #' Title
 #'
-#' @param seu
+#' @param seu_path
 #' @param feature
 #' @param resolution
 #' @param ...
@@ -370,7 +370,14 @@ record_experiment_data <- function(object, experiment_name = "default_experiment
 #' @export
 #'
 #' @examples
-update_seuratTools_object <- function(seu, feature, resolution = seq(0.2, 2.0, by = 0.2), ...){
+update_seuratTools_object <- function(seu_path, feature, resolution = seq(0.2, 2.0, by = 0.2), ...){
+
+  seu <- readRDS(seu_path)
+
+  if(is.list(seu)){
+    seu <- convert_seu_list_to_multimodal(seu)
+    # seu <- Seurat::UpdateSeuratObject(seu)
+  }
 
   # set appropriate assay
   if ("integrated" %in% names(seu@assays)) {
@@ -391,10 +398,11 @@ update_seuratTools_object <- function(seu, feature, resolution = seq(0.2, 2.0, b
       seu <- seurat_cluster(seu = seu, resolution = resolution, reduction = "pca", ...)
 
     }
-      seu <- find_all_markers(seu, resolution = resolution)
-      seu <- record_experiment_data(seu, ...)
-      seu <- seu_calcn(seu)
-  }
+    seu <- find_all_markers(seu, resolution = resolution)
+    seu <- record_experiment_data(seu, ...)
+    seu <- seu_calcn(seu)
+    # saveRDS(seu, gsub(".rds", "_multimodal.rds", seu_path))
+    }
 
   return(seu)
 
