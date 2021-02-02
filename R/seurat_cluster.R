@@ -63,7 +63,8 @@ find_all_markers <- function(seu, metavar = NULL, seurat_assay = "gene", ...){
     cluster_index <- grepl(paste0(seurat_assay, "_snn_res."), colnames(seu[[]]))
 
     if(!any(cluster_index)) {
-      stop("no clusters found in metadata. Please run seurat_cluster")
+      warning("no clusters found in metadata. runnings seurat_cluster")
+      seu <- seurat_cluster(seu, resolution = seq(0.2, 2.0, by = 0.2))
     }
 
     clusters <- seu[[]][,cluster_index]
@@ -114,14 +115,25 @@ stash_marker_features <- function(metavar, seu, seurat_assay, top_n = 200){
       tidyr::pivot_wider(names_from = group, values_from = feature) %>%
       dplyr::select(-rn)
 
-    markers$genesorteR <- genesorteR::sortGenes(
-      Seurat::GetAssayData(seu, assay = seurat_assay, slot = "data"),
-      seu[[]][[metavar]]
-    )
 
-    markers$genesorteR <-
-      apply(markers$genesorteR$specScore, 2, function(x) names(head(sort(x, decreasing = TRUE), n = top_n))) %>%
-      as.data.frame()
+    markers$genesorteR <- tryCatch({
+      genesorter_results <- genesorteR::sortGenes(
+        Seurat::GetAssayData(seu, assay = seurat_assay, slot = "data"),
+        seu[[]][[metavar]])
+
+      apply(genesorter_results$specScore, 2, function(x) names(head(sort(x, decreasing = TRUE), n = top_n))) %>%
+        as.data.frame()
+
+    }, warning = function(w) {
+        message(sprintf("Warning in %s: %s", deparse(w[["call"]]), w[["message"]]))
+
+    }, error = function(e) {
+        message(sprintf("Error in %s: %s", deparse(e[["call"]]), e[["message"]]))
+
+    }, finally = {
+        NULL
+    })
+
 
   return(markers)
 

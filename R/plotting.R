@@ -721,7 +721,7 @@ seu_complex_heatmap <- function(seu, features = NULL, cells = NULL, group.by = "
 #'
 #' @examples
 plot_transcript_composition <- function(seu, gene_symbol, group.by = "batch", standardize = FALSE, drop_zero = FALSE){
-  # browser()
+  browser()
 
   transcripts <- annotables::grch38 %>%
     dplyr::filter(symbol == gene_symbol) %>%

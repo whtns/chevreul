@@ -2,9 +2,11 @@
 % Please edit documentation in R/utils.R
 \name{reorg_seurat_files}
 \alias{reorg_seurat_files}
-\title{Reorganize seurat objects}
+\title{Reorganize seurat objects to a multimodal format}
 \usage{
-reorg_seurat_files(proj_dir = NULL)
+reorg_seurat_files(
+  projects_db = "~/.cache/seuratTools/single-cell-projects.db"
+)
 }
 \arguments{
 \item{proj_dir}{}
@@ -13,5 +15,5 @@ reorg_seurat_files(proj_dir = NULL)
 
 }
 \description{
-Reorganize seurat objects
+Reorganize seurat objects to a multimodal format
 }
