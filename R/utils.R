@@ -155,7 +155,7 @@ list_plot_types <- function(seu){
 }
 
 
-#' Reorganize seurat objects
+#' Reorganize seurat objects to a multimodal format
 #'
 #' @param proj_dir
 #'
@@ -163,42 +163,70 @@ list_plot_types <- function(seu){
 #' @export
 #'
 #' @examples
-reorg_seurat_files <- function(proj_dir = NULL){
-  seurat_dir <- fs::path(proj_dir, "output", "seurat")
+reorg_seurat_files <- function(projects_db = "~/.cache/seuratTools/single-cell-projects.db"){
+  conn <- DBI::dbConnect(RSQLite::SQLite(), projects_db)
 
-  features <- c("gene", "transcript")
+  project_paths <- tbl(conn, "projects_tbl") %>%
+    select(project_name, project_path) %>%
+    collect() %>%
+    tibble::deframe() %>%
+    identity()
 
-  rds_files <- fs::dir_ls(seurat_dir) %>%
-    fs::path_filter(paste0("*", features, "_seu", "*", ".rds", collapse = "|")) %>%
-    purrr::set_names(gsub(".*seu|.rds", "", fs::path_file(.)))
+  DBI::dbDisconnect(conn)
 
-  names(rds_files) <- gsub("^_", "", names(rds_files))
-  names(rds_files)[names(rds_files) == ""] <- "unfiltered"
+  seurat_dirs <- map(project_paths, fs::path, "output", "seurat")
 
-  names(rds_files) <- paste0(names(rds_files), "_seu.rds")
+  get_seurat_objects <- function(seurat_dir){
+    rds_files <- fs::dir_ls(seurat_dir) %>%
+      fs::path_filter("*.rds")
+  }
 
-  rds_files <- rds_files[order(names(rds_files))]
+  seurat_objects <- map(seurat_dirs, possibly(get_seurat_objects, NA))
 
-  rds_files <- split(rds_files, names(rds_files))
+  seurat_objects <- seurat_objects[!is.na(seurat_objects)]
 
-  rds_files <- purrr::map(rds_files, ~purrr::set_names(.x, c("gene", "transcript")))
+  seurat_objects <- seurat_objects[lapply(seurat_objects,length)>0]
 
-  message(paste0("reading in files: ", unlist(rds_files)))
-  rds_files <- purrr::map(rds_files, ~purrr::map(.x, readRDS))
+  seurat_objects <- seurat_objects[!names(seurat_objects) %in% c("20170407-SHL-FACS-Hs_proj", "20171031-SHL-FACS-Hs_proj")]
 
-  new_rds_paths <- fs::path(seurat_dir, names(rds_files))
+  # # seurat objects before conversion
+  # seurat_objects <- tibble::enframe(seurat_objects) %>%
+  #   tidyr::unnest() %>%
+  #   dplyr::filter(!stringr::str_detect(value, "_multimodal.rds")) %>%
+  #   dplyr::mutate(multi_copy = stringr::str_replace(value, ".rds", "_multimodal.rds")) %>%
+  #   dplyr::mutate(exists = fs::file_exists(multi_copy)) %>%
+  #   dplyr::filter(!exists) %>%
+  #   dplyr::filter(!str_detect(value, "sce")) %>%
+  #   dplyr::mutate(readable = fs::file_access(value, "read")) %>%
+  #   dplyr::mutate(writable = fs::file_access(value, "write")) %>%
+  #   dplyr::select(name, value) %>%
+  #   tibble::deframe() %>%
+  #   identity()
 
-  purrr::map2(rds_files, new_rds_paths, saveRDS)
+  # seurat objects after conversion
+  new_seurat_objects <- tibble::enframe(seurat_objects) %>%
+    tidyr::unnest() %>%
+    dplyr::filter(!stringr::str_detect(value, "_multimodal.rds")) %>%
+    dplyr::mutate(multi_copy = stringr::str_replace(value, ".rds", "_multimodal.rds")) %>%
+    dplyr::mutate(exists = fs::file_exists(multi_copy)) %>%
+    dplyr::filter(exists) %>%
+    dplyr::mutate(readable = fs::file_access(multi_copy, "read")) %>%
+    dplyr::mutate(writable = fs::file_access(value, "write")) %>%
+    # dplyr::filter(!str_detect(value, "sce")) %>%
+    # dplyr::mutate(readable = fs::file_access(value, "read")) %>%
+    # dplyr::mutate(writable = fs::file_access(value, "write")) %>%
+    # dplyr::select(name, value) %>%
+    # tibble::deframe() %>%
+    identity()
 
-  old_files <- fs::dir_ls(seurat_dir) %>%
-    fs::file_info() %>%
-    dplyr::filter(modification_time < lubridate::today()) %>%
-    dplyr::pull(path)
+  safe_update <- purrr::safely(update_seuratTools_object)
 
-  message(paste0("deleting old files: ", old_files))
-  fs::file_delete(old_files)
+  map(seurat_objects, safe_update, return_seu = FALSE)
 
-  return(rds_files)
+  # message(paste0("deleting old files: ", old_files))
+  # fs::file_delete(old_files)
+
+  # return(rds_files)
 }
 
 #' Get Transcripts in Seurat Object
@@ -370,13 +398,16 @@ record_experiment_data <- function(object, experiment_name = "default_experiment
 #' @export
 #'
 #' @examples
-update_seuratTools_object <- function(seu_path, feature, resolution = seq(0.2, 2.0, by = 0.2), ...){
-
+update_seuratTools_object <- function(seu_path, feature, resolution = seq(0.2, 2.0, by = 0.2), return_seu = TRUE, ...){
+  # browser()
+  message(seu_path)
   seu <- readRDS(seu_path)
 
   if(is.list(seu)){
     seu <- convert_seu_list_to_multimodal(seu)
     # seu <- Seurat::UpdateSeuratObject(seu)
+  } else {
+    seu <- RenameAssays(seu, RNA = "gene")
   }
 
   # set appropriate assay
@@ -401,10 +432,15 @@ update_seuratTools_object <- function(seu_path, feature, resolution = seq(0.2, 2
     seu <- find_all_markers(seu, resolution = resolution)
     seu <- record_experiment_data(seu, ...)
     seu <- seu_calcn(seu)
-    # saveRDS(seu, gsub(".rds", "_multimodal.rds", seu_path))
     }
 
-  return(seu)
+  if(return_seu){
+    return(seu)
+  } else {
+    message(paste0("saving ", seu_path))
+    saveRDS(seu, gsub(".rds", "_multimodal.rds", seu_path))
+    # saveRDS(seu, seu_path)
+  }
 
 }
 
@@ -612,18 +648,28 @@ swap_counts_from_feature <- function(cds, featureType){
 convert_seu_list_to_multimodal <- function(seu_list){
 
   colnames(seu_list[["gene"]]@meta.data) <- gsub("RNA_", "gene_", colnames(seu_list[["gene"]]@meta.data))
-  colnames(seu_list[["transcript"]]@meta.data) <- gsub("RNA_", "transcript_", colnames(seu_list[["transcript"]]@meta.data))
 
   multimodal_seu <- seu_list$gene
   multimodal_seu <- RenameAssays(multimodal_seu, RNA = "gene")
-  multimodal_seu[["transcript"]] <- seu_list$transcript$RNA
 
-  transcript_markers <- grepl("transcript_", names(seu_list$transcript@meta.data))
-  transcript_cluster_cols <- seu_list[["transcript"]]@meta.data[transcript_markers]
-  multimodal_seu <- AddMetaData(multimodal_seu, transcript_cluster_cols)
+  if ("transcript" %in% names(seu_list)){
+    if (identical(length(Cells(seu_list$gene)), length(Cells(seu_list$transcript)))){
+      colnames(seu_list[["transcript"]]@meta.data) <- gsub("RNA_", "transcript_", colnames(seu_list[["transcript"]]@meta.data))
+      multimodal_seu[["transcript"]] <- seu_list$transcript$RNA
+      transcript_markers <- grepl("transcript_", names(seu_list$transcript@meta.data))
+      transcript_cluster_cols <- seu_list[["transcript"]]@meta.data[transcript_markers]
+      if(length(transcript_cluster_cols) > 0){
+        multimodal_seu <- AddMetaData(multimodal_seu, transcript_cluster_cols)
+      }
+    }
+  }
 
   marker_names <- names(Misc(multimodal_seu)[["markers"]])
-  names(multimodal_seu@misc$markers) <- gsub("RNA", "gene", marker_names)
+
+  if(!is.null(multimodal_seu@misc$markers)){
+    names(multimodal_seu@misc$markers) <- gsub("RNA", "gene", marker_names)
+  }
+
 
   return(multimodal_seu)
 }

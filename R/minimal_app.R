@@ -355,14 +355,16 @@ minimalSeuratApp <- function(object = seurat_pancreas_reduced, loom_path = NULL,
     # plot all transcripts
     observe({
       req(featureType())
-      callModule(
-        allTranscripts, "alltranscripts1", seu, featureType,
-        organism_type
-      )
+      req(seu())
+      if ("transcript" %in% names(seu()@assays)){
+        callModule(
+          allTranscripts, "alltranscripts1", seu, featureType,
+          organism_type
+        )
 
-      callModule(plotDimRed, "alltranscripts2", seu, plot_types, featureType,
-                 organism_type = organism_type, reductions
-      )
+        callModule(plotDimRed, "alltranscripts2", seu, plot_types, featureType,
+                   organism_type = organism_type, reductions)
+      }
     })
 
     diffex_results <- callModule(

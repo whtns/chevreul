@@ -79,7 +79,7 @@ seurat_integration_pipeline <- function(seu_list, feature, resolution = seq(0.2,
 #'
 #' @examples
 seurat_pipeline <- function(seu, assay = "gene", resolution=0.6, reduction = "pca", organism = "human", ...){
-  # browser()
+  browser()
   assays <- names(seu@assays)
 
   assays <- assays[assays %in% c("gene", "transcript")]
