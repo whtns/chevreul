@@ -22,3 +22,6 @@ seurat_pipeline(
 \description{
 Preprocess, Cluster and Reduce Dimensions for a single seurat object
 }
+\examples{
+
+}

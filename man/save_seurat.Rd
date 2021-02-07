@@ -22,6 +22,5 @@ Save seurat object to <project>/output/sce/<feature>_seu.rds
 save_seurat(gene = feature_seus$gene, transcript = feature_seus$transcript, proj_dir = proj_dir)
 
 save_seurat(gene = feature_seus$gene, transcript = feature_seus$transcript, prefix = "remove_nonPRs", proj_dir = proj_dir)
-
 }
 }

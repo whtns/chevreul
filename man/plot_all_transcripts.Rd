@@ -17,6 +17,8 @@ Plot All Transcripts
 }
 \examples{
 
-Plot all transcripts
+processed_seu <- clustering_workflow(human_gene_transcript_seu)
+transcripts_to_plot <- genes_to_transcripts("RXRG")
+plot_all_transcripts(processed_seu, features = transcripts_to_plot)
 
 }

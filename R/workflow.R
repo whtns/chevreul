@@ -14,68 +14,53 @@
 #' @export
 #'
 #' @examples
-#' batches <- seurat_pancreas_reduced %>%
+#' batches <- panc8 %>%
 #'   purrr::map(Seurat::SplitObject, split.by = "tech") %>%
 #'   purrr::transpose()
 #'
 #' integrated_seu <- integration_workflow(batches)
-
 integration_workflow <- function(batches, excluded_cells = NULL, resolution = seq(0.2, 2.0, by = 0.2), experiment_name = "default_experiment", organism = "human", ...) {
-
   checkmate::check_list(batches)
 
   checkmate::check_character(excluded_cells)
 
   # organisms <- purrr::map(batches, Misc, c("experiment", "organism"))
 
-  organisms <- purrr::map(batches, list(1, "meta.data", "organism", 1))
+  organisms <- purrr::map(batches, list("meta.data", "organism", 1))
 
-  if (any(map_lgl(organisms, is.null))){
+  if (any(purrr::map_lgl(organisms, is.null))) {
     organisms <- case_when(
-        grepl("Hs", names(batches)) ~ "human",
-        grepl("Mm", names(batches)) ~ "mouse"
-      )
+      grepl("Hs", names(batches)) ~ "human",
+      grepl("Mm", names(batches)) ~ "mouse"
+    )
     names(organisms) <- names(batches)
   }
 
   experiment_names <- names(batches)
 
-  batches <- purrr::transpose(batches)
-  for (i in names(batches)){
-    batches[[i]] <- purrr::pmap(list(batches[[i]], experiment_names, organisms), record_experiment_data)
-  }
-  batches <- purrr::transpose(batches)
+  batches <- purrr::pmap(list(batches, experiment_names, organisms), record_experiment_data)
 
-  if (all(purrr::map(batches, list(1, "misc", "experiment", "organism")) == "human")){
-    batches <- purrr::transpose(batches)
-    merged_batches <- purrr::imap(batches, seuratTools::seurat_integration_pipeline, resolution = resolution, organism = "human", ...)
-    for (i in names(merged_batches)){
-      merged_batches[[i]]@misc$batches <- names(batches)
-    }
+  if (all(purrr::map(batches, list("misc", "experiment", "organism")) == "human")) {
+    merged_batches <- seurat_integration_pipeline(batches, resolution = resolution, organism = "human", ...)
 
-  } else if (all(purrr::map(batches, list(1, "misc", "experiment", "organism")) == "mouse")){
-    batches <- purrr::transpose(batches)
+    merged_batches@misc$batches <- names(batches)
+  } else if (all(purrr::map(batches, list("misc", "experiment", "organism")) == "mouse")) {
     merged_batches <- purrr::imap(batches, seuratTools::seurat_integration_pipeline, resolution = resolution, organism = "mouse", ...)
-    for (i in names(merged_batches)){
-      merged_batches[[i]]@misc$batches <- names(batches)
-    }
 
-  }  else {
-
-    # mouse_seu_list <- batches[grepl("Mm", names(batches))]
+    merged_batches@misc$batches <- names(batches)
+  } else {
     mouse_seu_list <- batches[names(organisms[organisms == "mouse"])]
-    # human_seu_list <- batches[grepl("Hs", names(batches))]
+
     human_seu_list <- batches[names(organisms[organisms == "human"])]
+
     merged_batches <- cross_species_integrate(mouse_seu_list = mouse_seu_list, human_seu_list = human_seu_list)
-    for (i in names(merged_batches)){
-      merged_batches[[i]]@misc$batches <- names(batches)
-    }
+
+    merged_batches@misc$batches <- names(batches)
   }
 
-  merged_batches <- purrr::map(merged_batches, record_experiment_data, experiment_name, organism)
+  merged_batches <- record_experiment_data(merged_batches, experiment_name, organism)
 
   return(merged_batches)
-
 }
 
 
@@ -94,15 +79,12 @@ integration_workflow <- function(batches, excluded_cells = NULL, resolution = se
 #' @export
 #'
 #' @examples
-#' clustered_seu <- clustering_workflow(seurat_pancreas_reduced)
-clustering_workflow <- function(seu, excluded_cells, resolution = seq(0.2, 2.0, by = 0.2), organism = "human", experiment_name = "default_experiment", ...){
-
+#' clustered_human_seu <- clustering_workflow(panc8)
+#' clustered_mouse_seu <- clustering_workflow(baron2016singlecell)
+clustering_workflow <- function(seu, excluded_cells, resolution = seq(0.2, 2.0, by = 0.2), organism = "human", experiment_name = "default_experiment", ...) {
   seu <- seurat_pipeline(seu, resolution = resolution, organism = organism, ...)
 
   seu <- record_experiment_data(seu, experiment_name, organism)
 
   # save_seurat(feature_seus, proj_dir = proj_dir, ...)
-
 }
-
-

@@ -2,7 +2,8 @@
 % Please edit documentation in R/utils.R
 \name{seu_calcn}
 \alias{seu_calcn}
-\title{recalculate counts/features per cell for a seurat object}
+\title{Calculate Read Count Metrics for a Seurat object
+recalculate counts/features per cell for a seurat object}
 \usage{
 seu_calcn(seu, assay = "gene", slot = "counts")
 }
@@ -13,5 +14,6 @@ seu_calcn(seu, assay = "gene", slot = "counts")
 
 }
 \description{
+Calculate Read Count Metrics for a Seurat object
 recalculate counts/features per cell for a seurat object
 }

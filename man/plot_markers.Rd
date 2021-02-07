@@ -30,6 +30,10 @@ available methods are wilcoxon rank-sum test implemented in
 }
 \examples{
 
-plot_markers(seurat_pancreas_reduced$gene, "tech", return_plot = TRUE)
+# interactive mode using "presto"
+plot_markers(panc8, metavar = "tech", marker_method = "presto", return_plotly = TRUE)
+
+# static mode using "presto"
+plot_markers(panc8, metavar = "tech", marker_method = "genesorteR", return_plotly = FALSE)
 
 }

@@ -22,7 +22,6 @@ reformatMetadataDRui <- function(id) {
       ),
       actionButton(ns("updateMetadata"), "Update Metadata"),
       radioButtons(ns("updateMethod"), "Update By:", choices = c("table (below)" = "spreadsheet", "uploaded file" = "file"), inline = TRUE),
-      downloadLink(ns("downloadMetadata"), "Download Metadata"),
       # rhandsontable::rHandsontableOutput(ns("seuTable")),
       width = 12,
       dataSelectUI(ns("select1")),
@@ -159,7 +158,7 @@ reformatMetadataDR <- function(input, output, session, seu, featureType = "gene"
       else if (length(values$rows) == 0 & length(values$columns) != 0) {
         values$data_active <- values$data[, values$columns, drop = FALSE]
       }
-      else if (length(values$rows) != 0 & length(values$columns) !=0) {
+      else if (length(values$rows) != 0 & length(values$columns) != 0) {
         values$data_active <- values$data[values$rows, values$columns, drop = FALSE]
       }
     }
@@ -179,21 +178,19 @@ reformatMetadataDR <- function(input, output, session, seu, featureType = "gene"
   })
 
   observeEvent(input$updateMetadata, {
-    if (input$updateMethod == "file"){
+    if (input$updateMethod == "file") {
       inFile <- input$metaFile
 
-      if (is.null(inFile)){
+      if (is.null(inFile)) {
         return(NULL)
       }
 
       reformatted_seu <- format_new_metadata(seu(), inFile$datapath)
       seu(reformatted_seu)
-
-    } else if (input$updateMethod == "spreadsheet"){
+    } else if (input$updateMethod == "spreadsheet") {
       reformatted_seu <- propagate_spreadsheet_changes(values$data_active, seu())
       seu(reformatted_seu)
     }
-
   })
 
 
@@ -261,5 +258,4 @@ reformatMetadataDR <- function(input, output, session, seu, featureType = "gene"
   })
 
   return(seu)
-
 }

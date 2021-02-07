@@ -10,53 +10,51 @@
 #' @return Returns a data frame of enrichment terms, p-values, ...
 #' @author Wajid Jawaid, modified by Roman Hillje
 .send_enrichr_query <- function(
-  genes,
-  databases = NULL,
-  URL_API = NULL
-)
-{
+                                genes,
+                                databases = NULL,
+                                URL_API = NULL) {
   if (
     is.vector(genes) &
-    !all(genes == '') &
-    length(genes) != 0
-  )
-  {
+      !all(genes == "") &
+      length(genes) != 0
+  ) {
     temp <- httr::POST(
       url = URL_API,
-      body = list(list = paste(genes, collapse = '\n'))
+      body = list(list = paste(genes, collapse = "\n"))
     )
-  } else if ( is.data.frame(genes) )
-  {
+  } else if (is.data.frame(genes)) {
     temp <- httr::POST(
       url = URL_API,
-      body = list(list = paste(paste(genes[,1], genes[,2], sep = ','), collapse = '\n'))
+      body = list(list = paste(paste(genes[, 1], genes[, 2], sep = ","), collapse = "\n"))
     )
-  } else
-  {
+  } else {
     warning(
-      paste0('genes must be a non-empty vector of gene names or a dataframe ',
-             'with genes and score.'
+      paste0(
+        "genes must be a non-empty vector of gene names or a dataframe ",
+        "with genes and score."
       )
     )
   }
-  httr::GET(url = 'http://amp.pharm.mssm.edu/Enrichr/share')
+  httr::GET(url = "http://amp.pharm.mssm.edu/Enrichr/share")
   dfSAF <- options()$stringsAsFactors
   options(stringsAsFactors = FALSE)
-  result <- future.apply::future_sapply(databases, USE.NAMES = TRUE,
-                                        simplify = FALSE, function(x)
-                                        {
-
-                                          r <- httr::GET(
-                                            url = 'http://amp.pharm.mssm.edu/Enrichr/export',
-                                            query = list(file = 'API', backgroundType = x)
-                                          )
-                                          r <- gsub('&#39;', "'", intToUtf8(r$content))
-                                          tc <- textConnection(r)
-                                          r <- utils::read.table(tc, sep = '\t', header = TRUE, quote = '',
-                                                                 comment.char = '')
-                                          close(tc)
-                                          return(r)
-                                        })
+  result <- future.apply::future_sapply(databases,
+    USE.NAMES = TRUE,
+    simplify = FALSE, function(x) {
+      r <- httr::GET(
+        url = "http://amp.pharm.mssm.edu/Enrichr/export",
+        query = list(file = "API", backgroundType = x)
+      )
+      r <- gsub("&#39;", "'", intToUtf8(r$content))
+      tc <- textConnection(r)
+      r <- utils::read.table(tc,
+        sep = "\t", header = TRUE, quote = "",
+        comment.char = ""
+      )
+      close(tc)
+      return(r)
+    }
+  )
   return(result)
 }
 
@@ -87,55 +85,53 @@
 #' @author Roman Hillje, modified by Kevin Stachelek
 #' @examples
 #' pbmc <- readRDS(system.file("extdata/v1.2/seurat_pbmc.rds",
-#'   package = "cerebroApp"))
+#'   package = "cerebroApp"
+#' ))
 #' pbmc <- getEnrichedPathways(
 #'   object = pbmc,
-#'   column_sample = 'sample',
-#'   column_cluster = 'seurat_clusters',
-#'   databases = c('GO_Biological_Process_2018','GO_Cellular_Component_2018'),
+#'   column_sample = "sample",
+#'   column_cluster = "seurat_clusters",
+#'   databases = c("GO_Biological_Process_2018", "GO_Cellular_Component_2018"),
 #'   adj_p_cutoff = 0.01,
 #'   max_terms = 100,
-#'   URL_API = 'http://amp.pharm.mssm.edu/Enrichr/enrich'
+#'   URL_API = "http://amp.pharm.mssm.edu/Enrichr/enrich"
 #' )
 getEnrichedPathways <- function(
-  object,
-  column_cluster = 'group',
-  databases = c(
-    'GO_Biological_Process_2018',
-    'GO_Cellular_Component_2018',
-    'GO_Molecular_Function_2018',
-    'KEGG_2016',
-    'WikiPathways_2016',
-    'Reactome_2016',
-    'Panther_2016',
-    'Human_Gene_Atlas',
-    'Mouse_Gene_Atlas'
-  ),
-  adj_p_cutoff = 0.05,
-  max_terms = 100,
-  URL_API = 'http://amp.pharm.mssm.edu/Enrichr/enrich'
-) {
+                                object,
+                                column_cluster = "group",
+                                databases = c(
+                                  "GO_Biological_Process_2018",
+                                  "GO_Cellular_Component_2018",
+                                  "GO_Molecular_Function_2018",
+                                  "KEGG_2016",
+                                  "WikiPathways_2016",
+                                  "Reactome_2016",
+                                  "Panther_2016",
+                                  "Human_Gene_Atlas",
+                                  "Mouse_Gene_Atlas"
+                                ),
+                                adj_p_cutoff = 0.05,
+                                max_terms = 100,
+                                URL_API = "http://amp.pharm.mssm.edu/Enrichr/enrich") {
 
   ## check if Seurat is installed
-  if (!requireNamespace("Seurat", quietly = TRUE))
-  {
+  if (!requireNamespace("Seurat", quietly = TRUE)) {
     stop(
       "Package 'Seurat' needed for this function to work. Please install it.",
       call. = FALSE
     )
   }
-  ##--------------------------------------------------------------------------##
+  ## --------------------------------------------------------------------------##
   ## check if marker genes are present and stop if they aren't
-  ##--------------------------------------------------------------------------##
-  if ( is.null(object@misc$markers) )
-  {
+  ## --------------------------------------------------------------------------##
+  if (is.null(object@misc$markers)) {
     stop(
       "No marker genes found. Please run 'getMarkerGenes()' first.",
       call. = FALSE
     )
   }
 
-  ##--------------------------------------------------------------------------##
+  ## --------------------------------------------------------------------------##
   ## clusters
   ## - check if marker genes by cluster are available
   ## - extract marker genes by cluster
@@ -144,15 +140,13 @@ getEnrichedPathways <- function(
   ## - annotate marker genes for each cluster in parallel
   ## - try up to three times to run enrichR annotation (fails sometimes)
   ## - filter results
-  ##--------------------------------------------------------------------------##
-  if ( !is.null(object@misc$markers[[1]]$presto) )
-  {
-    if ( is.data.frame(object@misc$markers[[1]]$presto) )
-    {
+  ## --------------------------------------------------------------------------##
+  if (!is.null(object@misc$markers[[1]]$presto)) {
+    if (is.data.frame(object@misc$markers[[1]]$presto)) {
       message(
         paste0(
-          '[', format(Sys.time(), '%H:%M:%S'),
-          '] Get enriched pathway for clusters...'
+          "[", format(Sys.time(), "%H:%M:%S"),
+          "] Get enriched pathway for clusters..."
         )
       )
 
@@ -164,17 +158,15 @@ getEnrichedPathways <- function(
       cluster_names <- names(markers_by_cluster)
 
       results_by_cluster <- future.apply::future_sapply(
-        cluster_names, USE.NAMES = TRUE, simplify = FALSE,
-        future.globals = FALSE, function(x)
-        {
-
+        cluster_names,
+        USE.NAMES = TRUE, simplify = FALSE,
+        future.globals = FALSE, function(x) {
           temp <- list()
           attempt <- 1
-          while(
-            'Adjusted.P.value' %in% names(temp) == FALSE &&
-            attempt <= 3
-          )
-          {
+          while (
+            "Adjusted.P.value" %in% names(temp) == FALSE &&
+              attempt <= 3
+          ) {
             attempt <- attempt + 1
             try(
               temp <- markers_by_cluster %>%
@@ -183,41 +175,41 @@ getEnrichedPathways <- function(
             )
           }
           #
-          results_2 <- sapply(names(temp), USE.NAMES = TRUE,
-                              simplify = FALSE, function(y)
-                              {
+          results_2 <- sapply(names(temp),
+            USE.NAMES = TRUE,
+            simplify = FALSE, function(y) {
 
-                                ## apply cut-off of adj. p-value and add database info as column
-                                out <- temp[[y]] %>%
-                                  dplyr::filter(.data$Adjusted.P.value <= adj_p_cutoff) %>%
-                                  dplyr::mutate(db = y)
-                                ## if there are more than max_terms entries...
-                                if ( nrow(out) > max_terms )
-                                {
-                                  out <- out %>% dplyr::top_n(-max_terms, .data$Adjusted.P.value)
-                                  ## if there are no entries left
-                                } else if ( nrow(out) == 0 )
-                                {
-                                  out <- NULL
-                                }
-                                return(out)
-                              })
+              ## apply cut-off of adj. p-value and add database info as column
+              out <- temp[[y]] %>%
+                dplyr::filter(.data$Adjusted.P.value <= adj_p_cutoff) %>%
+                dplyr::mutate(db = y)
+              ## if there are more than max_terms entries...
+              if (nrow(out) > max_terms) {
+                out <- out %>% dplyr::top_n(-max_terms, .data$Adjusted.P.value)
+                ## if there are no entries left
+              } else if (nrow(out) == 0) {
+                out <- NULL
+              }
+              return(out)
+            }
+          )
           ## remove dbs without any enriched entries
-          for ( i in names(results_2) )
+          for (i in names(results_2))
           {
-            if ( is.null(results_2[[i]]) ) results_2[[i]] <- NULL
+            if (is.null(results_2[[i]])) results_2[[i]] <- NULL
           }
           ## merge databases within each cluster
           results_2 <- do.call(rbind, results_2)
           return(results_2)
-        })
+        }
+      )
       ## remove clusters without any enriched entry in any database
-      for ( i in names(results_by_cluster) )
+      for (i in names(results_by_cluster))
       {
-        if ( is.null(results_by_cluster[[i]]) ) results_by_cluster[[i]] <- NULL
+        if (is.null(results_by_cluster[[i]])) results_by_cluster[[i]] <- NULL
       }
       ## add cluster info as column
-      for ( i in names(results_by_cluster) )
+      for (i in names(results_by_cluster))
       {
         results_by_cluster[[i]] <- results_by_cluster[[i]] %>%
           dplyr::mutate(group = i)
@@ -226,47 +218,46 @@ getEnrichedPathways <- function(
       results_by_cluster <- do.call(rbind, results_by_cluster) %>%
         dplyr::select(.data$group, .data$db, dplyr::everything()) %>%
         dplyr::mutate(
-          cluster = factor(.data$group, levels = intersect(cluster_names,
-                                                           .data$group)),
+          cluster = factor(.data$group, levels = intersect(
+            cluster_names,
+            .data$group
+          )),
           db = factor(.data$db, databases)
         )
       message(
         paste0(
-          '[', format(Sys.time(), '%H:%M:%S'), '] ', nrow(results_by_cluster),
-          ' pathways passed the thresholds across all clusters and databases.'
+          "[", format(Sys.time(), "%H:%M:%S"), "] ", nrow(results_by_cluster),
+          " pathways passed the thresholds across all clusters and databases."
         )
       )
-    } else if ( object@misc$markers == 'no_markers_found' )
-    {
+    } else if (object@misc$markers == "no_markers_found") {
       message(
         paste0(
-          '[', format(Sys.time(), '%H:%M:%S'),
-          '] Skipping pathway enrichment for cluster because no marker genes ',
-          'were identified for any cluster.'
+          "[", format(Sys.time(), "%H:%M:%S"),
+          "] Skipping pathway enrichment for cluster because no marker genes ",
+          "were identified for any cluster."
         )
       )
-      results_by_cluster <- 'no_markers_found'
-    } else
-    {
+      results_by_cluster <- "no_markers_found"
+    } else {
       warning(
         paste0(
-          'Unexpected data format of marker genes for clusters. Please submit ',
-          'an issue on GitHub: https://github.com/romanhaa/cerebroApp.'
+          "Unexpected data format of marker genes for clusters. Please submit ",
+          "an issue on GitHub: https://github.com/romanhaa/cerebroApp."
         )
       )
     }
-  } else
-  {
+  } else {
     message(
       paste0(
-        '[', format(Sys.time(), '%H:%M:%S'),
-        '] No marker genes for clusters available.'
+        "[", format(Sys.time(), "%H:%M:%S"),
+        "] No marker genes for clusters available."
       )
     )
   }
-  ##---------------------------------------------------------------------------#
+  ## ---------------------------------------------------------------------------#
   ## merge results, add to Seurat object and return Seurat object
-  ##---------------------------------------------------------------------------#
+  ## ---------------------------------------------------------------------------#
   results <- list(
     by_cluster = results_by_cluster,
     parameters = list(
@@ -277,9 +268,9 @@ getEnrichedPathways <- function(
   )
   object@misc$enriched_pathways$enrichr <- results
 
-  ##--------------------------------------------------------------------------##
+  ## --------------------------------------------------------------------------##
   ## return Seurat object
-  ##--------------------------------------------------------------------------##
+  ## --------------------------------------------------------------------------##
   return(object)
 }
 
@@ -293,14 +284,13 @@ getEnrichedPathways <- function(
 #'
 #' @examples
 format_pathway_table <- function(enrich_by_cluster, cluster, db) {
-
   enrich_by_cluster <-
-  enrich_by_cluster %>%
+    enrich_by_cluster %>%
     dplyr::filter(
       cluster == cluster,
       db == db
     ) %>%
-    dplyr::select(3,4,5,6,10,11) %>%
+    dplyr::select(3, 4, 5, 6, 10, 11) %>%
     dplyr::arrange(-Combined.Score) %>%
     dplyr::mutate(
       P.value = formatC(P.value, format = "e", digits = 2),
@@ -327,7 +317,7 @@ format_pathway_table <- function(enrich_by_cluster, cluster, db) {
       extensions = c("Buttons"),
       class = "cell-border stripe",
       options = list(
-        columnDefs = list(list(visible = FALSE, targets = c(2,5))),
+        columnDefs = list(list(visible = FALSE, targets = c(2, 5))),
         scrollX = TRUE,
         dom = "Bfrtip",
         lengthMenu = c(15, 30, 50, 100),
@@ -359,6 +349,4 @@ format_pathway_table <- function(enrich_by_cluster, cluster, db) {
     DT::formatStyle(columns = c("combined score"), textAlign = "right")
 
   return(enrich_by_cluster)
-
-
 }

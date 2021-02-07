@@ -4,7 +4,7 @@
 \alias{add_percent_mito}
 \title{Annotate Low Read Count Category}
 \usage{
-add_percent_mito(seu, feature, organism)
+add_percent_mito(seu, organism = "human")
 }
 \arguments{
 \item{seu}{A seurat object}
@@ -16,4 +16,8 @@ add_percent_mito(seu, feature, organism)
 }
 \description{
 Add a Read Count Categorical Variable to Seurat Object (based on nCount_RNA)
+}
+\examples{
+add_percent_mito(panc8)
+add_percent_mito(baron2016singlecell, organism = "mouse")
 }

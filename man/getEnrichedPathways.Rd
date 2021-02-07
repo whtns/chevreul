@@ -48,15 +48,16 @@ Get enriched pathways based on marker genes from EnrichR.
 }
 \examples{
 pbmc <- readRDS(system.file("extdata/v1.2/seurat_pbmc.rds",
-  package = "cerebroApp"))
+  package = "cerebroApp"
+))
 pbmc <- getEnrichedPathways(
   object = pbmc,
-  column_sample = 'sample',
-  column_cluster = 'seurat_clusters',
-  databases = c('GO_Biological_Process_2018','GO_Cellular_Component_2018'),
+  column_sample = "sample",
+  column_cluster = "seurat_clusters",
+  databases = c("GO_Biological_Process_2018", "GO_Cellular_Component_2018"),
   adj_p_cutoff = 0.01,
   max_terms = 100,
-  URL_API = 'http://amp.pharm.mssm.edu/Enrichr/enrich'
+  URL_API = "http://amp.pharm.mssm.edu/Enrichr/enrich"
 )
 }
 \author{

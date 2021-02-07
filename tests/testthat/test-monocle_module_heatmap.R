@@ -26,12 +26,13 @@ test_that("heatmap is ordered by pseudotime", {
   # cds <- convert_seu_to_cds(seu$transcript, resolution = resolution)
 
   cds <- learn_graph_by_resolution(cds,
-                                   seu$gene,
-                                   resolution = resolution)
+    seu$gene,
+    resolution = resolution
+  )
 
   cds <- monocle3::order_cells(cds, root_cells = c("ds20170407_S442"))
 
-  cds_pr_test_res = monocle3::graph_test(cds, neighbor_graph="principal_graph", cores=4, expression_family = "negbinom")
+  cds_pr_test_res <- monocle3::graph_test(cds, neighbor_graph = "principal_graph", cores = 4, expression_family = "negbinom")
 
   cds_pr_test_res %>%
     subset(q_value < 0.05) %>%
@@ -43,5 +44,4 @@ test_that("heatmap is ordered by pseudotime", {
   test1 <- monocle_module_heatmap(cds, rownames(cds_pr_test_res), 1.6, collapse_rows = TRUE, group.by = "batch")
 
   test0$module_heatmap
-
 })

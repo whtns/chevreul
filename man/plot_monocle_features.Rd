@@ -2,7 +2,7 @@
 % Please edit documentation in R/monocle.R
 \name{plot_monocle_features}
 \alias{plot_monocle_features}
-\title{Plot a Monocle Cell Data Set}
+\title{Plot feature expression on a Monocle Cell Data Set}
 \usage{
 plot_monocle_features(cds, resolution, genes = NULL, ...)
 }
@@ -13,5 +13,5 @@ plot_monocle_features(cds, resolution, genes = NULL, ...)
 
 }
 \description{
-Plot a Monocle Cell Data Set
+Plot feature expression on a Monocle Cell Data Set
 }

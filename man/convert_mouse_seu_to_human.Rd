@@ -18,5 +18,4 @@ Convert Seurat Objects from Mouse to Human
 \examples{
 
 convert_mouse_seu_to_human(seurat_mouse_data)
-
 }

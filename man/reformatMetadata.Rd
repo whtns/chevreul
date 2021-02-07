@@ -15,3 +15,6 @@ reformatMetadata(input, output, session, seu, featureType = "gene")
 \description{
 Reformat Seurat Object Metadata Server
 }
+\examples{
+
+}
