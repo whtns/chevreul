@@ -22,6 +22,4 @@ Integrate Seurat Objects from Mouse to Human
 }
 \examples{
 
-
-
 }

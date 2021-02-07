@@ -19,3 +19,8 @@ regress_by_features(seu, feature_set, set_name, regress = TRUE, ...)
 \description{
 Regress Seurat Object by Given Set of Genes
 }
+\examples{
+
+regressed_seu <- regress_by_features(panc8, feature_set  = cc.genes$s.genes, set_name = "s_genes")
+
+}

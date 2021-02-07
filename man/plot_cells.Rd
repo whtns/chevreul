@@ -2,7 +2,7 @@
 % Please edit documentation in R/monocle.R
 \name{plot_cells}
 \alias{plot_cells}
-\title{Title}
+\title{Plot cells of a monocle cell data set}
 \usage{
 plot_cells(
   cds,
@@ -40,5 +40,5 @@ plot_cells(
 
 }
 \description{
-Title
+Plot cells of a monocle cell data set
 }

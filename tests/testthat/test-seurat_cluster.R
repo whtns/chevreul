@@ -12,5 +12,4 @@ test_that("seurat preprocessed", {
 
 test_that("clustering workflow works", {
   clustered_seu <- clustering_workflow(panc8)
-
 })

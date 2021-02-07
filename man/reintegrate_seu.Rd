@@ -32,5 +32,4 @@ reintegrate_seu(
 
 seurat_pancreas_reduced$gene$batch <- seurat_pancreas_reduced$gene$tech
 reintegrate_seu(seurat_pancreas_reduced)
-
 }

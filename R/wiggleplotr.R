@@ -1,4 +1,4 @@
-#' Create a tibble of big file paths by sample
+#' Create a tibble of bigwig file paths by sample
 #'
 #' @param seu
 #' @param bigwig_db
@@ -7,8 +7,7 @@
 #' @export
 #'
 #' @examples
-load_bigwigs <- function(seu, bigwig_db = "~/.cache/seuratTools/bw-files.db"){
-
+load_bigwigs <- function(seu, bigwig_db = "~/.cache/seuratTools/bw-files.db") {
   con <- DBI::dbConnect(RSQLite::SQLite(), dbname = bigwig_db)
 
   bigwigfiles <- DBI::dbReadTable(con, "bigwigfiles") %>%
@@ -27,8 +26,6 @@ load_bigwigs <- function(seu, bigwig_db = "~/.cache/seuratTools/bw-files.db"){
     dplyr::filter(sample_id %in% colnames(seu))
 
   return(bigwigfiles)
-
-
 }
 
 #' Plot BigWig Coverage for Genes of Interest Colored by a Given Variable
@@ -54,13 +51,12 @@ plot_gene_coverage_by_var <- function(genes_of_interest = "RXRG",
                                       values_of_interest = NULL,
                                       organism = "human",
                                       edb = NULL,
-                                      heights = c(3,1),
+                                      heights = c(3, 1),
                                       scale_y = "log10",
                                       reverse_x = FALSE,
                                       start = NULL,
                                       end = NULL,
                                       ...) {
-
   if (organism == "mouse") {
     edb <- EnsDb.Mmusculus.v79::EnsDb.Mmusculus.v79
   } else {
@@ -74,47 +70,49 @@ plot_gene_coverage_by_var <- function(genes_of_interest = "RXRG",
     cell_metadata %>%
     tibble::rownames_to_column("sample_id") %>%
     dplyr::select(sample_id,
-                  condition = {{var_of_interest}},
-                  track_id = {{var_of_interest}},
-                  colour_group = {{var_of_interest}},
-                  everything()) %>%
-    dplyr::mutate(scaling_factor = 1) %>% #scales::rescale(nCount_RNA)
+      condition = {{ var_of_interest }},
+      track_id = {{ var_of_interest }},
+      colour_group = {{ var_of_interest }},
+      everything()
+    ) %>%
+    dplyr::mutate(scaling_factor = 1) %>% # scales::rescale(nCount_RNA)
     dplyr::mutate(condition = as.factor(condition), colour_group = as.factor(colour_group)) %>%
     dplyr::left_join(bigwig_tbl, by = "sample_id") %>%
     dplyr::filter(!is.na(bigWig)) %>%
     identity()
 
-  if (!is.null(values_of_interest)){
+  if (!is.null(values_of_interest)) {
     new_track_data <-
       new_track_data %>%
       dplyr::filter(condition %in% values_of_interest)
   }
 
-  if(is.na(start) | is.na(end) | list(...)$rescale_introns == TRUE){
+  if (is.na(start) | is.na(end) | list(...)$rescale_introns == TRUE) {
     region_coords <- NULL
   } else {
     region_coords <- c(start, end)
   }
 
-  coverage_plot_list <- wiggleplotr::plotCoverageFromEnsembldb(ensembldb = edb,
-                            gene_names = genes_of_interest,
-                            track_data = new_track_data,
-                            heights = heights,
-                            alpha = 0.5,
-                            fill_palette = scales::hue_pal()(length(levels(new_track_data$colour_group))),
-                            return_subplots_list = TRUE,
-                            region_coords = region_coords,
-                            ...
-                            )
+  coverage_plot_list <- wiggleplotr::plotCoverageFromEnsembldb(
+    ensembldb = edb,
+    gene_names = genes_of_interest,
+    track_data = new_track_data,
+    heights = heights,
+    alpha = 0.5,
+    fill_palette = scales::hue_pal()(length(levels(new_track_data$colour_group))),
+    return_subplots_list = TRUE,
+    region_coords = region_coords,
+    ...
+  )
 
-  if(scale_y == "log10"){
+  if (scale_y == "log10") {
     coverage_plot_list$coverage_plot <-
       coverage_plot_list$coverage_plot +
       scale_y_continuous(trans = scales::pseudo_log_trans(base = 10), breaks = 10^(0:4)) +
       NULL
   }
 
-  if(reverse_x){
+  if (reverse_x) {
     transformed_x_lim <- ggplot2::ggplot_build(coverage_plot_list$coverage_plot)$layout$panel_params[[1]]$x.range
     # transformed_x_lim[1] <- transformed_x_lim[1] - diff(transformed_x_lim)*0.2
 
@@ -122,7 +120,8 @@ plot_gene_coverage_by_var <- function(genes_of_interest = "RXRG",
       coverage_plot_list$coverage_plot +
       coord_cartesian(
         xlim = rev(transformed_x_lim),
-        expand = FALSE) +
+        expand = FALSE
+      ) +
       NULL
 
     transformed_x_lim <- ggplot2::ggplot_build(coverage_plot_list$tx_structure)$layout$panel_params[[1]]$x.range
@@ -133,7 +132,8 @@ plot_gene_coverage_by_var <- function(genes_of_interest = "RXRG",
       scale_x_reverse() +
       coord_cartesian(
         xlim = rev(transformed_x_lim),
-        expand = FALSE) +
+        expand = FALSE
+      ) +
       NULL
   }
 
@@ -144,13 +144,10 @@ plot_gene_coverage_by_var <- function(genes_of_interest = "RXRG",
     # tidyr::drop_na() %>%
     dplyr::group_by(sample_id, colour_group) %>%
     dplyr::summarize(sum = signif(sum(coverage), 4)) %>%
-    dplyr::mutate(sum = sum/diff(x_lim)) %>%
+    dplyr::mutate(sum = sum / diff(x_lim)) %>%
     identity()
 
-  coverage_plot = patchwork::wrap_plots(coverage_plot_list, heights = heights, ncol = 1)
+  coverage_plot <- patchwork::wrap_plots(coverage_plot_list, heights = heights, ncol = 1)
 
   return(list(plot = coverage_plot, table = base_coverage))
-
 }
-
-

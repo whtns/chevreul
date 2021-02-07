@@ -15,3 +15,7 @@ convert_seu_to_cds(seu, resolution = 1)
 \description{
 Convert a Seurat Object to a Monocle Cell Data Set
 }
+\examples{
+processed_seu <- clustering_workflow(human_gene_transcript_seu)
+cds <- convert_seu_to_cds(processed_seu)
+}

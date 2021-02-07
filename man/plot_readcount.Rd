@@ -23,9 +23,9 @@ plot_readcount(
 Plot Read Count
 }
 \examples{
-
-plot_readcount(seurat_pancreas_reduced$gene)
-
-plot_readcount(seurat_pancreas_reduced$gene, return_plotly = FALSE)
+#interactive plotly
+plot_readcount(panc8)
+# static plot
+plot_readcount(panc8, return_plotly = FALSE)
 
 }

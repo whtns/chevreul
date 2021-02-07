@@ -12,13 +12,11 @@
 #'
 #' @examples
 update_seu_meta <- function(seu, proj_dir, numcols) {
-
-
   seu_meta <- as.data.frame(seu[[]])
 
   project_meta <- readr::read_csv(get_meta(proj_dir))
 
-	common_cols <- intersect(colnames(seu_meta), colnames(project_meta))
+  common_cols <- intersect(colnames(seu_meta), colnames(project_meta))
   seu_meta <- mutate_at(seu_meta, .vars = vars(one_of(numcols)), .funs = funs(as.numeric))
   updated_seu_meta <- dplyr::left_join(seu_meta, project_meta, by = "sample_id")
 
@@ -29,11 +27,10 @@ update_seu_meta <- function(seu, proj_dir, numcols) {
   colnames(left_side_columns) <- gsub("\\.y$", "", colnames(left_side_columns))
 
   updated_seu_meta <- cbind(updated_seu_meta, left_side_columns) %>%
-  	dplyr::select(-one_of(right_side_common)) %>%
-  	dplyr::select(-one_of(left_side_common)) %>%
-  	dplyr::select(Sample_ID, everything())
+    dplyr::select(-one_of(right_side_common)) %>%
+    dplyr::select(-one_of(left_side_common)) %>%
+    dplyr::select(Sample_ID, everything())
 }
-
 
 
 #' Reset Seurat Metadata
@@ -45,9 +42,7 @@ update_seu_meta <- function(seu, proj_dir, numcols) {
 #' @export
 #'
 #' @examples
-reset_seu_meta <- function(seu, new_meta){
-
-	seu@meta.data <- as.data.frame(new_meta, row.names = new_meta$sample_id)
-	return(seu)
+reset_seu_meta <- function(seu, new_meta) {
+  seu@meta.data <- as.data.frame(new_meta, row.names = new_meta$sample_id)
+  return(seu)
 }
-

@@ -32,8 +32,8 @@ Plot Annotated Complexheatmap from Seurat object
 }
 \examples{
 
-top_50_features <- VariableFeatures(seurat_pancreas_reduced$gene)[1:50]
-
-seu_complex_heatmap(seurat_pancreas_reduced$gene, features = top_50_features)
+# plot top 50 variable genes
+top_50_features <- VariableFeatures(panc8)[1:50]
+seu_complex_heatmap(panc8, features = top_50_features)
 
 }

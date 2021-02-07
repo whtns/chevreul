@@ -26,10 +26,12 @@ will be plotted using \href{https://www.bioconductor.org/packages/devel/bioc/htm
 }
 \examples{
 
-plot_feature(seurat_pancreas_reduced, embedding = "umap", features = c("NRL"))
-
-plot_feature(seurat_pancreas_reduced, embedding = "umap", features = c("RXRG", "NRL"))
-
-plot_feature(seurat_pancreas_reduced, embedding = "umap", features = c("RXRG", "NRL"), return_plotly = FALSE)
+# static, single feature
+plot_feature(panc8, embedding = "umap", features = c("NRL"), return_plotly = FALSE)
+# static, multi-feature
+plot_feature(panc8, embedding = "umap", features = c("RXRG", "NRL"), return_plotly = FALSE)
+# interactive, multi-feature
+plotly_plot <- plot_feature(panc8, embedding = "umap", features = c("RXRG", "NRL"))
+print(plotly_plot)
 
 }

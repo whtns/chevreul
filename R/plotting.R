@@ -9,6 +9,7 @@
 #' @export
 #'
 #' @examples
+#'
 cross_plot_vars <- function(seu, resolution, mycols) {
 
   if ("integrated" %in% names(seu@assays)) {
@@ -245,6 +246,7 @@ plot_multiple_branches_heatmap <- function(cds,
   }
 }
 
+
 #' Plot Metadata Variables
 #'
 #' @param seu
@@ -257,7 +259,13 @@ plot_multiple_branches_heatmap <- function(cds,
 #'
 #' @examples
 #'
-#' plot_var(seurat_pancreas_reduced$gene, group = "batch")
+#' # static mode
+#' plot_var(panc8, group = "batch", return_plotly  = FALSE)
+#'
+#' # interactive plotly plot
+#' plotly_plot <- plot_var(panc8, group = "batch")
+#' print(plotly_plot)
+#'
 plot_var <- function(seu, embedding = "umap", group = "batch", dims = c(1,2), highlight = NULL, pt.size = 1.0, return_plotly = TRUE, ...){
 
   Seurat::DefaultAssay(seu) <- "gene"
@@ -332,7 +340,7 @@ plotly_settings <- function(plotly_plot, width = 600, height = 700){
 #'
 #' @examples
 #'
-#' plot_violin(seurat_pancreas_reduced$gene, plot_var = "batch", features = c("NRL"))
+#' plot_violin(panc8, plot_var = "batch", features = c("NRL"))
 #'
 plot_violin <- function(seu, plot_var = "batch", plot_vals = NULL, features = "RXRG", assay = "gene", ...){
 
@@ -346,6 +354,8 @@ plot_violin <- function(seu, plot_var = "batch", plot_vals = NULL, features = "R
     # labs(title = "Expression Values for each cell are normalized by that cell's total expression then multiplied by 10,000 and natural-log transformed") +
     # stat_summary(fun.y = mean, geom = "line", size = 4, colour = "black") +
     NULL
+
+  print(vln_plot)
 
 }
 
@@ -367,11 +377,13 @@ plot_violin <- function(seu, plot_var = "batch", plot_vals = NULL, features = "R
 #'
 #' @examples
 #'
-#' plot_feature(seurat_pancreas_reduced, embedding = "umap", features = c("NRL"))
-#'
-#' plot_feature(seurat_pancreas_reduced, embedding = "umap", features = c("RXRG", "NRL"))
-#'
-#' plot_feature(seurat_pancreas_reduced, embedding = "umap", features = c("RXRG", "NRL"), return_plotly = FALSE)
+#' # static, single feature
+#' plot_feature(panc8, embedding = "umap", features = c("NRL"), return_plotly = FALSE)
+#' # static, multi-feature
+#' plot_feature(panc8, embedding = "umap", features = c("RXRG", "NRL"), return_plotly = FALSE)
+#' # interactive, multi-feature
+#' plotly_plot <- plot_feature(panc8, embedding = "umap", features = c("RXRG", "NRL"))
+#' print(plotly_plot)
 #'
 plot_feature <- function(seu, embedding = c("umap", "pca", "tsne"), features, dims = c(1,2), return_plotly = TRUE, pt.size = 1.0){
 
@@ -456,7 +468,11 @@ plot_ridge <- function(seu, features){
 #'
 #' @examples
 #'
-#' plot_markers(seurat_pancreas_reduced$gene, "tech", return_plot = TRUE)
+#' # interactive mode using "presto"
+#' plot_markers(panc8, metavar = "tech", marker_method = "presto", return_plotly = TRUE)
+#'
+#' # static mode using "presto"
+#' plot_markers(panc8, metavar = "tech", marker_method = "genesorteR", return_plotly = FALSE)
 #'
 plot_markers <- function(seu, metavar = "batch", num_markers = 5, selected_values = NULL, return_plotly = TRUE, marker_method = c("presto", "genesorteR"), featureType  = "gene", hide_pseudo = FALSE, unique_markers = FALSE, ...){
   Idents(seu) <- seu[[metavar]]
@@ -517,10 +533,10 @@ plot_markers <- function(seu, metavar = "batch", num_markers = 5, selected_value
   Idents(seu) <- metavar
 
   markerplot <- DotPlot(seu, features = sliced_markers, group.by = metavar, dot.scale = 3) +
-    theme(axis.text.x = element_text(size = 10, angle = 45, vjust = 1, hjust=1),
-          axis.text.y = element_text(size = 10)) +
-    scale_y_discrete(position = "right") +
-    coord_flip() +
+    ggplot2::theme(axis.text.x = ggplot2::element_text(size = 10, angle = 45, vjust = 1, hjust=1),
+          axis.text.y = ggplot2::element_text(size = 10)) +
+    ggplot2::scale_y_discrete(position = "right") +
+    ggplot2::coord_flip() +
     NULL
 
   if (return_plotly == FALSE) return(markerplot)
@@ -550,11 +566,12 @@ plot_markers <- function(seu, metavar = "batch", num_markers = 5, selected_value
 #' @export
 #'
 #' @examples
+#' #interactive plotly
+#' plot_readcount(panc8)
+#' # static plot
+#' plot_readcount(panc8, return_plotly = FALSE)
 #'
-#' plot_readcount(seurat_pancreas_reduced$gene)
-#'
-#' plot_readcount(seurat_pancreas_reduced$gene, return_plotly = FALSE)
-#'
+#' @importFrom ggplot2 ggplot aes geom_bar theme labs scale_y_log10
 plot_readcount <- function(seu, metavar = "nCount_RNA", color.by = "batch", yscale = "linear", return_plotly = TRUE, ...){
 
   seu_tbl <- tibble::rownames_to_column(seu[[]], "SID") %>%
@@ -607,9 +624,9 @@ plot_readcount <- function(seu, metavar = "nCount_RNA", color.by = "batch", ysca
 #'
 #' @examples
 #'
-#' top_50_features <- VariableFeatures(seurat_pancreas_reduced$gene)[1:50]
-#'
-#' seu_complex_heatmap(seurat_pancreas_reduced$gene, features = top_50_features)
+#' # plot top 50 variable genes
+#' top_50_features <- VariableFeatures(panc8)[1:50]
+#' seu_complex_heatmap(panc8, features = top_50_features)
 #'
 seu_complex_heatmap <- function(seu, features = NULL, cells = NULL, group.by = "ident",
                                 slot = "scale.data", assay = NULL, group.bar.height = 0.01,
@@ -652,7 +669,7 @@ seu_complex_heatmap <- function(seu, features = NULL, cells = NULL, group.by = "
     column_split <- ordered_meta[,1]
     cells <- rownames(ordered_meta)
     data <- data[cells,]
-    # browser()
+
     group.by = union(group.by, col_dendrogram)
   }
 
@@ -720,8 +737,10 @@ seu_complex_heatmap <- function(seu, features = NULL, cells = NULL, group.by = "
 #' @export
 #'
 #' @examples
+#' plot_transcript_composition(human_gene_transcript_seu, "RXRG", group.by = "gene_snn_res.0.6")
+#'
 plot_transcript_composition <- function(seu, gene_symbol, group.by = "batch", standardize = FALSE, drop_zero = FALSE){
-  browser()
+
 
   transcripts <- annotables::grch38 %>%
     dplyr::filter(symbol == gene_symbol) %>%
@@ -788,7 +807,9 @@ plot_transcript_composition <- function(seu, gene_symbol, group.by = "batch", st
 #'
 #' @examples
 #'
-#' Plot all transcripts
+#' processed_seu <- clustering_workflow(human_gene_transcript_seu)
+#' transcripts_to_plot <- genes_to_transcripts("RXRG")
+#' plot_all_transcripts(processed_seu, features = transcripts_to_plot)
 #'
 plot_all_transcripts <- function(seu, features, embedding = "umap"){
 

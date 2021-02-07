@@ -26,5 +26,11 @@ Plot Metadata Variables
 }
 \examples{
 
-plot_var(seurat_pancreas_reduced$gene, group = "batch")
+# static mode
+plot_var(panc8, group = "batch", return_plotly  = FALSE)
+
+# interactive plotly plot
+plotly_plot <- plot_var(panc8, group = "batch")
+print(plotly_plot)
+
 }

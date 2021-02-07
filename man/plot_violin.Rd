@@ -24,6 +24,6 @@ plot Violin plot
 }
 \examples{
 
-plot_violin(seurat_pancreas_reduced$gene, plot_var = "batch", features = c("NRL"))
+plot_violin(panc8, plot_var = "batch", features = c("NRL"))
 
 }

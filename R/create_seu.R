@@ -9,7 +9,7 @@
 #' @export
 #'
 #' @examples
-set_colnames_txi <- function(txi, colnames){
+set_colnames_txi <- function(txi, colnames) {
   colnames(txi$counts) <- colnames
   colnames(txi$abundance) <- colnames
   colnames(txi$length) <- colnames
@@ -28,15 +28,15 @@ set_colnames_txi <- function(txi, colnames){
 #' @export
 #'
 #' @examples
-load_counts_by_tximport <- function(proj_dir, type = "salmon", countsFromAbundance = "scaledTPM", edb = EnsDb.Hsapiens.v86::EnsDb.Hsapiens.v86){
-
+load_counts_by_tximport <- function(proj_dir, type = "salmon", countsFromAbundance = "scaledTPM", edb = EnsDb.Hsapiens.v86::EnsDb.Hsapiens.v86) {
   sample_glob <- switch(type,
-                        kallisto = "*abundance.h5",
-                        salmon = "*quant.sf",
-                        stringtie = "*t_data.ctab")
+    kallisto = "*abundance.h5",
+    salmon = "*quant.sf",
+    stringtie = "*t_data.ctab"
+  )
 
   sample_paths <- rlang::with_handlers(error = ~ rlang::abort("Can't find input files",
-                                                              parent = .
+    parent = .
   ), sample_files <- fs::path(
     proj_dir, "output",
     type
@@ -51,8 +51,10 @@ load_counts_by_tximport <- function(proj_dir, type = "salmon", countsFromAbundan
   txi_transcripts <- tximport::tximport(sample_files, type = type, tx2gene = tx2gene, txOut = T, countsFromAbundance = countsFromAbundance, ignoreTxVersion = TRUE)
 
   # sanitize transcript ids with trailing (.1, .2, etc)
-  txi_transcripts <- purrr::map_if(txi_transcripts, is.matrix,
-                                    ~`rownames<-`(.x, stringr::str_remove(rownames(.x), "\\.[0-9]$")))
+  txi_transcripts <- purrr::map_if(
+    txi_transcripts, is.matrix,
+    ~ `rownames<-`(.x, stringr::str_remove(rownames(.x), "\\.[0-9]$"))
+  )
 
   txi_genes <- tximport::summarizeToGene(txi_transcripts, tx2gene = tx2gene, ignoreTxVersion = TRUE)
 
@@ -60,9 +62,7 @@ load_counts_by_tximport <- function(proj_dir, type = "salmon", countsFromAbundan
 
   sample_names <- fs::path_file(fs::path_dir(sample_paths))
 
-  txi_features <- purrr::map(list(gene = txi_genes, transcript = txi_transcripts), ~set_colnames_txi(.x, sample_names))
-
-
+  txi_features <- purrr::map(list(gene = txi_genes, transcript = txi_transcripts), ~ set_colnames_txi(.x, sample_names))
 }
 
 
@@ -74,7 +74,7 @@ load_counts_by_tximport <- function(proj_dir, type = "salmon", countsFromAbundan
 #' @export
 #'
 #' @examples
-load_meta <- function(proj_dir){
+load_meta <- function(proj_dir) {
   # load metadata
   meta_file <- gsub("_proj", "_metadata.csv", path_file(proj_dir))
   meta_file <- fs::path(proj_dir, "data", meta_file)
@@ -97,7 +97,7 @@ load_meta <- function(proj_dir){
 #' @export
 #'
 #' @examples
-seu_from_tximport <- function(txi, feature, meta_tbl, ...){
+seu_from_tximport <- function(txi, feature, meta_tbl, ...) {
   # seu <- seu_from_tibbles(exp_tbl, feature, meta_tbl)
 
   exp_tbl <- as.matrix(txi$counts)
@@ -105,7 +105,7 @@ seu_from_tximport <- function(txi, feature, meta_tbl, ...){
   expid <- gsub("-.*", "", colnames(exp_tbl))
 
   featuredata <- data.frame(feature = rownames(exp_tbl))
-  rownames(featuredata) <- featuredata[,1]
+  rownames(featuredata) <- featuredata[, 1]
   # if (feature == "transcript"){
   #   featuredata <-
   #     featuredata %>%
@@ -115,9 +115,9 @@ seu_from_tximport <- function(txi, feature, meta_tbl, ...){
   # }
 
   meta_tbl <- data.frame(meta_tbl)
-  rownames(meta_tbl) <- meta_tbl[,"sample_id"]
+  rownames(meta_tbl) <- meta_tbl[, "sample_id"]
 
-  meta_tbl <- meta_tbl[colnames(exp_tbl),]
+  meta_tbl <- meta_tbl[colnames(exp_tbl), ]
 
   seu <- Seurat::CreateSeuratObject(counts = exp_tbl, project = expid, assay = "gene", meta.data = meta_tbl)
 
@@ -127,7 +127,6 @@ seu_from_tximport <- function(txi, feature, meta_tbl, ...){
   seu$batch <- seu@project.name
 
   return(seu)
-
 }
 
 
@@ -142,21 +141,20 @@ seu_from_tximport <- function(txi, feature, meta_tbl, ...){
 #' @export
 #'
 #' @examples
-seu_from_tibbles <- function(exp_tbl, feature, meta_tbl, ...){
-
+seu_from_tibbles <- function(exp_tbl, feature, meta_tbl, ...) {
   expid <- gsub("-.*", "", colnames(exp_tbl))
 
   featuredata <- data.frame(rownames(exp_tbl))
-  rownames(featuredata) <- featuredata[,1]
-  if (feature == "transcript"){
+  rownames(featuredata) <- featuredata[, 1]
+  if (feature == "transcript") {
     # gene_id <- tx2gene
     # featuredata$gene_symbol =
   }
 
   meta_tbl <- data.frame(meta_tbl)
-  rownames(meta_tbl) <- meta_tbl[,"sample_id"]
+  rownames(meta_tbl) <- meta_tbl[, "sample_id"]
 
-  meta_tbl <- meta_tbl[colnames(exp_tbl),]
+  meta_tbl <- meta_tbl[colnames(exp_tbl), ]
 
   seu <- Seurat::CreateSeuratObject(counts = exp_tbl, project = expid, assay = "gene", meta.data = meta_tbl)
 
@@ -179,18 +177,17 @@ seu_from_tibbles <- function(exp_tbl, feature, meta_tbl, ...){
 #' @export
 #'
 #' @examples
-filter_low_rc_cells <- function(seu, read_thresh = 1e5){
+filter_low_rc_cells <- function(seu, read_thresh = 1e5) {
+  counts <- as.matrix(seu@assays[["gene"]]@counts)
 
-	counts <- as.matrix(seu@assays[["gene"]]@counts)
+  counts <- colSums(counts)
 
-	counts <- colSums(counts)
+  keep_cells <- counts[counts > read_thresh]
 
-	keep_cells <- counts[counts > read_thresh]
+  removed_cells <- counts[counts <= read_thresh]
+  print(removed_cells)
 
-	removed_cells <- counts[counts <= read_thresh]
-	print(removed_cells)
-
-	seu <- subset(seu, cells = names(keep_cells))
+  seu <- subset(seu, cells = names(keep_cells))
 }
 
 #' Save seurat object to <project>/output/sce/<feature>_seu.rds
@@ -207,13 +204,11 @@ filter_low_rc_cells <- function(seu, read_thresh = 1e5){
 #' save_seurat(gene = feature_seus$gene, transcript = feature_seus$transcript, proj_dir = proj_dir)
 #'
 #' save_seurat(gene = feature_seus$gene, transcript = feature_seus$transcript, prefix = "remove_nonPRs", proj_dir = proj_dir)
-#'
 #' }
-save_seurat <- function(..., prefix = "unfiltered", proj_dir = getwd()){
-
-  seu_list = list(...)
-  if(is.null(names(seu_list))){
-    seu_list = purrr::flatten(seu_list)
+save_seurat <- function(..., prefix = "unfiltered", proj_dir = getwd()) {
+  seu_list <- list(...)
+  if (is.null(names(seu_list))) {
+    seu_list <- purrr::flatten(seu_list)
   }
 
   seurat_dir <- fs::path(proj_dir, "output", "seurat")
@@ -240,6 +235,4 @@ save_seurat <- function(..., prefix = "unfiltered", proj_dir = getwd()){
   # }
 
   return(seu_list)
-
 }
-

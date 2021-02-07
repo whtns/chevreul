@@ -4,14 +4,18 @@
 \alias{annotate_cell_cycle}
 \title{Annotate Cell Cycle}
 \usage{
-annotate_cell_cycle(seu, feature, organism = "human", ...)
+annotate_cell_cycle(seu, organism = "human", ...)
 }
 \arguments{
-\item{seu_list}{A list of seurat objects}
+\item{organism}{}
 }
 \value{
 
 }
 \description{
 Annotate Cell Cycle for Gene and Transcript Seurat Objects
+}
+\examples{
+annotate_cell_cycle(panc8, organism = "human")
+annotate_cell_cycle(baron2016singlecell, organism = "mouse")
 }

@@ -21,3 +21,7 @@ plot_transcript_composition(
 \description{
 plot the proportion of reads of a given gene map to each transcript
 }
+\examples{
+plot_transcript_composition(human_gene_transcript_seu, "RXRG", group.by = "gene_snn_res.0.6")
+
+}

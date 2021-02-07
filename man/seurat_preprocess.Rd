@@ -22,3 +22,7 @@ seurat_preprocess(
 \description{
 Preprocess Seurat Object
 }
+\examples{
+
+panc8[["gene"]] <- seurat_preprocess(panc8[["gene"]])
+}

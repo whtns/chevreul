@@ -15,3 +15,7 @@ stash_marker_features(metavar, seu, seurat_assay, top_n = 200)
 \description{
 Marker Genes will be stored in slot \verb{@misc$markers}
 }
+\examples{
+
+seu <- stash_marker_features(metavar = "batch", seu, seurat_assay = "gene")
+}

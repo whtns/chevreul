@@ -26,6 +26,4 @@ Title
 }
 \examples{
 
-
-
 }

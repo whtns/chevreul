@@ -15,3 +15,6 @@ cross_plot_vars(seu, resolution, mycols)
 \description{
 Cross plot vars
 }
+\examples{
+
+}

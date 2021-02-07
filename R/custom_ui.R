@@ -10,12 +10,13 @@
 #' @export
 #'
 #' @examples
-default_helper <- function(ui_element, title = "", content = "test", type = "inline", ...){
+default_helper <- function(ui_element, title = "", content = "test", type = "inline", ...) {
   shinyhelper::helper(ui_element,
-                      type = type,
-                      title = title,
-                      content = content,
-                      ...)
+    type = type,
+    title = title,
+    content = content,
+    ...
+  )
 }
 
 #' custom collapsible box
@@ -36,8 +37,6 @@ seuratToolsBox <- function(title = "", ...) {
     ...
   )
 }
-
-
 
 #' Custom Dropdown Button
 #'
