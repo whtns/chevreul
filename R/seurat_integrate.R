@@ -208,8 +208,8 @@ seurat_reduce_dimensions <- function(seu, assay = "gene", reduction = "pca", leg
   }
 
   if ((ncol(seu) - 1) > 3 * 30) {
-    seu <- Seurat::RunTSNE(object = seu, assay = assay, reduction = reduction, dims = 1:30, ...)
-    seu <- Seurat::RunUMAP(object = seu, assay = assay, reduction = reduction, dims = 1:30, ...)
+    seu <- Seurat::RunTSNE(object = seu, assay = assay, reduction = reduction, dims = 1:30)
+    seu <- Seurat::RunUMAP(object = seu, assay = assay, reduction = reduction, dims = 1:30)
   }
 
   return(seu)
@@ -300,9 +300,8 @@ filter_merged_seu <- function(seu, filter_var, filter_val, .drop = .drop) {
 #' @export
 #'
 #' @examples
-#'
-#' seurat_pancreas_reduced$gene$batch <- seurat_pancreas_reduced$gene$tech
-#' reintegrate_seu(seurat_pancreas_reduced)
+#' panc8$batch <- panc8$gene$tech
+#' reintegrate_seu(panc8)
 reintegrate_seu <- function(seu, feature = "gene", suffix = "", reduction = "pca", algorithm = 1, ...) {
   Seurat::DefaultAssay(seu) <- "gene"
 

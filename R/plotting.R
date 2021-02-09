@@ -474,11 +474,11 @@ plot_ridge <- function(seu, features){
 #' # static mode using "presto"
 #' plot_markers(panc8, metavar = "tech", marker_method = "genesorteR", return_plotly = FALSE)
 #'
-plot_markers <- function(seu, metavar = "batch", num_markers = 5, selected_values = NULL, return_plotly = TRUE, marker_method = c("presto", "genesorteR"), featureType  = "gene", hide_pseudo = FALSE, unique_markers = FALSE, ...){
+plot_markers <- function(seu, metavar = "batch", num_markers = 5, selected_values = NULL, return_plotly = TRUE, marker_method = c("presto", "genesorteR"), seurat_assay = "gene", hide_pseudo = FALSE, unique_markers = FALSE, ...){
   Idents(seu) <- seu[[metavar]]
 
   # by default only resolution markers are calculated in pre-processing
-  seu <- find_all_markers(seu, metavar, seurat_assay = "gene")
+  seu <- find_all_markers(seu, metavar, seurat_assay = seurat_assay)
 
   markers <- seu@misc$markers[[metavar]][[marker_method]] %>%
     dplyr::mutate(dplyr::across(.fns = as.character))
@@ -486,7 +486,7 @@ plot_markers <- function(seu, metavar = "batch", num_markers = 5, selected_value
   if(hide_pseudo){
 
     markers <- purrr::map(markers, c)
-    markers <- purrr::map(markers, ~.x[!.x %in% pseudogenes[[featureType]]])
+    markers <- purrr::map(markers, ~.x[!.x %in% pseudogenes[[seurat_assay]]])
 
     min_length <- min(purrr::map_int(markers, length))
 

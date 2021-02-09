@@ -244,8 +244,8 @@ record_experiment_data <- function(object, experiment_name = "default_experiment
 
   experiment$seuratTools_version <- utils::packageVersion("seuratTools")
 
-  Seurat::Misc(object, "experiment") <- NULL
-  Seurat::Misc(object, "experiment") <- experiment
+  object@misc[["experiment"]] <- NULL
+  object@misc[["experiment"]] <- experiment
 
   return(object)
 }
@@ -265,6 +265,8 @@ record_experiment_data <- function(object, experiment_name = "default_experiment
 update_seuratTools_object <- function(seu_path, feature, resolution = seq(0.2, 2.0, by = 0.2), return_seu = TRUE, ...) {
   message(seu_path)
   seu <- readRDS(seu_path)
+
+  seu <- propagate_spreadsheet_changes(seu@meta.data, seu)
 
   if (is.list(seu)) {
     seu <- convert_seu_list_to_multimodal(seu)

@@ -22,4 +22,6 @@ Integrate Seurat Objects from Mouse to Human
 }
 \examples{
 
+cross_species_integrate(list(baron2016singlecell = baron2016singlecell), list(panc8 = panc8))
+
 }

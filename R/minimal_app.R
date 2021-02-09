@@ -3,7 +3,6 @@
 #' @param object
 #' @param loom_path
 #' @param appTitle
-#' @param feature_types
 #' @param organism_type
 #' @param futureMb
 #'
@@ -11,9 +10,11 @@
 #' @export
 #'
 #' @examples
-minimalSeuratApp <- function(object = seurat_pancreas_reduced, loom_path = NULL, appTitle = NULL, feature_types = "gene",
+#'
+#' minimalSeuratApp(panc8)
+#'
+minimalSeuratApp <- function(object = panc8, loom_path = NULL, appTitle = NULL,
                              organism_type = "human", futureMb = 13000) {
-  print(feature_types)
   future::plan(strategy = "multicore", workers = 6)
   future_size <- futureMb * 1024^2
   options(future.globals.maxSize = future_size)
@@ -111,7 +112,7 @@ minimalSeuratApp <- function(object = seurat_pancreas_reduced, loom_path = NULL,
       shinydashboard::tabItem(
         tabName = "reformatMetadata",
         fluidRow(
-          reformatMetadataui("reformatmetadata")
+          reformatMetadataDRui("reformatMetadataDR")
         )
       ),
       shinydashboard::tabItem(
@@ -277,16 +278,11 @@ minimalSeuratApp <- function(object = seurat_pancreas_reduced, loom_path = NULL,
       )
       newprojList <- c(projList(), newintegrated_project)
     })
-    #
-    # # reformatted_seu <- reactive({
-    # #   req(seu())
-    # #   callModule(reformatMetadata, "reformatmetadata", seu)
-    # # })
-    # #
-    # # observe({
-    # #   req(reformatted_seu())
-    # #   seu(reformatted_seu())
-    # # })
+
+    observe({
+      reformatted_seu <- callModule(reformatMetadataDR, "reformatMetadataDR", seu, featureType)
+      seu(reformatted_seu())
+    })
 
     reductions <- reactive({
       req(seu())
@@ -382,9 +378,8 @@ minimalSeuratApp <- function(object = seurat_pancreas_reduced, loom_path = NULL,
           subset_seu <- seu()[, colnames(seu()) %in% subset_selected_cells()]
           seu(subset_seu)
           if (length(unique(seu()$batch)) > 1) {
-            message(paste0("reintegrating ", i, " expression"))
+            message(paste0("reintegrating gene expression"))
             reintegrated_seu <- reintegrate_seu(seu(),
-              feature = i,
               resolution = seq(0.2, 2, by = 0.2),
               organism = seu()@misc$experiment$organism
             )
@@ -418,9 +413,8 @@ minimalSeuratApp <- function(object = seurat_pancreas_reduced, loom_path = NULL,
           seu(subset_seu)
 
           if (length(unique(seu()[[]]$batch)) > 1) {
-            message(paste0("reintegrating ", i, " expression"))
+            message(paste0("reintegrating gene expression"))
             reintegrated_seu <- reintegrate_seu(seu(),
-              feature = i,
               resolution = seq(0.2, 2, by = 0.2),
               organism = seu()@misc$experiment$organism
             )

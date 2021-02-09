@@ -72,7 +72,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">seuratTools</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.2.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.4.10</span>
       </span>
     </div>
 
@@ -129,22 +129,18 @@
     <p>Cluster and Reduce Dimensions of a seurat object</p>
     </div>
 
-    <pre class="usage"><span class='fu'>clustering_workflow</span>(
-  <span class='kw'>feature_seus</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='no'>excluded_cells</span>,
-  <span class='kw'>resolution</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq</a></span>(<span class='fl'>0.2</span>, <span class='fl'>2</span>, <span class='kw'>by</span> <span class='kw'>=</span> <span class='fl'>0.2</span>),
-  <span class='kw'>organism</span> <span class='kw'>=</span> <span class='st'>"human"</span>,
-  <span class='kw'>experiment_name</span> <span class='kw'>=</span> <span class='st'>"default_experiment"</span>,
-  <span class='no'>...</span>
-)</pre>
+    <pre class="usage"><span class='fu'>clustering_workflow</span><span class='op'>(</span>
+  <span class='va'>seu</span>,
+  <span class='va'>excluded_cells</span>,
+  resolution <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq</a></span><span class='op'>(</span><span class='fl'>0.2</span>, <span class='fl'>2</span>, by <span class='op'>=</span> <span class='fl'>0.2</span><span class='op'>)</span>,
+  organism <span class='op'>=</span> <span class='st'>"human"</span>,
+  experiment_name <span class='op'>=</span> <span class='st'>"default_experiment"</span>,
+  <span class='va'>...</span>
+<span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
-    <tr>
-      <th>feature_seus</th>
-      <td><p>list of seurat objects named according to feature of interest ("gene" or "transcript")</p></td>
-    </tr>
     <tr>
       <th>excluded_cells</th>
       <td><p>named list of cells to exclude</p></td>
@@ -154,8 +150,12 @@
       <td><p>resolution(s) to use for clustering cells</p></td>
     </tr>
     <tr>
-      <th>experiment_name</th>
-      <td><p>...</p></td>
+      <th>...</th>
+      <td></td>
+    </tr>
+    <tr>
+      <th>feature_seus</th>
+      <td><p>list of seurat objects named according to feature of interest ("gene" or "transcript")</p></td>
     </tr>
     </table>
 
@@ -166,7 +166,9 @@
 
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='no'>clustered_seu</span> <span class='kw'>&lt;-</span> <span class='fu'>clustering_workflow</span>(<span class='no'>seurat_pancrease_reduced</span>)</div><div class='output co'>#&gt; <span class='error'>Error in map2(.x, vec_index(.x), .f, ...): object 'seurat_pancrease_reduced' not found</span></div></pre>
+    <pre class="examples"><span class='va'>clustered_human_seu</span> <span class='op'>&lt;-</span> <span class='fu'>clustering_workflow</span><span class='op'>(</span><span class='va'>panc8</span><span class='op'>)</span>
+<span class='va'>clustered_mouse_seu</span> <span class='op'>&lt;-</span> <span class='fu'>clustering_workflow</span><span class='op'>(</span><span class='va'>baron2016singlecell</span><span class='op'>)</span>
+</pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
@@ -182,7 +184,7 @@
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>

@@ -2,7 +2,7 @@
 % Please edit documentation in R/shiny_modules.R
 \name{allTranscriptsui}
 \alias{allTranscriptsui}
-\title{Plot All Transcripts UI}
+\title{Plot All Transcripts UI Module}
 \usage{
 allTranscriptsui(id)
 }
@@ -13,5 +13,5 @@ allTranscriptsui(id)
 
 }
 \description{
-Plot All Transcripts UI
+Plot All Transcripts UI Module
 }

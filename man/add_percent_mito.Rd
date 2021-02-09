@@ -4,12 +4,14 @@
 \alias{add_percent_mito}
 \title{Annotate Low Read Count Category}
 \usage{
-add_percent_mito(seu, organism = "human")
+add_percent_mito(seu, organism = "human", seurat_assay = "gene")
 }
 \arguments{
 \item{seu}{A seurat object}
 
-\item{organism}{}
+\item{organism}{mouse}
+
+\item{seurat_assay}{gene}
 }
 \value{
 

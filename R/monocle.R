@@ -33,7 +33,7 @@ convert_seu_to_cds <- function(seu, resolution = 1) {
 
   DefaultAssay(seu) <- default_assay
 
-  expression_matrix <- Seurat::GetAssayData(seu, slot = "data", assay = default_assay)
+  expression_matrix <- Seurat::GetAssayData(seu, slot = "data", assay = "gene")
 
   count_matrix <- Seurat::GetAssayData(seu, slot = "counts", assay = "gene")
 

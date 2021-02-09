@@ -15,3 +15,8 @@ convert_to_h5ad(seu, file_path)
 \description{
 convert a seurat object to an on-disk anndata object
 }
+\examples{
+
+convert_to_h5ad(human_gene_transcript_seu, "inst/extdata/seu.rds")
+
+}

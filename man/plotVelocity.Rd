@@ -2,7 +2,7 @@
 % Please edit documentation in R/shiny_modules.R
 \name{plotVelocity}
 \alias{plotVelocity}
-\title{RNA Velocity}
+\title{RNA Velocity Server Module}
 \usage{
 plotVelocity(input, output, session, seu, loom_path)
 }
@@ -13,5 +13,5 @@ plotVelocity(input, output, session, seu, loom_path)
 
 }
 \description{
-RNA Velocity
+RNA Velocity Server Module
 }

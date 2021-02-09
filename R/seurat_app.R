@@ -204,16 +204,13 @@ prep_slider_values <- function(default_val) {
 #' @param appTitle A title of the App
 #' @param futureMb amount of Mb allocated to future package
 #' @param preset_project
-#' @param feature_types
 #' @param organism_type
 #'
 #' @return
 #' @export
 #'
 #' @examples
-seuratApp <- function(preset_project, appTitle = "seuratTools", feature_types = "gene",
-                      organism_type = "human", db_path = "~/.cache/seuratTools/single-cell-projects.db", futureMb = 13000) {
-  print(feature_types)
+seuratApp <- function(preset_project, appTitle = "seuratTools", organism_type = "human", db_path = "~/.cache/seuratTools/single-cell-projects.db", futureMb = 13000) {
   print(packageVersion("seuratTools"))
   future::plan(strategy = "multicore", workers = 6)
   future_size <- futureMb * 1024^2
@@ -230,6 +227,7 @@ seuratApp <- function(preset_project, appTitle = "seuratTools", feature_types = 
     actionButton("loadProject", "Load Selected Project") %>%
       default_helper(type = "markdown", content = "overview"),
     textOutput("appTitle"),
+    bookmarkButton(),
     shinyWidgets::prettyRadioButtons("organism_type",
       inline = TRUE,
       "Organism", choices = c("human", "mouse"), selected = organism_type
@@ -431,6 +429,24 @@ seuratApp <- function(preset_project, appTitle = "seuratTools", feature_types = 
   }
   server <- function(input, output, session) {
     # shinyjs::runcodeServer()
+    # observe({
+    #   list_of_inputs <- reactiveValuesToList(input)
+    #   list_of_inputs <<- reactiveValuesToList(input)
+    #   print(list_of_inputs)
+    #
+    #   retained_inputs <- c("setProject")
+    #
+    #   list_of_inputs[!list_of_inputs %in% retained_inputs]
+    # })
+    # setBookmarkExclude(names(list_of_inputs))
+
+    onBookmark(function(state) {
+      state$values$uploadSeuratPath <- uploadSeuratPath()
+    })
+
+    onRestore(function(state) {
+      uploadSeuratPath(state$values$uploadSeuratPath[[1]])
+    })
 
     w <- waiter::Waiter$new()
 
@@ -440,43 +456,41 @@ seuratApp <- function(preset_project, appTitle = "seuratTools", feature_types = 
     # shinylogs::track_usage(storage_mode = shinylogs::store_json(path = "logs/"))
     # projects_db <- "/dataVolume/storage/single_cell_projects/single_cell_projects.db"
 
-    con <- DBI::dbConnect(
+    con <- reactive({
+      DBI::dbConnect(
       RSQLite::SQLite(),
       db_path
-    )
+      )
+    })
 
     projList <- reactivePoll(4000, session, checkFunc = function() {
       if (file.exists(db_path)) {
-        # system("locate -d /dataVolume/storage/single_cell_projects/single_cell_projects.db '*.here'",
-        #   intern = TRUE
-        # ) %>%
-        #   fs::path_dir() %>%
-        #   purrr::set_names(fs::path_file(.))
-        DBI::dbReadTable(con, "projects_tbl") %>%
+        DBI::dbReadTable(con(), "projects_tbl") %>%
           tibble::deframe()
       } else {
         ""
       }
     }, valueFunc = function() {
-      # system("locate -d /dataVolume/storage/single_cell_projects/single_cell_projects.db '*.here'",
-      #   intern = TRUE
-      # ) %>%
-      #   fs::path_dir() %>%
-      #   purrr::set_names(fs::path_file(.))
-      DBI::dbReadTable(con, "projects_tbl") %>%
+
+      DBI::dbReadTable(con(), "projects_tbl") %>%
         tibble::deframe()
     })
+
     output$projInput <- renderUI({
       selectizeInput("setProject", "Select Project to Load",
         choices = projList(), selected = preset_project,
         multiple = F
       )
     })
+
     proj_matrices <- reactive({
       create_proj_matrix(projList())
     })
+
     seu <- reactiveVal()
     proj_dir <- reactiveVal()
+    uploadSeuratPath <- reactiveVal()
+
     if (!is.null(preset_project)) {
       proj_dir(preset_project)
     }
@@ -516,15 +530,16 @@ seuratApp <- function(preset_project, appTitle = "seuratTools", feature_types = 
         roots = dataset_volumes(), session = session
       )
     })
-    uploadSeuratPath <- eventReactive(input$seuratUpload, {
+    observeEvent(input$seuratUpload, {
       req(dataset_volumes())
       file <- shinyFiles::parseFilePaths(
         dataset_volumes(),
         input$seuratUpload
       )
-      file$datapath
+      uploadSeuratPath(file$datapath)
     })
-    observeEvent(input$seuratUpload, {
+
+    observe({
       req(uploadSeuratPath())
       shiny::withProgress(
         message = paste0("Uploading Data"),
@@ -587,7 +602,7 @@ seuratApp <- function(preset_project, appTitle = "seuratTools", feature_types = 
     })
     integrationResults <- callModule(
       integrateProj, "integrateproj",
-      proj_matrices, seu, proj_dir, con
+      proj_matrices, seu, proj_dir, con()
     )
     newprojList <- reactive({
       req(integrationResults())
@@ -676,7 +691,7 @@ seuratApp <- function(preset_project, appTitle = "seuratTools", feature_types = 
           subset_seu <- seu()[, colnames(seu()) %in% subset_selected_cells()]
           seu(subset_seu)
           if (length(unique(seu()[[]]$batch)) > 1) {
-            message(paste0("reintegrating ", i, " expression"))
+            message(paste0("reintegrating gene expression"))
             reintegrated_seu <- reintegrate_seu(seu(),
               resolution = seq(0.2, 2, by = 0.2),
               legacy_settings = input$legacySettingsSubset,
@@ -853,7 +868,15 @@ seuratApp <- function(preset_project, appTitle = "seuratTools", feature_types = 
     })
 
     callModule(techInfo, "techInfo", seu)
+
+    sessionId <- as.integer(runif(1, 1, 100000))
+    output$sessionId <- renderText(paste0("Session id: ", sessionId))
+    session$onSessionEnded(function() {
+      cat(paste0("Ended: ", sessionId))
+      observe(DBI::dbConnect(con()))
+    })
   }
+
   # onStop(function() DBI::dbDisconnect(con))
-  shinyApp(ui, server, enableBookmarking = "server")
+  shinyApp(ui, server, enableBookmarking = "url")
 }

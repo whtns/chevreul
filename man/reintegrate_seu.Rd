@@ -29,7 +29,6 @@ reintegrate_seu(
 }
 }
 \examples{
-
-seurat_pancreas_reduced$gene$batch <- seurat_pancreas_reduced$gene$tech
-reintegrate_seu(seurat_pancreas_reduced)
+panc8$batch <- panc8$gene$tech
+reintegrate_seu(panc8)
 }

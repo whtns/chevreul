@@ -15,3 +15,8 @@ genes_to_transcripts(genes, organism = "human")
 \description{
 convert hgnc gene symbols to ensembl transcript ids
 }
+\examples{
+
+genes_to_transcripts("RXRG")
+
+}
