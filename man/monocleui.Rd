@@ -2,7 +2,7 @@
 % Please edit documentation in R/shiny_modules.R
 \name{monocleui}
 \alias{monocleui}
-\title{Title}
+\title{Monocle UI Module}
 \usage{
 monocleui(id)
 }
@@ -13,5 +13,5 @@ monocleui(id)
 
 }
 \description{
-Title
+Monocle UI Module
 }

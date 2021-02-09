@@ -24,4 +24,6 @@ Preprocess, Cluster and Reduce Dimensions for a single seurat object
 }
 \examples{
 
+processed_seu <- seurat_pipeline(panc8)
+
 }

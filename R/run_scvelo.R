@@ -43,6 +43,9 @@ run_scvelo <- function(seu, loom_path, fit.quantile = 0.05, check_loom = FALSE, 
 #' @export
 #'
 #' @examples
+#'
+#' convert_to_h5ad(human_gene_transcript_seu, "inst/extdata/seu.rds")
+#'
 convert_to_h5ad <- function(seu, file_path) {
   h5seurat_path <- fs::path_ext_set(file_path, ".h5Seurat")
   SeuratDisk::SaveH5Seurat(seu, filename = h5seurat_path, overwrite = TRUE)
@@ -63,6 +66,9 @@ convert_to_h5ad <- function(seu, file_path) {
 #' @export
 #'
 #' @examples
+#'
+#'
+#'
 prep_scvelo <- function(seu, loom_path, velocity_mode = c("deterministic", "stochastic", "dynamical"), ...) {
   browser()
 

@@ -2,7 +2,7 @@
 % Please edit documentation in R/shiny_modules.R
 \name{monocle}
 \alias{monocle}
-\title{Title}
+\title{Monocle Server Module}
 \usage{
 monocle(
   input,
@@ -22,7 +22,7 @@ monocle(
 
 }
 \description{
-Title
+Monocle Server Module
 }
 \examples{
 

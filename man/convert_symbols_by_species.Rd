@@ -15,3 +15,10 @@ convert_symbols_by_species(src_genes, src_species)
 \description{
 Convert gene symbols between mouse and human
 }
+\examples{
+
+convert_symbols_by_species("RXRG", "human")
+
+convert_symbols_by_species("Rxrg", "mouse")
+
+}

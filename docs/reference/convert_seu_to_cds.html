@@ -72,7 +72,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">seuratTools</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.2.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.4.10</span>
       </span>
     </div>
 
@@ -129,7 +129,7 @@
     <p>Convert a Seurat Object to a Monocle Cell Data Set</p>
     </div>
 
-    <pre class="usage"><span class='fu'>convert_seu_to_cds</span>(<span class='no'>seu</span>, <span class='kw'>resolution</span> <span class='kw'>=</span> <span class='fl'>1</span>)</pre>
+    <pre class="usage"><span class='fu'>convert_seu_to_cds</span><span class='op'>(</span><span class='va'>seu</span>, resolution <span class='op'>=</span> <span class='fl'>1</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -146,6 +146,10 @@
 
 
 
+    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
+    <pre class="examples"><span class='va'>processed_seu</span> <span class='op'>&lt;-</span> <span class='fu'><a href='clustering_workflow.html'>clustering_workflow</a></span><span class='op'>(</span><span class='va'>human_gene_transcript_seu</span><span class='op'>)</span>
+<span class='va'>cds</span> <span class='op'>&lt;-</span> <span class='fu'>convert_seu_to_cds</span><span class='op'>(</span><span class='va'>processed_seu</span><span class='op'>)</span>
+</pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
@@ -161,7 +165,7 @@
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>

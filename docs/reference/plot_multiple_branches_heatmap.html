@@ -72,7 +72,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">seuratTools</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.2.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.4.10</span>
       </span>
     </div>
 
@@ -129,25 +129,25 @@
     <p>Plot pseudotime over multiple branches</p>
     </div>
 
-    <pre class="usage"><span class='fu'>plot_multiple_branches_heatmap</span>(
-  <span class='no'>cds</span>,
-  <span class='no'>branches</span>,
-  <span class='kw'>branches_name</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>cluster_rows</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
-  <span class='kw'>hclust_method</span> <span class='kw'>=</span> <span class='st'>"ward.D2"</span>,
-  <span class='kw'>num_clusters</span> <span class='kw'>=</span> <span class='fl'>6</span>,
-  <span class='kw'>hmcols</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>add_annotation_row</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>add_annotation_col</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>show_rownames</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
-  <span class='kw'>use_gene_short_name</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
-  <span class='kw'>norm_method</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"vstExprs"</span>, <span class='st'>"log"</span>),
-  <span class='kw'>scale_max</span> <span class='kw'>=</span> <span class='fl'>3</span>,
-  <span class='kw'>scale_min</span> <span class='kw'>=</span> -<span class='fl'>3</span>,
-  <span class='kw'>trend_formula</span> <span class='kw'>=</span> <span class='st'>"~sm.ns(Pseudotime, df=3)"</span>,
-  <span class='kw'>return_heatmap</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
-  <span class='kw'>cores</span> <span class='kw'>=</span> <span class='fl'>1</span>
-)</pre>
+    <pre class="usage"><span class='fu'>plot_multiple_branches_heatmap</span><span class='op'>(</span>
+  <span class='va'>cds</span>,
+  <span class='va'>branches</span>,
+  branches_name <span class='op'>=</span> <span class='cn'>NULL</span>,
+  cluster_rows <span class='op'>=</span> <span class='cn'>TRUE</span>,
+  hclust_method <span class='op'>=</span> <span class='st'>"ward.D2"</span>,
+  num_clusters <span class='op'>=</span> <span class='fl'>6</span>,
+  hmcols <span class='op'>=</span> <span class='cn'>NULL</span>,
+  add_annotation_row <span class='op'>=</span> <span class='cn'>NULL</span>,
+  add_annotation_col <span class='op'>=</span> <span class='cn'>NULL</span>,
+  show_rownames <span class='op'>=</span> <span class='cn'>FALSE</span>,
+  use_gene_short_name <span class='op'>=</span> <span class='cn'>TRUE</span>,
+  norm_method <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"vstExprs"</span>, <span class='st'>"log"</span><span class='op'>)</span>,
+  scale_max <span class='op'>=</span> <span class='fl'>3</span>,
+  scale_min <span class='op'>=</span> <span class='op'>-</span><span class='fl'>3</span>,
+  trend_formula <span class='op'>=</span> <span class='st'>"~sm.ns(Pseudotime, df=3)"</span>,
+  return_heatmap <span class='op'>=</span> <span class='cn'>FALSE</span>,
+  cores <span class='op'>=</span> <span class='fl'>1</span>
+<span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -179,7 +179,7 @@
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>

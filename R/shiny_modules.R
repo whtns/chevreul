@@ -270,127 +270,6 @@ plotHeatmap <- function(input, output, session, seu, featureType, organism_type)
   )
 }
 
-
-
-
-
-#' Reformat Seurat Object Metadata UI
-#'
-#' @param id
-#'
-#' @return
-#' @export
-#'
-#' @examples
-reformatMetadataui <- function(id) {
-  ns <- NS(id)
-  tagList(
-    seuratToolsBox(
-      title = "Reformat Metadata",
-      checkboxInput(ns("header"), "Header", TRUE),
-      fileInput(ns("metaFile"), "Choose CSV File of metadata with cell names in first column",
-        accept = c(
-          "text/csv",
-          "text/comma-separated-values,text/plain",
-          ".csv"
-        )
-      ),
-      actionButton(ns("updateMetadata"), "Update Metadata"),
-      radioButtons(ns("updateMethod"), "Update By:", choices = c("table (below)" = "spreadsheet", "uploaded file" = "file"), inline = TRUE),
-      downloadLink(ns("downloadMetadata"), "Download Metadata"),
-      rhandsontable::rHandsontableOutput(ns("seuTable")),
-      width = 12
-    ) %>%
-      default_helper(type = "markdown", content = "reformatMetadata")
-  )
-}
-
-#' Reformat Seurat Object Metadata Server
-#'
-#' @param input
-#' @param output
-#' @param sessionk
-#' @param seu
-#'
-#' @return
-#' @export
-#'
-#' @examples
-#'
-reformatMetadata <- function(input, output, session, seu, featureType = "gene") {
-  ns <- session$ns
-
-  meta <- reactiveValues()
-
-  observe({
-    meta$old <- seu()@meta.data
-  })
-
-  observeEvent(input$updateMetadata, {
-    req(featureType())
-
-    if (input$updateMethod == "file") {
-      inFile <- input$metaFile
-
-      if (is.null(inFile)) {
-        return(NULL)
-      }
-
-      for (i in names(seu)) {
-        print(i)
-        seu[[i]] <- format_new_metadata(seu[[i]], inFile$datapath)
-      }
-    } else if (input$updateMethod == "spreadsheet") {
-      meta$new <- propagate_spreadsheet_changes(input$seuTable)
-    }
-
-    meta$new <- seu[[featureType()]]@meta.data
-  })
-
-
-  table_out <- reactive({
-    meta$new %||% meta$old
-  })
-
-
-  output$seuTable <- rhandsontable::renderRHandsontable({
-    rhandsontable::rhandsontable(table_out(), rowHeaderWidth = 200, height = 700) %>%
-      rhandsontable::hot_context_menu(
-        customOpts = list(
-          csv = list(
-            name = "Download to CSV",
-            callback = htmlwidgets::JS(
-              "function (key, options) {
-                         var csv = csvString(this, sep=',', dec='.');
-                         var link = document.createElement('a');
-                         link.setAttribute('href', 'data:text/plain;charset=utf-8,' +
-                           encodeURIComponent(csv));
-                         link.setAttribute('download', 'data.csv');
-
-                         document.body.appendChild(link);
-                         link.click();
-                         document.body.removeChild(link);
-                       }"
-            )
-          )
-        )
-      )
-  })
-
-  output$downloadMetadata <- downloadHandler(
-    filename = function() {
-      paste("data-", Sys.Date(), ".csv", sep = "")
-    },
-    content = function(file) {
-      write.csv(table_out(), file)
-    }
-  )
-
-  return(seu)
-}
-
-
-
 #' Integrate Project UI
 #'
 #' @param id
@@ -442,8 +321,6 @@ integrateProj <- function(input, output, session, proj_matrices, seu, proj_dir, 
       dplyr::select(-project_path) %>%
       identity()
   })
-
-
 
   output$myDatatable <- DT::renderDT(clean_proj_matrix(),
     server = FALSE,
@@ -547,11 +424,6 @@ integrateProj <- function(input, output, session, proj_matrices, seu, proj_dir, 
         {
           # Sys.sleep(6)
           shiny::incProgress(2 / 10)
-          # myseuratdir <- fs::path(paste0(integratedProjectSavePath(), "_proj"), "output", "seurat")
-          # dir.create(myseuratdir)
-          # myseuratpath <- fs::path(myseuratdir, "unfiltered_seu.rds")
-          # saveRDS(mergedSeus(), myseuratpath)
-          # Sys.chmod(myseuratpath)
           save_seurat(mergedSeus(), proj_dir = integratedProjectSavePath())
           set_permissions_call <- paste0("chmod -R 775 ", integratedProjectSavePath())
           system(set_permissions_call)
@@ -563,8 +435,6 @@ integrateProj <- function(input, output, session, proj_matrices, seu, proj_dir, 
             project_slug = stringr::str_remove(fs::path_file(integratedProjectSavePath()), "_proj$"),
             project_type = "integrated_projects"
           ))
-          # system("updatedb -l 0 -U /dataVolume/storage/single_cell_projects/ -o /dataVolume/storage/single_cell_projects/single_cell_projects.db", wait = TRUE)
-          # # print(set_permissions_call)
           shiny::incProgress(8 / 10)
 
           velocyto_dir <- fs::path(integratedProjectSavePath(), "output", "velocyto")
@@ -616,13 +486,6 @@ changeEmbedParamsui <- function(id) {
 #' @examples
 changeEmbedParams <- function(input, output, session, seu) {
   ns <- session$ns
-  #
-  # output$embedControls <- renderUI({
-  #   tagList(
-  #     sliderInput(ns("minDist"), label = "Minimum Distance", min = minDist_vals$min, max = minDist_vals$max, value = minDist_vals$value, step = minDist_vals$step),
-  #     sliderInput(ns("negativeSampleRate"), label = "NegativeSampleRate", min = minDist_vals$min, max = minDist_vals$max, value = minDist_vals$value, step = minDist_vals$step)
-  #   )
-  # })
 
   seu <- RunUMAP(seu(), dims = as.numeric(input$dims), reduction = "pca", min.dist = input$minDist, negative.sample.rate = input$negativeSampleRate)
   seu <- RunUMAP(seu(), dims = as.numeric(input$dims), reduction = "pca", min.dist = input$minDist, negative.sample.rate = input$negativeSampleRate)
@@ -863,29 +726,6 @@ tableSelected <- function(input, output, session, seu) {
 }
 
 
-# subsetSeuratui <- function(id) {
-#   ns <- NS(id)
-#   tagList()
-# }
-#
-#
-# subsetSeurat <- function(input, output, session, seu, selected_rows) {
-#   ns <- session$ns
-#   sub_seu <- reactive({
-#     showModal(modalDialog(title = "Subsetting and Recalculating embedding",
-#                           "This process may take a minute or two!"))
-#     seu <- seu()[, selected_rows()]
-#     seu <- seuratTools::seurat_pipeline(seu(), resolution = seq(0.6, 2, by = 0.2))
-#     seu <- seu()[, selected_rows()]
-#
-#     seu <- seuratTools::seurat_pipeline(seu(), resolution = seq(0.6, 2, by = 0.2))
-#     seu <- seu()
-#     removeModal()
-#   })
-#   return(sub_seu)
-# }
-
-
 #' Differential Expression UI
 #'
 #' @param id
@@ -1114,6 +954,7 @@ findMarkersui <- function(id) {
       numericInput(ns("num_markers"), "Select Number of Markers to Plot for Each Value", value = 5, min = 2, max = 20),
       uiOutput(ns("valueSelect")),
       radioButtons(ns("markerMethod"), "Method of Marker Selection", choices = c("presto", "genesorteR"), selected = "presto", inline = TRUE),
+      selectizeInput(ns("dotFeature"), "Feature for Marker Plot", choices = NULL),
       actionButton(ns("plotDots"), "Plot Markers!"),
       downloadButton(ns("downloadMarkerTable"), "Download Markers!"),
       checkboxInput(ns("uniqueMarkers"), "Make Markers Unique", value = FALSE),
@@ -1139,6 +980,11 @@ findMarkersui <- function(id) {
 #'
 findMarkers <- function(input, output, session, seu, plot_types, featureType) {
   ns <- session$ns
+
+  observe({
+    req(seu())
+    updateSelectizeInput(session, "dotFeature", choices = names(seu()@assays), selected = "gene", server = TRUE)
+  })
 
   output$dplottype <- renderUI({
     req(seu())
@@ -1184,7 +1030,7 @@ findMarkers <- function(input, output, session, seu, plot_types, featureType) {
   # })
 
   marker_plot_return <- eventReactive(input$plotDots, {
-    plot_markers(seu(), metavar = metavar(), num_markers = input$num_markers, selected_values = input$displayValues, marker_method = input$markerMethod, featureType = featureType(), hide_pseudo = input$hidePseudo, unique_markers = input$uniqueMarkers)
+    plot_markers(seu(), metavar = metavar(), num_markers = input$num_markers, selected_values = input$displayValues, marker_method = input$markerMethod, seurat_assay = input$dotFeature, featureType = featureType(), hide_pseudo = input$hidePseudo, unique_markers = input$uniqueMarkers)
   })
 
   output$markerplot <- plotly::renderPlotly({
@@ -1307,7 +1153,7 @@ ccScore <- function(input, output, session) {
   plotOutput("rplot1", height = 750)
 }
 
-#' Plot All Transcripts UI
+#' Plot All Transcripts UI Module
 #'
 #' @param id
 #'
@@ -1348,7 +1194,7 @@ allTranscriptsui <- function(id) {
   )
 }
 
-#' Plot All Transcripts
+#' Plot All Transcripts Server
 #'
 #' @param input
 #' @param output
@@ -1410,28 +1256,6 @@ allTranscripts <- function(input, output, session, seu,
     pList <- plot_all_transcripts(seu(), transcripts(), input$embedding)
   })
 
-  # observe({
-  #
-  #   for (i in 1:length(pList())) {
-  #     local({
-  #       my_i <- i
-  #       plotname <- transcripts()[[my_i]]
-  #       output[[plotname]] <- renderPlot({
-  #         pList()[[my_i]]
-  #       })
-  #     })
-  #   }
-  #
-  # })
-  #
-  # output$plotlys <- renderUI({
-  #   req(pList())
-  #
-  #   plot_output_list <- purrr::map(names(pList()), ~plotOutput(ns(.x), height = 500))
-  #
-  #   do.call(tagList, plot_output_list)
-  # })
-
   output$transcriptPlot <- plotly::renderPlotly({
     pList()[[input$transcriptSelect]] %>%
       plotly::ggplotly(height = 400) %>%
@@ -1451,7 +1275,7 @@ allTranscripts <- function(input, output, session, seu,
   )
 }
 
-#' RNA Velocity UI
+#' RNA Velocity UI Module
 #'
 #' @param id
 #'
@@ -1495,7 +1319,7 @@ plotVelocityui <- function(id) {
   )
 }
 
-#' RNA Velocity
+#' RNA Velocity Server Module
 #'
 #' @param input
 #' @param output
@@ -1686,7 +1510,7 @@ plotVelocity <- function(input, output, session, seu, loom_path) {
 }
 
 
-#' Title
+#' Monocle UI Module
 #'
 #' @param id
 #'
@@ -1774,10 +1598,7 @@ monocleui <- function(id) {
   )
 }
 
-
-
-
-#' Title
+#' Monocle Server Module
 #'
 #' @param input
 #' @param output
@@ -2058,7 +1879,7 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
       output$ptimeGenesDT <- DT::renderDT({
         DT::datatable(cds_pr_test_res(),
           extensions = "Buttons",
-          options = list(dom = "Bft", buttons = c("copy", "csv"), scrollX = "100px", scrollY = "400px")
+          options = list(dom = "Bftp", buttons = c("copy", "csv"), scrollX = "100px", scrollY = "400px", pageLength = 200, paging = TRUE)
         )
       })
     }

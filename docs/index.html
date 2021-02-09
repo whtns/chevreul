@@ -31,7 +31,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">seuratTools</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.2.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.4.10</span>
       </span>
     </div>
 
@@ -89,14 +89,27 @@
 <li><a href="https://satijalab.org/seurat/v3.0/pancreas_integration_label_transfer.html">Integration and Label Transfer</a></li>
 <li>Louvain Clustering at a Range of Resolutions</li>
 <li>Cell cycle state regression and labeling</li>
-<li>RNA velocity calculation with <a href="https://velocyto.org/">Velocyto.R</a>
+<li>RNA velocity calculation with <a href="https://velocyto.org/">Velocyto.R</a> and <a href="https://scvelo.readthedocs.io/">scvelo</a>
 </li>
 </ol>
 <div id="installation" class="section level2">
 <h2 class="hasAnchor">
 <a href="#installation" class="anchor"></a>Installation</h2>
 <p>You can install the released version of seuratTools from <a href="https://github.com/whtns/seuratTools">our github</a> with:</p>
-<div class="sourceCode" id="cb1"><pre class="r"><span class="kw pkg">devtools</span><span class="kw ns">::</span><span class="fu">install_package</span>(<span class="st">"whtns/seuratTools"</span>)</pre></div>
+<div id="install-locally-and-run-in-three-steps" class="section level3">
+<h3 class="hasAnchor">
+<a href="#install-locally-and-run-in-three-steps" class="anchor"></a>Install locally and run in three steps:</h3>
+<pre><code><a href="https://rdrr.io/r/utils/install.packages.html">install.packages("devtools")
+devtools::install_github("whtns/seuratTools")
+seuratTools::create_project_db()</a></code></pre>
+</div>
+<div id="install-locally-custom-location-and-run-in-three-steps" class="section level3">
+<h3 class="hasAnchor">
+<a href="#install-locally-custom-location-and-run-in-three-steps" class="anchor"></a>Install locally (custom location!) and run in three steps:</h3>
+<pre><code><a href="https://devtools.r-lib.org//reference/remote-reexports.html">devtools::install_github("whtns/seuratTools")
+seuratTools::create_project_db(destdir='/your/path/to/app')
+seuratTools::seuratApp(proj_dir, feature_types = c("gene", "transcript"))</a></code></pre>
+</div>
 </div>
 <div id="site" class="section level2">
 <h2 class="hasAnchor">
@@ -115,60 +128,53 @@
 <h3 class="hasAnchor">
 <a href="#add-custom-metadata" class="anchor"></a>add custom metadata</h3>
 <p><img src="README_docs/add_arbitrary_metadata.gif" alt="add custom metadata"></p>
-<pre><code><a href="https://rdrr.io/pkg/seuratTools/man">library(seuratTools, lib.loc = "~/rpkgs/devel_install/")
-library(tidyverse)
-library(Seurat)
-library(ggraph)
-library(iheatmapr)
-library(formattable)</a></code></pre>
 </div>
 </div>
-</div>
-<div id="view-included-dataset" class="section level1">
-<h1 class="hasAnchor">
-<a href="#view-included-dataset" class="anchor"></a>view included dataset</h1>
-<pre><code>seurat_pancreas_reduced
-
-glimpse(seurat_pancreas_reduced)</code></pre>
-</div>
-<div id="run-clustering-on-a-single-seurat-object" class="section level1">
-<h1 class="hasAnchor">
-<a href="#run-clustering-on-a-single-seurat-object" class="anchor"></a>run clustering on a single seurat object</h1>
-<p>By default clustering will be run at ten different resolutions between 0.2 and 2.0. Any resolution can be specified by providing the resolution argument as a numeric vector.</p>
-<pre><code>
-clustered_seu &lt;- clustering_workflow(seurat_pancreas_reduced, experiment_name = "seurat_pancreas", organism = "human")</code></pre>
-<pre><code><a href="reference/minimalSeuratApp.html">minimalSeuratApp(clustered_seu)</a></code></pre>
-<div id="split-included-dataset-based-on-collection-technology" class="section level2">
+<div id="getting-started" class="section level2">
 <h2 class="hasAnchor">
-<a href="#split-included-dataset-based-on-collection-technology" class="anchor"></a>split included dataset based on collection technology</h2>
-<pre><code>batches &lt;- seurat_pancreas_reduced %&gt;%
- purrr::map(Seurat::SplitObject, split.by = "dataset") %&gt;%
- purrr::transpose()
-
-names(batches)
-
-glimpse(batches)
+<a href="#getting-started" class="anchor"></a>Getting Started</h2>
+<pre><code><a href="https://github.com/cobriniklab/seuratTools">library(seuratTools)
+library(Seurat)
+library(tidyverse)
+library(ggraph)</a></code></pre>
+<div id="view-included-dataset" class="section level3">
+<h3 class="hasAnchor">
+<a href="#view-included-dataset" class="anchor"></a>view included dataset</h3>
+<pre><code>panc8</code></pre>
+</div>
+<div id="run-clustering-on-a-single-seurat-object" class="section level3">
+<h3 class="hasAnchor">
+<a href="#run-clustering-on-a-single-seurat-object" class="anchor"></a>run clustering on a single seurat object</h3>
+<p>By default clustering will be run at ten different resolutions between 0.2 and 2.0. Any resolution can be specified by providing the resolution argument as a numeric vector.</p>
+<pre><code>clustered_seu &lt;- clustering_workflow(panc8, experiment_name = "seurat_pancreas", organism = "human")</code></pre>
+<pre><code><a href="reference/minimalSeuratApp.html">minimalSeuratApp(clustered_seu)</a></code></pre>
+</div>
+<div id="split-included-dataset-based-on-collection-technology" class="section level3">
+<h3 class="hasAnchor">
+<a href="#split-included-dataset-based-on-collection-technology" class="anchor"></a>split included dataset based on collection technology</h3>
+<pre><code>split_panc8 &lt;- SplitObject(panc8, split.by = "dataset")
 </code></pre>
 </div>
+<div id="run-seurat-batch-integration-on-child-projects" class="section level3">
+<h3 class="hasAnchor">
+<a href="#run-seurat-batch-integration-on-child-projects" class="anchor"></a>run seurat batch integration on ‘child’ projects</h3>
+<pre><code>integrated_seu &lt;- integration_workflow(split_panc8)</code></pre>
 </div>
-<div id="run-seurat-batch-integration-on-child-projects" class="section level1">
-<h1 class="hasAnchor">
-<a href="#run-seurat-batch-integration-on-child-projects" class="anchor"></a>run seurat batch integration on ‘child’ projects</h1>
-<pre><code>integrated_seu &lt;- integration_workflow(batches)</code></pre>
-</div>
-<div id="launch-app-to-inspect" class="section level1">
-<h1 class="hasAnchor">
-<a href="#launch-app-to-inspect" class="anchor"></a>launch app to inspect</h1>
+<div id="launch-app-to-inspect" class="section level3">
+<h3 class="hasAnchor">
+<a href="#launch-app-to-inspect" class="anchor"></a>launch app to inspect</h3>
 <pre><code><a href="reference/minimalSeuratApp.html">
 minimalSeuratApp(integrated_seu)
 </a></code></pre>
 </div>
-<div id="view-analysis-details" class="section level1">
-<h1 class="hasAnchor">
-<a href="#view-analysis-details" class="anchor"></a>view analysis details</h1>
-<pre><code>integrated_seu$gene@misc$experiment %&gt;% 
+<div id="view-analysis-details" class="section level3">
+<h3 class="hasAnchor">
+<a href="#view-analysis-details" class="anchor"></a>view analysis details</h3>
+<pre><code>Misc(integrated_seu, "experiment") %&gt;% 
   tibble::enframe() %&gt;% 
   knitr::kable()</code></pre>
+</div>
+</div>
 </div>
 
   </div>
@@ -213,7 +219,7 @@ minimalSeuratApp(integrated_seu)
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>

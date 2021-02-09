@@ -6,8 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Plot Features
-This is a great function — plot_feature • seuratTools</title>
+<title>Plot Feature — plot_feature • seuratTools</title>
 
 
 <!-- jquery -->
@@ -40,10 +39,10 @@ This is a great function — plot_feature • seuratTools</title>
 
 
 
-<meta property="og:title" content="Plot Features
-This is a great function — plot_feature" />
-<meta property="og:description" content="Plot Features
-This is a great function" />
+<meta property="og:title" content="Plot Feature — plot_feature" />
+<meta property="og:description" content="Plots gene or transcript expression overlaid on a given embedding.
+If multiple features are supplied the joint density of all features
+will be plotted using Nebulosa" />
 
 
 
@@ -75,7 +74,7 @@ This is a great function" />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">seuratTools</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.2.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.4.10</span>
       </span>
     </div>
 
@@ -123,18 +122,25 @@ This is a great function" />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Plot Features
-This is a great function</h1>
+    <h1>Plot Feature</h1>
     <small class="dont-index">Source: <a href='https://github.com/cobriniklab/seuratTools/blob/master/R/plotting.R'><code>R/plotting.R</code></a></small>
     <div class="hidden name"><code>plot_feature.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Plot Features
-This is a great function</p>
+    <p>Plots gene or transcript expression overlaid on a given embedding.
+If multiple features are supplied the joint density of all features
+will be plotted using <a href='https://www.bioconductor.org/packages/devel/bioc/html/Nebulosa.html'>Nebulosa</a></p>
     </div>
 
-    <pre class="usage"><span class='fu'>plot_feature</span>(<span class='no'>seu</span>, <span class='no'>embedding</span>, <span class='no'>features</span>, <span class='kw'>dims</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>1</span>, <span class='fl'>2</span>), <span class='kw'>return_plotly</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)</pre>
+    <pre class="usage"><span class='fu'>plot_feature</span><span class='op'>(</span>
+  <span class='va'>seu</span>,
+  embedding <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"umap"</span>, <span class='st'>"pca"</span>, <span class='st'>"tsne"</span><span class='op'>)</span>,
+  <span class='va'>features</span>,
+  dims <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>1</span>, <span class='fl'>2</span><span class='op'>)</span>,
+  return_plotly <span class='op'>=</span> <span class='cn'>TRUE</span>,
+  pt.size <span class='op'>=</span> <span class='fl'>1</span>
+<span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -151,6 +157,17 @@ This is a great function</p>
 
 
 
+    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
+    <pre class="examples">
+<span class='co'># static, single feature</span>
+<span class='fu'>plot_feature</span><span class='op'>(</span><span class='va'>panc8</span>, embedding <span class='op'>=</span> <span class='st'>"umap"</span>, features <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"NRL"</span><span class='op'>)</span>, return_plotly <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span>
+<span class='co'># static, multi-feature</span>
+<span class='fu'>plot_feature</span><span class='op'>(</span><span class='va'>panc8</span>, embedding <span class='op'>=</span> <span class='st'>"umap"</span>, features <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"RXRG"</span>, <span class='st'>"NRL"</span><span class='op'>)</span>, return_plotly <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span>
+<span class='co'># interactive, multi-feature</span>
+<span class='va'>plotly_plot</span> <span class='op'>&lt;-</span> <span class='fu'>plot_feature</span><span class='op'>(</span><span class='va'>panc8</span>, embedding <span class='op'>=</span> <span class='st'>"umap"</span>, features <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"RXRG"</span>, <span class='st'>"NRL"</span><span class='op'>)</span><span class='op'>)</span>
+<span class='fu'><a href='https://satijalab.org/seurat/reference/print.DimReduc.html'>print</a></span><span class='op'>(</span><span class='va'>plotly_plot</span><span class='op'>)</span>
+
+</pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
@@ -166,7 +183,7 @@ This is a great function</p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>

@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Integrate Seurat Objects from Moust to Human — cross_species_integrate • seuratTools</title>
+<title>Integrate Seurat Objects from Mouse to Human — cross_species_integrate • seuratTools</title>
 
 
 <!-- jquery -->
@@ -39,8 +39,8 @@
 
 
 
-<meta property="og:title" content="Integrate Seurat Objects from Moust to Human — cross_species_integrate" />
-<meta property="og:description" content="Integrate Seurat Objects from Moust to Human" />
+<meta property="og:title" content="Integrate Seurat Objects from Mouse to Human — cross_species_integrate" />
+<meta property="og:description" content="Integrate Seurat Objects from Mouse to Human" />
 
 
 
@@ -72,7 +72,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">seuratTools</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.2.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.4.10</span>
       </span>
     </div>
 
@@ -120,21 +120,21 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Integrate Seurat Objects from Moust to Human</h1>
+    <h1>Integrate Seurat Objects from Mouse to Human</h1>
     <small class="dont-index">Source: <a href='https://github.com/cobriniklab/seuratTools/blob/master/R/cross_species.R'><code>R/cross_species.R</code></a></small>
     <div class="hidden name"><code>cross_species_integrate.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Integrate Seurat Objects from Moust to Human</p>
+    <p>Integrate Seurat Objects from Mouse to Human</p>
     </div>
 
-    <pre class="usage"><span class='fu'>cross_species_integrate</span>(
-  <span class='no'>mouse_seu_list</span>,
-  <span class='no'>human_seu_list</span>,
-  <span class='kw'>excluded_cells</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='no'>...</span>
-)</pre>
+    <pre class="usage"><span class='fu'>cross_species_integrate</span><span class='op'>(</span>
+  <span class='va'>mouse_seu_list</span>,
+  <span class='va'>human_seu_list</span>,
+  excluded_cells <span class='op'>=</span> <span class='cn'>NULL</span>,
+  <span class='va'>...</span>
+<span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -151,6 +151,11 @@
 
 
 
+    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
+    <pre class="examples">
+<span class='fu'>cross_species_integrate</span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span>baron2016singlecell <span class='op'>=</span> <span class='va'>baron2016singlecell</span><span class='op'>)</span>, <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span>panc8 <span class='op'>=</span> <span class='va'>panc8</span><span class='op'>)</span><span class='op'>)</span>
+
+</pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
@@ -166,7 +171,7 @@
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>

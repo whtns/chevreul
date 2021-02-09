@@ -28,3 +28,8 @@ prep_scvelo(
 \description{
 run scvelo on a gene or transcript level seurat object
 }
+\examples{
+
+
+
+}

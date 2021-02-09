@@ -7,7 +7,6 @@
 seuratApp(
   preset_project,
   appTitle = "seuratTools",
-  feature_types = "gene",
   organism_type = "human",
   db_path = "~/.cache/seuratTools/single-cell-projects.db",
   futureMb = 13000

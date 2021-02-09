@@ -15,8 +15,7 @@
 #'
 #' @examples
 #' batches <- panc8 %>%
-#'   purrr::map(Seurat::SplitObject, split.by = "tech") %>%
-#'   purrr::transpose()
+#'   Seurat::SplitObject(split.by = "tech")
 #'
 #' integrated_seu <- integration_workflow(batches)
 integration_workflow <- function(batches, excluded_cells = NULL, resolution = seq(0.2, 2.0, by = 0.2), experiment_name = "default_experiment", organism = "human", ...) {
@@ -31,7 +30,8 @@ integration_workflow <- function(batches, excluded_cells = NULL, resolution = se
   if (any(purrr::map_lgl(organisms, is.null))) {
     organisms <- case_when(
       grepl("Hs", names(batches)) ~ "human",
-      grepl("Mm", names(batches)) ~ "mouse"
+      grepl("Mm", names(batches)) ~ "mouse",
+      TRUE ~ "human"
     )
     names(organisms) <- names(batches)
   }
@@ -40,21 +40,20 @@ integration_workflow <- function(batches, excluded_cells = NULL, resolution = se
 
   batches <- purrr::pmap(list(batches, experiment_names, organisms), record_experiment_data)
 
-  if (all(purrr::map(batches, list("misc", "experiment", "organism")) == "human")) {
-    merged_batches <- seurat_integration_pipeline(batches, resolution = resolution, organism = "human", ...)
+  batch_organisms <- map_chr(batches, list("misc", "experiment", "organism"))
 
-    merged_batches@misc$batches <- names(batches)
-  } else if (all(purrr::map(batches, list("misc", "experiment", "organism")) == "mouse")) {
+  if (all(batch_organisms == "mouse")) {
     merged_batches <- purrr::imap(batches, seuratTools::seurat_integration_pipeline, resolution = resolution, organism = "mouse", ...)
-
     merged_batches@misc$batches <- names(batches)
+
+  } else if (all(batch_organisms == "human")) {
+    merged_batches <- seurat_integration_pipeline(batches, resolution = resolution, organism = "human", ...)
+    merged_batches@misc$batches <- names(batches)
+
   } else {
     mouse_seu_list <- batches[names(organisms[organisms == "mouse"])]
-
     human_seu_list <- batches[names(organisms[organisms == "human"])]
-
     merged_batches <- cross_species_integrate(mouse_seu_list = mouse_seu_list, human_seu_list = human_seu_list)
-
     merged_batches@misc$batches <- names(batches)
   }
 

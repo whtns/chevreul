@@ -11,7 +11,7 @@ plot_markers(
   selected_values = NULL,
   return_plotly = TRUE,
   marker_method = c("presto", "genesorteR"),
-  featureType = "gene",
+  seurat_assay = "gene",
   hide_pseudo = FALSE,
   unique_markers = FALSE,
   ...

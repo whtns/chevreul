@@ -5,10 +5,9 @@
 \title{Create a minimal seurat app}
 \usage{
 minimalSeuratApp(
-  object = seurat_pancreas_reduced,
+  object = panc8,
   loom_path = NULL,
   appTitle = NULL,
-  feature_types = "gene",
   organism_type = "human",
   futureMb = 13000
 )
@@ -21,4 +20,9 @@ minimalSeuratApp(
 }
 \description{
 Create a minimal seurat app
+}
+\examples{
+
+minimalSeuratApp(panc8)
+
 }
