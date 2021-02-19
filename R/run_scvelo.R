@@ -70,7 +70,6 @@ convert_to_h5ad <- function(seu, file_path) {
 #'
 #'
 prep_scvelo <- function(seu, loom_path, velocity_mode = c("deterministic", "stochastic", "dynamical"), ...) {
-  browser()
 
   h5ad_path <- fs::path_ext_set(loom_path, ".h5ad")
 
