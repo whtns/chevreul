@@ -266,8 +266,6 @@ update_seuratTools_object <- function(seu_path, feature, resolution = seq(0.2, 2
   message(seu_path)
   seu <- readRDS(seu_path)
 
-  seu <- propagate_spreadsheet_changes(seu@meta.data, seu)
-
   if (is.list(seu)) {
     seu <- convert_seu_list_to_multimodal(seu)
     # seu <- Seurat::UpdateSeuratObject(seu)
@@ -276,6 +274,8 @@ update_seuratTools_object <- function(seu_path, feature, resolution = seq(0.2, 2
   } else if (identical(names(seu@assays), c("RNA", "integrated"))) {
     seu <- RenameAssays(seu, RNA = "gene")
   }
+
+  seu <- propagate_spreadsheet_changes(seu@meta.data, seu)
 
   # set appropriate assay
   if ("integrated" %in% names(seu@assays)) {

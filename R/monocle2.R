@@ -8,7 +8,7 @@
 #' @export
 #'
 #' @examples
-add_census_slot <- function(seu, assay = "gene", slot = "abundance") {
+add_census_slot <- function(seu, assay = "gene", slot = "counts") {
   data <- Seurat::GetAssayData(seu, assay = assay, slot = slot)
 
   data <- floor(data)
@@ -38,8 +38,9 @@ add_census_slot <- function(seu, assay = "gene", slot = "abundance") {
   )
 
   attributes(seu)$census <- Biobase::exprs(monocle_cds)
-  attributes(seu)$raw <- seu[["gene"]]@counts
-  seu@counts <- seu[["gene"]]@census
+
+  seu[["census"]] <- seu[["gene"]]
+  seu <- SetAssayData(seu, slot = "data", new.data = Biobase::exprs(monocle_cds), assay = "census")
 
   return(seu)
 }
