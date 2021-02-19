@@ -7,12 +7,6 @@ Authors@R: c(
     person("Roman", "Hillje", role = c("ctb"), comment = "Author of included Cerebro fragments")
     )
 Description: Tools for using seurat with single cell projects
-Config/reticulate:
-  list(
-    packages = list(
-      list(package = "scvelo")
-    )
-  )
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true

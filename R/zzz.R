@@ -10,3 +10,8 @@ pyplot <- NULL
   matplotlib$use("Agg", force = TRUE)
   pyplot <<- reticulate::import("matplotlib.pyplot")
 }
+
+install_scvelo <- function(method = "auto", conda = "auto") {
+  reticulate::py_install("scvelo", method = method, conda = conda, pip = TRUE)
+  reticulate::py_install("matplotlib", method = method, conda = conda)
+}
