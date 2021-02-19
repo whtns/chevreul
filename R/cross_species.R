@@ -153,7 +153,6 @@ cross_species_integrate <- function(mouse_seu_list, human_seu_list, excluded_cel
 #'
 #' @examples
 update_human_gene_symbols <- function(seu, assay = "gene") {
-  browser()
   ensdb <- EnsDb.Hsapiens.v86::EnsDb.Hsapiens.v86
 
   symbols <- rownames(seu[[assay]])

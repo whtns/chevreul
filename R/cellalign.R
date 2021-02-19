@@ -50,7 +50,6 @@ local_cellalign <- function(exp_ref, exp_query, traj_ref, traj_query, Thresh = 0
   text(90, 1, "Ref")
   text(150, 1, "Query")
   text(125, .3, "red points are conserved")
-  browser()
   return(list(alignment, alignment_plot))
 }
 
