@@ -1358,16 +1358,7 @@ plotVelocity <- function(input, output, session, seu, loom_path) {
           assay <- "gene"
         }
 
-        # sc <- reticulate::import("scanpy")
-
-        # cdb <- cachem::cache_disk("/dataVolume/storage/.rcache")
-        #
-        # memo_prep <- memoise::memoise(prep_scvelo, cache = cdb)
-
         adata <- prep_scvelo(seu(), loom_path, velocity_mode = input$velocityMode)
-
-        # implement caching in the future via lru cache?
-        # adata$write_h5ad(gsub(".h5ad", "_scvelo.h5ad", loom_path))
 
         adata(adata)
         message("scvelo Complete!")
@@ -1377,30 +1368,7 @@ plotVelocity <- function(input, output, session, seu, loom_path) {
       }
     )
   })
-  # reactive adata------------------------------
 
-  # adata <- eventReactive(input$calc_velocity, {
-  #   req(seu())
-  #   showModal(modalDialog("Calculating Velocity", footer=NULL))
-  #
-  #   if ("integrated" %in% names(seu()@assays)) {
-  #     assay = "integrated"
-  #   } else {
-  #     assay = "gene"
-  #   }
-  #
-  #   # sc <- reticulate::import("scanpy")
-  #
-  #   adata = prep_scvelo(seu(), loom_path, velocity_mode = input$velocityMode)
-  #
-  #   # implement caching in the future via lru cache?
-  #   # adata$write_h5ad(gsub(".h5ad", "_scvelo.h5ad", loom_path))
-  #
-  #   removeModal()
-  #
-  #   return(adata)
-  #
-  # })
 
   velocity_flag <- eventReactive(input$calc_velocity, {
     req(adata())
@@ -1439,6 +1407,11 @@ plotVelocity <- function(input, output, session, seu, loom_path) {
       assay <- "gene"
     }
     scvelo_expression(adata(), features = input$geneSelect)
+
+    matplotlib <<- reticulate::import("matplotlib", convert = TRUE)
+    matplotlib$use("Agg", force = TRUE)
+    pyplot <<- reticulate::import("matplotlib.pyplot")
+
     fig <- pyplot$gcf()
     # fig$savefig("velocity_expression.pdf")
     fig$savefig("velocity_expression.png")
