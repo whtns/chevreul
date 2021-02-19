@@ -3,7 +3,7 @@ scvelo <- NULL
 matplotlib <- NULL
 pyplot <- NULL
 .onLoad <- function(libname, pkgname) {
-  reticulate::configure_environment(pkgname, force = TRUE)
+  # reticulate::configure_environment(pkgname, force = TRUE)
   # use superassignment to update global reference to scvelo
   scvelo <<- reticulate::import("scvelo", delay_load = TRUE)
   matplotlib <<- reticulate::import("matplotlib", convert = TRUE)
