@@ -29,6 +29,7 @@ set_colnames_txi <- function(txi, colnames) {
 #'
 #' @examples
 load_counts_by_tximport <- function(proj_dir, type = "salmon", countsFromAbundance = "scaledTPM", edb = EnsDb.Hsapiens.v86::EnsDb.Hsapiens.v86) {
+
   sample_glob <- switch(type,
     kallisto = "*abundance.h5",
     salmon = "*quant.sf",
@@ -97,31 +98,29 @@ load_meta <- function(proj_dir) {
 #' @export
 #'
 #' @examples
-seu_from_tximport <- function(txi, feature, meta_tbl, ...) {
-  # seu <- seu_from_tibbles(exp_tbl, feature, meta_tbl)
+seu_from_tximport <- function(txi, meta_tbl, ...) {
 
-  exp_tbl <- as.matrix(txi$counts)
+  gene_expression <- as.matrix(txi$gene$counts)
+  expid <- gsub("-[0-9]*", "", colnames(gene_expression))
 
-  expid <- gsub("-.*", "", colnames(exp_tbl))
+  featuredata <- data.frame(
+    feature = rownames(gene_expression),
+    row.names = rownames(gene_expression))
 
-  featuredata <- data.frame(feature = rownames(exp_tbl))
-  rownames(featuredata) <- featuredata[, 1]
-  # if (feature == "transcript"){
-  #   featuredata <-
-  #     featuredata %>%
-  #     tibble::rownames_to_column("tx_id") %>%
-  #     dplyr::left_join(txi$tx2gene, by = "tx_id") %>%
-  #     tibble::column_to_rownames("tx_id")
-  # }
+  meta_tbl <- data.frame(meta_tbl,
+                         row.names = meta_tbl[["sample_id"]])
 
-  meta_tbl <- data.frame(meta_tbl)
-  rownames(meta_tbl) <- meta_tbl[, "sample_id"]
+  meta_tbl <- meta_tbl[colnames(gene_expression), ]
 
-  meta_tbl <- meta_tbl[colnames(exp_tbl), ]
-
-  seu <- Seurat::CreateSeuratObject(counts = exp_tbl, project = expid, assay = "gene", meta.data = meta_tbl)
-
+  # create gene assay
+  seu <- Seurat::CreateSeuratObject(counts = gene_expression, project = expid, assay = "gene", meta.data = meta_tbl)
   seu@assays[["gene"]] <- AddMetaData(seu@assays[["gene"]], featuredata)
+
+  if ("transcript" %in% names(txi_features)){
+    #create transcript assay
+    transcript_expression <- as.matrix(txi$transcript$counts)
+    seu[["transcript"]] <- CreateAssayObject(transcript_expression)
+  }
 
   # add default batch if missing
   seu$batch <- seu@project.name

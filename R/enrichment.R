@@ -203,6 +203,8 @@ getEnrichedPathways <- function(
           return(results_2)
         }
       )
+
+      browser()
       ## remove clusters without any enriched entry in any database
       for (i in names(results_by_cluster))
       {

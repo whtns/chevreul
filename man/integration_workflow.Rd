@@ -34,8 +34,7 @@ Integrate multiple seurat objects and save to file
 }
 \examples{
 batches <- panc8 \%>\%
-  purrr::map(Seurat::SplitObject, split.by = "tech") \%>\%
-  purrr::transpose()
+  Seurat::SplitObject(split.by = "tech")
 
 integrated_seu <- integration_workflow(batches)
 }
