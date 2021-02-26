@@ -1,8 +1,5 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
-
-# seuratTools
-
 <!-- badges: start -->
 <!-- badges: end -->
 <!-- badges: start -->
@@ -20,24 +17,26 @@ the future
 
 This package includes a set of Shiny apps for exploring single cell RNA
 datasets processed with
-[Seurat](https://github.com/satijalab/seurat){:target="\_blank"}
-objects.
+<a href="https://github.com/satijalab/seurat" target="_blank" rel="noopener noreferrer">Seurat</a>
 
 A demo using a pancreas dataset from the Seurat team is available
-[here](http://cobriniklab.saban-chla.usc.edu:3838/seuratTools_demo/){:target="\_blank"}
+<a href="http://cobriniklab.saban-chla.usc.edu:3838/seuratTools_demo/" target="_blank" rel="noopener noreferrer">here</a>
 
 There are also convenient functions for: 1. Clustering and Dimensional
-Reduction of Raw Sequencing Data 2. [Integration and Label
-Transfer](https://satijalab.org/seurat/v3.0/pancreas_integration_label_transfer.html){:target="\_blank“}
-3. Louvain Clustering at a Range of Resolutions 4. Cell cycle state
-regression and labeling 5. RNA velocity calculation with
-[Velocyto.R](https://velocyto.org/){:target=”\_blank“} and
-[scvelo](https://scvelo.readthedocs.io/){:target=”\_blank"}
+Reduction of Raw Sequencing Data 2.
+<a href="https://satijalab.org/seurat/v3.0/pancreas_integration_label_transfer.html" target="_blank" rel="noopener noreferrer">Integration
+and Label Transfer</a> 3. Louvain Clustering at a Range of Resolutions
+4. Cell cycle state regression and labeling 5. RNA velocity calculation
+with
+<a href="https://velocyto.org/" target="_blank" rel="noopener noreferrer">Velocyto.R</a>
+and
+<a href="https://scvelo.readthedocs.io/" target="_blank" rel="noopener noreferrer">scvelo</a>
 
 ## Installation
 
 You can install the released version of seuratTools from
-[github](https://github.com/whtns/seuratTools){:target="\_blank"} with:
+<a href="https://github.com/whtns/seuratTools" target="_blank" rel="noopener noreferrer">github</a>
+with:
 
 ### Install locally and run in three steps:
 
@@ -52,8 +51,9 @@ You can install the released version of seuratTools from
 
 ## Site
 
-You can view documentation on the [seuratTools
-website](https://whtns.github.io/seuratTools)
+You can view documentation on the
+<a href="https://whtns.github.io/seuratTools" target="_blank" rel="noopener noreferrer">seuratTools
+website</a>
 
 ## How To
 
