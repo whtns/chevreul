@@ -19,24 +19,25 @@ the future
 # Seurat Tools
 
 This package includes a set of Shiny apps for exploring single cell RNA
-datasets processed with [Seurat](https://github.com/satijalab/seurat)
+datasets processed with
+[Seurat](https://github.com/satijalab/seurat){:target="\_blank"}
 objects.
 
-A demo using a pancreas dataset from the Seurat team is availble
-[here](http://cobriniklab.saban-chla.usc.edu:3838/seuratTools_demo/)
+A demo using a pancreas dataset from the Seurat team is available
+[here](http://cobriniklab.saban-chla.usc.edu:3838/seuratTools_demo/){:target="\_blank"}
 
 There are also convenient functions for: 1. Clustering and Dimensional
 Reduction of Raw Sequencing Data 2. [Integration and Label
-Transfer](https://satijalab.org/seurat/v3.0/pancreas_integration_label_transfer.html)
+Transfer](https://satijalab.org/seurat/v3.0/pancreas_integration_label_transfer.html){:target="\_blank“}
 3. Louvain Clustering at a Range of Resolutions 4. Cell cycle state
 regression and labeling 5. RNA velocity calculation with
-[Velocyto.R](https://velocyto.org/) and
-[scvelo](https://scvelo.readthedocs.io/)
+[Velocyto.R](https://velocyto.org/){:target=”\_blank“} and
+[scvelo](https://scvelo.readthedocs.io/){:target=”\_blank"}
 
 ## Installation
 
 You can install the released version of seuratTools from
-[github](https://github.com/whtns/seuratTools) with:
+[github](https://github.com/whtns/seuratTools){:target="\_blank"} with:
 
 ### Install locally and run in three steps:
 
