@@ -84,9 +84,6 @@ load_meta <- function(proj_dir) {
 }
 
 
-## ------------------------------------------------------------------------
-
-
 #' Create a Seurat Object from return of tximport
 #'
 #' @param txi output from load_counts_from_stringtie

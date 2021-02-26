@@ -41,8 +41,6 @@ minimalSeuratApp <- function(object = panc8, loom_path = NULL, appTitle = NULL,
         tabName = "comparePlots", icon = icon("chart-bar"), selected = TRUE
       ), shinydashboard::menuItem("Heatmap/Violin Plots",
         tabName = "violinPlots", icon = icon("sort")
-      ), shinydashboard::menuItem("Coverage Plots",
-        tabName = "coveragePlots", icon = icon("mountain")
       ), shinydashboard::menuItem("Differential Expression",
         tabName = "diffex", icon = icon("magnet")
       ), shinydashboard::menuItem("Pathway Enrichment Analysis",
@@ -53,8 +51,6 @@ minimalSeuratApp <- function(object = panc8, loom_path = NULL, appTitle = NULL,
         tabName = "subsetSeurat", icon = icon("filter")
       ), shinydashboard::menuItem("All Transcripts",
         tabName = "allTranscripts", icon = icon("sliders-h")
-      ), shinydashboard::menuItem("RNA Velocity",
-        tabName = "plotVelocity", icon = icon("tachometer-alt")
       ), shinydashboard::menuItem("Monocle",
         tabName = "monocle", icon = icon("bullseye")
       ), shinydashboard::menuItem("Regress Features",
@@ -94,12 +90,6 @@ minimalSeuratApp <- function(object = panc8, loom_path = NULL, appTitle = NULL,
         ),
         fluidRow(
           plotViolinui("violinPlot")
-        )
-      ),
-      shinydashboard::tabItem(
-        tabName = "coveragePlots",
-        fluidRow(
-          plotCoverage_UI("coverageplots")
         )
       ),
       shinydashboard::tabItem(
@@ -148,13 +138,6 @@ minimalSeuratApp <- function(object = panc8, loom_path = NULL, appTitle = NULL,
         h2("All Transcripts"),
         plotDimRedui("alltranscripts2"),
         allTranscriptsui("alltranscripts1")
-      ),
-      shinydashboard::tabItem(
-        tabName = "plotVelocity",
-        h2("RNA Velocity"),
-        fluidRow(
-          plotVelocityui("plotvelocity"),
-        )
       ),
       shinydashboard::tabItem(
         tabName = "diffex",
@@ -504,12 +487,6 @@ minimalSeuratApp <- function(object = panc8, loom_path = NULL, appTitle = NULL,
       )
     })
 
-    observe({
-      req(seu())
-      req(loom_path())
-
-      callModule(plotVelocity, "plotvelocity", seu, loom_path())
-    })
   }
   shinyApp(ui, server, enableBookmarking = "server")
 }
