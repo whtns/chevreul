@@ -28,14 +28,8 @@ minimalSeuratApp <- function(object = panc8, loom_path = NULL, appTitle = NULL,
   sidebar <- shinydashboard::dashboardSidebar(
     textOutput("appTitle"),
     uiOutput("featureType"),
-    shinyWidgets::prettyRadioButtons("organism_type",
-      inline = TRUE,
-      "Organism", choices = c("human", "mouse"), selected = organism_type
-    ),
     shinydashboard::sidebarMenu(
-      shinydashboard::menuItem("Integrate Projects",
-        tabName = "integrateProjects", icon = icon("object-group")
-      ), shinydashboard::menuItem("Reformat Metadata",
+      shinydashboard::menuItem("Reformat Metadata",
         tabName = "reformatMetadata", icon = icon("columns")
       ), shinydashboard::menuItem("Plot Data",
         tabName = "comparePlots", icon = icon("chart-bar"), selected = TRUE
@@ -90,13 +84,6 @@ minimalSeuratApp <- function(object = panc8, loom_path = NULL, appTitle = NULL,
         ),
         fluidRow(
           plotViolinui("violinPlot")
-        )
-      ),
-      shinydashboard::tabItem(
-        tabName = "integrateProjects",
-        fluidRow(
-          integrateProjui("integrateproj"),
-          width = 12
         )
       ),
       shinydashboard::tabItem(
@@ -214,7 +201,7 @@ minimalSeuratApp <- function(object = panc8, loom_path = NULL, appTitle = NULL,
     })
 
     organism_type <- reactive({
-      input$organism_type
+      "human"
     })
 
     loom_path <- reactive({
@@ -226,41 +213,11 @@ minimalSeuratApp <- function(object = panc8, loom_path = NULL, appTitle = NULL,
       list_plot_types(seu())
     })
 
-    output$featureType <- renderUI({
-      req(seu())
-      shinyWidgets::prettyRadioButtons("feature_type",
-        "Feature for Display",
-        choices = c("gene", "transcript"),
-        selected = "gene", inline = TRUE
-      )
-    })
-
-    observeEvent(input$feature_type, {
-      req(seu())
-      # DefaultAssay(seu()) <- paste0(input$feature_type, ".", "integrated")
-      # DefaultAssay(seu()) <- "gene"
-    })
-
     featureType <- reactive({
       "gene"
       # input$feature_type
     })
 
-    integrationResults <- callModule(
-      integrateProj, "integrateproj",
-      proj_matrices, seu, proj_dir, con
-    )
-
-    newprojList <- reactive({
-      req(integrationResults())
-      integration_path <- paste0(integrationResults())
-      proj_dir(integration_path)
-      newintegrated_project <- purrr::set_names(
-        integration_path,
-        fs::path_file(integration_path)
-      )
-      newprojList <- c(projList(), newintegrated_project)
-    })
 
     observe({
       reformatted_seu <- callModule(reformatMetadataDR, "reformatMetadataDR", seu, featureType)
