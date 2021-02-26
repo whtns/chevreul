@@ -36,7 +36,6 @@ There are also convenient functions for:
 4. Cell cycle state regression and labeling 
 5. RNA velocity calculation with <a href="https://velocyto.org/" target="_blank" rel="noopener noreferrer">Velocyto.R</a> and <a href="https://scvelo.readthedocs.io/" target="_blank" rel="noopener noreferrer">scvelo</a>
 
-
 ## Installation
 
 You can install the released version of seuratTools from <a href="https://github.com/whtns/seuratTools" target="_blank" rel="noopener noreferrer">github</a> with:

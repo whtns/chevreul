@@ -444,6 +444,8 @@ minimalSeuratApp <- function(object = panc8, loom_path = NULL, appTitle = NULL,
       )
     })
 
+    callModule(techInfo, "techInfo", seu)
+
   }
   shinyApp(ui, server, enableBookmarking = "server")
 }
