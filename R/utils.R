@@ -291,6 +291,7 @@ update_seuratTools_object <- function(seu_path, feature, resolution = seq(0.2, 2
   seuratTools_version <- ifelse(is.null(seuratTools_version), 0.1, seuratTools_version)
 
   if (seuratTools_version < getNamespaceVersion("seuratTools")) {
+    message(paste0(seu_path, " is out of date! updating..."))
     if (!any(grepl("_snn_res", colnames(seu@meta.data)))) {
       seu <- seurat_cluster(seu = seu, resolution = resolution, reduction = "pca", ...)
     }

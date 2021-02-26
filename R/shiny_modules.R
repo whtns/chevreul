@@ -1313,7 +1313,7 @@ plotVelocityui <- function(id) {
       selectizeInput(ns("geneSelect"), "Select a Gene", choices = NULL, selected = NULL, multiple = TRUE),
       actionButton(ns("plot_velocity_expression"), "plot velocity and expression"),
       downloadButton(ns("downloadExpressionPlot"), label = "Download Plot"),
-      imageOutput(ns("velocityExpressionPlot"), height = "700px")
+      imageOutput(ns("velocityExpressionPlot"), height = "500px")
     ) %>%
       default_helper(type = "markdown", content = "plotVelocity")
   )
@@ -1394,7 +1394,7 @@ plotVelocity <- function(input, output, session, seu, loom_path) {
     plot_scvelo(adata(), group.by = cluster_resolution, plot_method = input$plotFormat)
     fig <- pyplot$gcf()
     # fig$savefig("velocity_embedding.pdf")
-    fig$savefig("velocity_embedding.png")
+    fig$savefig("velocity_embedding.svg")
   })
 
   observe({
@@ -1408,39 +1408,35 @@ plotVelocity <- function(input, output, session, seu, loom_path) {
     }
     scvelo_expression(adata(), features = input$geneSelect)
 
-    matplotlib <<- reticulate::import("matplotlib", convert = TRUE)
-    matplotlib$use("Agg", force = TRUE)
-    pyplot <<- reticulate::import("matplotlib.pyplot")
-
     fig <- pyplot$gcf()
     # fig$savefig("velocity_expression.pdf")
-    fig$savefig("velocity_expression.png")
+    fig$savefig("velocity_expression.svg")
   })
 
   output$downloadEmbeddingPlot <- downloadHandler(
     filename = function() {
-      paste("velocity_embedding", ".png", sep = "")
+      paste("velocity_embedding", ".svg", sep = "")
     },
     content = function(file) {
-      file.copy("velocity_embedding.png", file, overwrite = TRUE)
+      file.copy("velocity_embedding.svg", file, overwrite = TRUE)
     }
   )
 
   output$downloadExpressionPlot <- downloadHandler(
     filename = function() {
-      paste("velocity_expression", ".png", sep = "")
+      paste("velocity_expression", ".svg", sep = "")
     },
     content = function(file) {
-      file.copy("velocity_expression.png", file, overwrite = TRUE)
+      file.copy("velocity_expression.svg", file, overwrite = TRUE)
     }
   )
 
   expression_path <- eventReactive(input$plot_velocity_expression, {
-    "velocity_expression.png"
+    "velocity_expression.svg"
   })
 
   embedding_path <- eventReactive(input$plot_velocity_embedding, {
-    "velocity_embedding.png"
+    "velocity_embedding.svg"
   })
 
   output$velocityEmbeddingPlot <- renderImage(
@@ -1453,7 +1449,7 @@ plotVelocity <- function(input, output, session, seu, loom_path) {
       # Return a list containing information about the image
       list(
         src = embedding_path(),
-        contentType = "image/png",
+        contentType = "image/svg+xml",
         width = 1200,
         height = 800,
         alt = "This is alternate text"
@@ -1472,9 +1468,9 @@ plotVelocity <- function(input, output, session, seu, loom_path) {
       # Return a list containing information about the image
       list(
         src = expression_path(),
-        contentType = "image/png",
-        width = 2100,
-        height = 700,
+        contentType = "image/svg+xml",
+        width = 1500,
+        height = 500,
         alt = "This is alternate text"
       )
     },

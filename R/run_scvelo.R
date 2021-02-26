@@ -73,8 +73,6 @@ prep_scvelo <- function(seu, loom_path, velocity_mode = c("deterministic", "stoc
 
   h5ad_path <- fs::path_ext_set(loom_path, ".h5ad")
 
-  scvelo <- reticulate::import("scvelo")
-
   adata_matches_seu <- function(seu, adata) {
     identical(sort(adata$obs_names$values), sort(colnames(seu)))
   }
@@ -123,6 +121,7 @@ prep_scvelo <- function(seu, loom_path, velocity_mode = c("deterministic", "stoc
 #'
 #' @examples
 plot_scvelo <- function(adata, group.by = "batch", plot_method = c("stream", "arrow", "dynamics")) {
+
   num_cols <- length(unique(adata$obs[[group.by]]))
 
   mycols <- scales::hue_pal()(num_cols)
