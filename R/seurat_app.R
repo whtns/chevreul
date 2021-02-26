@@ -211,6 +211,12 @@ prep_slider_values <- function(default_val) {
 #'
 #' @examples
 seuratApp <- function(preset_project, appTitle = "seuratTools", organism_type = "human", db_path = "~/.cache/seuratTools/single-cell-projects.db", futureMb = 13000) {
+
+  scvelo <<- reticulate::import("scvelo", delay_load = TRUE)
+  matplotlib <<- reticulate::import("matplotlib", convert = TRUE)
+  matplotlib$use("Agg", force = TRUE)
+  pyplot <<- reticulate::import("matplotlib.pyplot", delay_load = TRUE)
+
   print(packageVersion("seuratTools"))
   future::plan(strategy = "multicore", workers = 6)
   future_size <- futureMb * 1024^2
