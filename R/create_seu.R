@@ -204,11 +204,7 @@ filter_low_rc_cells <- function(seu, read_thresh = 1e5) {
 #'
 #' save_seurat(gene = feature_seus$gene, transcript = feature_seus$transcript, prefix = "remove_nonPRs", proj_dir = proj_dir)
 #' }
-save_seurat <- function(..., prefix = "unfiltered", proj_dir = getwd()) {
-  seu_list <- list(...)
-  if (is.null(names(seu_list))) {
-    seu_list <- purrr::flatten(seu_list)
-  }
+save_seurat <- function(seu, prefix = "unfiltered", proj_dir = getwd()) {
 
   seurat_dir <- fs::path(proj_dir, "output", "seurat")
 
@@ -228,10 +224,10 @@ save_seurat <- function(..., prefix = "unfiltered", proj_dir = getwd()) {
   # }
 
   message(paste0("saving to ", seu_path))
-  saveRDS(seu_list, seu_path)
+  saveRDS(seu, seu_path)
   # if(prefix == "unfiltered"){
   #   Sys.chmod(seu_path, "775")
   # }
 
-  return(seu_list)
+  return(seu)
 }

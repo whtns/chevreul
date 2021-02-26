@@ -20,10 +20,9 @@ Imports:
     future,
     DT,
     plotly,
-    shinycssloaders,
     shinyFiles,
     janitor,
-    SeuratWrappers (>= 0.1.0),
+    SeuratWrappers (>= 0.2.0),
     monocle3 (>= 0.2.1),
     unglue,
     Biobase,
@@ -33,7 +32,6 @@ Imports:
     presto (>= 1.0.0),
     DBI,
     RSQLite,
-    htmlwidgets,
     shinyWidgets,
     shinyjs,
     waiter,
@@ -55,9 +53,7 @@ Imports:
     ggpubr,
     formattable,
     reticulate,
-    DataEditR (>= 0.0.9),
-    memoise,
-    cachem
+    DataEditR (>= 0.0.9)
 Suggests: 
     ggplot2,
     testthat (>= 2.1.0),
@@ -65,14 +61,14 @@ Suggests:
     rmarkdown
 URL: https://github.com/cobriniklab/seuratTools
 BugReports: https://github.com/cobriniklab/seuratTools/issues
-Remotes: 
+Remotes:  
     immunogenomics/presto,
-    satijalab/seurat-wrappers,
     cole-trapnell-lab/monocle3,
     stephenturner/annotables,
     mahmoudibrahim/genesorteR,
     jokergoo/ComplexHeatmap,
-    DillonHammill/DataEditR
+    DillonHammill/DataEditR,
+    satijalab/seurat-wrappers
 Depends: 
     Seurat,
     R (>= 2.10),
