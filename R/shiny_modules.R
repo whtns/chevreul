@@ -252,6 +252,7 @@ plotHeatmap <- function(input, output, session, seu, featureType, organism_type)
 
     hm <- seu_complex_heatmap(seu(), features = input$customFeature, assay = assay, group.by = input$colAnnoVar, slot = input$slot, col_dendrogram = input$dendroSelect)
 
+    hm = ComplexHeatmap::draw(hm)
     return(hm)
   })
 
@@ -771,6 +772,7 @@ diffexui <- function(id) {
           "Save to Custom Cluster 2"
         )
       ), uiOutput(ns("testChoices")),
+      radioButtons(ns("featureType"), "Features to Compare", choices = c("gene", "transcript")),
       actionButton(
         ns("diffex"),
         "Run Differential Expression"
@@ -894,7 +896,7 @@ diffex <- function(input, output, session, seu, featureType, selected_cells, tes
   de_results <- eventReactive(input$diffex, {
     if (input$diffex_scheme == "seurat") {
       run_seurat_de(seu(), input$cluster1, input$cluster2,
-        resolution = input$seuratResolution, diffex_scheme = "seurat", featureType, tests = tests
+        resolution = input$seuratResolution, diffex_scheme = "seurat", input$featureType, tests = tests
       )
     }
 
@@ -909,7 +911,7 @@ diffex <- function(input, output, session, seu, featureType, selected_cells, tes
       ))
       run_seurat_de(seu(), cluster1, cluster2,
         input$customResolution,
-        diffex_scheme = "custom", featureType, tests = tests
+        diffex_scheme = "custom", input$featureType, tests = tests
       )
     }
   })
@@ -1555,7 +1557,7 @@ monocleui <- function(id) {
     seuratToolsBox(
       title = "Heatmap",
       uiOutput(ns("colAnnoVarui")),
-      radioButtons(ns("heatmapRows"), "annotate heatmap rows by genes or modules?", choices = c(modules = TRUE, genes = FALSE), selected = TRUE),
+      radioButtons(ns("heatmapRows"), "annotate heatmap rows by genes or modules?", choices = c("modules", "genes")),
       downloadButton(ns("downloadPlot"), "Download Heatmap"),
       plotOutput(ns("monocleHeatmap"), width = "800px", height = "1200px")
     ),
@@ -1800,9 +1802,8 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
         title = "Calculating Pseudotime Correlated Features",
         "This may take a few minutes!"
       ))
-      cds_pr_test_res <- monocle3::graph_test(cds_rvs$traj, neighbor_graph = "principal_graph", cores = 4, expression_family = "negbinom")
+      cds_rvs$traj@metadata[["diff_features"]] <- monocle3::graph_test(cds_rvs$traj, neighbor_graph = "principal_graph", cores = 4, expression_family = "negbinom")
 
-      cds_rvs$traj@metadata[["diff_features"]] <- cds_pr_test_res
       cds_rvs$selected <- c(traj = FALSE, ptime = FALSE, diff_features = TRUE)
 
       removeModal()
@@ -1811,11 +1812,7 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
 
   cds_pr_test_res <- reactive({
     if (req(cds_rvs$selected["diff_features"])) {
-      cds_pr_test_res <- cds_rvs$traj@metadata$diff_features
-
-
-      cds_pr_test_res <-
-        cds_pr_test_res %>%
+      cds_rvs$traj@metadata$diff_features %>%
         # subset(q_value < 0.05) %>%
         dplyr::arrange(q_value) %>%
         dplyr::select(-status)
@@ -1823,6 +1820,7 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
   })
 
   observe({
+    req(cds_pr_test_res())
     if (req(cds_rvs$selected["diff_features"])) {
       output$genePlotQuery2 <- renderUI({
         selectizeInput(ns("genePlotQuery1"), "Pick Gene to Plot on Pseudotime", choices = rownames(cds_pr_test_res()), multiple = TRUE, selected = rownames(cds_pr_test_res())[1])
@@ -1831,6 +1829,13 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
       output$partitionSelect <- renderUI({
         selectizeInput(ns("partitions"), "Select a Partition to Plot", choices = levels(monocle3::partitions(cds_rvs$traj)), multiple = FALSE)
       })
+    }
+  })
+
+  observe({
+    req(cds_pr_test_res())
+    req(input$genePlotQuery1)
+    if (req(cds_rvs$selected["diff_features"])) {
 
       output$ptimeGenesLinePlot <- plotly::renderPlotly({
         genes_in_pseudotime <- prep_plot_genes_in_pseudotime(cds_rvs$traj, input$genePlotQuery1, input$cdsResolution)
@@ -1843,12 +1848,10 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
           identity()
       })
 
-      # mymarker
-
       output$ptimeGenesDT <- DT::renderDT({
         DT::datatable(cds_pr_test_res(),
-          extensions = "Buttons",
-          options = list(dom = "Bftp", buttons = c("copy", "csv"), scrollX = "100px", scrollY = "400px", pageLength = 200, paging = TRUE)
+                      extensions = "Buttons",
+                      options = list(dom = "Bftp", buttons = c("copy", "csv"), scrollX = "100px", scrollY = "400px", pageLength = 200, paging = TRUE)
         )
       })
     }
@@ -1856,14 +1859,14 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
 
   monocle_heatmap <- reactive({
     req(cds_rvs$traj)
-    req(cds_pr_test_res())
     req(input$colAnnoVar)
 
     heatmap_genes <- cds_pr_test_res() %>%
       dplyr::filter(q_value < input$qvalThreshold)
 
     monocle_module_heatmap(cds_rvs$traj, rownames(heatmap_genes), input$cdsResolution, collapse_rows = input$heatmapRows, group.by = input$colAnnoVar)
-  })
+  }) %>%
+    bindCache(cds_rvs$traj, input$cdsResolution, input$heatmapRows)
 
   module_choices <- reactive({
     module_choices <- as.character(unique(monocle_heatmap()$module_table$module))

@@ -53,7 +53,8 @@ Imports:
     ggpubr,
     formattable,
     reticulate,
-    DataEditR (>= 0.0.9)
+    DataEditR (>= 0.0.9),
+    megadepth
 Suggests: 
     ggplot2,
     testthat (>= 2.1.0),
@@ -61,7 +62,7 @@ Suggests:
     rmarkdown
 URL: https://github.com/cobriniklab/seuratTools
 BugReports: https://github.com/cobriniklab/seuratTools/issues
-Remotes:  
+Remotes: 
     immunogenomics/presto,
     cole-trapnell-lab/monocle3,
     stephenturner/annotables,
@@ -72,6 +73,6 @@ Remotes:
 Depends: 
     Seurat,
     R (>= 2.10),
-    shiny,
+    shiny (>= 1.6.0),
     shinydashboard
 VignetteBuilder: knitr

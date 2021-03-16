@@ -86,10 +86,10 @@ convert_seu_to_cds <- function(seu, resolution = 1) {
   cds_from_seurat <- monocle3::preprocess_cds(cds_from_seurat, method = "PCA", norm_method = "none")
   cds_from_seurat <- monocle3::reduce_dimension(cds_from_seurat, reduction_method = "UMAP")
 
-  # reducedDim(cds_from_seurat, "PCA") <- Embeddings(seu, "pca")
+  # # reducedDim(cds_from_seurat, "PCA") <- Embeddings(seu, "pca")
   reducedDim(cds_from_seurat, "UMAP") <- Embeddings(seu, "umap")
-  # cds_from_seurat@reducedDims@listData[["UMAP"]] <- Embeddings(seu, "umap")
-  # cds_from_seurat@reducedDims@listData[["PCA"]] <- Embeddings(seu, "pca")
+  # # cds_from_seurat@reducedDims@listData[["UMAP"]] <- Embeddings(seu, "umap")
+  # # cds_from_seurat@reducedDims@listData[["PCA"]] <- Embeddings(seu, "pca")
   cds_from_seurat@preprocess_aux$gene_loadings <- Loadings(seu, "pca")
 
   cds_from_seurat <- learn_graph_by_resolution(cds_from_seurat, seu, resolution = resolution)
@@ -885,6 +885,10 @@ monocle_module_heatmap <- function(cds, pr_deg_ids, seu_resolution, cells = NULL
                                    resolution = 10^seq(-6, -1), group.by = "batch", group.bar.height = 0.01,
                                    cluster_columns = FALSE, cluster_rows = TRUE,
                                    column_split = NULL, col_dendrogram = "ward.D2", mm_col_dend = 30, ...) {
+
+  collapse_rows <- switch(collapse_rows,
+                          modules = TRUE,
+                          genes = FALSE)
 
   if (any(grepl("integrated", colnames(cds@colData)))) {
     default_assay <- "integrated"

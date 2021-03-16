@@ -1,4 +1,33 @@
-#' Create a tibble of bigwig file paths by sample
+#' Create a database of bigwigfiles
+#'
+#' create a sqlite database of bigwig files matching cell ids in seurat objects
+#'
+#' @param bam_files
+#' @param bigwig_db
+#'
+#' @return
+#' @export
+#'
+#' @examples
+build_bigwig_db <- function(bam_files, bigwig_db = "~/.cache/seuratTools/bw-files.db"){
+
+  bigwigfiles <- purrr::map_chr(bam_files, ~megadepth::bam_to_bigwig(.x, prefix = fs::path_ext_remove(.x), overwrite = TRUE)) %>%
+    purrr::set_names(fs::path_file) %>%
+    tibble::enframe("name", "bigWig") %>%
+    dplyr::mutate(sample_id = stringr::str_remove(name, "_.*")) %>%
+    identity()
+
+  con <- DBI::dbConnect(RSQLite::SQLite(), dbname = bigwig_db)
+
+  dbWriteTable(con, "bigwigfiles", bigwigfiles, append = TRUE)
+
+  dbDisconnect(con)
+
+}
+
+#' Load Bigwigs
+#'
+#' Load a tibble of bigwig file paths by cell id
 #'
 #' @param seu
 #' @param bigwig_db

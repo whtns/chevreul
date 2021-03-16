@@ -40,13 +40,14 @@ run_seurat_de <- function(seu, cluster1, cluster2, resolution, diffex_scheme = "
   for (test in tests) {
     print(test)
     de <- FindMarkers(seu,
-      ident.1 = cluster1,
-      ident.2 = cluster2,
-      test.use = test
-    )
+                      assay = featureType,
+                      ident.1 = cluster1,
+                      ident.2 = cluster2,
+                      test.use = test
+                      )
 
 
-    if (featureType() == "transcript") {
+    if (featureType == "transcript") {
       de_cols <- c("enstxp", "ensgene", "symbol", "p_val", "avg_logFC", "pct.1", "pct.2", "p_val_adj")
 
       de <-
@@ -54,15 +55,15 @@ run_seurat_de <- function(seu, cluster1, cluster2, resolution, diffex_scheme = "
         tibble::rownames_to_column("enstxp") %>%
         dplyr::left_join(annotables::grch38_tx2gene, by = "enstxp") %>%
         dplyr::left_join(annotables::grch38, by = "ensgene") %>%
-        dplyr::select(one_of(de_cols))
-    } else if (featureType() == "gene") {
-      de_cols <- c("ensgene", "symbol", "p_val", "avg_logFC", "pct.1", "pct.2", "p_val_adj")
+        dplyr::select(any_of(de_cols))
+    } else if (featureType == "gene") {
+      de_cols <- c("ensgene", "symbol", "p_val", "avg_log2FC", "pct.1", "pct.2", "p_val_adj")
 
       de <-
         de %>%
         tibble::rownames_to_column("symbol") %>%
         dplyr::left_join(annotables::grch38, by = "symbol") %>%
-        dplyr::select(one_of(de_cols))
+        dplyr::select(any_of(de_cols))
     }
 
     test_list[[match(test, tests)]] <- de
@@ -211,11 +212,6 @@ prep_slider_values <- function(default_val) {
 #'
 #' @examples
 seuratApp <- function(preset_project, appTitle = "seuratTools", organism_type = "human", db_path = "~/.cache/seuratTools/single-cell-projects.db", futureMb = 13000) {
-
-  scvelo <<- reticulate::import("scvelo", delay_load = TRUE)
-  matplotlib <<- reticulate::import("matplotlib", convert = TRUE)
-  matplotlib$use("Agg", force = TRUE)
-  pyplot <<- reticulate::import("matplotlib.pyplot", delay_load = TRUE)
 
   print(packageVersion("seuratTools"))
   future::plan(strategy = "multicore", workers = 6)
