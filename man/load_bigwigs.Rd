@@ -2,7 +2,7 @@
 % Please edit documentation in R/wiggleplotr.R
 \name{load_bigwigs}
 \alias{load_bigwigs}
-\title{Create a tibble of bigwig file paths by sample}
+\title{Load Bigwigs}
 \usage{
 load_bigwigs(seu, bigwig_db = "~/.cache/seuratTools/bw-files.db")
 }
@@ -13,5 +13,5 @@ load_bigwigs(seu, bigwig_db = "~/.cache/seuratTools/bw-files.db")
 
 }
 \description{
-Create a tibble of bigwig file paths by sample
+Load a tibble of bigwig file paths by cell id
 }

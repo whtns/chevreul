@@ -91,7 +91,7 @@ filter_rows_to_top <- function(df, column, values) {
 list_plot_types <- function(seu) {
   meta_types <- tibble::tibble(
     vars = colnames(seu[[]]),
-    var_type = purrr::map_chr(purrr::map(seu[[]], pillar::new_pillar_type), "type"),
+    var_type = purrr::map_chr(purrr::map(seu[[]], pillar::new_pillar_type), 1),
     num_levels = unlist(purrr::map(seu[[]], ~ length(unique(.x))))
   )
 
