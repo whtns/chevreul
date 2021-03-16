@@ -1,4 +1,5 @@
 # global reference to scvelo (will be initialized in .onLoad)
+#
 scvelo <- NULL
 matplotlib <- NULL
 pyplot <- NULL
