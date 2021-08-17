@@ -7,8 +7,8 @@
 seu_complex_heatmap(
   seu,
   features = NULL,
-  cells = NULL,
   group.by = "ident",
+  cells = NULL,
   slot = "scale.data",
   assay = NULL,
   group.bar.height = 0.01,

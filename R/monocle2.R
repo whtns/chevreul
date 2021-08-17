@@ -448,8 +448,9 @@ plot_all_ptimes <- function(monocle_list, query_name, sig_slice = 1000, ...) {
     ))
   }
 
-
   monocle_list <- cross_check_heatmaps(monocle_list, query_name)
+
+  monocle_list <- calc_cor_across_heatmaps(monocle_list, query_name)
 
   return(monocle_list)
 }
@@ -466,10 +467,10 @@ plot_all_ptimes <- function(monocle_list, query_name, sig_slice = 1000, ...) {
 #' @export
 #'
 #' @examples
-cross_check_heatmaps <- function(monocle_list, query_name, set_row_order = F, cluster_rows = T, ...) {
+cross_check_heatmaps <- function(monocle_list, query_name, set_row_order = NULL, cluster_rows = T, ...) {
   reference_names <- names(monocle_list)[!names(monocle_list) == query_name]
 
-  if (!set_row_order == F) {
+  if (length(set_row_order) > 0) {
     set_row_order <- set_row_order[set_row_order != ""]
 
     heatmap_matrix <- monocle_list[[query_name]]$heatmap_matrix
@@ -480,7 +481,7 @@ cross_check_heatmaps <- function(monocle_list, query_name, set_row_order = F, cl
   common_genes <- purrr::map(monocle_list, ~ rownames(purrr::pluck(.x, "heatmap_matrix"))) %>%
     purrr::reduce(intersect)
 
-  if (!set_row_order == F) {
+  if (length(set_row_order) > 0) {
     common_genes <- common_genes[match(set_row_order, common_genes)]
     common_genes <- common_genes[!is.na(common_genes)]
 
@@ -508,19 +509,99 @@ cross_check_heatmaps <- function(monocle_list, query_name, set_row_order = F, cl
   #
   monocle_list[[query_name]]$diff_test_res <- mod_diff_test_res
 
-  clusters <- dendextend::cutree(query_results$row_dend, k = 6) %>%
-    tibble::enframe("gene_short_name", "cluster")
+  if (length(set_row_order) > 0) {
 
-  labels <- labels(query_results$row_dend) %>%
-    tibble::enframe("order", "gene_short_name") %>%
-    dplyr::left_join(clusters, by = "gene_short_name")
+    labels <- tibble::enframe(rownames(monocle_list[[query_name]]$heatmap_matrix), "order", "gene_short_name")
+
+  } else {
+    clusters <- dendextend::cutree(query_results$row_dend, k = 6) %>%
+      tibble::enframe("gene_short_name", "cluster")
+
+    labels <- labels(query_results$row_dend) %>%
+      tibble::enframe("order", "gene_short_name") %>%
+      dplyr::left_join(clusters, by = "gene_short_name")
+  }
 
   ordered_diff_test_res <- dplyr::left_join(labels, mod_diff_test_res, by = "gene_short_name")
 
   monocle_list[[query_name]]$ordered_diff_test_res <- ordered_diff_test_res
 
+
+
+
   return(monocle_list)
 }
+
+
+
+#' calculate correlation between heatmap matrices in processed cds_gene_list
+#'
+#' @param cds_set
+#' @param cds_set_name
+#'
+#' @return
+#' @export
+#'
+#' @examples
+calc_cor_across_heatmaps <- function(cds_set, cds_set_name){
+  # browser()
+  heatmap_matrices  <- map(cds_set, pluck, "heatmap_matrix")
+
+  main_heatmap <- heatmap_matrices[[cds_set_name]]
+
+  reference_heatmaps <- heatmap_matrices[!names(heatmap_matrices) == cds_set_name]
+
+  correlations <- vector(mode='list', length= length(reference_heatmaps))
+  for (i in seq_along(reference_heatmaps)){
+    correlations[[i]] <- by_row_corr_between_pt_heatmaps(main_heatmap, reference_heatmaps[[i]])
+  }
+
+  names(correlations) <- paste0(names(reference_heatmaps), "_correlation")
+
+  gene_names <- names(correlations[[1]])
+
+  correlations <- correlations %>%
+    dplyr::bind_cols()
+
+  rownames(correlations) <- gene_names
+
+  correlations <- correlations %>%
+    tibble::rownames_to_column("gene_short_name")
+
+  cds_set[[cds_set_name]][["ordered_diff_test_res"]] <-
+    cds_set[[cds_set_name]][["ordered_diff_test_res"]] %>%
+    dplyr::left_join(correlations, by = "gene_short_name")
+
+  return(cds_set)
+
+}
+
+#' calculate row-wise correlation between two dataframes
+#'
+#' @param df1
+#' @param df2
+#'
+#' @return
+#' @export
+#'
+#' @examples
+by_row_corr_between_pt_heatmaps <- function(df1, df2){
+  # browser()
+  correlations <- vector(length = nrow(df1))
+  for (i in seq_len(nrow(df1))){
+    # print(i)
+    correlations[i] = cor(df1[i,], df2[i,], method = "pearson")
+  }
+
+  names(correlations) <- rownames(df1)
+
+  return(correlations)
+
+}
+
+
+
+
 
 #' Arrange processed monocle CDS objects containing heatmaps
 #'
@@ -556,7 +637,7 @@ arrange_ptime_heatmaps <- function(cds_list, cds_name) {
 #' @export
 #'
 #' @examples
-plot_feature_in_ref_query_ptime <- function(cds_list, selected_cds, features = c("RXRG"), color_by = "State", relative_expr = FALSE, min_expr = 0.5, ...) {
+plot_feature_in_ref_query_ptime <- function(cds_list, selected_cds, features = c("RXRG"), color_by = "State", relative_expr = FALSE, min_expr = 0.5, trend_df = 3, ...) {
   sub_cds_list <- purrr::map(cds_list, ~ .x$monocle_cds[features, ])
 
   string_NA_meta <- function(cds) {
@@ -572,7 +653,9 @@ plot_feature_in_ref_query_ptime <- function(cds_list, selected_cds, features = c
 
   sub_cds_list <- purrr::map(sub_cds_list, string_NA_meta)
 
-  feature_plots_in_ptime <- purrr::map(sub_cds_list, monocle::plot_genes_in_pseudotime, trend_formula = "~sm.ns(Pseudotime, df=3)", color_by = color_by, relative_expr = relative_expr, min_expr = min_expr)
+  trend_formula <- paste0("~sm.ns(Pseudotime, df=", trend_df, ")")
+
+  feature_plots_in_ptime <- purrr::map(sub_cds_list, monocle::plot_genes_in_pseudotime, trend_formula = trend_formula, color_by = color_by, relative_expr = relative_expr, min_expr = min_expr)
 
   feature_plots_in_ptime[selected_cds]
 
@@ -806,9 +889,13 @@ plot_pseudotime_heatmap <- function(heatmap_matrix, heatmap_title, dend_k = 6, c
 
   if (cluster_rows) {
     row_split <- dend_k
+    show_row_dend <- TRUE
+    cluster_rows <- row_dend
   } else {
     row_split <- NULL
-    row_dend <- dendextend::rotate(row_dend, rownames(heatmap_matrix))
+    # row_dend <- dendextend::rotate(row_dend, rownames(heatmap_matrix))
+    cluster_rows <- FALSE
+    show_row_dend = FALSE
   }
 
   ph_res <- ComplexHeatmap::Heatmap(heatmap_matrix,
@@ -825,8 +912,8 @@ plot_pseudotime_heatmap <- function(heatmap_matrix, heatmap_title, dend_k = 6, c
     show_column_names = FALSE,
     show_column_dend = FALSE,
     row_title = NULL,
-    cluster_rows = row_dend,
-    show_row_dend = TRUE,
+    cluster_rows = cluster_rows,
+    show_row_dend = show_row_dend,
     row_names_gp = grid::gpar(fontsize = c(row_font)),
     heatmap_height = unit(heatmap_height, "cm"),
     heatmap_width = unit(heatmap_width, "cm"),

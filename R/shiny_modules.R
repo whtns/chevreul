@@ -174,7 +174,7 @@ plotHeatmapui <- function(id) {
       title = "Heatmap",
       uiOutput(ns("colAnnoVarui")),
       radioButtons(ns("slot"), "Data Scaling", choices = c(scaled = "scale.data", unscaled = "data"), selected = "scale.data", inline = TRUE),
-      selectizeInput(ns("dendroSelect"), "Clustering algorithm or metadata for column arrangement", choices = NULL, selected = NULL),
+      selectizeInput(ns("dendroSelect"), "Clustering algorithm or metadata for column arrangement", choices = NULL, selected = NULL, multiple = TRUE),
       actionButton(ns("actionHeatmap"), "Plot Heatmap"),
       downloadButton(ns("downloadPlot"), "Download Heatmap"),
       selectizeInput(ns("customFeature"), "Gene or transcript expression by which to color the plot; eg. 'RXRG' or 'ENST00000488147'",
@@ -395,7 +395,7 @@ integrateProj <- function(input, output, session, proj_matrices, seu, proj_dir, 
 
   volumes <- reactive({
     volumes <- c(Home = fs::path("/dataVolume/storage/single_cell_projects/integrated_projects"), "R Installation" = R.home(), shinyFiles::getVolumes())
-    # print(volumes)
+    print(volumes)
     volumes
   })
 
@@ -956,6 +956,7 @@ findMarkersui <- function(id) {
       numericInput(ns("num_markers"), "Select Number of Markers to Plot for Each Value", value = 5, min = 2, max = 20),
       uiOutput(ns("valueSelect")),
       radioButtons(ns("markerMethod"), "Method of Marker Selection", choices = c("presto", "genesorteR"), selected = "presto", inline = TRUE),
+      sliderInput(ns("pValCutoff"), "P Value cutoff", min = 0.01, max = 1, value = 1),
       selectizeInput(ns("dotFeature"), "Feature for Marker Plot", choices = NULL),
       actionButton(ns("plotDots"), "Plot Markers!"),
       downloadButton(ns("downloadMarkerTable"), "Download Markers!"),
@@ -1032,7 +1033,7 @@ findMarkers <- function(input, output, session, seu, plot_types, featureType) {
   # })
 
   marker_plot_return <- eventReactive(input$plotDots, {
-    plot_markers(seu(), metavar = metavar(), num_markers = input$num_markers, selected_values = input$displayValues, marker_method = input$markerMethod, seurat_assay = input$dotFeature, featureType = featureType(), hide_pseudo = input$hidePseudo, unique_markers = input$uniqueMarkers)
+    plot_markers(seu(), metavar = metavar(), num_markers = input$num_markers, selected_values = input$displayValues, marker_method = input$markerMethod, seurat_assay = input$dotFeature, featureType = featureType(), hide_pseudo = input$hidePseudo, unique_markers = input$uniqueMarkers, p_val_cutoff = input$pValCutoff)
   })
 
   output$markerplot <- plotly::renderPlotly({
@@ -1221,11 +1222,14 @@ allTranscripts <- function(input, output, session, seu,
 
   transcripts <- reactive({
     req(seu())
-    get_transcripts_from_seu(seu(), input$embeddingGene, organism = organism_type())
+    if("transcript" %in% names(seu()@assays)){
+      get_transcripts_from_seu(seu(), input$embeddingGene, organism = organism_type())
+    }
   })
 
   observe({
     req(seu())
+    req(transcripts())
     updateSelectizeInput(session, "embedding", choices = c("pca", "tsne", "umap"), selected = "umap", server = TRUE)
     updateSelectizeInput(session, "transcriptSelect", choices = transcripts(), server = TRUE)
   })
@@ -1544,6 +1548,7 @@ monocleui <- function(id) {
         uiOutput(ns("partitionSelect")),
         uiOutput(ns("genePlotQuery2")),
         DT::DTOutput(ns("ptimeGenesDT")),
+        downloadButton(ns("downloadGenesDT"), "Download data as csv"),
         # uiOutput(ns("ptimeGenes")),
         width = 6
       ),
@@ -1815,7 +1820,9 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
       cds_rvs$traj@metadata$diff_features %>%
         # subset(q_value < 0.05) %>%
         dplyr::arrange(q_value) %>%
-        dplyr::select(-status)
+        dplyr::select(-status) %>%
+        # dplyr::filter %>%
+        identity()
     }
   })
 
@@ -1854,6 +1861,16 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
                       options = list(dom = "Bftp", buttons = c("copy", "csv"), scrollX = "100px", scrollY = "400px", pageLength = 200, paging = TRUE)
         )
       })
+
+      output$downloadGenesDT <- downloadHandler(
+        filename = function() {
+          paste("diffex_ptime-", Sys.Date(), ".csv", sep="")
+        },
+        content = function(file) {
+          write.csv(cds_pr_test_res(), file)
+        }
+      )
+
     }
   })
 

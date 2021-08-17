@@ -11,6 +11,7 @@ plot_feature_in_ref_query_ptime(
   color_by = "State",
   relative_expr = FALSE,
   min_expr = 0.5,
+  trend_df = 3,
   ...
 )
 }

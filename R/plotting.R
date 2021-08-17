@@ -474,13 +474,18 @@ plot_ridge <- function(seu, features){
 #' # static mode using "presto"
 #' plot_markers(panc8, metavar = "tech", marker_method = "genesorteR", return_plotly = FALSE)
 #'
-plot_markers <- function(seu, metavar = "batch", num_markers = 5, selected_values = NULL, return_plotly = TRUE, marker_method = c("presto", "genesorteR"), seurat_assay = "gene", hide_pseudo = FALSE, unique_markers = FALSE, ...){
+plot_markers <- function(seu, metavar = "batch", num_markers = 5, selected_values = NULL, return_plotly = TRUE, marker_method = c("presto", "genesorteR"), seurat_assay = "gene", hide_pseudo = FALSE, unique_markers = FALSE, p_val_cutoff = 1, ...){
+
   Idents(seu) <- seu[[metavar]]
 
   # by default only resolution markers are calculated in pre-processing
-  seu <- find_all_markers(seu, metavar, seurat_assay = seurat_assay)
+  seu <- find_all_markers(seu, metavar, seurat_assay = seurat_assay, p_val_cutoff = p_val_cutoff)
 
-  markers <- seu@misc$markers[[metavar]][[marker_method]] %>%
+  marker_table <- seu@misc$markers[[metavar]][[marker_method]]
+
+  markers <-
+    marker_table %>%
+    enframe_markers() %>%
     dplyr::mutate(dplyr::across(.fns = as.character))
 
   if(hide_pseudo){
@@ -550,7 +555,7 @@ plot_markers <- function(seu, metavar = "batch", num_markers = 5, selected_value
     # plotly::partial_bundle() %>%
     identity()
 
-  return(list(plot = markerplot, markers = markers))
+  return(list(plot = markerplot, markers = marker_table))
 
 }
 
@@ -628,10 +633,16 @@ plot_readcount <- function(seu, metavar = "nCount_RNA", color.by = "batch", ysca
 #' top_50_features <- VariableFeatures(panc8)[1:50]
 #' seu_complex_heatmap(panc8, features = top_50_features)
 #'
-seu_complex_heatmap <- function(seu, features = NULL, cells = NULL, group.by = "ident",
+seu_complex_heatmap <- function(seu, features = NULL, group.by = "ident", cells = NULL,
                                 slot = "scale.data", assay = NULL, group.bar.height = 0.01,
                                 cluster_columns = FALSE, column_split = NULL, col_dendrogram = "ward.D2", mm_col_dend = 30, ...)
 {
+
+  if (length(GetAssayData(seu, "scale.data")) == 0){
+    message("seurat object has not been scaled. Please run `Seurat::ScaleData` to view a scaled heatmap; showing unscaled expression data")
+    slot = "data"
+  }
+
   cells <- cells %||% colnames(x = seu)
   if (is.numeric(x = cells)) {
     cells <- colnames(x = seu)[cells]
@@ -660,14 +671,25 @@ seu_complex_heatmap <- function(seu, features = NULL, cells = NULL, group.by = "
 
   if (col_dendrogram %in% c("ward.D", "single", "complete", "average", "mcquitty",
                             "median", "centroid", "ward.D2")){
-    cluster_columns <-
-      Seurat::Embeddings(seu, "pca") %>%
-      dist() %>%
-      hclust(col_dendrogram)
+    if("pca" %in% Seurat::Reductions(seu)){
+      cluster_columns <-
+        Seurat::Embeddings(seu, "pca") %>%
+        dist() %>%
+        hclust(col_dendrogram)
+    } else {
+      message("pca not computed for this dataset; cells will be clustered by displayed features")
+      cluster_columns <- function(m) as.dendrogram(cluster::agnes(m), method = col_dendrogram)
+
+    }
+
   } else {
-    ordered_meta <- seu[[col_dendrogram]][order(seu[[col_dendrogram]]), ,drop = FALSE]
-    column_split <- ordered_meta[,1]
-    cells <- rownames(ordered_meta)
+
+    cells <-
+      seu %>%
+      Seurat::FetchData(vars = col_dendrogram) %>%
+      dplyr::arrange(across(all_of(col_dendrogram))) %>%
+      rownames()
+
     data <- data[cells,]
 
     group.by = union(group.by, col_dendrogram)
@@ -689,7 +711,7 @@ seu_complex_heatmap <- function(seu, features = NULL, cells = NULL, group.by = "
     ha_col_names.factor <- lapply(groups.use.factor, levels)
 
     ha_cols.factor <- purrr::map(ha_col_names.factor, ~scales::hue_pal()(length(.x))) %>%
-      purrr::map2(ha_col_names.factor, set_names)
+      purrr::map2(ha_col_names.factor, purrr::set_names)
   }
 
   # numeric colors
@@ -708,12 +730,12 @@ seu_complex_heatmap <- function(seu, features = NULL, cells = NULL, group.by = "
 
   ha_cols <- c(ha_cols.factor, ha_cols.numeric)
 
-  column_ha = ComplexHeatmap::HeatmapAnnotation(df = groups.use, height = unit(group.bar.height, "points"), col = ha_cols)
+  column_ha = ComplexHeatmap::HeatmapAnnotation(df = groups.use, height = grid::unit(group.bar.height, "points"), col = ha_cols)
 
   hm <- ComplexHeatmap::Heatmap(t(data), name = "log expression", top_annotation = column_ha,
                                 cluster_columns = cluster_columns,
                                 show_column_names = FALSE,
-                                column_dend_height = unit(mm_col_dend, "mm"),
+                                column_dend_height = grid::unit(mm_col_dend, "mm"),
                                 column_split = column_split,
                                 column_title = NULL,
                                 ...)

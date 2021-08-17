@@ -4,7 +4,13 @@
 \alias{stash_marker_features}
 \title{Stash Marker Genes in a Seurat Object}
 \usage{
-stash_marker_features(metavar, seu, seurat_assay, top_n = 200)
+stash_marker_features(
+  metavar,
+  seu,
+  seurat_assay,
+  top_n = 200,
+  p_val_cutoff = 0.5
+)
 }
 \arguments{
 \item{top_n}{}

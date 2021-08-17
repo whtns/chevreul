@@ -7,7 +7,7 @@
 cross_check_heatmaps(
   monocle_list,
   query_name,
-  set_row_order = F,
+  set_row_order = NULL,
   cluster_rows = T,
   ...
 )
