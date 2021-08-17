@@ -4,14 +4,19 @@
 \alias{find_all_markers}
 \title{Find All Markers at a range of resolutions}
 \usage{
-find_all_markers(seu, ...)
+find_all_markers(seu, metavar = NULL, seurat_assay = "gene", ...)
 }
 \arguments{
-\item{seu}{}
+\item{metavar}{}
 }
 \value{
 
 }
 \description{
 Find All Markers at a range of resolutions
+}
+\examples{
+markers_stashed_seu <- find_all_markers(panc8)
+marker_genes <- Misc(markers_stashed_seu, "markers")
+str(marker_genes)
 }

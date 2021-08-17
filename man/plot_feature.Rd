@@ -2,10 +2,16 @@
 % Please edit documentation in R/plotting.R
 \name{plot_feature}
 \alias{plot_feature}
-\title{Plot Features
-This is a great function}
+\title{Plot Feature}
 \usage{
-plot_feature(seu, embedding, features, dims = c(1, 2), return_plotly = TRUE)
+plot_feature(
+  seu,
+  embedding = c("umap", "pca", "tsne"),
+  features,
+  dims = c(1, 2),
+  return_plotly = TRUE,
+  pt.size = 1
+)
 }
 \arguments{
 \item{dims}{}
@@ -14,6 +20,18 @@ plot_feature(seu, embedding, features, dims = c(1, 2), return_plotly = TRUE)
 
 }
 \description{
-Plot Features
-This is a great function
+Plots gene or transcript expression overlaid on a given embedding.
+If multiple features are supplied the joint density of all features
+will be plotted using \href{https://www.bioconductor.org/packages/devel/bioc/html/Nebulosa.html}{Nebulosa}
+}
+\examples{
+
+# static, single feature
+plot_feature(panc8, embedding = "umap", features = c("NRL"), return_plotly = FALSE)
+# static, multi-feature
+plot_feature(panc8, embedding = "umap", features = c("RXRG", "NRL"), return_plotly = FALSE)
+# interactive, multi-feature
+plotly_plot <- plot_feature(panc8, embedding = "umap", features = c("RXRG", "NRL"))
+print(plotly_plot)
+
 }

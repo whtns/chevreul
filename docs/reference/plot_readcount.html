@@ -72,7 +72,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">seuratTools</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.2.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.4.10</span>
       </span>
     </div>
 
@@ -129,13 +129,20 @@
     <p>Plot Read Count</p>
     </div>
 
-    <pre class="usage"><span class='fu'>plot_readcount</span>(<span class='no'>seu</span>, <span class='no'>plot_type</span>)</pre>
+    <pre class="usage"><span class='fu'>plot_readcount</span><span class='op'>(</span>
+  <span class='va'>seu</span>,
+  metavar <span class='op'>=</span> <span class='st'>"nCount_RNA"</span>,
+  color.by <span class='op'>=</span> <span class='st'>"batch"</span>,
+  yscale <span class='op'>=</span> <span class='st'>"linear"</span>,
+  return_plotly <span class='op'>=</span> <span class='cn'>TRUE</span>,
+  <span class='va'>...</span>
+<span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>plot_type</th>
+      <th>return_plotly</th>
       <td></td>
     </tr>
     </table>
@@ -146,6 +153,13 @@
 
 
 
+    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
+    <pre class="examples"><span class='co'>#interactive plotly</span>
+<span class='fu'>plot_readcount</span><span class='op'>(</span><span class='va'>panc8</span><span class='op'>)</span>
+<span class='co'># static plot</span>
+<span class='fu'>plot_readcount</span><span class='op'>(</span><span class='va'>panc8</span>, return_plotly <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span>
+
+</pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
@@ -161,7 +175,7 @@
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>

@@ -6,7 +6,7 @@
 \usage{
 integration_workflow(
   batches,
-  excluded_cells,
+  excluded_cells = NULL,
   resolution = seq(0.2, 2, by = 0.2),
   experiment_name = "default_experiment",
   organism = "human",
@@ -33,9 +33,8 @@ integration_workflow(
 Integrate multiple seurat objects and save to file
 }
 \examples{
-batches <- seurat_pancreas_reduced \%>\%
-  purrr::map(Seurat::SplitObject, split.by = "dataset") \%>\%
-  purrr::transpose()
+batches <- panc8 \%>\%
+  Seurat::SplitObject(split.by = "tech")
 
-inegrated_seu <- integration_workflow(batches)
+integrated_seu <- integration_workflow(batches)
 }

@@ -4,7 +4,14 @@
 \alias{plot_violin}
 \title{plot Violin plot}
 \usage{
-plot_violin(seu, plot_var = "batch", plot_vals = NULL, features = "RXRG", ...)
+plot_violin(
+  seu,
+  plot_var = "batch",
+  plot_vals = NULL,
+  features = "RXRG",
+  assay = "gene",
+  ...
+)
 }
 \arguments{
 \item{...}{}
@@ -14,4 +21,9 @@ plot_violin(seu, plot_var = "batch", plot_vals = NULL, features = "RXRG", ...)
 }
 \description{
 plot Violin plot
+}
+\examples{
+
+plot_violin(panc8, plot_var = "batch", features = c("NRL"))
+
 }

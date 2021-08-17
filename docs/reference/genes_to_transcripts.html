@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Ensembl Genes to Transcripts — genes_to_transcripts • seuratTools</title>
+<title>Gene Symbols to Ensembl Transcript Ids — genes_to_transcripts • seuratTools</title>
 
 
 <!-- jquery -->
@@ -39,8 +39,8 @@
 
 
 
-<meta property="og:title" content="Ensembl Genes to Transcripts — genes_to_transcripts" />
-<meta property="og:description" content="convert genes to transcripts" />
+<meta property="og:title" content="Gene Symbols to Ensembl Transcript Ids — genes_to_transcripts" />
+<meta property="og:description" content="convert hgnc gene symbols to ensembl transcript ids" />
 
 
 
@@ -72,7 +72,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">seuratTools</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.2.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.4.10</span>
       </span>
     </div>
 
@@ -120,16 +120,16 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Ensembl Genes to Transcripts</h1>
+    <h1>Gene Symbols to Ensembl Transcript Ids</h1>
     <small class="dont-index">Source: <a href='https://github.com/cobriniklab/seuratTools/blob/master/R/seurat_annotation.R'><code>R/seurat_annotation.R</code></a></small>
     <div class="hidden name"><code>genes_to_transcripts.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>convert genes to transcripts</p>
+    <p>convert hgnc gene symbols to ensembl transcript ids</p>
     </div>
 
-    <pre class="usage"><span class='fu'>genes_to_transcripts</span>(<span class='no'>genes</span>, <span class='kw'>organism</span> <span class='kw'>=</span> <span class='st'>"human"</span>)</pre>
+    <pre class="usage"><span class='fu'>genes_to_transcripts</span><span class='op'>(</span><span class='va'>genes</span>, organism <span class='op'>=</span> <span class='st'>"human"</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -146,6 +146,11 @@
 
 
 
+    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
+    <pre class="examples">
+<span class='fu'>genes_to_transcripts</span><span class='op'>(</span><span class='st'>"RXRG"</span><span class='op'>)</span>
+
+</pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
@@ -161,7 +166,7 @@
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>

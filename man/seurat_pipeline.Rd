@@ -6,20 +6,24 @@
 \usage{
 seurat_pipeline(
   seu,
-  feature = "gene",
+  assay = "gene",
   resolution = 0.6,
   reduction = "pca",
-  annotate_cell_cycle = TRUE,
-  annotate_percent_mito = TRUE,
+  organism = "human",
   ...
 )
 }
 \arguments{
-\item{resolution}{}
+\item{organism}{}
 }
 \value{
 
 }
 \description{
 Preprocess, Cluster and Reduce Dimensions for a single seurat object
+}
+\examples{
+
+processed_seu <- seurat_pipeline(panc8)
+
 }

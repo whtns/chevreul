@@ -4,7 +4,13 @@
 \alias{convert_seuv3_to_monoclev2}
 \title{Convert a Seurat V3 object to a Monocle v2 object}
 \usage{
-convert_seuv3_to_monoclev2(seu, return_census = FALSE, sig_slice = 1000)
+convert_seuv3_to_monoclev2(
+  seu,
+  assay = "gene",
+  slot = "data",
+  return_census = FALSE,
+  sig_slice = 1000
+)
 }
 \arguments{
 \item{seu}{}

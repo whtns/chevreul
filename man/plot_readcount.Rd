@@ -4,14 +4,28 @@
 \alias{plot_readcount}
 \title{Plot Read Count}
 \usage{
-plot_readcount(seu, plot_type)
+plot_readcount(
+  seu,
+  metavar = "nCount_RNA",
+  color.by = "batch",
+  yscale = "linear",
+  return_plotly = TRUE,
+  ...
+)
 }
 \arguments{
-\item{plot_type}{}
+\item{return_plotly}{}
 }
 \value{
 
 }
 \description{
 Plot Read Count
+}
+\examples{
+#interactive plotly
+plot_readcount(panc8)
+# static plot
+plot_readcount(panc8, return_plotly = FALSE)
+
 }

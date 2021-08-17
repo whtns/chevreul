@@ -10,6 +10,8 @@ plot_var(
   group = "batch",
   dims = c(1, 2),
   highlight = NULL,
+  pt.size = 1,
+  return_plotly = TRUE,
   ...
 )
 }
@@ -21,4 +23,14 @@ plot_var(
 }
 \description{
 Plot Metadata Variables
+}
+\examples{
+
+# static mode
+plot_var(panc8, group = "batch", return_plotly  = FALSE)
+
+# interactive plotly plot
+plotly_plot <- plot_var(panc8, group = "batch")
+print(plotly_plot)
+
 }

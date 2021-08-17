@@ -4,14 +4,25 @@
 \alias{seurat_preprocess}
 \title{Preprocess Seurat Object}
 \usage{
-seurat_preprocess(seu, scale = TRUE, normalize = TRUE, ...)
+seurat_preprocess(
+  assay,
+  scale = TRUE,
+  normalize = TRUE,
+  features = NULL,
+  legacy_settings = FALSE,
+  ...
+)
 }
 \arguments{
-\item{scale}{}
+\item{...}{}
 }
 \value{
 
 }
 \description{
 Preprocess Seurat Object
+}
+\examples{
+
+panc8[["gene"]] <- seurat_preprocess(panc8[["gene"]])
 }

@@ -2,12 +2,13 @@
 % Please edit documentation in R/utils.R
 \name{update_seuratTools_object}
 \alias{update_seuratTools_object}
-\title{Title}
+\title{Update a SeuratTools Object}
 \usage{
 update_seuratTools_object(
-  seu,
+  seu_path,
   feature,
   resolution = seq(0.2, 2, by = 0.2),
+  return_seu = TRUE,
   ...
 )
 }
@@ -18,5 +19,5 @@ update_seuratTools_object(
 
 }
 \description{
-Title
+Update a SeuratTools Object
 }

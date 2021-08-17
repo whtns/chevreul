@@ -1,3 +1,7 @@
-test_that("seurat rds file exists", {
-  expect_true(2 * 2, 4)
+test_that("integration doesn't drift", {
+  integrated_panc8 <- reintegrate_seu(panc8)
+
+  reintegrated_panc8 <- reintegrate_seu(integrated_panc8)
+
+  expect_equal(integrated_panc8@reductions$umap, reintegrated_panc8@reductions$umap)
 })

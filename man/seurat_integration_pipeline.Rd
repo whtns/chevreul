@@ -6,11 +6,10 @@
 \usage{
 seurat_integration_pipeline(
   seu_list,
-  feature,
-  resolution,
+  resolution = seq(0.2, 2, by = 0.2),
   suffix = "",
   algorithm = 1,
-  organism,
+  organism = "human",
   annotate_cell_cycle = FALSE,
   annotate_percent_mito = FALSE,
   ...
@@ -31,4 +30,11 @@ run batch correction, followed by:
 \item clustering with resolution 0.2 to 2.0 in increments of 0.2
 \item saving to <proj_dir>/output/sce/<feature>\emph{seu}<suffix>.rds
 }
+}
+\examples{
+
+batches <- panc8 \%>\%
+  Seurat::SplitObject(split.by = "tech")
+
+integrated_seu <- seurat_integration_pipeline(batches)
 }
