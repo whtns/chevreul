@@ -290,16 +290,28 @@ update_seuratTools_object <- function(seu_path, feature, resolution = seq(0.2, 2
 
   seuratTools_version <- ifelse(is.null(seuratTools_version), 0.1, seuratTools_version)
 
+  # update human gene symbols to grch38
+  old_symbol <- "CTC-378H22.2"
+  if (old_symbol %in% rownames(seu[["gene"]])){
+    for (i in names(seu@assays)[names(seu@assays) %in% c("gene", "integrated")]){
+      # seu <- update_human_gene_symbols(seu, assay = i)
+    }
+  }
+
   if (seuratTools_version < getNamespaceVersion("seuratTools")) {
     message(paste0(seu_path, " is out of date! updating..."))
     if (!any(grepl("_snn_res", colnames(seu@meta.data)))) {
       seu <- seurat_cluster(seu = seu, resolution = resolution, reduction = "pca", ...)
     }
 
-    seu <- find_all_markers(seu, resolution = resolution)
+    for (i in names(seu@assays)[names(seu@assays) %in% c("gene", "integrated")]){
+      seu <- find_all_markers(seu, seurat_assay = i)
+    }
+
     seu <- record_experiment_data(seu, ...)
     seu <- seu_calcn(seu)
   }
+
 
   if (return_seu) {
     return(seu)
@@ -429,6 +441,35 @@ update_project_db <- function(projects_dir = NULL,
   DBI::dbWriteTable(con, "projects_tbl", projects_tbl, overwrite = TRUE)
 
   DBI::dbDisconnect(con)
+}
+
+#' Update a database of seuratTools projects
+#'
+#' @param projects_dir
+#' @param destdir
+#' @param destfile
+#' @param verbose
+#'
+#' @return
+#' @export
+#'
+#' @examples
+read_project_db <- function(projects_dir = NULL,
+                              destdir = "~/.cache/seuratTools",
+                              destfile = "single-cell-projects.db",
+                              verbose = TRUE) {
+  if (!dir.exists(destdir)) {
+    dir.create(destdir)
+  }
+
+  con <- DBI::dbConnect(RSQLite::SQLite(), fs::path(destdir, destfile))
+
+  current_projects_tbl <-
+    DBI::dbReadTable(con, "projects_tbl")
+
+  DBI::dbDisconnect(con)
+
+  return(current_projects_tbl)
 }
 
 #' Make Bigwig Database

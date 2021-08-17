@@ -78,7 +78,7 @@ find_all_markers <- function(seu, metavar = NULL, seurat_assay = "gene", ...) {
     metavar <- names(clusters)
   }
 
-  new_markers <- purrr::map(metavar, stash_marker_features, seu, seurat_assay = seurat_assay)
+  new_markers <- purrr::map(metavar, stash_marker_features, seu, seurat_assay = seurat_assay, ...)
   names(new_markers) <- metavar
 
   old_markers <- seu@misc$markers[!names(seu@misc$markers) %in% names(new_markers)]
@@ -88,6 +88,13 @@ find_all_markers <- function(seu, metavar = NULL, seurat_assay = "gene", ...) {
   return(seu)
 }
 
+enframe_markers <- function(marker_table){
+  marker_table %>%
+    dplyr::select(Gene.Name, Cluster) %>%
+    dplyr::mutate(rn = row_number()) %>%
+    tidyr::pivot_wider(names_from = Cluster, values_from = Gene.Name) %>%
+    dplyr::select(-rn)
+}
 
 #' Stash Marker Genes in a Seurat Object
 #'
@@ -104,28 +111,34 @@ find_all_markers <- function(seu, metavar = NULL, seurat_assay = "gene", ...) {
 #'
 #' seu <- stash_marker_features(metavar = "batch", seu, seurat_assay = "gene")
 #'
-stash_marker_features <- function(metavar, seu, seurat_assay, top_n = 200) {
+stash_marker_features <- function(metavar, seu, seurat_assay, top_n = 200, p_val_cutoff = 0.5) {
+
+  message(paste0("stashing presto markers for ", metavar))
 
   markers <- list()
-  markers$presto <- presto::wilcoxauc(seu, metavar, seurat_assay = seurat_assay) %>%
+  markers$presto <-
+    presto::wilcoxauc(seu, metavar, seurat_assay = seurat_assay) %>%
     dplyr::group_by(group) %>%
-    dplyr::filter(padj < 0.05) %>%
+    dplyr::filter(padj < p_val_cutoff) %>%
     dplyr::top_n(n = top_n, wt = logFC) %>%
     dplyr::arrange(group, desc(logFC)) %>%
-    dplyr::select(feature, group) %>%
-    dplyr::mutate(rn = row_number()) %>%
-    tidyr::pivot_wider(names_from = group, values_from = feature) %>%
-    dplyr::select(-rn)
+    dplyr::select(Gene.Name = feature, Average.Log.Fold.Change = logFC, Adjusted.pvalue = padj, avgExpr, Cluster = group)
+
+
+
+  message(paste0("stashing genesorteR markers for ", metavar))
 
   markers$genesorteR <- tryCatch(
     {
-      genesorter_results <- genesorteR::sortGenes(
+      gs <- genesorteR::sortGenes(
         Seurat::GetAssayData(seu, assay = seurat_assay, slot = "data"),
-        seu[[]][[metavar]]
+        tidyr::replace_na(seu[[]][[metavar]], "NA")
       )
 
-      genesorter_results <- apply(genesorter_results$specScore, 2, function(x) names(head(sort(x, decreasing = TRUE), n = top_n))) %>%
-        as.data.frame()
+      pp <- genesorteR::getPValues(gs)
+
+      genesorter_table <- genesorteR::getTable(gs, pp, adjpval_cutoff = p_val_cutoff)
+
     },
     error = function(e) {
       message(sprintf("Error in %s: %s", deparse(e[["call"]]), e[["message"]]))

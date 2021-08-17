@@ -153,26 +153,46 @@ cross_species_integrate <- function(mouse_seu_list, human_seu_list, excluded_cel
 #'
 #' @examples
 update_human_gene_symbols <- function(seu, assay = "gene") {
+  # browser()
+
   ensdb <- EnsDb.Hsapiens.v86::EnsDb.Hsapiens.v86
 
   symbols <- rownames(seu[[assay]])
 
   new_rownames <-
     AnnotationDbi::mapIds(ensdb, symbols, keytype = "SYMBOL", columns = c("SYMBOL", "GENEID")) %>%
-    tibble::enframe("old_symbol", "ensgene") %>%
+    tibble::enframe("old_symbol", "ensgene")
+
+  rownames(new_rownames) <- new_rownames$old_symbol
+
+  seu[[assay]] <- Seurat::AddMetaData(seu[[assay]], new_rownames)
+
+  new_rownames <-
+    new_rownames %>%
     dplyr::left_join(annotables::grch38, by = "ensgene") %>%
     dplyr::distinct(old_symbol, .keep_all = TRUE) %>%
-    dplyr::mutate(symbol = dplyr::coalesce(symbol, old_symbol)) %>%
+    dplyr::mutate(new_symbol = symbol) %>%
+    dplyr::mutate(symbol = dplyr::coalesce(new_symbol, old_symbol)) %>%
     # tidyr::drop_na(symbol) %>%
-    dplyr::pull(symbol) %>%
+    # dplyr::pull(symbol) %>%
     identity()
 
   seu_slots <- c("counts", "data", "scale.data", "meta.features")
 
   for (i in seu_slots) {
     if (length(slot(seu@assays[[assay]], i)) > 0) {
-      rownames(slot(seu@assays[[assay]], i)) <- new_rownames
+      rownames(slot(seu@assays[[assay]], i)) <- make.unique(new_rownames$symbol)
     }
+  }
+
+  variable_features <- VariableFeatures(seu[[assay]])
+  if(length(variable_features) > 1){
+    new_variable_features <-
+      dplyr::filter(new_rownames, old_symbol %in% variable_features) %>%
+      dplyr::pull(symbol)
+
+    VariableFeatures(seu[[assay]]) <- new_variable_features
+
   }
 
   return(seu)

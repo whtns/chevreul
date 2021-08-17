@@ -21,6 +21,10 @@ plot_gene_coverage_by_var(
 )
 }
 \arguments{
+\item{cell_metadata}{a dataframe with cell metadata from seurat}
+
+\item{bigwig_tbl}{a tibble with colnames "name", "bigWig", and "sample_id" matching the filename, absolute path, and sample name of each cell in the cell_metadata}
+
 \item{...}{}
 }
 \value{

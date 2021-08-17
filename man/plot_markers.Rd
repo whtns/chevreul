@@ -14,6 +14,7 @@ plot_markers(
   seurat_assay = "gene",
   hide_pseudo = FALSE,
   unique_markers = FALSE,
+  p_val_cutoff = 1,
   ...
 )
 }

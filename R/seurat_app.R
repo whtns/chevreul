@@ -509,13 +509,6 @@ seuratApp <- function(preset_project, appTitle = "seuratTools", organism_type = 
       req(proj_dir())
       paste0("Loaded Project: ", fs::path_file(proj_dir()))
     })
-    project_volumes <- reactive({
-      print(proj_dir())
-      project_volumes <- c(
-        Home = fs::path("/dataVolume/storage/single_cell_projects/integrated_projects"),
-        `R Installation` = R.home(), shinyFiles::getVolumes()
-      )
-    })
     dataset_volumes <- reactive({
       print(proj_dir())
       dataset_volumes <- c(
@@ -571,8 +564,13 @@ seuratApp <- function(preset_project, appTitle = "seuratTools", organism_type = 
     })
 
     observe({
+      req(dataset_volumes())
       shinyFiles::shinyFileSave(input, "saveSeurat",
-        roots = dataset_volumes(),
+        # roots = dataset_volumes(),
+        roots = c(Home = fs::path(
+          proj_dir(),
+          "output", "seurat"
+        )),
         session = session, restrictions = system.file(package = "base")
       )
     })

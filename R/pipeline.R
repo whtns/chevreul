@@ -89,7 +89,7 @@ seurat_pipeline <- function(seu, assay = "gene", resolution = 0.6, reduction = "
   assays <- assays[assays %in% c("gene", "transcript")]
 
   for (assay in assays) {
-    seu[[assay]] <- seurat_preprocess(seu[[assay]], scale = TRUE)
+    seu[[assay]] <- seurat_preprocess(seu[[assay]], scale = TRUE, ...)
   }
 
   # PCA
@@ -97,9 +97,7 @@ seurat_pipeline <- function(seu, assay = "gene", resolution = 0.6, reduction = "
 
   seu <- seurat_cluster(seu = seu, resolution = resolution, reduction = reduction, ...)
 
-  for (assay in assays) {
-    seu <- find_all_markers(seu, resolution = resolution, seurat_assay = assay)
-  }
+  seu <- find_all_markers(seu, seurat_assay = "gene")
 
   # if (feature == "gene"){
   #   enriched_seu <- tryCatch(getEnrichedPathways(seu), error = function(e) e)

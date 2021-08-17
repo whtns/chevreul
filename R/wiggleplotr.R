@@ -11,6 +11,8 @@
 #' @examples
 build_bigwig_db <- function(bam_files, bigwig_db = "~/.cache/seuratTools/bw-files.db"){
 
+  bam_files <- fs::path_abs(bam_files)
+
   bigwigfiles <- purrr::map_chr(bam_files, ~megadepth::bam_to_bigwig(.x, prefix = fs::path_ext_remove(.x), overwrite = TRUE)) %>%
     purrr::set_names(fs::path_file) %>%
     tibble::enframe("name", "bigWig") %>%
@@ -19,9 +21,9 @@ build_bigwig_db <- function(bam_files, bigwig_db = "~/.cache/seuratTools/bw-file
 
   con <- DBI::dbConnect(RSQLite::SQLite(), dbname = bigwig_db)
 
-  dbWriteTable(con, "bigwigfiles", bigwigfiles, append = TRUE)
+  DBI::dbWriteTable(con, "bigwigfiles", bigwigfiles, append = TRUE)
 
-  dbDisconnect(con)
+  DBI::dbDisconnect(con)
 
 }
 
@@ -60,8 +62,8 @@ load_bigwigs <- function(seu, bigwig_db = "~/.cache/seuratTools/bw-files.db") {
 #' Plot BigWig Coverage for Genes of Interest Colored by a Given Variable
 #'
 #' @param genes_of_interest
-#' @param cell_metadata
-#' @param bigwig_tbl
+#' @param cell_metadata a dataframe with cell metadata from seurat
+#' @param bigwig_tbl a tibble with colnames "name", "bigWig", and "sample_id" matching the filename, absolute path, and sample name of each cell in the cell_metadata
 #' @param var_of_interest
 #' @param values_of_interest
 #' @param organism
@@ -116,7 +118,7 @@ plot_gene_coverage_by_var <- function(genes_of_interest = "RXRG",
       dplyr::filter(condition %in% values_of_interest)
   }
 
-  if (is.na(start) | is.na(end) | list(...)$rescale_introns == TRUE) {
+  if (is.null(start) | is.null(end) | list(...)$rescale_introns == TRUE) {
     region_coords <- NULL
   } else {
     region_coords <- c(start, end)
