@@ -2,7 +2,7 @@
 % Please edit documentation in R/shiny_modules.R
 \name{allTranscripts}
 \alias{allTranscripts}
-\title{Plot All Transcripts}
+\title{Plot All Transcripts Server}
 \usage{
 allTranscripts(input, output, session, seu, featureType, organism_type)
 }
@@ -13,5 +13,5 @@ allTranscripts(input, output, session, seu, featureType, organism_type)
 
 }
 \description{
-Plot All Transcripts
+Plot All Transcripts Server
 }

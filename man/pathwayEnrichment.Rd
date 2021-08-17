@@ -4,7 +4,7 @@
 \alias{pathwayEnrichment}
 \title{pathway enrichment}
 \usage{
-pathwayEnrichment(input, output, session, seu)
+pathwayEnrichment(input, output, session, seu, featureType)
 }
 \arguments{
 \item{session}{}

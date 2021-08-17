@@ -15,3 +15,7 @@ convert_mouse_seu_to_human(seu)
 \description{
 Convert Seurat Objects from Mouse to Human
 }
+\examples{
+
+convert_mouse_seu_to_human(baron2016singlecell)
+}

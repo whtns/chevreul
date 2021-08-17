@@ -8,13 +8,21 @@ monocle_module_heatmap(
   cds,
   pr_deg_ids,
   seu_resolution,
+  cells = NULL,
   collapse_rows = TRUE,
-  collapse_cols = TRUE,
-  resolution = 10^seq(-6, -1)
+  resolution = 10^seq(-6, -1),
+  group.by = "batch",
+  group.bar.height = 0.01,
+  cluster_columns = FALSE,
+  cluster_rows = TRUE,
+  column_split = NULL,
+  col_dendrogram = "ward.D2",
+  mm_col_dend = 30,
+  ...
 )
 }
 \arguments{
-\item{seu_resolution}{}
+\item{...}{}
 }
 \value{
 

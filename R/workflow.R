@@ -14,58 +14,52 @@
 #' @export
 #'
 #' @examples
-#' batches <- seurat_pancreas_reduced %>%
-#'   purrr::map(Seurat::SplitObject, split.by = "dataset") %>%
-#'   purrr::transpose()
+#' batches <- panc8 %>%
+#'   Seurat::SplitObject(split.by = "tech")
 #'
-#' inegrated_seu <- integration_workflow(batches)
+#' integrated_seu <- integration_workflow(batches)
+integration_workflow <- function(batches, excluded_cells = NULL, resolution = seq(0.2, 2.0, by = 0.2), experiment_name = "default_experiment", organism = "human", ...) {
+  checkmate::check_list(batches)
 
-integration_workflow <- function(batches, excluded_cells, resolution = seq(0.2, 2.0, by = 0.2), experiment_name = "default_experiment", organism = "human", ...) {
+  checkmate::check_character(excluded_cells)
 
-  # names(child_proj_dirs) <- gsub("_proj", "", fs::path_file(child_proj_dirs))
+  # organisms <- purrr::map(batches, Misc, c("experiment", "organism"))
 
-  # load seurat objects from 'child' projects
-  # seus <- purrr::map(child_proj_dirs, load_seurat_from_proj)
+  organisms <- purrr::map(batches, list("meta.data", "organism", 1))
 
-  organisms <- purrr::map(batches, list(1, "meta.data", "organism", 1))
+  if (any(purrr::map_lgl(organisms, is.null))) {
+    organisms <- case_when(
+      grepl("Hs", names(batches)) ~ "human",
+      grepl("Mm", names(batches)) ~ "mouse",
+      TRUE ~ "human"
+    )
+    names(organisms) <- names(batches)
+  }
+
   experiment_names <- names(batches)
 
-  batches <- purrr::transpose(batches)
-  for (i in names(batches)){
-    batches[[i]] <- purrr::pmap(list(batches[[i]], experiment_names, organisms), record_experiment_data)
-  }
-  batches <- purrr::transpose(batches)
+  batches <- purrr::pmap(list(batches, experiment_names, organisms), record_experiment_data)
 
-  if (all(purrr::map(batches, list(1, "misc", "experiment", "organism")) == "human")){
-    batches <- purrr::transpose(batches)
-    merged_batches <- purrr::imap(batches, seuratTools::seurat_integration_pipeline, resolution = resolution, organism = "human", ...)
-    for (i in names(merged_batches)){
-      merged_batches[[i]]@misc$batches <- names(batches)
-    }
+  batch_organisms <- map_chr(batches, list("misc", "experiment", "organism"))
 
-  } else if (all(purrr::map(batches, list(1, "misc", "experiment", "organism")) == "mouse")){
-    batches <- purrr::transpose(batches)
+  if (all(batch_organisms == "mouse")) {
     merged_batches <- purrr::imap(batches, seuratTools::seurat_integration_pipeline, resolution = resolution, organism = "mouse", ...)
-    for (i in names(merged_batches)){
-      merged_batches[[i]]@misc$batches <- names(batches)
-    }
+    merged_batches@misc$batches <- names(batches)
 
-  }  else {
+  } else if (all(batch_organisms == "human")) {
+    merged_batches <- seurat_integration_pipeline(batches, resolution = resolution, organism = "human", ...)
+    merged_batches@misc$batches <- names(batches)
 
-    # mouse_seu_list <- batches[grepl("Mm", names(batches))]
+  } else {
     mouse_seu_list <- batches[names(organisms[organisms == "mouse"])]
-    # human_seu_list <- batches[grepl("Hs", names(batches))]
     human_seu_list <- batches[names(organisms[organisms == "human"])]
     merged_batches <- cross_species_integrate(mouse_seu_list = mouse_seu_list, human_seu_list = human_seu_list)
-    for (i in names(merged_batches)){
-      merged_batches[[i]]@misc$batches <- names(batches)
-    }
+    merged_batches@misc$batches <- names(batches)
   }
 
-  merged_batches <- purrr::map(merged_batches, record_experiment_data, experiment_name, organism)
+  merged_batches <- record_experiment_data(merged_batches, experiment_name, organism)
 
   return(merged_batches)
-
 }
 
 
@@ -73,7 +67,7 @@ integration_workflow <- function(batches, excluded_cells, resolution = seq(0.2, 
 #'
 #' Cluster and Reduce Dimensions of a seurat object
 #'
-#' @param feature_seus list of seurat objedevelcts named according to feature of interest ("gene" or "transcript")
+#' @param feature_seus list of seurat objects named according to feature of interest ("gene" or "transcript")
 #' @param excluded_cells named list of cells to exclude
 #' @param resolution resolution(s) to use for clustering cells
 #' @param organism
@@ -84,15 +78,12 @@ integration_workflow <- function(batches, excluded_cells, resolution = seq(0.2, 
 #' @export
 #'
 #' @examples
-#' clustered_seu <- clustering_workflow(seurat_pancrease_reduced)
-clustering_workflow <- function(feature_seus = NULL, excluded_cells, resolution = seq(0.2, 2.0, by = 0.2), organism = "human", experiment_name = "default_experiment", ...){
+#' clustered_human_seu <- clustering_workflow(panc8)
+#' clustered_mouse_seu <- clustering_workflow(baron2016singlecell)
+clustering_workflow <- function(seu, excluded_cells, resolution = seq(0.2, 2.0, by = 0.2), organism = "human", experiment_name = "default_experiment", ...) {
+  seu <- seurat_pipeline(seu, resolution = resolution, organism = organism, ...)
 
-  feature_seus <- purrr::imap(feature_seus, seuratTools::seurat_pipeline, resolution = resolution, ...)
-
-  feature_seus <- purrr::map(feature_seus, record_experiment_data, experiment_name, organism)
+  seu <- record_experiment_data(seu, experiment_name, organism)
 
   # save_seurat(feature_seus, proj_dir = proj_dir, ...)
-
 }
-
-

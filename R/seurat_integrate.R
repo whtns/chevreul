@@ -6,10 +6,10 @@
 #' @export
 #'
 #' @examples
-merge_small_seus <- function(seu_list, k.filter = 50){
+merge_small_seus <- function(seu_list, k.filter = 50) {
   # check if any seurat objects are too small and if so merge with the first seurat object
   seu_dims <- purrr::map(seu_list, dim) %>%
-    purrr::map_lgl(~.x[[2]] < k.filter)
+    purrr::map_lgl(~ .x[[2]] < k.filter)
 
   small_seus <- seu_list[seu_dims]
 
@@ -31,32 +31,33 @@ merge_small_seus <- function(seu_list, k.filter = 50){
 #' @export
 #'
 #' @examples
-seurat_integrate <- function(seu_list, method = "cca", ...) {
-  #browser()
+seurat_integrate <- function(seu_list, method = "cca", organism = "human", ...) {
+
   # To construct a reference we will identify ‘anchors’ between the individual datasets. First, we split the combined object into a list, with each dataset as an element.
 
   # Prior to finding anchors, we perform standard preprocessing (log-normalization), and identify variable features individually for each. Note that Seurat v3 implements an improved method for variable feature selection based on a variance stabilizing transformation ("vst")
 
   for (i in 1:length(x = seu_list)) {
-    seu_list[[i]] <- seurat_preprocess(seu_list[[i]], scale = TRUE, ...)
+    seu_list[[i]][["gene"]] <- seurat_preprocess(seu_list[[i]][["gene"]], scale = TRUE)
+
     seu_list[[i]]$batch <- names(seu_list)[[i]]
   }
 
   seu_list <- merge_small_seus(seu_list)
 
-  if (method == "rpca"){
+  if (method == "rpca") {
     # scale and run pca for each separate batch in order to use reciprocal pca instead of cca
     features <- SelectIntegrationFeatures(object.list = seu_list)
     seu_list <- purrr::map(seu_list, Seurat::ScaleData, features = features)
     seu_list <- purrr::map(seu_list, Seurat::RunPCA, features = features)
     seu_list.anchors <- FindIntegrationAnchors(object.list = seu_list, reduction = "rpca", dims = 1:30)
-  } else if (method == "cca"){
+  } else if (method == "cca") {
     # Next, we identify anchors using the FindIntegrationAnchors function, which takes a list of Seurat objects as input.
     seu_list.anchors <- Seurat::FindIntegrationAnchors(object.list = seu_list, dims = 1:30, k.filter = 50)
   }
 
   # proceed with integration
-  seu_list.integrated  <- IntegrateData(anchorset = seu_list.anchors, dims = 1:30)
+  seu_list.integrated <- IntegrateData(anchorset = seu_list.anchors, dims = 1:30)
 
   # Next, we identify anchors using the FindIntegrationAnchors function, which takes a list of Seurat objects as input.
 
@@ -66,11 +67,13 @@ seurat_integrate <- function(seu_list, method = "cca", ...) {
 
   # switch to integrated assay. The variable features of this assay are
   # automatically set during IntegrateData
-  DefaultAssay(object = seu_list.integrated) <- "integrated"
+  Seurat::DefaultAssay(object = seu_list.integrated) <- "integrated"
 
   # Run the standard workflow for visualization and clustering
   seu_list.integrated <- Seurat::ScaleData(object = seu_list.integrated, verbose = FALSE)
   seu_list.integrated <- seurat_reduce_dimensions(seu_list.integrated, ...)
+
+  seu_list.integrated <- record_experiment_data(seu_list.integrated, experiment_name = "integrated", organism = organism)
 
   return(seu_list.integrated)
 }
@@ -88,32 +91,30 @@ seurat_integrate <- function(seu_list, method = "cca", ...) {
 #' @export
 #'
 #' @examples
-seurat_cluster <- function(seu = seu, resolution = 0.6, custom_clust = NULL, reduction = "pca", algorithm = 1, ...){
-  # browser()
-
+seurat_cluster <- function(seu = seu, resolution = 0.6, custom_clust = NULL, reduction = "pca", algorithm = 1, ...) {
+  message(paste0("[", format(Sys.time(), "%H:%M:%S"), "] Clustering Cells..."))
   seu <- FindNeighbors(object = seu, dims = 1:10, reduction = reduction)
 
-  if (length(resolution) > 1){
-    for (i in resolution){
-      # browser()
+  if (length(resolution) > 1) {
+    for (i in resolution) {
       message(paste0("clustering at ", i, " resolution"))
       seu <- Seurat::FindClusters(object = seu, resolution = i, algorithm = algorithm, ...)
     }
-  } else if (length(resolution) == 1){
+  } else if (length(resolution) == 1) {
     message(paste0("clustering at ", resolution, " resolution"))
     seu <- Seurat::FindClusters(object = seu, resolution = resolution, ...)
   }
 
-  if (!is.null(custom_clust)){
+  if (!is.null(custom_clust)) {
     seu <- Seurat::StashIdent(object = seu, save.name = "old.ident")
     clusters <- tibble::tibble("sampl_id" = rownames(seu[[]])) %>%
-    tibbl::rownames_to_column("order") %>%
-    dplyr::inner_join(custom_clust, by = "sample_id") %>%
-    dplyr::pull(cluster) %>%
-    identity()
+      tibbl::rownames_to_column("order") %>%
+      dplyr::inner_join(custom_clust, by = "sample_id") %>%
+      dplyr::pull(cluster) %>%
+      identity()
 
     Idents(object = seu) <- clusters
-    # browser()
+
 
     return(seu)
   }
@@ -131,23 +132,21 @@ seurat_cluster <- function(seu = seu, resolution = 0.6, custom_clust = NULL, red
 #'
 #'
 #' @examples
-load_seurat_path <- function(proj_dir = getwd(), prefix = "unfiltered"){
-  # browser()
-
+load_seurat_path <- function(proj_dir = getwd(), prefix = "unfiltered") {
   seu_regex <- paste0(paste0(".*/", prefix, "_seu.rds"))
 
   seu_path <- fs::path(proj_dir, "output", "seurat") %>%
     fs::dir_ls(regexp = seu_regex)
 
-  if (!rlang::is_empty(seu_path))
+  if (!rlang::is_empty(seu_path)) {
     return(seu_path)
+  }
 
   stop("'", seu_path, "' does not exist",
-         paste0(" in current working directory ('", getwd(), "')"),
-       ".",
-       call. = FALSE
+    paste0(" in current working directory ('", getwd(), "')"),
+    ".",
+    call. = FALSE
   )
-
 }
 
 
@@ -160,7 +159,7 @@ load_seurat_path <- function(proj_dir = getwd(), prefix = "unfiltered"){
 #' @export
 #'
 #' @examples
-load_seurat_from_proj <- function(proj_dir, ...){
+load_seurat_from_proj <- function(proj_dir, ...) {
   seu_file <- load_seurat_path(proj_dir, ...)
 
   seu_file <- readRDS(seu_file)
@@ -172,33 +171,48 @@ load_seurat_from_proj <- function(proj_dir, ...){
 #' perplexity should not be bigger than 3 * perplexity < nrow(X) - 1, see details for interpretation
 #'
 #' @param seu
+#' @param assay
+#' @param reduction
+#' @param legacy_settings
+#' @param ...
 #'
 #' @return
 #' @export
 #'
 #' @examples
-seurat_reduce_dimensions <- function(seu, reduction = "pca", ...) {
+seurat_reduce_dimensions <- function(seu, assay = "gene", reduction = "pca", legacy_settings = FALSE, ...) {
+  if ("integrated" %in% names(seu@assays)) {
+    assay <- "integrated"
+  } else {
+    assay <- "gene"
+  }
 
   num_samples <- dim(seu)[[2]]
 
-  if (num_samples < 50){
-    npcs = num_samples - 1
+  if (num_samples < 50) {
+    npcs <- num_samples - 1
   } else {
-    npcs = 50
+    npcs <- 50
   }
 
-  seu <- Seurat::RunPCA(object = seu, features = Seurat::VariableFeatures(object = seu), do.print = FALSE, npcs = npcs, ...)
-  if (reduction == "harmony"){
+  if (legacy_settings) {
+    message("using legacy settings")
+    seu <- Seurat::RunPCA(seu, assay = assay, features = rownames(seu))
+  } else {
+    # seu <- Seurat::RunPCA(object = seu, do.print = FALSE, npcs = npcs, ...)
+    seu <- Seurat::RunPCA(object = seu, assay = assay, features = Seurat::VariableFeatures(object = seu), do.print = FALSE, npcs = npcs, ...)
+  }
+
+  if (reduction == "harmony") {
     seu <- harmony::RunHarmony(seu, "batch")
   }
 
-  if ((ncol(seu) -1) > 3*30){
-    seu <- Seurat::RunTSNE(object = seu, reduction = reduction, dims = 1:30, ...)
-    seu <- Seurat::RunUMAP(object = seu, reduction = reduction, dims = 1:30, ...)
+  if ((ncol(seu) - 1) > 3 * 30) {
+    seu <- Seurat::RunTSNE(object = seu, assay = assay, reduction = reduction, dims = 1:30)
+    seu <- Seurat::RunUMAP(object = seu, assay = assay, reduction = reduction, dims = 1:30)
   }
 
   return(seu)
-
 }
 
 #' Give a new project name to a seurat object
@@ -210,7 +224,7 @@ seurat_reduce_dimensions <- function(seu, reduction = "pca", ...) {
 #' @export
 #'
 #' @examples
-rename_seurat <- function(seu, new_name){
+rename_seurat <- function(seu, new_name) {
   seu@project.name <- new_name
   return(seu)
 }
@@ -224,8 +238,8 @@ rename_seurat <- function(seu, new_name){
 #' @export
 #'
 #' @examples
-SetDefaultAssay <- function(seu, new_assay){
-  DefaultAssay(seu) <- new_assay
+SetDefaultAssay <- function(seu, new_assay) {
+  Seurat::DefaultAssay(seu) <- new_assay
   return(seu)
 }
 
@@ -233,7 +247,7 @@ SetDefaultAssay <- function(seu, new_assay){
 
 #' Filter a List of Seurat Objects
 #'
-#' Filter Seurat Objects by custom variable and reset assay to uncorrected "RNA"
+#' Filter Seurat Objects by custom variable and reset assay to uncorrected "gene"
 #'
 #' @param seus
 #' @param filter_var
@@ -245,7 +259,7 @@ SetDefaultAssay <- function(seu, new_assay){
 #'
 #' @examples
 filter_merged_seus <- function(seus, filter_var, filter_val, .drop = F) {
-  seus <- purrr::map(seus, ~filter_merged_seu(seu = .x, filter_var = filter_var, filter_val = filter_val, .drop = .drop))
+  seus <- purrr::map(seus, ~ filter_merged_seu(seu = .x, filter_var = filter_var, filter_val = filter_val, .drop = .drop))
 }
 
 
@@ -261,13 +275,13 @@ filter_merged_seus <- function(seus, filter_var, filter_val, .drop = F) {
 #'
 #' @examples
 filter_merged_seu <- function(seu, filter_var, filter_val, .drop = .drop) {
-  if(.drop){
+  if (.drop) {
     mycells <- seu[[]][[filter_var]] == filter_val
   } else {
     mycells <- seu[[]][[filter_var]] == filter_val | is.na(seu[[]][[filter_var]])
   }
   mycells <- colnames(seu)[mycells]
-  seu <- seu[,mycells]
+  seu <- seu[, mycells]
   return(seu)
 }
 
@@ -286,16 +300,19 @@ filter_merged_seu <- function(seu, filter_var, filter_val, .drop = .drop) {
 #' @export
 #'
 #' @examples
-reintegrate_seu <- function(seu, feature = "gene", suffix = "", reduction = "pca", algorithm = 1, ...){
+#' panc8$batch <- panc8$gene$tech
+#' reintegrate_seu(panc8)
+reintegrate_seu <- function(seu, feature = "gene", suffix = "", reduction = "pca", algorithm = 1, ...) {
+  Seurat::DefaultAssay(seu) <- "gene"
 
-  DefaultAssay(seu) <- "RNA"
+  organism <- Misc(seu)$experiment$organism
+  experiment_name <- Misc(seu)$experiment$experiment_name
 
   seu <- Seurat::DietSeurat(seu, counts = TRUE, data = TRUE, scale.data = FALSE)
   seus <- Seurat::SplitObject(seu, split.by = "batch")
   seu <- seurat_integration_pipeline(seus, feature = feature, suffix = suffix, algorithm = algorithm, ...)
 
+  seu <- record_experiment_data(seu, experiment_name, organism)
 
+  # integration_workflow <- function(batches, excluded_cells = NULL, resolution = seq(0.2, 2.0, by = 0.2), experiment_name = "default_experiment", organism = "human", ...) {
 }
-
-
-

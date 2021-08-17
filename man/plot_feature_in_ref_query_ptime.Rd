@@ -6,10 +6,12 @@
 \usage{
 plot_feature_in_ref_query_ptime(
   cds_list,
+  selected_cds,
   features = c("RXRG"),
   color_by = "State",
   relative_expr = FALSE,
   min_expr = 0.5,
+  trend_df = 3,
   ...
 )
 }

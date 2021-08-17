@@ -15,3 +15,6 @@ get_transcripts_from_seu(seu, gene, organism = "human")
 \description{
 Get Transcripts in Seurat Object
 }
+\examples{
+RXRG_transcripts <- get_transcripts_from_seu(human_gene_transcript_seu, "RXRG")
+}

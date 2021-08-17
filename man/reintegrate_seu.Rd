@@ -28,3 +28,7 @@ reintegrate_seu(
 \item run integration pipeline and save
 }
 }
+\examples{
+panc8$batch <- panc8$gene$tech
+reintegrate_seu(panc8)
+}

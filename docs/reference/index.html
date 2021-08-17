@@ -71,7 +71,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">seuratTools</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.2.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.4.10</span>
       </span>
     </div>
 
@@ -145,24 +145,6 @@
       <tr>
         
         <td>
-          <p><code><a href="FindMarkers.html">FindMarkers()</a></code> </p>
-        </td>
-        <td><p>Overwrite seurat findmarkers to run scde</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="FindMarkers.Seurat.html">FindMarkers(<i>&lt;Seurat&gt;</i>)</a></code> </p>
-        </td>
-        <td><p>overwrite seurat findmarkers</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="FindMarkers.default.html">FindMarkers(<i>&lt;default&gt;</i>)</a></code> </p>
-        </td>
-        <td><p>Overwrite seurat findmarkers to run scde</p></td>
-      </tr><tr>
-        
-        <td>
           <p><code><a href="Monocle2_diffex.html">Monocle2_diffex()</a></code> </p>
         </td>
         <td><p>Monocle2 differential expression</p></td>
@@ -172,6 +154,12 @@
           <p><code><a href="SetDefaultAssay.html">SetDefaultAssay()</a></code> </p>
         </td>
         <td><p>Reset the default assay of a seurat object</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="add_census_slot.html">add_census_slot()</a></code> </p>
+        </td>
+        <td><p>add census assay to a seurat object</p></td>
       </tr><tr>
         
         <td>
@@ -189,13 +177,13 @@
         <td>
           <p><code><a href="allTranscripts.html">allTranscripts()</a></code> </p>
         </td>
-        <td><p>Plot All Transcripts</p></td>
+        <td><p>Plot All Transcripts Server</p></td>
       </tr><tr>
         
         <td>
           <p><code><a href="allTranscriptsui.html">allTranscriptsui()</a></code> </p>
         </td>
-        <td><p>Plot All Transcripts UI</p></td>
+        <td><p>Plot All Transcripts UI Module</p></td>
       </tr><tr>
         
         <td>
@@ -279,7 +267,7 @@
         <td>
           <p><code><a href="combine_looms.html">combine_looms()</a></code> </p>
         </td>
-        <td><p>Title</p></td>
+        <td><p>Combine Loom Files</p></td>
       </tr><tr>
         
         <td>
@@ -289,9 +277,21 @@
       </tr><tr>
         
         <td>
+          <p><code><a href="convert_monoclev2_to_seuv3.html">convert_monoclev2_to_seuv3()</a></code> </p>
+        </td>
+        <td><p>Convert a Seurat V3 object to a Monocle v2 object</p></td>
+      </tr><tr>
+        
+        <td>
           <p><code><a href="convert_mouse_seu_to_human.html">convert_mouse_seu_to_human()</a></code> </p>
         </td>
         <td><p>Convert Seurat Objects from Mouse to Human</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="convert_seu_list_to_multimodal.html">convert_seu_list_to_multimodal()</a></code> </p>
+        </td>
+        <td><p>convert seurat list to multimodal object</p></td>
       </tr><tr>
         
         <td>
@@ -307,27 +307,27 @@
       </tr><tr>
         
         <td>
-          <p><code><a href="convert_symbols_by_biomart.html">convert_symbols_by_biomart()</a></code> </p>
-        </td>
-        <td><p>convert gene symbols between species</p></td>
-      </tr><tr>
-        
-        <td>
           <p><code><a href="convert_symbols_by_species.html">convert_symbols_by_species()</a></code> </p>
         </td>
-        <td><p>Title</p></td>
+        <td><p>Convert gene symbols between mouse and human</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="create_proj_db.html">create_proj_db()</a></code> </p>
+          <p><code><a href="convert_to_h5ad.html">convert_to_h5ad()</a></code> </p>
         </td>
-        <td><p>Create Project database</p></td>
+        <td><p>convert a seurat object to an on-disk anndata object</p></td>
       </tr><tr>
         
         <td>
           <p><code><a href="create_proj_matrix.html">create_proj_matrix()</a></code> </p>
         </td>
         <td><p>Create a Table of single Cell Projects</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="create_project_db.html">create_project_db()</a></code> </p>
+        </td>
+        <td><p>Create a database of seuratTools projects</p></td>
       </tr><tr>
         
         <td>
@@ -345,19 +345,13 @@
         <td>
           <p><code><a href="cross_species_integrate.html">cross_species_integrate()</a></code> </p>
         </td>
-        <td><p>Integrate Seurat Objects from Moust to Human</p></td>
+        <td><p>Integrate Seurat Objects from Mouse to Human</p></td>
       </tr><tr>
         
         <td>
           <p><code><a href="default_helper.html">default_helper()</a></code> </p>
         </td>
         <td><p>Default Shiny Helper</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="delete_seurat.html">delete_seurat()</a></code> </p>
-        </td>
-        <td><p>delete seurat path</p></td>
       </tr><tr>
         
         <td>
@@ -376,6 +370,12 @@
           <p><code><a href="dot-send_enrichr_query.html">.send_enrichr_query()</a></code> </p>
         </td>
         <td><p>Gene enrichment using Enrichr.</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="dropdownButton.html">dropdownButton()</a></code> </p>
+        </td>
+        <td><p>Custom Dropdown Button</p></td>
       </tr><tr>
         
         <td>
@@ -421,6 +421,12 @@
       </tr><tr>
         
         <td>
+          <p><code><a href="flip_pseudotime.html">flip_pseudotime()</a></code> </p>
+        </td>
+        <td><p>Flip Pseudotime</p></td>
+      </tr><tr>
+        
+        <td>
           <p><code><a href="format_new_metadata.html">format_new_metadata()</a></code> </p>
         </td>
         <td><p>Title</p></td>
@@ -433,18 +439,6 @@
       </tr><tr>
         
         <td>
-          <p><code><a href="geneEnrichment.html">geneEnrichment()</a></code> </p>
-        </td>
-        <td><p>Gene Enrichment</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="geneEnrichmentui.html">geneEnrichmentui()</a></code> </p>
-        </td>
-        <td><p>Gene Enrichment UI</p></td>
-      </tr><tr>
-        
-        <td>
           <p><code><a href="gene_test_plot.html">gene_test_plot()</a></code> </p>
         </td>
         <td><p>Plot Gene expression over pseudotime on reference and query trajectories from cellAlign</p></td>
@@ -453,7 +447,7 @@
         <td>
           <p><code><a href="genes_to_transcripts.html">genes_to_transcripts()</a></code> </p>
         </td>
-        <td><p>Ensembl Genes to Transcripts</p></td>
+        <td><p>Gene Symbols to Ensembl Transcript Ids</p></td>
       </tr><tr>
         
         <td>
@@ -478,6 +472,12 @@
           <p><code><a href="global_cellalign.html">global_cellalign()</a></code> </p>
         </td>
         <td><p>Global Alignment of two trajectories with cellAlign</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="human_to_mouse_homologs.html">human_to_mouse_homologs</a></code> </p>
+        </td>
+        <td><p>Gene Homologs Between Human and Mouse</p></td>
       </tr><tr>
         
         <td>
@@ -517,9 +517,15 @@
       </tr><tr>
         
         <td>
-          <p><code><a href="load_counts_from_stringtie.html">load_counts_from_stringtie()</a></code> </p>
+          <p><code><a href="load_bigwigs.html">load_bigwigs()</a></code> </p>
         </td>
-        <td><p>Load Counts from Stringtie Files</p></td>
+        <td><p>Create a tibble of bigwig file paths by sample</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="load_counts_by_tximport.html">load_counts_by_tximport()</a></code> </p>
+        </td>
+        <td><p>Load Sample Counts then run Tximport</p></td>
       </tr><tr>
         
         <td>
@@ -547,21 +553,39 @@
       </tr><tr>
         
         <td>
+          <p><code><a href="make_bigwig_db.html">make_bigwig_db()</a></code> </p>
+        </td>
+        <td><p>Make Bigwig Database</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="mem_str.html">mem_str()</a></code> </p>
+        </td>
+        <td><p>Profile the memory of an s4object</p></td>
+      </tr><tr>
+        
+        <td>
           <p><code><a href="merge_small_seus.html">merge_small_seus()</a></code> </p>
         </td>
         <td><p>Merge Small Seurat Objects</p></td>
       </tr><tr>
         
         <td>
+          <p><code><a href="metadata_from_batch.html">metadata_from_batch()</a></code> </p>
+        </td>
+        <td><p>Retrieve Metadata from Batch</p></td>
+      </tr><tr>
+        
+        <td>
           <p><code><a href="minimalSeuratApp.html">minimalSeuratApp()</a></code> </p>
         </td>
-        <td><p>Create Seurat App</p></td>
+        <td><p>Create a minimal seurat app</p></td>
       </tr><tr>
         
         <td>
           <p><code><a href="monocle.html">monocle()</a></code> </p>
         </td>
-        <td><p>Title</p></td>
+        <td><p>Monocle Server Module</p></td>
       </tr><tr>
         
         <td>
@@ -573,7 +597,7 @@
         <td>
           <p><code><a href="monocleui.html">monocleui()</a></code> </p>
         </td>
-        <td><p>Title</p></td>
+        <td><p>Monocle UI Module</p></td>
       </tr><tr>
         
         <td>
@@ -604,6 +628,18 @@
           <p><code><a href="plotClustree_UI.html">plotClustree_UI()</a></code> </p>
         </td>
         <td><p>plot clustree ui</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="plotCoverage.html">plotCoverage()</a></code> </p>
+        </td>
+        <td><p>Plot Coverage Module</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="plotCoverage_UI.html">plotCoverage_UI()</a></code> </p>
+        </td>
+        <td><p>Title</p></td>
       </tr><tr>
         
         <td>
@@ -645,13 +681,13 @@
         <td>
           <p><code><a href="plotVelocity.html">plotVelocity()</a></code> </p>
         </td>
-        <td><p>RNA Velocity</p></td>
+        <td><p>RNA Velocity Server Module</p></td>
       </tr><tr>
         
         <td>
           <p><code><a href="plotVelocityui.html">plotVelocityui()</a></code> </p>
         </td>
-        <td><p>RNA Velocity UI</p></td>
+        <td><p>RNA Velocity UI Module</p></td>
       </tr><tr>
         
         <td>
@@ -675,7 +711,7 @@
         <td>
           <p><code><a href="plot_all_transcripts.html">plot_all_transcripts()</a></code> </p>
         </td>
-        <td><p>Title</p></td>
+        <td><p>Plot All Transcripts</p></td>
       </tr><tr>
         
         <td>
@@ -687,14 +723,13 @@
         <td>
           <p><code><a href="plot_cells.html">plot_cells()</a></code> </p>
         </td>
-        <td><p>Title</p></td>
+        <td><p>Plot cells of a monocle cell data set</p></td>
       </tr><tr>
         
         <td>
           <p><code><a href="plot_feature.html">plot_feature()</a></code> </p>
         </td>
-        <td><p>Plot Features
-This is a great function</p></td>
+        <td><p>Plot Feature</p></td>
       </tr><tr>
         
         <td>
@@ -704,9 +739,9 @@ This is a great function</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="plot_heatmap.html">plot_heatmap()</a></code> </p>
+          <p><code><a href="plot_gene_coverage_by_var.html">plot_gene_coverage_by_var()</a></code> </p>
         </td>
-        <td><p>plot heatmap</p></td>
+        <td><p>Plot BigWig Coverage for Genes of Interest Colored by a Given Variable</p></td>
       </tr><tr>
         
         <td>
@@ -718,7 +753,7 @@ This is a great function</p></td>
         <td>
           <p><code><a href="plot_monocle_features.html">plot_monocle_features()</a></code> </p>
         </td>
-        <td><p>Plot a Monocle Cell Data Set</p></td>
+        <td><p>Plot feature expression on a Monocle Cell Data Set</p></td>
       </tr><tr>
         
         <td>
@@ -730,7 +765,7 @@ This is a great function</p></td>
         <td>
           <p><code><a href="plot_pseudotime.html">plot_pseudotime()</a></code> </p>
         </td>
-        <td><p>Plot a Monocle Cell Data Set</p></td>
+        <td><p>Plot pseudotime on a Monocle Cell Data Set</p></td>
       </tr><tr>
         
         <td>
@@ -748,25 +783,25 @@ This is a great function</p></td>
         <td>
           <p><code><a href="plot_ridge.html">plot_ridge()</a></code> </p>
         </td>
-        <td><p>Plot Rides</p></td>
+        <td><p>Plot Ridges</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="plot_scvelo.html">plot_scvelo()</a></code> </p>
+        </td>
+        <td><p>Plot scvelo on embedding plot</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="plot_transcript_composition.html">plot_transcript_composition()</a></code> </p>
+        </td>
+        <td><p>Plot Transcript Composition</p></td>
       </tr><tr>
         
         <td>
           <p><code><a href="plot_var.html">plot_var()</a></code> </p>
         </td>
         <td><p>Plot Metadata Variables</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="plot_velocity_arrows.html">plot_velocity_arrows()</a></code> </p>
-        </td>
-        <td><p>Plot RNA velocity Computed by Velocyto.R</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="plot_velocity_trajectory.html">plot_velocity_trajectory()</a></code> </p>
-        </td>
-        <td><p>Plot RNA velocity trajectory computed by Velocyto.R</p></td>
       </tr><tr>
         
         <td>
@@ -794,6 +829,12 @@ This is a great function</p></td>
       </tr><tr>
         
         <td>
+          <p><code><a href="prep_scvelo.html">prep_scvelo()</a></code> </p>
+        </td>
+        <td><p>scvelo_assay</p></td>
+      </tr><tr>
+        
+        <td>
           <p><code><a href="prep_slider_values.html">prep_slider_values()</a></code> </p>
         </td>
         <td><p>Prep Slider Values</p></td>
@@ -803,6 +844,12 @@ This is a great function</p></td>
           <p><code><a href="process_monocle_child.html">process_monocle_child()</a></code> </p>
         </td>
         <td><p>Preprocess a Monocle v2 object for heatmap based on provided pseudotime</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="propagate_spreadsheet_changes.html">propagate_spreadsheet_changes()</a></code> </p>
+        </td>
+        <td><p>Propagate Metadata Changes</p></td>
       </tr><tr>
         
         <td>
@@ -818,13 +865,13 @@ This is a great function</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="reformatMetadata.html">reformatMetadata()</a></code> </p>
+          <p><code><a href="reformatMetadataDR.html">reformatMetadataDR()</a></code> </p>
         </td>
         <td><p>Reformat Seurat Object Metadata Server</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="reformatMetadataui.html">reformatMetadataui()</a></code> </p>
+          <p><code><a href="reformatMetadataDRui.html">reformatMetadataDRui()</a></code> </p>
         </td>
         <td><p>Reformat Seurat Object Metadata UI</p></td>
       </tr><tr>
@@ -848,12 +895,6 @@ This is a great function</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="rename_markers.html">rename_markers()</a></code> </p>
-        </td>
-        <td><p>Convenience Function to transition existing seus</p></td>
-      </tr><tr>
-        
-        <td>
           <p><code><a href="rename_seurat.html">rename_seurat()</a></code> </p>
         </td>
         <td><p>Give a new project name to a seurat object</p></td>
@@ -862,13 +903,7 @@ This is a great function</p></td>
         <td>
           <p><code><a href="reorg_seurat_files.html">reorg_seurat_files()</a></code> </p>
         </td>
-        <td><p>Reorganize seurat objects</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="replace_markers_in_proj.html">replace_markers_in_proj()</a></code> </p>
-        </td>
-        <td><p>Convenience function to replace markers in seurat objects</p></td>
+        <td><p>Reorganize seurat objects to a multimodal format</p></td>
       </tr><tr>
         
         <td>
@@ -884,6 +919,12 @@ This is a great function</p></td>
       </tr><tr>
         
         <td>
+          <p><code><a href="run_census.html">run_census()</a></code> </p>
+        </td>
+        <td><p>Run Census</p></td>
+      </tr><tr>
+        
+        <td>
           <p><code><a href="run_enrichmentbrowser.html">run_enrichmentbrowser()</a></code> </p>
         </td>
         <td><p>Run Enrichment Browser on Differentially Expressed Genes</p></td>
@@ -896,15 +937,15 @@ This is a great function</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="run_seurat_de.html">run_seurat_de()</a></code> </p>
+          <p><code><a href="run_scvelo.html">run_scvelo()</a></code> </p>
         </td>
-        <td><p>Run Seurat Differential Expression</p></td>
+        <td><p>scvelo_assay</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="save_proj_feature_seus.html">save_proj_feature_seus()</a></code> </p>
+          <p><code><a href="run_seurat_de.html">run_seurat_de()</a></code> </p>
         </td>
-        <td><p>Convenience function to save all seurat objects of a given project by feature and suffix</p></td>
+        <td><p>Run Seurat Differential Expression</p></td>
       </tr><tr>
         
         <td>
@@ -914,15 +955,28 @@ This is a great function</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="scdeTest.html">scdeTest()</a></code> </p>
+          <p><code><a href="sce_from_tibbles.html">sce_from_tibbles()</a></code> </p>
         </td>
-        <td><p>Compare two sets of cells with scde package</p></td>
+        <td><p>Create Single Cell Experiment from Tibbles</p></td>
       </tr><tr>
         
         <td>
           <p><code><a href="set_colnames_txi.html">set_colnames_txi()</a></code> </p>
         </td>
         <td><p>Set Column Names from <code>tximport</code></p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="seu_calcn.html">seu_calcn()</a></code> </p>
+        </td>
+        <td><p>Calculate Read Count Metrics for a Seurat object
+recalculate counts/features per cell for a seurat object</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="seu_complex_heatmap.html">seu_complex_heatmap()</a></code> </p>
+        </td>
+        <td><p>Plot Annotated Complexheatmap from Seurat object</p></td>
       </tr><tr>
         
         <td>
@@ -1004,6 +1058,12 @@ This is a great function</p></td>
       </tr><tr>
         
         <td>
+          <p><code><a href="swap_counts_from_feature.html">swap_counts_from_feature()</a></code> </p>
+        </td>
+        <td><p>Swap counts from Feature</p></td>
+      </tr><tr>
+        
+        <td>
           <p><code><a href="tableSelected.html">tableSelected()</a></code> </p>
         </td>
         <td><p>Create Table of Selected Cells</p></td>
@@ -1016,9 +1076,27 @@ This is a great function</p></td>
       </tr><tr>
         
         <td>
+          <p><code><a href="transcripts_to_genes.html">transcripts_to_genes()</a></code> </p>
+        </td>
+        <td><p>Ensembl Transcript Ids to Gene Symbols</p></td>
+      </tr><tr>
+        
+        <td>
           <p><code><a href="update_exp_meta.html">update_exp_meta()</a></code> </p>
         </td>
         <td><p>Update experiment Metadata</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="update_human_gene_symbols.html">update_human_gene_symbols()</a></code> </p>
+        </td>
+        <td><p>Update human gene symbols in seurat object</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="update_project_db.html">update_project_db()</a></code> </p>
+        </td>
+        <td><p>Update a database of seuratTools projects</p></td>
       </tr><tr>
         
         <td>
@@ -1028,21 +1106,9 @@ This is a great function</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="velocyto_assay.html">velocyto_assay()</a></code> </p>
+          <p><code><a href="update_seuratTools_object.html">update_seuratTools_object()</a></code> </p>
         </td>
-        <td><p>run velocyto on a gene or transcript level seurat object</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="velocyto_seu.html">velocyto_seu()</a></code> </p>
-        </td>
-        <td><p>run velocyto on a seurat object</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="velocyto_seurat_from_loom.html">velocyto_seurat_from_loom()</a></code> </p>
-        </td>
-        <td><p>Run RNA Velocity starting with only a loom File</p></td>
+        <td><p>Update a SeuratTools Object</p></td>
       </tr>
     </tbody>
     </table>
@@ -1062,7 +1128,7 @@ This is a great function</p></td>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>

@@ -2,7 +2,7 @@
 % Please edit documentation in R/cross_species.R
 \name{cross_species_integrate}
 \alias{cross_species_integrate}
-\title{Integrate Seurat Objects from Moust to Human}
+\title{Integrate Seurat Objects from Mouse to Human}
 \usage{
 cross_species_integrate(
   mouse_seu_list,
@@ -18,5 +18,10 @@ cross_species_integrate(
 
 }
 \description{
-Integrate Seurat Objects from Moust to Human
+Integrate Seurat Objects from Mouse to Human
+}
+\examples{
+
+cross_species_integrate(list(baron2016singlecell = baron2016singlecell), list(panc8 = panc8))
+
 }

@@ -6,18 +6,14 @@
 \usage{
 seuratApp(
   preset_project,
-  filterTypes,
-  appTitle = NULL,
-  feature_types = "gene",
+  appTitle = "seuratTools",
   organism_type = "human",
-  db_path = "/dataVolume/storage/single_cell_projects/rsqlite/single-cell-projects.db",
+  db_path = "~/.cache/seuratTools/single-cell-projects.db",
   futureMb = 13000
 )
 }
 \arguments{
 \item{preset_project}{A preloaded project to start the app with}
-
-\item{filterTypes}{A named vector of file suffixes corresponding to subsets of the data}
 
 \item{appTitle}{A title of the App}
 

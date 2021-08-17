@@ -7,8 +7,7 @@
 #' @export
 #'
 #' @examples
-create_proj_matrix <- function(proj_list){
-
+create_proj_matrix <- function(proj_list) {
   proj_list <- unlist(proj_list)
 
   proj_tbl <- tibble::tibble(project_path = proj_list, project_name = fs::path_file(proj_list))
@@ -24,7 +23,7 @@ create_proj_matrix <- function(proj_list){
     proj_matrix %>%
     dplyr::filter(!grepl("integrated_projects", project_path)) %>%
     dplyr::filter(stringr::str_count(project_name, "_") == 1) %>%
-  identity()
+    identity()
 
   integrated_projects <-
     proj_matrix %>%
@@ -37,21 +36,6 @@ create_proj_matrix <- function(proj_list){
 }
 
 
-#' Create Project database
-#'
-#' @return
-#' @export
-#'
-#' @examples
-create_proj_db <- function(projects_dir = "/dataVolume/storage/single_cell_projects/"){
-
-  system_command <- "updatedb -l 0 -U /dataVolume/storage/single_cell_projects/ -o /dataVolume/storage/single_cell_projects/single_cell_projects.db"
-  system(system_command, wait = TRUE)
-  print(system_command)
-
-}
-
-
 #' subset by new metadata
 #'
 #' @param meta_path
@@ -61,7 +45,7 @@ create_proj_db <- function(projects_dir = "/dataVolume/storage/single_cell_proje
 #' @export
 #'
 #' @examples
-subset_by_meta <- function(meta_path, seu){
+subset_by_meta <- function(meta_path, seu) {
   upload_meta <- read.csv(meta_path, row.names = 1, header = TRUE)
 
   upload_cells <- rownames(upload_meta)
@@ -70,12 +54,10 @@ subset_by_meta <- function(meta_path, seu){
 
   seu <- AddMetaData(seu, upload_meta)
 
-  # seu@meta.data <- upload_meta
   return(seu)
-
 }
 
-#' Title
+#' Combine Loom Files
 #'
 #' @param projectPaths
 #' @param newProjectPath
@@ -84,13 +66,13 @@ subset_by_meta <- function(meta_path, seu){
 #' @export
 #'
 #' @examples
-combine_looms <- function(projectPaths, newProjectPath){
-  #loom combine
+combine_looms <- function(projectPaths, newProjectPath) {
+  # loom combine
   loompy <- reticulate::import("loompy")
 
   loom_filenames <- stringr::str_replace(fs::path_file(projectPaths), "_proj", ".loom")
 
   selected_looms <- fs::path(projectPaths, "output", "velocyto", loom_filenames)
-  loompy$combine(selected_looms, newProjectPath)
-}
 
+  if (all(fs::is_file(selected_looms))) loompy$combine(selected_looms, newProjectPath)
+}

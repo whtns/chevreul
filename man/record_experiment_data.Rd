@@ -19,3 +19,7 @@ record_experiment_data(
 \description{
 Record Experiment Metadata
 }
+\examples{
+logged_seu <- record_experiment_data(human_gene_transcript_seu, experiment_name = "human_gene_transcript", organism = "mouse")
+Misc(logged_seu, "experiment")
+}

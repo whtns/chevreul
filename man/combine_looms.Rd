@@ -2,7 +2,7 @@
 % Please edit documentation in R/project_management.R
 \name{combine_looms}
 \alias{combine_looms}
-\title{Title}
+\title{Combine Loom Files}
 \usage{
 combine_looms(projectPaths, newProjectPath)
 }
@@ -13,5 +13,5 @@ combine_looms(projectPaths, newProjectPath)
 
 }
 \description{
-Title
+Combine Loom Files
 }

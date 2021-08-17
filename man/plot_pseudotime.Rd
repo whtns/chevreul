@@ -2,7 +2,7 @@
 % Please edit documentation in R/monocle.R
 \name{plot_pseudotime}
 \alias{plot_pseudotime}
-\title{Plot a Monocle Cell Data Set}
+\title{Plot pseudotime on a Monocle Cell Data Set}
 \usage{
 plot_pseudotime(cds, resolution, color_cells_by = NULL, genes = NULL)
 }
@@ -13,5 +13,5 @@ plot_pseudotime(cds, resolution, color_cells_by = NULL, genes = NULL)
 
 }
 \description{
-Plot a Monocle Cell Data Set
+Plot pseudotime on a Monocle Cell Data Set
 }

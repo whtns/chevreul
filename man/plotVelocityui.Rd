@@ -2,7 +2,7 @@
 % Please edit documentation in R/shiny_modules.R
 \name{plotVelocityui}
 \alias{plotVelocityui}
-\title{RNA Velocity UI}
+\title{RNA Velocity UI Module}
 \usage{
 plotVelocityui(id)
 }
@@ -13,5 +13,5 @@ plotVelocityui(id)
 
 }
 \description{
-RNA Velocity UI
+RNA Velocity UI Module
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/cross_species.R
 \name{convert_symbols_by_species}
 \alias{convert_symbols_by_species}
-\title{Title}
+\title{Convert gene symbols between mouse and human}
 \usage{
 convert_symbols_by_species(src_genes, src_species)
 }
@@ -13,5 +13,12 @@ convert_symbols_by_species(src_genes, src_species)
 
 }
 \description{
-Title
+Convert gene symbols between mouse and human
+}
+\examples{
+
+convert_symbols_by_species("RXRG", "human")
+
+convert_symbols_by_species("Rxrg", "mouse")
+
 }

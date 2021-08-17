@@ -4,10 +4,10 @@
 \alias{plotly_settings}
 \title{Plotly settings}
 \usage{
-plotly_settings(plotly_plot)
+plotly_settings(plotly_plot, width = 600, height = 700)
 }
 \arguments{
-\item{plotly_plot}{}
+\item{height}{}
 }
 \value{
 

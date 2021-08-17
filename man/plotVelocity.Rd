@@ -2,16 +2,16 @@
 % Please edit documentation in R/shiny_modules.R
 \name{plotVelocity}
 \alias{plotVelocity}
-\title{RNA Velocity}
+\title{RNA Velocity Server Module}
 \usage{
-plotVelocity(input, output, session, seu, loom_path, featureType)
+plotVelocity(input, output, session, seu, loom_path)
 }
 \arguments{
-\item{featureType}{}
+\item{loom_path}{}
 }
 \value{
 
 }
 \description{
-RNA Velocity
+RNA Velocity Server Module
 }

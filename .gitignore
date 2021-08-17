@@ -5,3 +5,5 @@
 inst/doc
 *.rds
 docs
+velocity_embedding.png
+velocity_expression.png

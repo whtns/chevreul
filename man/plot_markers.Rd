@@ -6,11 +6,15 @@
 \usage{
 plot_markers(
   seu,
-  resolution,
+  metavar = "batch",
   num_markers = 5,
-  selected_clusters = NULL,
-  return_plot = FALSE,
-  marker_method = "presto",
+  selected_values = NULL,
+  return_plotly = TRUE,
+  marker_method = c("presto", "genesorteR"),
+  seurat_assay = "gene",
+  hide_pseudo = FALSE,
+  unique_markers = FALSE,
+  p_val_cutoff = 1,
   ...
 )
 }
@@ -21,5 +25,16 @@ plot_markers(
 
 }
 \description{
-Plot Cluster Marker Genes
+Plot a dot plot of n marker features grouped by cell metadata
+available methods are wilcoxon rank-sum test implemented in
+\href{https://github.com/immunogenomics/presto}{presto} and specificity scores implemented in \href{https://github.com/mahmoudibrahim/genesorteR}{genesorteR}
+}
+\examples{
+
+# interactive mode using "presto"
+plot_markers(panc8, metavar = "tech", marker_method = "presto", return_plotly = TRUE)
+
+# static mode using "presto"
+plot_markers(panc8, metavar = "tech", marker_method = "genesorteR", return_plotly = FALSE)
+
 }

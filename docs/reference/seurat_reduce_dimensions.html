@@ -73,7 +73,7 @@ perplexity should not be bigger than 3 * perplexity &amp;lt; nrow(X) - 1, see de
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">seuratTools</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.2.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.4.10</span>
       </span>
     </div>
 
@@ -131,13 +131,19 @@ perplexity should not be bigger than 3 * perplexity &amp;lt; nrow(X) - 1, see de
 perplexity should not be bigger than 3 * perplexity &lt; nrow(X) - 1, see details for interpretation</p>
     </div>
 
-    <pre class="usage"><span class='fu'>seurat_reduce_dimensions</span>(<span class='no'>seu</span>, <span class='kw'>reduction</span> <span class='kw'>=</span> <span class='st'>"pca"</span>, <span class='no'>...</span>)</pre>
+    <pre class="usage"><span class='fu'>seurat_reduce_dimensions</span><span class='op'>(</span>
+  <span class='va'>seu</span>,
+  assay <span class='op'>=</span> <span class='st'>"gene"</span>,
+  reduction <span class='op'>=</span> <span class='st'>"pca"</span>,
+  legacy_settings <span class='op'>=</span> <span class='cn'>FALSE</span>,
+  <span class='va'>...</span>
+<span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>seu</th>
+      <th>...</th>
       <td></td>
     </tr>
     </table>
@@ -163,7 +169,7 @@ perplexity should not be bigger than 3 * perplexity &lt; nrow(X) - 1, see detail
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>
