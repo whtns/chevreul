@@ -22,15 +22,13 @@ datasets processed with
 A demo using a pancreas dataset from the Seurat team is available
 <a href="http://cobriniklab.saban-chla.usc.edu:3838/seuratTools_demo/" target="_blank" rel="noopener noreferrer">here</a>
 
-There are also convenient functions for: 1. Clustering and Dimensional
-Reduction of Raw Sequencing Data 2.
-<a href="https://satijalab.org/seurat/v3.0/pancreas_integration_label_transfer.html" target="_blank" rel="noopener noreferrer">Integration
-and Label Transfer</a> 3. Louvain Clustering at a Range of Resolutions
-4. Cell cycle state regression and labeling 5. RNA velocity calculation
-with
-<a href="https://velocyto.org/" target="_blank" rel="noopener noreferrer">Velocyto.R</a>
-and
-<a href="https://scvelo.readthedocs.io/" target="_blank" rel="noopener noreferrer">scvelo</a>
+There are also convenient functions for: 
+* Clustering and Dimensional Reduction of Raw Sequencing Data 
+* <a href="https://satijalab.org/seurat/v3.0/pancreas_integration_label_transfer.html" target="_blank" rel="noopener noreferrer">Integration
+and Label Transfer</a> 
+* Louvain Clustering at a Range of Resolutions
+* Cell cycle state regression and labeling 
+* RNA velocity calculation with <a href="https://velocyto.org/" target="_blank" rel="noopener noreferrer">Velocyto.R</a> and <a href="https://scvelo.readthedocs.io/" target="_blank" rel="noopener noreferrer">scvelo</a>
 
 ## Installation
 
@@ -40,14 +38,18 @@ with:
 
 ### Install locally and run in three steps:
 
-    install.packages("devtools")
-    devtools::install_github("whtns/seuratTools")
-    seuratTools::create_project_db()
+``` r
+install.packages("devtools")
+devtools::install_github("whtns/seuratTools")
+seuratTools::create_project_db()
+```
 
 ### Install locally (custom location!) and run in three steps:
 
-    devtools::install_github("whtns/seuratTools")
-    seuratTools::create_project_db(destdir='/your/path/to/app')
+``` r
+devtools::install_github("whtns/seuratTools")
+seuratTools::create_project_db(destdir='/your/path/to/app')
+```
 
 ## Site
 
@@ -67,14 +69,18 @@ website</a>
 
 ## Getting Started
 
-    library(seuratTools)
-    library(Seurat)
-    library(tidyverse)
-    library(ggraph)
+``` r
+library(seuratTools)
+library(Seurat)
+library(tidyverse)
+library(ggraph)
+```
 
 ### view included dataset
 
-    panc8
+``` r
+panc8
+```
 
 ### run clustering on a single seurat object
 
@@ -82,25 +88,36 @@ By default clustering will be run at ten different resolutions between
 0.2 and 2.0. Any resolution can be specified by providing the resolution
 argument as a numeric vector.
 
-    clustered_seu <- clustering_workflow(panc8, experiment_name = "seurat_pancreas", organism = "human")
+``` r
+clustered_seu <- clustering_workflow(panc8, experiment_name = "seurat_pancreas", organism = "human")
+```
 
-    minimalSeuratApp(clustered_seu)
+``` r
+minimalSeuratApp(clustered_seu)
+```
 
 ### split included dataset based on collection technology
 
-    split_panc8 <- SplitObject(panc8, split.by = "dataset")
+``` r
+split_panc8 <- SplitObject(panc8, split.by = "dataset")
+```
 
 ### run seurat batch integration on ‘child’ projects
 
-    integrated_seu <- integration_workflow(split_panc8)
+``` r
+integrated_seu <- integration_workflow(split_panc8)
+```
 
 ### launch app to inspect
 
-
-    minimalSeuratApp(integrated_seu)
+``` r
+minimalSeuratApp(integrated_seu)
+```
 
 ### view analysis details
 
-    Misc(integrated_seu, "experiment") %>% 
-      tibble::enframe() %>% 
-      knitr::kable()
+``` r
+Misc(integrated_seu, "experiment") %>% 
+  tibble::enframe() %>% 
+  knitr::kable()
+```
