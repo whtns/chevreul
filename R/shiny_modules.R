@@ -347,18 +347,13 @@ integrateProj <- function(input, output, session, proj_matrices, seu, proj_dir, 
         shinyjs::html("integrationMessages", "")
         message("Beginning")
 
-        # check if seurat paths exist
-
-        # validate(
-        #   need(input$data != "", "Please select a data set")
-        # )
-
         batches <- fs::path(selectedProjects(), "output", "seurat", "unfiltered_seu.rds") %>%
           purrr::map(readRDS)
 
         names(batches) <- names(selectedProjects())
-
+        print(names(batches))
         mergedSeus(integration_workflow(batches, legacy_settings = input$legacySettings))
+        # mergedSeus(batches[[1]])
 
         message("Integration Complete!")
       },
@@ -370,12 +365,13 @@ integrateProj <- function(input, output, session, proj_matrices, seu, proj_dir, 
 
   newProjDir <- reactive({
     req(mergedSeus())
-
-    print(names(mergedSeus()))
-
-    for (i in names(mergedSeus())) {
-      seu[[i]] <- mergedSeus()[[i]]
-    }
+    print("foo created successfully")
+    # print(names(mergedSeus()))
+    #
+    # for (i in names(mergedSeus())) {
+    #   seu[[i]] <- mergedSeus()[[i]]
+    # }
+    #
 
     newProjName <- paste0(purrr::map(fs::path_file(selectedProjects()), ~ gsub("_proj", "", .x)), collapse = "_")
     integrated_proj_dir <- "/dataVolume/storage/single_cell_projects/integrated_projects/"
@@ -388,19 +384,25 @@ integrateProj <- function(input, output, session, proj_matrices, seu, proj_dir, 
 
   output$integrationComplete <- renderText({
     req(mergedSeus())
-    # print("integration complete!")
-    print("")
+    print("integration complete 2!")
   })
 
 
   volumes <- reactive({
-    volumes <- c(Home = fs::path("/dataVolume/storage/single_cell_projects/integrated_projects"), "R Installation" = R.home(), shinyFiles::getVolumes())
-    print(volumes)
+
+    volumes <- c(Home = "/dataVolume/storage/single_cell_projects/integrated_projects/",
+                 "R Installation" = R.home(),
+                 shinyFiles::getVolumes()())
+    # print(volumes)
     volumes
   })
 
   observe({
-    shinyFiles::shinyFileSave(input, "saveIntegratedProject", roots = volumes(), session = session, restrictions = system.file(package = "base"))
+    shinyFiles::shinyFileSave(input,
+                              "saveIntegratedProject",
+                              roots = volumes(),
+                              session = session,
+                              restrictions = system.file(package = "base"))
   })
 
 
