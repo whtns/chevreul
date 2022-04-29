@@ -54,7 +54,8 @@ Imports:
     formattable,
     reticulate,
     DataEditR (>= 0.0.9),
-    megadepth
+    megadepth,
+    ggplotify
 Suggests: 
     ggplot2,
     testthat (>= 2.1.0),
