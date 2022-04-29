@@ -2,11 +2,15 @@ Type: Package
 Package: seuratTools
 Title: Tools for Managing Seurat Objects
 Version: 0.4.12
-Authors@R: c(
-    person("Kevin", "Stachelek", , "kevin.stachelek@gmail.com", role = c("aut", "cre")),
-    person("Roman", "Hillje", role = "ctb",
-           comment = "Author of included Cerebro fragments")
-  )
+Authors@R: 
+    c(person(given = "Kevin",
+             family = "Stachelek",
+             role = c("aut", "cre"),
+             email = "kevin.stachelek@gmail.com"),
+      person(given = "Roman",
+             family = "Hillje",
+             role = "ctb",
+             comment = "Author of included Cerebro fragments"))
 Description: Tools for using seurat with single cell projects
 License: MIT + file LICENSE
 URL: https://github.com/cobriniklab/seuratTools
@@ -20,28 +24,38 @@ Imports:
     annotables (>= 0.1.91),
     Biobase,
     checkmate,
+    checkmate,
     clustree,
     ComplexHeatmap (>= 2.5.4),
+    DataEditR (>= 0.0.9),
     DataEditR (>= 0.0.9),
     DBI,
     dplyr,
     DT,
     ensembldb,
     formattable,
+    formattable,
     fs,
     future,
     genesorteR (>= 0.4.3),
+    ggplotify
+    tximport,
+    ggpubr,
     ggpubr,
     httr,
     janitor,
     magrittr,
     megadepth,
+    megadepth,
+    Nebulosa,
     Nebulosa,
     patchwork,
     plotly,
     presto (>= 1.0.0),
     Rcpp,
     reticulate,
+    reticulate,
+    rhandsontable,
     rhandsontable,
     rlang,
     RSQLite,
@@ -49,21 +63,11 @@ Imports:
     SeuratWrappers (>= 0.2.0),
     shinyFiles,
     shinyhelper,
+    shinyhelper,
     shinyjs,
     shinyWidgets,
     SingleCellExperiment,
     tidyr,
-    shinyhelper,
-    rhandsontable,
-    checkmate,
-    Nebulosa,
-    ggpubr,
-    formattable,
-    reticulate,
-    DataEditR (>= 0.0.9),
-    megadepth,
-    ggplotify
-    tximport,
     unglue,
     waiter,
     wiggleplotr (>= 1.13.1)
