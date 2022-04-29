@@ -1,3 +1,42 @@
+old_harmony_integrate <- function (seu_list)
+  {
+    seu_list.integrated <- purrr::reduce(seu_list, merge)
+    seu_list.integrated <- seurat_preprocess(seu_list.integrated)
+    seu_list.integrated <- seurat_reduce_dimensions(seu_list.integrated)
+    seu_list.integrated <- RenameAssays(seu_list.integrated,
+                                        gene = "RNA")
+    seu_list.integrated@assays[["integrated"]] <- seu_list.integrated@assays[["RNA"]]
+    seu_list.integrated <- harmony::RunHarmony(seu_list.integrated,
+                                               group.by.vars = "batch")
+    seu_list.integrated <- RunUMAP(seu_list.integrated, reduction = "harmony",
+                                   dims = 1:30)
+    seu_list.integrated <- FindNeighbors(seu_list.integrated,
+                                         reduction = "harmony", dims = 1:30) %>% FindClusters()
+    seu_list.integrated <- RenameAssays(seu_list.integrated,
+                                        RNA = "gene")
+    seu_list.integrated
+  }
+
+#' integrate small datasets with harmony
+#'
+#' @param seu_list
+#'
+#' @return
+#' @export
+#'
+#' @examples
+harmony_integrate <- function(seu_list){
+  seu_list.integrated <- purrr::reduce(seu_list, merge)
+  seu_list.integrated@assays[["integrated"]] <- seu_list.integrated@assays[["gene"]]
+  DefaultAssay(seu_list.integrated) <- "integrated"
+  seu_list.integrated <- seurat_preprocess(seu_list.integrated)
+  seu_list.integrated <- seurat_reduce_dimensions(seu_list.integrated)
+  seu_list.integrated <- harmony::RunHarmony(seu_list.integrated, group.by.vars = "batch", assay.use = "integrated")
+  seu_list.integrated <- RunUMAP(seu_list.integrated, assay = "integrated", reduction = "harmony", dims = 1:30)
+  seu_list.integrated <- FindNeighbors(seu_list.integrated, assay = "integrated", reduction = "harmony", dims = 1:30)
+  seu_list.integrated
+}
+
 #' Merge Small Seurat Objects
 #'
 #' @param seu_list
@@ -57,7 +96,19 @@ seurat_integrate <- function(seu_list, method = "cca", organism = "human", ...) 
   }
 
   # proceed with integration
-  seu_list.integrated <- IntegrateData(anchorset = seu_list.anchors, dims = 1:30)
+  # seu_list.integrated <- IntegrateData(anchorset = seu_list.anchors, dims = 1:30)
+
+  seu_list.integrated <- tryCatch(IntegrateData(anchorset = seu_list.anchors, dims = 1:30), error = function(e) e)
+  run_harmony <- any(class(seu_list.integrated) == "error")
+  if(run_harmony){
+    seu_list.integrated <- harmony_integrate(seu_list)
+  }
+
+  #   enriched_seu <- tryCatch(getEnrichedPathways(seu), error = function(e) e)
+  #   enrichr_available <- !any(class(enriched_seu) == "error")
+  #   if(enrichr_available){
+  #     seu <- enriched_seu
+  #   }
 
   # Next, we identify anchors using the FindIntegrationAnchors function, which takes a list of Seurat objects as input.
 
@@ -69,9 +120,11 @@ seurat_integrate <- function(seu_list, method = "cca", organism = "human", ...) 
   # automatically set during IntegrateData
   Seurat::DefaultAssay(object = seu_list.integrated) <- "integrated"
 
-  # Run the standard workflow for visualization and clustering
-  seu_list.integrated <- Seurat::ScaleData(object = seu_list.integrated, verbose = FALSE)
-  seu_list.integrated <- seurat_reduce_dimensions(seu_list.integrated, ...)
+  # if not integrated with harmony run the standard workflow for visualization and clustering
+  if (!"harmony" %in% names(seu_list.integrated@reductions)){
+    seu_list.integrated <- Seurat::ScaleData(object = seu_list.integrated, verbose = FALSE)
+    seu_list.integrated <- seurat_reduce_dimensions(seu_list.integrated, ...)
+  }
 
   seu_list.integrated <- record_experiment_data(seu_list.integrated, experiment_name = "integrated", organism = organism)
 
@@ -93,7 +146,7 @@ seurat_integrate <- function(seu_list, method = "cca", organism = "human", ...) 
 #' @examples
 seurat_cluster <- function(seu = seu, resolution = 0.6, custom_clust = NULL, reduction = "pca", algorithm = 1, ...) {
   message(paste0("[", format(Sys.time(), "%H:%M:%S"), "] Clustering Cells..."))
-  seu <- FindNeighbors(object = seu, dims = 1:10, reduction = reduction)
+  seu <- FindNeighbors(object = seu, dims = 1:30, reduction = reduction)
 
   if (length(resolution) > 1) {
     for (i in resolution) {
@@ -102,12 +155,12 @@ seurat_cluster <- function(seu = seu, resolution = 0.6, custom_clust = NULL, red
     }
   } else if (length(resolution) == 1) {
     message(paste0("clustering at ", resolution, " resolution"))
-    seu <- Seurat::FindClusters(object = seu, resolution = resolution, ...)
+    seu <- Seurat::FindClusters(object = seu, resolution = resolution, algorithm = algorithm, ...)
   }
 
   if (!is.null(custom_clust)) {
     seu <- Seurat::StashIdent(object = seu, save.name = "old.ident")
-    clusters <- tibble::tibble("sampl_id" = rownames(seu[[]])) %>%
+    clusters <- tibble::tibble("sample_id" = rownames(seu[[]])) %>%
       tibbl::rownames_to_column("order") %>%
       dplyr::inner_join(custom_clust, by = "sample_id") %>%
       dplyr::pull(cluster) %>%
