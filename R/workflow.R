@@ -3,7 +3,7 @@
 #'
 #' Integrate multiple seurat objects and save to file
 #'
-#' @param batches seurat objects for each all batches provided as a list. If named, the resulting integrated object will be identified with corresponding values in 'batch' metadata
+#' @param batches seurat objects for all batches provided as a list. If named, the resulting integrated object will be identified with corresponding values in 'batch' metadata
 #' @param excluded_cells named list of cells to exclude
 #' @param resolution value(s) to control the clustering resolution via `Seurat::FindMarkers`
 #' @param experiment_name arbitrary name to identify experiment

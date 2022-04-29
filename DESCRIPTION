@@ -1,50 +1,57 @@
-Package: seuratTools
 Type: Package
+Package: seuratTools
 Title: Tools for Managing Seurat Objects
 Version: 0.4.12
 Authors@R: c(
-    person("Kevin", "Stachelek", email = "kevin.stachelek@gmail.com", role = c("aut", "cre")),
-    person("Roman", "Hillje", role = c("ctb"), comment = "Author of included Cerebro fragments")
-    )
+    person("Kevin", "Stachelek", , "kevin.stachelek@gmail.com", role = c("aut", "cre")),
+    person("Roman", "Hillje", role = "ctb",
+           comment = "Author of included Cerebro fragments")
+  )
 Description: Tools for using seurat with single cell projects
 License: MIT + file LICENSE
-Encoding: UTF-8
-LazyData: true
-Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.1
-biocViews:
+URL: https://github.com/cobriniklab/seuratTools
+BugReports: https://github.com/cobriniklab/seuratTools/issues
+Depends: 
+    R (>= 2.10),
+    Seurat,
+    shiny (>= 1.6.0),
+    shinydashboard
 Imports: 
-    fs,
-    rlang,
-    magrittr,
-    future,
-    DT,
-    plotly,
-    shinyFiles,
-    janitor,
-    SeuratWrappers (>= 0.2.0),
-    monocle3 (>= 0.2.1),
-    unglue,
-    Biobase,
-    tximport,
-    clustree,
     annotables (>= 0.1.91),
-    presto (>= 1.0.0),
-    DBI,
-    RSQLite,
-    shinyWidgets,
-    shinyjs,
-    waiter,
-    sessioninfo,
-    genesorteR (>= 0.4.3),
-    httr,
-    patchwork,
+    Biobase,
+    checkmate,
+    clustree,
     ComplexHeatmap (>= 2.5.4),
-    wiggleplotr (>= 1.13.1),
-    ensembldb,
-    Rcpp,
-    SingleCellExperiment,
+    DataEditR (>= 0.0.9),
+    DBI,
     dplyr,
+    DT,
+    ensembldb,
+    formattable,
+    fs,
+    future,
+    genesorteR (>= 0.4.3),
+    ggpubr,
+    httr,
+    janitor,
+    magrittr,
+    megadepth,
+    Nebulosa,
+    patchwork,
+    plotly,
+    presto (>= 1.0.0),
+    Rcpp,
+    reticulate,
+    rhandsontable,
+    rlang,
+    RSQLite,
+    sessioninfo,
+    SeuratWrappers (>= 0.2.0),
+    shinyFiles,
+    shinyhelper,
+    shinyjs,
+    shinyWidgets,
+    SingleCellExperiment,
     tidyr,
     shinyhelper,
     rhandsontable,
@@ -56,24 +63,28 @@ Imports:
     DataEditR (>= 0.0.9),
     megadepth,
     ggplotify
+    tximport,
+    unglue,
+    waiter,
+    wiggleplotr (>= 1.13.1)
 Suggests: 
     ggplot2,
-    testthat (>= 2.1.0),
     knitr,
-    rmarkdown
-URL: https://github.com/cobriniklab/seuratTools
-BugReports: https://github.com/cobriniklab/seuratTools/issues
+    monocle3 (>= 0.2.1),
+    rmarkdown,
+    testthat (>= 2.1.0)
+VignetteBuilder: 
+    knitr
 Remotes: 
-    immunogenomics/presto,
     cole-trapnell-lab/monocle3,
-    stephenturner/annotables,
-    mahmoudibrahim/genesorteR,
-    jokergoo/ComplexHeatmap,
     DillonHammill/DataEditR,
-    satijalab/seurat-wrappers
-Depends: 
-    Seurat,
-    R (>= 2.10),
-    shiny (>= 1.6.0),
-    shinydashboard
-VignetteBuilder: knitr
+    immunogenomics/presto,
+    jokergoo/ComplexHeatmap,
+    mahmoudibrahim/genesorteR,
+    satijalab/seurat-wrappers,
+    stephenturner/annotables
+biocViews:
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.1

@@ -72,8 +72,9 @@ plotViolinui <- function(id) {
       radioButtons(ns("slot"), "Data Type", choices = c("transformed" = "data", "raw counts" = "counts")),
       downloadButton(ns("downloadPlot")),
       plotly::plotlyOutput(ns("vplot"), height = 750),
-      width = 12
-    )
+      width = 11
+    ) %>%
+      default_helper(type = "markdown", content = "violinPlot", size = "l")
   )
 }
 
@@ -285,7 +286,6 @@ integrateProjui <- function(id) {
     seuratToolsBox(
       title = "Integrate Projects",
       actionButton(ns("integrateAction"), "Integrate Selected Projects"),
-      textOutput(ns("integrationComplete")),
       # shinyjs::useShinyjs(),
       # shinyjs::runcodeUI(code = "shinyjs::alert('Hello!')", id = "subsetcode"),
       textOutput(ns("integrationMessages")),
@@ -346,7 +346,7 @@ integrateProj <- function(input, output, session, proj_matrices, seu, proj_dir, 
       {
         shinyjs::html("integrationMessages", "")
         message("Beginning")
-
+        message(selectedProjects())
         batches <- fs::path(selectedProjects(), "output", "seurat", "unfiltered_seu.rds") %>%
           purrr::map(readRDS)
 
@@ -380,11 +380,6 @@ integrateProj <- function(input, output, session, proj_matrices, seu, proj_dir, 
     proj_dir(newProjDir)
 
     newProjDir
-  })
-
-  output$integrationComplete <- renderText({
-    req(mergedSeus())
-    print("integration complete 2!")
   })
 
 
