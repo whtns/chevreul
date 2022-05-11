@@ -34,6 +34,7 @@ seuratToolsBox <- function(title = "", ...) {
     status = "primary",
     solidHeader = TRUE,
     collapsible = TRUE,
+    width = 5.5,
     ...
   )
 }
