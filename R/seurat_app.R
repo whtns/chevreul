@@ -199,7 +199,7 @@ prep_slider_values <- function(default_val) {
 }
 
 
-#' Create Seurat App
+#' Create a shiny app for a project on disk
 #'
 #' @param preset_project A preloaded project to start the app with
 #' @param appTitle A title of the App
