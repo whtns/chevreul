@@ -34,7 +34,7 @@ Imports:
     fs,
     future,
     genesorteR (>= 0.4.3),
-    ggplotify
+    ggplotify,
     tximport,
     ggpubr,
     ggpubr,
