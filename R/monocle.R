@@ -107,7 +107,7 @@ convert_seu_to_cds <- function(seu, resolution = 1) {
 #'
 #' @examples
 assign_clusters_to_cds <- function(cds, clusters) {
-  clusters <- clusters[colnames(cds)]
+  clusters <- clusters[rownames(cds@colData)]
 
   cds@clusters@listData[["UMAP"]][["clusters"]] <- clusters
   names(cds@clusters@listData[["UMAP"]][["clusters"]]) <- cds@colData@rownames
