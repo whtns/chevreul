@@ -31,6 +31,9 @@ Imports:
     fs,
     future,
     genesorteR (>= 0.4.3),
+    ggplotify,
+    tximport,
+    ggpubr,
     ggpubr,
     httr,
     janitor,
@@ -53,7 +56,6 @@ Imports:
     shinyWidgets,
     SingleCellExperiment,
     tidyr,
-    tximport,
     unglue,
     waiter,
     wiggleplotr (>= 1.13.1)
