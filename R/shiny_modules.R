@@ -1767,8 +1767,8 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
     req(input$rootCells)
     cds_rvs$traj <- monocle3::order_cells(cds_rvs$traj, root_cells = input$rootCells)
 
-    # select only first partition
-    cds_rvs$traj <- cds_rvs$traj[, monocle3::partitions(cds_rvs$traj) == 1]
+    # # select only first partition
+    # cds_rvs$traj <- cds_rvs$traj[, monocle3::partitions(cds_rvs$traj) == 1]
 
 
     if (input$flipPtime) {

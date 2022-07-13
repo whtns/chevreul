@@ -199,7 +199,7 @@ prep_slider_values <- function(default_val) {
 }
 
 
-#' Create Seurat App
+#' Create a shiny app for a project on disk
 #'
 #' @param preset_project A preloaded project to start the app with
 #' @param appTitle A title of the App
@@ -515,8 +515,8 @@ seuratApp <- function(preset_project, appTitle = "seuratTools", organism_type = 
         Home = fs::path(
           proj_dir(),
           "output", "seurat"
-        ), `R Installation` = R.home(),
-        shinyFiles::getVolumes()
+        ), "R Installation" = R.home(),
+        shinyFiles::getVolumes()()
       )
     })
     observe({
@@ -527,15 +527,18 @@ seuratApp <- function(preset_project, appTitle = "seuratTools", organism_type = 
     })
     observeEvent(input$seuratUpload, {
       req(dataset_volumes())
+
       file <- shinyFiles::parseFilePaths(
         dataset_volumes(),
         input$seuratUpload
       )
+      print(file)
       uploadSeuratPath(file$datapath)
     })
 
     observe({
       req(uploadSeuratPath())
+      print("uploaded")
       shiny::withProgress(
         message = paste0("Uploading Data"),
         value = 0,

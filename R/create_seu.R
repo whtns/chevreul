@@ -16,12 +16,16 @@ set_colnames_txi <- function(txi, colnames) {
   return(txi)
 }
 
-#' Load Sample Counts then run Tximport
-
+#' Run \href{http://bioconductor.org/packages/release/bioc/html/tximport.html}{tximport} on a set of cells
 #'
-#' @param countsFromAbundance
-#' @param proj_dir
-#' @param type
+#' cells can be quantified using:
+#' \itemize{
+#'   \item stringtie
+#'   \item salmon
+#' }
+#' @param proj_dir project directory
+#' @param type stringtie or salmon
+#' @param countsFromAbundance argument provided to tximport
 #' @param edb
 #'
 #' @return
@@ -67,9 +71,11 @@ load_counts_by_tximport <- function(proj_dir, type = "salmon", countsFromAbundan
 }
 
 
-#' Load Project Sample Data
+#' Load Sample Metadata for a given project
 #'
-#' @param meta_path
+#'
+#'
+#' @param proj_dir
 #'
 #' @return
 #' @export
@@ -84,11 +90,11 @@ load_meta <- function(proj_dir) {
 }
 
 
-#' Create a Seurat Object from return of tximport
+#' Create a seurat object from output of  \href{http://bioconductor.org/packages/release/bioc/html/tximport.html}{tximport} and a table of cell metadata
 #'
-#' @param txi output from load_counts_from_stringtie
+#' @param txi output from load_counts_by_tximport
 #' @param meta_tbl a tibble of cell metadata with cell ids as the first column
-#' @param feature gene or transcript
+#' @param feature the feature level on which to summarize counts gene or transcript
 #' @param ...
 #'
 #' @return
