@@ -48,7 +48,7 @@ run_seurat_de <- function(seu, cluster1, cluster2, resolution, diffex_scheme = "
 
 
     if (featureType == "transcript") {
-      de_cols <- c("enstxp", "ensgene", "symbol", "p_val", "avg_logFC", "pct.1", "pct.2", "p_val_adj")
+      de_cols <- c("enstxp", "ensgene", "symbol", "p_val", "avg_log2FC", "pct.1", "pct.2", "p_val_adj")
 
       de <-
         de %>%

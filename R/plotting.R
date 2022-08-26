@@ -317,7 +317,7 @@ plotly_settings <- function(plotly_plot, width = 600, height = 700){
     plotly::layout(dragmode = "lasso") %>%
     plotly::config(
       toImageButtonOptions = list(
-        format = "png",
+        format = "svg",
         filename = "myplot",
         width = width,
         height = height
