@@ -898,9 +898,11 @@ monocle_module_heatmap <- function(cds, pr_deg_ids, seu_resolution, cells = NULL
 
   seu_resolution <- paste0(default_assay, "_snn_res.", seu_resolution)
 
-  cds <- cds[pr_deg_ids, ]
   gene_module_df <- monocle3::find_gene_modules(cds, resolution = resolution) %>%
-    dplyr::arrange(module)
+    dplyr::arrange(module) %>%
+    dplyr::filter(id %in% pr_deg_ids)
+
+  cds <- cds[pr_deg_ids, ]
 
   cell_group_df <- tibble::tibble(
     cell = row.names(colData(cds)),

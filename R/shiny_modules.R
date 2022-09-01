@@ -270,6 +270,7 @@ plotHeatmap <- function(input, output, session, seu, featureType, organism_type)
       ggsave(file, ggplotify::as.ggplot(heatmap_plot()) + ggpubr::theme_pubr(base_size = 20, x.text.angle = 45), width = 16, height = 12)
     }
   )
+
 }
 
 #' Integrate Project UI
@@ -1560,6 +1561,7 @@ monocleui <- function(id) {
       title = "Heatmap",
       uiOutput(ns("colAnnoVarui")),
       radioButtons(ns("heatmapRows"), "annotate heatmap rows by genes or modules?", choices = c("modules", "genes")),
+      downloadButton(ns("downloadCds"), "Download Monocle CellDataSet"),
       downloadButton(ns("downloadPlot"), "Download Heatmap"),
       plotOutput(ns("monocleHeatmap"), width = "800px", height = "1200px")
     ),
@@ -1878,6 +1880,9 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
     heatmap_genes <- cds_pr_test_res() %>%
       dplyr::filter(q_value < input$qvalThreshold)
 
+    # heatmap_genes <- heatmap_genes %>%
+    #   dplyr::filter(symbol %in% annotables::grch38$symbol)
+
     monocle_module_heatmap(cds_rvs$traj, rownames(heatmap_genes), input$cdsResolution, collapse_rows = input$heatmapRows, group.by = input$colAnnoVar)
   }) %>%
     bindCache(cds_rvs$traj, input$cdsResolution, input$heatmapRows)
@@ -1923,6 +1928,16 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
       ggsave(file, ggplotify::as.ggplot(monocle_heatmap()$module_heatmap), width = 16, height = 12)
     }
   )
+
+  output$downloadCds <- downloadHandler(
+    filename = function() {
+      paste("cds", ".rds", sep = "")
+    },
+    content = function(file) {
+      saveRDS(cds_rvs$traj, file)
+    }
+  )
+
 }
 
 
