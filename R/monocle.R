@@ -8,7 +8,8 @@
 #' @examples
 #' processed_seu <- clustering_workflow(human_gene_transcript_seu)
 #' cds <- convert_seu_to_cds(processed_seu)
-convert_seu_to_cds <- function(seu, resolution = 1) {
+convert_seu_to_cds <- function(seu, resolution = 1, min_expression = 0.05){
+
   print(resolution)
 
   # # drop sample_name metadata column as that is reserved by monocle3
@@ -860,6 +861,32 @@ plot_cells <- function(cds, x = 1, y = 2, reduction_method = c(
 }
 
 
+#' Threshold monocle genes
+#'
+#' @param seu
+#' @param cds
+#' @param min_expression
+#'
+#' @return
+#' @export
+#'
+#' @examples
+threshold_monocle_genes <- function(seu, cds, min_expression = 0.05){
+
+  browser()
+  agg_mat <- Seurat::GetAssayData(seu, assay = "gene") %>%
+    as.matrix()
+
+  lgl_agg_mat <- agg_mat > min_expression
+
+  percent_cells <- rowSums(lgl_agg_mat)/dim(lgl_agg_mat)[2]
+
+  monocle3::fData(cds)$percent_cells <- percent_cells
+
+  return(cds)
+
+}
+
 #' Title
 #'
 #' @param cds
@@ -884,7 +911,7 @@ plot_cells <- function(cds, x = 1, y = 2, reduction_method = c(
 monocle_module_heatmap <- function(cds, pr_deg_ids, seu_resolution, cells = NULL, collapse_rows = TRUE,
                                    resolution = 10^seq(-6, -1), group.by = "batch", group.bar.height = 0.01,
                                    cluster_columns = FALSE, cluster_rows = TRUE,
-                                   column_split = NULL, col_dendrogram = "ward.D2", mm_col_dend = 30, ...) {
+                                   column_split = NULL, col_dendrogram = "ward.D2", mm_col_dend = 30, min_percent = 0.05, ...) {
 
   collapse_rows <- switch(collapse_rows,
                           modules = TRUE,
@@ -898,11 +925,25 @@ monocle_module_heatmap <- function(cds, pr_deg_ids, seu_resolution, cells = NULL
 
   seu_resolution <- paste0(default_assay, "_snn_res.", seu_resolution)
 
-  gene_module_df <- monocle3::find_gene_modules(cds, resolution = resolution) %>%
-    dplyr::arrange(module) %>%
-    dplyr::filter(id %in% pr_deg_ids)
+  cds <- cds[pr_deg_ids,]
 
-  cds <- cds[pr_deg_ids, ]
+  cds2 <- monocle3::preprocess_cds(cds) %>%
+    monocle3::reduce_dimension(
+    max_components = 2,
+    reduction_method = "UMAP")
+
+  thresholded_genes <- monocle3::fData(cds) %>%
+    tibble::as_tibble() %>%
+    dplyr::mutate(id = gene_short_name) %>%
+    dplyr::filter(percent_cells > 0.05)
+
+  cds <- cds[rownames(cds) %in% thresholded_genes$id,]
+
+  gene_module_df <- monocle3::find_gene_modules(cds2, resolution = resolution) %>%
+    dplyr::arrange(module) %>%
+    dplyr::filter(id %in% rownames(cds)) %>%
+    dplyr::left_join(thresholded_genes, by = "id" ) %>%
+    identity()
 
   cell_group_df <- tibble::tibble(
     cell = row.names(colData(cds)),

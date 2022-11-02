@@ -2,7 +2,7 @@
 % Please edit documentation in R/create_seu.R
 \name{load_counts_by_tximport}
 \alias{load_counts_by_tximport}
-\title{Load Sample Counts then run Tximport}
+\title{Run \href{http://bioconductor.org/packages/release/bioc/html/tximport.html}{tximport} on a set of cells}
 \usage{
 load_counts_by_tximport(
   proj_dir,
@@ -12,11 +12,21 @@ load_counts_by_tximport(
 )
 }
 \arguments{
+\item{proj_dir}{project directory}
+
+\item{type}{stringtie or salmon}
+
+\item{countsFromAbundance}{argument provided to tximport}
+
 \item{edb}{}
 }
 \value{
 
 }
 \description{
-Load Sample Counts then run Tximport
+cells can be quantified using:
+\itemize{
+\item stringtie
+\item salmon
+}
 }

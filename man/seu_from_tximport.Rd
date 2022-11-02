@@ -2,22 +2,22 @@
 % Please edit documentation in R/create_seu.R
 \name{seu_from_tximport}
 \alias{seu_from_tximport}
-\title{Create a Seurat Object from return of tximport}
+\title{Create a seurat object from output of  \href{http://bioconductor.org/packages/release/bioc/html/tximport.html}{tximport} and a table of cell metadata}
 \usage{
 seu_from_tximport(txi, meta_tbl, ...)
 }
 \arguments{
-\item{txi}{output from load_counts_from_stringtie}
+\item{txi}{output from load_counts_by_tximport}
 
 \item{meta_tbl}{a tibble of cell metadata with cell ids as the first column}
 
 \item{...}{}
 
-\item{feature}{gene or transcript}
+\item{feature}{the feature level on which to summarize counts gene or transcript}
 }
 \value{
 
 }
 \description{
-Create a Seurat Object from return of tximport
+Create a seurat object from output of  \href{http://bioconductor.org/packages/release/bioc/html/tximport.html}{tximport} and a table of cell metadata
 }

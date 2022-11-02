@@ -14,7 +14,7 @@ integration_workflow(
 )
 }
 \arguments{
-\item{batches}{seurat objects for each all batches provided as a list. If named, the resulting integrated object will be identified with corresponding values in 'batch' metadata}
+\item{batches}{seurat objects for all batches provided as a list. If named, the resulting integrated object will be identified with corresponding values in 'batch' metadata}
 
 \item{excluded_cells}{named list of cells to exclude}
 

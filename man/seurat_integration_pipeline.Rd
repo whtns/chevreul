@@ -12,6 +12,7 @@ seurat_integration_pipeline(
   organism = "human",
   annotate_cell_cycle = FALSE,
   annotate_percent_mito = FALSE,
+  reduction = "pca",
   ...
 )
 }

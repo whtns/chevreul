@@ -18,6 +18,7 @@ monocle_module_heatmap(
   column_split = NULL,
   col_dendrogram = "ward.D2",
   mm_col_dend = 30,
+  min_percent = 0.05,
   ...
 )
 }

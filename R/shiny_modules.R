@@ -1561,6 +1561,7 @@ monocleui <- function(id) {
       uiOutput(ns("colAnnoVarui")),
       radioButtons(ns("heatmapRows"), "annotate heatmap rows by genes or modules?", choices = c("modules", "genes")),
       downloadButton(ns("downloadPlot"), "Download Heatmap"),
+      downloadButton(ns("downloadCds"), "Download celldataset"),
       plotOutput(ns("monocleHeatmap"), width = "800px", height = "1200px")
     ),
     seuratToolsBox(
@@ -1619,18 +1620,19 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
     seu_monocle(seu())
   })
 
-  seudimplot <- reactive({
-    req(seu_monocle())
-    if ("integrated" %in% names(seu_monocle()@assays)) {
+  louvain_resolution <- reactive({
+    if ("integrated" %in% names(seu()@assays)) {
       assay <- "integrated"
     }
     else {
       assay <- "gene"
     }
 
-    louvain_resolution <- reactive({
-      paste0(assay, "_snn_res.", input$cdsResolution)
-    })
+    paste0(assay, "_snn_res.", input$cdsResolution)
+  })
+
+  seudimplot <- reactive({
+    req(seu_monocle())
 
     plot_var(seu_monocle(), embedding = "umap", group = louvain_resolution())
   })
@@ -1663,7 +1665,11 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
     req(seu_monocle())
     cds_rvs$selected <- c(traj = TRUE, ptime = FALSE, diff_features = FALSE)
     cds <- convert_seu_to_cds(seu(), resolution = input$cdsResolution)
+    # cds <- convert_seu_to_cds(seu_monocle(), resolution = input$cdsResolution)
     cds <- cds[, colnames(seu_monocle())]
+
+    cds <- threshold_monocle_genes(seu_monocle(), cds)
+
     cds <- learn_graph_by_resolution(cds, seu_monocle(),
       resolution = input$cdsResolution
     )
@@ -1923,6 +1929,16 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
       ggsave(file, ggplotify::as.ggplot(monocle_heatmap()$module_heatmap), width = 16, height = 12)
     }
   )
+
+  output$downloadCds <- downloadHandler(
+    filename = function() {
+      paste("cds", ".rds", sep = "")
+    },
+    content = function(file) {
+      saveRDS(cds_rvs$traj, file)
+    }
+  )
+
 }
 
 
