@@ -46,13 +46,18 @@ create_proj_matrix <- function(proj_list) {
 #'
 #' @examples
 subset_by_meta <- function(meta_path, seu) {
-  upload_meta <- read.csv(meta_path, row.names = 1, header = TRUE)
+
+  upload_meta <- readr::read_csv(meta_path, col_names = "sample_id") %>%
+    dplyr::filter(!is.na(sample_id) & !sample_id == "sample_id") %>%
+    dplyr::mutate(name = sample_id) %>%
+    tibble::column_to_rownames("sample_id") %>%
+    identity()
 
   upload_cells <- rownames(upload_meta)
 
   seu <- seu[, colnames(seu) %in% upload_cells]
 
-  seu <- AddMetaData(seu, upload_meta)
+  seu <- Seurat::AddMetaData(seu, upload_meta)
 
   return(seu)
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/seurat_app.R
 \name{seuratApp}
 \alias{seuratApp}
-\title{Create Seurat App}
+\title{Create a shiny app for a project on disk}
 \usage{
 seuratApp(
   preset_project,
@@ -25,5 +25,5 @@ seuratApp(
 
 }
 \description{
-Create Seurat App
+Create a shiny app for a project on disk
 }

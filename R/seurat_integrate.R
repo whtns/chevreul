@@ -98,7 +98,12 @@ seurat_integrate <- function(seu_list, method = "cca", organism = "human", ...) 
   # proceed with integration
   # seu_list.integrated <- IntegrateData(anchorset = seu_list.anchors, dims = 1:30)
 
-  seu_list.integrated <- tryCatch(IntegrateData(anchorset = seu_list.anchors, dims = 1:30), error = function(e) e)
+  # see https://github.com/satijalab/seurat/issues/6341------------------------------
+  cells_per_batch <- sapply(seu_list, ncol)
+  min_k_weight = min(cells_per_batch) - 1
+  min_k_weight <- ifelse(min_k_weight < 100, min_k_weight, 100)
+
+  seu_list.integrated <- tryCatch(IntegrateData(anchorset = seu_list.anchors, dims = 1:30, k.weight = min_k_weight), error = function(e) e)
   run_harmony <- any(class(seu_list.integrated) == "error")
   if(run_harmony){
     seu_list.integrated <- harmony_integrate(seu_list)

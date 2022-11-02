@@ -2,16 +2,16 @@
 % Please edit documentation in R/create_seu.R
 \name{load_meta}
 \alias{load_meta}
-\title{Load Project Sample Data}
+\title{Load Sample Metadata for a given project}
 \usage{
 load_meta(proj_dir)
 }
 \arguments{
-\item{meta_path}{}
+\item{proj_dir}{}
 }
 \value{
 
 }
 \description{
-Load Project Sample Data
+Load Sample Metadata for a given project
 }
