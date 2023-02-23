@@ -93,7 +93,7 @@ convert_seu_to_cds <- function(seu, resolution = 1, min_expression = 0.05){
   # # cds_from_seurat@reducedDims@listData[["PCA"]] <- Embeddings(seu, "pca")
   cds_from_seurat@preprocess_aux$gene_loadings <- Loadings(seu, "pca")
 
-  cds_from_seurat <- learn_graph_by_resolution(cds_from_seurat, seu, resolution = resolution)
+  # cds_from_seurat <- learn_graph_by_resolution(cds_from_seurat, seu, resolution = resolution)
 
   return(cds_from_seurat)
 }
@@ -156,7 +156,7 @@ learn_graph_by_resolution <- function(cds, seu, resolution = 1) {
 #' @export
 #'
 #' @examples
-plot_cds <- function(cds, color_cells_by = NULL, genes = NULL) {
+plot_cds <- function(cds, color_cells_by = NULL, genes = NULL, return_plotly = TRUE) {
   key <- colnames(cds)
 
   cds[["key"]] <- key
@@ -181,16 +181,18 @@ plot_cds <- function(cds, color_cells_by = NULL, genes = NULL) {
     color_cells_by = color_cells_by, key = key, cellid = key,
     cell_size = 0.75
   )
-  NULL
 
+  if (return_plotly){
+    cds_plot <-
+      cds_plot %>%
+      plotly::ggplotly(height = 400) %>%
+      plotly_settings() %>%
+      plotly::toWebGL() %>%
+      # plotly::partial_bundle() %>%
+      identity()
+  }
 
-  cds_plot <-
-    cds_plot %>%
-    plotly::ggplotly(height = 400) %>%
-    plotly_settings() %>%
-    plotly::toWebGL() %>%
-    # plotly::partial_bundle() %>%
-    identity()
+  return(cds_plot)
 }
 
 #' Plot pseudotime on a Monocle Cell Data Set
@@ -873,7 +875,7 @@ plot_cells <- function(cds, x = 1, y = 2, reduction_method = c(
 #' @examples
 threshold_monocle_genes <- function(seu, cds, min_expression = 0.05){
 
-  browser()
+  # browser()
   agg_mat <- Seurat::GetAssayData(seu, assay = "gene") %>%
     as.matrix()
 
