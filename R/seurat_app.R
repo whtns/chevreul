@@ -54,16 +54,27 @@ run_seurat_de <- function(seu, cluster1, cluster2, resolution, diffex_scheme = "
         de %>%
         tibble::rownames_to_column("enstxp") %>%
         dplyr::left_join(annotables::grch38_tx2gene, by = "enstxp") %>%
-        dplyr::left_join(annotables::grch38, by = "ensgene") %>%
-        dplyr::select(any_of(de_cols))
+        dplyr::left_join(annotables::grch38, by = "ensgene")
+
+      if ("avg_logFC" %in% colnames(de)){
+        de <- dplyr::mutate(de, avg_log2FC = log(exp(avg_logFC), 2))
+      }
+
+      de <- dplyr::select(de, any_of(de_cols))
+
     } else if (featureType == "gene") {
       de_cols <- c("ensgene", "symbol", "p_val", "avg_log2FC", "pct.1", "pct.2", "p_val_adj")
 
       de <-
         de %>%
         tibble::rownames_to_column("symbol") %>%
-        dplyr::left_join(annotables::grch38, by = "symbol") %>%
-        dplyr::select(any_of(de_cols))
+        dplyr::left_join(annotables::grch38, by = "symbol")
+
+      if ("avg_logFC" %in% colnames(de)){
+        de <- dplyr::mutate(de, avg_log2FC = log(exp(avg_logFC), 2))
+      }
+
+        de <- dplyr::select(de, any_of(de_cols))
     }
 
     test_list[[match(test, tests)]] <- de
@@ -90,7 +101,7 @@ run_enrichmentbrowser <- function(seu, cluster_list, de_results, enrichment_meth
   cluster2_cells <- cluster_list$cluster2
 
   test_diffex_results <- de_results$t %>%
-    dplyr::mutate(FC = log2(exp(avg_logFC))) %>%
+    dplyr::mutate(FC = log2(exp(avg_log2FC))) %>%
     dplyr::mutate(ADJ.PVAL = p_val_adj) %>%
     dplyr::distinct(symbol, .keep_all = TRUE) %>%
     tibble::column_to_rownames("symbol") %>%

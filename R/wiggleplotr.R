@@ -87,6 +87,7 @@ plot_gene_coverage_by_var <- function(genes_of_interest = "RXRG",
                                       reverse_x = FALSE,
                                       start = NULL,
                                       end = NULL,
+                                      summarize_transcripts = FALSE,
                                       ...) {
   if (organism == "mouse") {
     edb <- EnsDb.Mmusculus.v79::EnsDb.Mmusculus.v79

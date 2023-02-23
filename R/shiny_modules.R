@@ -486,8 +486,6 @@ changeEmbedParams <- function(input, output, session, seu) {
   ns <- session$ns
 
   seu <- RunUMAP(seu(), dims = as.numeric(input$dims), reduction = "pca", min.dist = input$minDist, negative.sample.rate = input$negativeSampleRate)
-  seu <- RunUMAP(seu(), dims = as.numeric(input$dims), reduction = "pca", min.dist = input$minDist, negative.sample.rate = input$negativeSampleRate)
-
 
   return(seu)
 }
@@ -1666,7 +1664,7 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
     cds_rvs$selected <- c(traj = TRUE, ptime = FALSE, diff_features = FALSE)
     cds <- convert_seu_to_cds(seu(), resolution = input$cdsResolution)
     # cds <- convert_seu_to_cds(seu_monocle(), resolution = input$cdsResolution)
-    cds <- cds[, colnames(seu_monocle())]
+    cds <- cds[, colnames(cds) %in% colnames(seu_monocle())]
 
     cds <- threshold_monocle_genes(seu_monocle(), cds)
 
