@@ -15,9 +15,6 @@ convert_monoclev2_to_seuv3(
 \arguments{
 \item{seu}{}
 }
-\value{
-
-}
 \description{
 Convert a Seurat V3 object to a Monocle v2 object
 }

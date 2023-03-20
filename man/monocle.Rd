@@ -18,12 +18,6 @@ monocle(
 \arguments{
 \item{resolution}{}
 }
-\value{
-
-}
 \description{
 Monocle Server Module
-}
-\examples{
-
 }

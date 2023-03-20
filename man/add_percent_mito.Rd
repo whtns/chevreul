@@ -13,9 +13,6 @@ add_percent_mito(seu, organism = "human", seurat_assay = "gene")
 
 \item{seurat_assay}{gene}
 }
-\value{
-
-}
 \description{
 Add a Read Count Categorical Variable to Seurat Object (based on nCount_RNA)
 }

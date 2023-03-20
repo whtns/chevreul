@@ -9,9 +9,6 @@ get_meta(proj_path)
 \arguments{
 \item{proj_path}{}
 }
-\value{
-
-}
 \description{
 Get Metadata for a project
 }

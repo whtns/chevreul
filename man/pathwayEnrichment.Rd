@@ -9,9 +9,6 @@ pathwayEnrichment(input, output, session, seu, featureType)
 \arguments{
 \item{session}{}
 }
-\value{
-
-}
 \description{
 pathway enrichment
 }

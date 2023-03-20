@@ -9,9 +9,6 @@ plotViolin(input, output, session, seu, featureType, organism_type)
 \arguments{
 \item{organism_type}{}
 }
-\value{
-
-}
 \description{
 Plot Violin Server
 }

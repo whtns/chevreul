@@ -9,9 +9,6 @@ convert_symbols_by_species(src_genes, src_species)
 \arguments{
 \item{src_species}{}
 }
-\value{
-
-}
 \description{
 Convert gene symbols between mouse and human
 }

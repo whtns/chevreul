@@ -9,9 +9,6 @@ subset_by_meta(meta_path, seu)
 \arguments{
 \item{seu}{}
 }
-\value{
-
-}
 \description{
 subset by new metadata
 }

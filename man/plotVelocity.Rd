@@ -9,9 +9,6 @@ plotVelocity(input, output, session, seu, loom_path)
 \arguments{
 \item{loom_path}{}
 }
-\value{
-
-}
 \description{
 RNA Velocity Server Module
 }

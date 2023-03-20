@@ -9,9 +9,6 @@ load_seurat_from_proj(proj_dir, ...)
 \arguments{
 \item{...}{}
 }
-\value{
-
-}
 \description{
 Load Seurat Files from a signle project path
 }

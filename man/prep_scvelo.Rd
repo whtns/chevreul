@@ -22,14 +22,6 @@ prep_scvelo(
 
 \item{plot_method}{plotting method to use from scvelo}
 }
-\value{
-
-}
 \description{
 run scvelo on a gene or transcript level seurat object
-}
-\examples{
-
-
-
 }

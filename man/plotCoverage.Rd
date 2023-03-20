@@ -17,12 +17,6 @@ plotCoverage(
 \arguments{
 \item{organism_type}{}
 }
-\value{
-
-}
 \description{
 Plot Coverage Module
-}
-\examples{
-
 }

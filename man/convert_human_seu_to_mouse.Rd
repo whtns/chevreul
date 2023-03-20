@@ -9,9 +9,6 @@ convert_human_seu_to_mouse(seu, ...)
 \arguments{
 \item{...}{to be passed to \code{convert_symbols_by_species}}
 }
-\value{
-
-}
 \description{
 Convert Seurat Objects from Human to Mouse
 }

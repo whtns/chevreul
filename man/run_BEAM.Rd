@@ -17,9 +17,6 @@ run_BEAM(
 \arguments{
 \item{top_genes}{}
 }
-\value{
-
-}
 \description{
 http://cole-trapnell-lab.github.io/monocle-release/docs/#differential-expression-analysis
 }

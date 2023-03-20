@@ -15,9 +15,6 @@ cross_check_heatmaps(
 \arguments{
 \item{cluster_rows}{}
 }
-\value{
-
-}
 \description{
 Title
 }

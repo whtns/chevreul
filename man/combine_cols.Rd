@@ -9,9 +9,6 @@ combine_cols(seu, cols, new_col)
 \arguments{
 \item{new_col}{}
 }
-\value{
-
-}
 \description{
 Reformat Seurat Object Metadata
 }

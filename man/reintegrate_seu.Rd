@@ -18,9 +18,6 @@ reintegrate_seu(
 
 \item{reduction}{to use default is pca}
 }
-\value{
-
-}
 \description{
 \enumerate{
 \item split by batch

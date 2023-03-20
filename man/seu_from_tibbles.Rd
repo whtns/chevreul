@@ -9,9 +9,6 @@ seu_from_tibbles(exp_tbl, feature, meta_tbl, ...)
 \arguments{
 \item{...}{}
 }
-\value{
-
-}
 \description{
 Create a Seurat Object from a set of tibbles
 }

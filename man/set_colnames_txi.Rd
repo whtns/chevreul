@@ -9,9 +9,6 @@ set_colnames_txi(txi, colnames)
 \arguments{
 \item{colnames}{}
 }
-\value{
-
-}
 \description{
 Set Column Names from \code{tximport}
 }

@@ -9,9 +9,6 @@ plotHeatmapui(id)
 \arguments{
 \item{id}{}
 }
-\value{
-
-}
 \description{
 Plot Heatmap ui
 }

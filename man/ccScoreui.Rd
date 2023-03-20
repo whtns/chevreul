@@ -9,9 +9,6 @@ ccScoreui(id)
 \arguments{
 \item{id}{}
 }
-\value{
-
-}
 \description{
 Cell Cycle Score UI
 }

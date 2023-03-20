@@ -11,9 +11,6 @@ reorg_seurat_files(
 \arguments{
 \item{proj_dir}{}
 }
-\value{
-
-}
 \description{
 Reorganize seurat objects to a multimodal format
 }

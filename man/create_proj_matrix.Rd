@@ -9,9 +9,6 @@ create_proj_matrix(proj_list)
 \arguments{
 \item{sub_dirs}{}
 }
-\value{
-
-}
 \description{
 Create a Table of single Cell Projects
 }

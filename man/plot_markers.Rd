@@ -12,7 +12,7 @@ plot_markers(
   return_plotly = TRUE,
   marker_method = c("presto", "genesorteR"),
   seurat_assay = "gene",
-  hide_pseudo = FALSE,
+  hide_technical = NULL,
   unique_markers = FALSE,
   p_val_cutoff = 1,
   ...
@@ -20,9 +20,6 @@ plot_markers(
 }
 \arguments{
 \item{...}{}
-}
-\value{
-
 }
 \description{
 Plot a dot plot of n marker features grouped by cell metadata

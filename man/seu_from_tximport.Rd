@@ -15,9 +15,6 @@ seu_from_tximport(txi, meta_tbl, ...)
 
 \item{feature}{the feature level on which to summarize counts gene or transcript}
 }
-\value{
-
-}
 \description{
 Create a seurat object from output of  \href{http://bioconductor.org/packages/release/bioc/html/tximport.html}{tximport} and a table of cell metadata
 }

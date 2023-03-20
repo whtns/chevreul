@@ -9,9 +9,6 @@ flip_pseudotime(cds)
 \arguments{
 \item{cds}{}
 }
-\value{
-
-}
 \description{
 Flip Pseudotime
 }

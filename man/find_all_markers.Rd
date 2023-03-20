@@ -9,9 +9,6 @@ find_all_markers(seu, metavar = NULL, seurat_assay = "gene", ...)
 \arguments{
 \item{metavar}{}
 }
-\value{
-
-}
 \description{
 Find All Markers at a range of resolutions
 }

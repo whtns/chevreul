@@ -9,9 +9,6 @@ propagate_spreadsheet_changes(updated_table, seu)
 \arguments{
 \item{seu}{}
 }
-\value{
-
-}
 \description{
 Propagate Metadata Changes
 }

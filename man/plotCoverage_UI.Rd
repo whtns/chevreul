@@ -9,9 +9,6 @@ plotCoverage_UI(id)
 \arguments{
 \item{id}{}
 }
-\value{
-
-}
 \description{
 Title
 }

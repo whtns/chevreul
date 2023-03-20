@@ -14,9 +14,6 @@ update_project_db(
 \arguments{
 \item{verbose}{}
 }
-\value{
-
-}
 \description{
 Update a database of seuratTools projects
 }

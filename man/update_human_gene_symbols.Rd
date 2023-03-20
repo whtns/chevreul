@@ -9,9 +9,6 @@ update_human_gene_symbols(seu, assay = "gene")
 \arguments{
 \item{seu}{}
 }
-\value{
-
-}
 \description{
 Update human gene symbols in seurat object
 }

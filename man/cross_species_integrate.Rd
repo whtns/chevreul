@@ -14,9 +14,6 @@ cross_species_integrate(
 \arguments{
 \item{human_seu_list}{}
 }
-\value{
-
-}
 \description{
 Integrate Seurat Objects from Mouse to Human
 }

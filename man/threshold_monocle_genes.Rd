@@ -9,9 +9,6 @@ threshold_monocle_genes(seu, cds, min_expression = 0.05)
 \arguments{
 \item{min_expression}{}
 }
-\value{
-
-}
 \description{
 Threshold monocle genes
 }

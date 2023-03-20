@@ -9,9 +9,6 @@ label_transfer(ref_seu, query_seu, ref_name = NULL, query_name = NULL, ...)
 \arguments{
 \item{...}{}
 }
-\value{
-
-}
 \description{
 Transfer Labels Between Seurat Objects
 }

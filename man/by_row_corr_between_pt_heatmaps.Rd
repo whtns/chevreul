@@ -9,9 +9,6 @@ by_row_corr_between_pt_heatmaps(df1, df2)
 \arguments{
 \item{df2}{}
 }
-\value{
-
-}
 \description{
 calculate row-wise correlation between two dataframes
 }

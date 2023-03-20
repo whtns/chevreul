@@ -28,7 +28,6 @@ run_scvelo <- function(seu, loom_path, fit.quantile = 0.05, check_loom = FALSE, 
   DefaultAssay(sub_seu) <- "gene"
   sub_seu@misc$vel <- NULL
   sub_seu@misc[names(sub_seu@misc) == "experiment"] <- NULL
-
   convert_to_h5ad(sub_seu, file_path = loom_path)
 
   return(sub_seu)
@@ -48,8 +47,13 @@ run_scvelo <- function(seu, loom_path, fit.quantile = 0.05, check_loom = FALSE, 
 #'
 convert_to_h5ad <- function(seu, file_path) {
   h5seurat_path <- fs::path_ext_set(file_path, ".h5Seurat")
+  message(h5seurat_path)
   SeuratDisk::SaveH5Seurat(seu, filename = h5seurat_path, overwrite = TRUE)
-  SeuratDisk::Convert(h5seurat_path, dest = "h5ad", overwrite = TRUE)
+
+  h5ad_path <- fs::path_ext_set(file_path, ".h5ad")
+
+  message(h5ad_path)
+  SeuratDisk::Convert(h5seurat_path, dest = h5ad_path, overwrite = TRUE)
 }
 
 #' scvelo_assay
@@ -72,7 +76,7 @@ convert_to_h5ad <- function(seu, file_path) {
 prep_scvelo <- function(seu, loom_path, velocity_mode = c("deterministic", "stochastic", "dynamical"), ...) {
 
   h5ad_path <- fs::path_ext_set(loom_path, ".h5ad")
-
+  message(h5ad_path)
   adata_matches_seu <- function(seu, adata) {
     identical(sort(adata$obs_names$values), sort(colnames(seu)))
   }

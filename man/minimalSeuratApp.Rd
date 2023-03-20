@@ -15,9 +15,6 @@ minimalSeuratApp(
 \arguments{
 \item{futureMb}{}
 }
-\value{
-
-}
 \description{
 Create a minimal seurat app
 }

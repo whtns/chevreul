@@ -9,9 +9,6 @@ add_census_slot(seu, assay = "gene", slot = "counts")
 \arguments{
 \item{slot}{}
 }
-\value{
-
-}
 \description{
 add census assay to a seurat object
 }

@@ -9,9 +9,6 @@ calc_cor_across_heatmaps(cds_set, cds_set_name)
 \arguments{
 \item{cds_set_name}{}
 }
-\value{
-
-}
 \description{
 calculate correlation between heatmap matrices in processed cds_gene_list
 }

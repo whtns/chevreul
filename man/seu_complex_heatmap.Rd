@@ -24,9 +24,6 @@ seu_complex_heatmap(
 
 \item{...}{}
 }
-\value{
-
-}
 \description{
 Plot Annotated Complexheatmap from Seurat object
 }

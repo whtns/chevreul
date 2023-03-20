@@ -20,9 +20,6 @@ plot_pseudotime_heatmap(
 \arguments{
 \item{heatmap_width}{}
 }
-\value{
-
-}
 \description{
 plot pseudotime heatmap
 }

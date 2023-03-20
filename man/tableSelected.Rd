@@ -9,9 +9,6 @@ tableSelected(input, output, session, seu)
 \arguments{
 \item{seu}{}
 }
-\value{
-
-}
 \description{
 Create Table of Selected Cells
 }

@@ -9,9 +9,6 @@ filter_rows_to_top(df, column, values)
 \arguments{
 \item{values}{}
 }
-\value{
-
-}
 \description{
 Filter Rows to Top
 }

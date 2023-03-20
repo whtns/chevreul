@@ -15,9 +15,6 @@ stash_marker_features(
 \arguments{
 \item{top_n}{}
 }
-\value{
-
-}
 \description{
 Marker Genes will be stored in slot \verb{@misc$markers}
 }

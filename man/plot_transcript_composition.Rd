@@ -15,9 +15,6 @@ plot_transcript_composition(
 \arguments{
 \item{standardize}{}
 }
-\value{
-
-}
 \description{
 plot the proportion of reads of a given gene map to each transcript
 }

@@ -9,9 +9,6 @@ seuratToolsBox(title = "", ...)
 \arguments{
 \item{title}{}
 }
-\value{
-
-}
 \description{
 custom collapsible box
 }

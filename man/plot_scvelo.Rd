@@ -13,9 +13,6 @@ plot_scvelo(
 \arguments{
 \item{plot_method}{}
 }
-\value{
-
-}
 \description{
 Plot scvelo on embedding plot
 }

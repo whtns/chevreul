@@ -16,9 +16,6 @@ plot_readcount(
 \arguments{
 \item{return_plotly}{}
 }
-\value{
-
-}
 \description{
 Plot Read Count
 }

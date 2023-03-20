@@ -36,9 +36,6 @@ plot_cells(
 \arguments{
 \item{...}{}
 }
-\value{
-
-}
 \description{
 Plot cells of a monocle cell data set
 }

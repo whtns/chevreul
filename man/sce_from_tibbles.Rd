@@ -9,9 +9,6 @@ sce_from_tibbles(counts, colData, experimentdata = NULL)
 \arguments{
 \item{experimentdata}{}
 }
-\value{
-
-}
 \description{
 Create Single Cell Experiment from Tibbles
 }

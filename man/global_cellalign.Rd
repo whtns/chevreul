@@ -9,9 +9,6 @@ global_cellalign(exp_ref, exp_query, traj_ref, traj_query, numPts = 200)
 \arguments{
 \item{traj_query}{}
 }
-\value{
-
-}
 \description{
 Global Alignment of two trajectories with cellAlign
 }

@@ -9,9 +9,6 @@ load_meta(proj_dir)
 \arguments{
 \item{proj_dir}{}
 }
-\value{
-
-}
 \description{
 Load Sample Metadata for a given project
 }

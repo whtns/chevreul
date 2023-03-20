@@ -9,9 +9,6 @@ plot_ridge(seu, features)
 \arguments{
 \item{features}{}
 }
-\value{
-
-}
 \description{
 Plot ridge plots for cell cycle scoring
 }

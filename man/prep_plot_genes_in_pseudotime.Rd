@@ -9,9 +9,6 @@ prep_plot_genes_in_pseudotime(cds, mygenes, resolution, partition = FALSE)
 \arguments{
 \item{resolution}{}
 }
-\value{
-
-}
 \description{
 Title
 }

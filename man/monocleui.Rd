@@ -9,9 +9,6 @@ monocleui(id)
 \arguments{
 \item{id}{}
 }
-\value{
-
-}
 \description{
 Monocle UI Module
 }

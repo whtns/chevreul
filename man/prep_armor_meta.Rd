@@ -9,9 +9,6 @@ prep_armor_meta(proj_dir)
 \arguments{
 \item{proj_dir}{}
 }
-\value{
-
-}
 \description{
 prep armor metadata file
 }

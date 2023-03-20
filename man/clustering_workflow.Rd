@@ -22,9 +22,6 @@ clustering_workflow(
 
 \item{feature_seus}{list of seurat objects named according to feature of interest ("gene" or "transcript")}
 }
-\value{
-
-}
 \description{
 Cluster and Reduce Dimensions of a seurat object
 }

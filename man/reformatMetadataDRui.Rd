@@ -9,9 +9,6 @@ reformatMetadataDRui(id)
 \arguments{
 \item{id}{}
 }
-\value{
-
-}
 \description{
 Reformat Seurat Object Metadata UI
 }

@@ -9,9 +9,6 @@ swap_counts_from_feature(cds, featureType)
 \arguments{
 \item{featureType}{}
 }
-\value{
-
-}
 \description{
 Swap counts from Feature
 }
