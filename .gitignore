@@ -4,6 +4,7 @@
 .Ruserdata
 inst/doc
 *.rds
+*.svg
 docs
 velocity_embedding.png
 velocity_expression.png
