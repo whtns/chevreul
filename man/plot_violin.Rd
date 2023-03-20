@@ -16,9 +16,6 @@ plot_violin(
 \arguments{
 \item{...}{}
 }
-\value{
-
-}
 \description{
 plot Violin plot
 }

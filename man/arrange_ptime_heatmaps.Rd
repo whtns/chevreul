@@ -9,9 +9,6 @@ arrange_ptime_heatmaps(cds_list, cds_name)
 \arguments{
 \item{cds_list}{}
 }
-\value{
-
-}
 \description{
 Arrange processed monocle CDS objects containing heatmaps
 }

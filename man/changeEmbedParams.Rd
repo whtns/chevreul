@@ -9,9 +9,6 @@ changeEmbedParams(input, output, session, seu)
 \arguments{
 \item{seu}{}
 }
-\value{
-
-}
 \description{
 Change Embedding Parameters
 }

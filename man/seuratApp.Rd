@@ -21,9 +21,6 @@ seuratApp(
 
 \item{futureMb}{amount of Mb allocated to future package}
 }
-\value{
-
-}
 \description{
 Create a shiny app for a project on disk
 }

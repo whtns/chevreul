@@ -9,9 +9,6 @@ plotClustree(input, output, session, seu)
 \arguments{
 \item{seu}{}
 }
-\value{
-
-}
 \description{
 plot clustree server
 }

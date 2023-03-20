@@ -11,9 +11,6 @@ save_seurat(seu, prefix = "unfiltered", proj_dir = getwd())
 
 \item{...}{named arguments specifying seurat objects list of seurat objects; default "gene" and "transcript"}
 }
-\value{
-
-}
 \description{
 Save seurat object to <project>/output/sce/<feature>_seu.rds
 }

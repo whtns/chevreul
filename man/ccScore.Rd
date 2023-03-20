@@ -9,9 +9,6 @@ ccScore(input, output, session)
 \arguments{
 \item{session}{}
 }
-\value{
-
-}
 \description{
 Cell Cycle Score
 }

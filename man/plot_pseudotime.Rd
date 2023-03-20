@@ -9,9 +9,6 @@ plot_pseudotime(cds, resolution, color_cells_by = NULL, genes = NULL)
 \arguments{
 \item{color_cells_by}{}
 }
-\value{
-
-}
 \description{
 Plot pseudotime on a Monocle Cell Data Set
 }

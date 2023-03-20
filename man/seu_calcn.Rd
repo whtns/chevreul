@@ -10,9 +10,6 @@ seu_calcn(seu, assay = "gene", slot = "counts")
 \arguments{
 \item{slot}{}
 }
-\value{
-
-}
 \description{
 Calculate Read Count Metrics for a Seurat object
 recalculate counts/features per cell for a seurat object

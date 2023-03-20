@@ -16,9 +16,6 @@ seurat_cluster(
 \arguments{
 \item{...}{}
 }
-\value{
-
-}
 \description{
 Run Louvain Clustering at Multiple Resolutions
 }

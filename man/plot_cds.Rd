@@ -4,13 +4,10 @@
 \alias{plot_cds}
 \title{Plot a Monocle Cell Data Set}
 \usage{
-plot_cds(cds, color_cells_by = NULL, genes = NULL)
+plot_cds(cds, color_cells_by = NULL, genes = NULL, return_plotly = TRUE)
 }
 \arguments{
 \item{color_cells_by}{}
-}
-\value{
-
 }
 \description{
 Plot a Monocle Cell Data Set

@@ -13,9 +13,6 @@ record_experiment_data(
 \arguments{
 \item{add_all_meta_data}{}
 }
-\value{
-
-}
 \description{
 Record Experiment Metadata
 }

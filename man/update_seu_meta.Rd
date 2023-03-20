@@ -9,9 +9,6 @@ update_seu_meta(seu, proj_dir, numcols)
 \arguments{
 \item{numcols}{}
 }
-\value{
-
-}
 \description{
 Given a project metadata file located in <proj_dir>/data/<meta_file>, update an existing seurat object with the project data
 }

@@ -27,9 +27,6 @@ calc_pseudotime_heatmap(
 \arguments{
 \item{...}{}
 }
-\value{
-
-}
 \description{
 calculate pseudotime heatmaps
 }

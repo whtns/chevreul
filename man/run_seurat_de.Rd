@@ -17,9 +17,6 @@ run_seurat_de(
 \arguments{
 \item{diffex_scheme}{}
 }
-\value{
-
-}
 \description{
 Run Seurat Differential Expression
 }

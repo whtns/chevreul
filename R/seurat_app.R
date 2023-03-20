@@ -877,6 +877,8 @@ seuratApp <- function(preset_project, appTitle = "seuratTools", organism_type = 
       print(proj_name)
 
       loom_path <- fs::path(proj_path, "output", "velocyto", paste0(proj_name, ".loom"))
+      print(loom_path)
+      # need to check if this file exists
 
       callModule(plotVelocity, "plotvelocity", seu, loom_path)
     })

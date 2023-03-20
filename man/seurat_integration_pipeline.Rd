@@ -21,9 +21,6 @@ seurat_integration_pipeline(
 
 \item{...}{}
 }
-\value{
-
-}
 \description{
 run batch correction, followed by:
 \enumerate{

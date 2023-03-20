@@ -9,9 +9,6 @@ convert_seu_list_to_multimodal(seu_list)
 \arguments{
 \item{seu_list}{}
 }
-\value{
-
-}
 \description{
 convert seurat list to multimodal object
 }

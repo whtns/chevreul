@@ -18,9 +18,6 @@ plot_var(
 \arguments{
 \item{...}{}
 }
-\value{
-
-}
 \description{
 Plot Metadata Variables
 }

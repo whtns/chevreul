@@ -9,9 +9,6 @@ format_pathway_table(enrich_by_cluster, cluster, db)
 \arguments{
 \item{enrich_by_cluster}{}
 }
-\value{
-
-}
 \description{
 Title
 }

@@ -16,9 +16,6 @@ gene_test_plot(
 \arguments{
 \item{numPts}{}
 }
-\value{
-
-}
 \description{
 Plot Gene expression over pseudotime on reference and query trajectories from cellAlign
 }

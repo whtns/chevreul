@@ -9,12 +9,6 @@ findMarkers(input, output, session, seu, plot_types, featureType)
 \arguments{
 \item{seu}{}
 }
-\value{
-
-}
 \description{
 Find Markers
-}
-\examples{
-
 }

@@ -9,9 +9,6 @@ plot_all_transcripts(seu, features, embedding = "umap")
 \arguments{
 \item{transcripts}{}
 }
-\value{
-
-}
 \description{
 Plot All Transcripts
 }

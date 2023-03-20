@@ -9,9 +9,6 @@ plotClustree_UI(id)
 \arguments{
 \item{id}{}
 }
-\value{
-
-}
 \description{
 plot clustree ui
 }

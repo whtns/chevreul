@@ -13,9 +13,6 @@ metadata_from_batch(
 \arguments{
 \item{db_path}{}
 }
-\value{
-
-}
 \description{
 Retrieve Metadata from Batch
 }

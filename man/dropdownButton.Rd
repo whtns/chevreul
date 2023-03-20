@@ -9,9 +9,6 @@ dropdownButton(inputId, ...)
 \arguments{
 \item{...}{}
 }
-\value{
-
-}
 \description{
 Custom Dropdown Button
 }

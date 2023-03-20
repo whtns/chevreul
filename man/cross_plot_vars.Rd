@@ -9,12 +9,6 @@ cross_plot_vars(seu, resolution, mycols)
 \arguments{
 \item{mycols}{}
 }
-\value{
-
-}
 \description{
 Cross plot vars
-}
-\examples{
-
 }

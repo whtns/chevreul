@@ -15,9 +15,6 @@ update_seuratTools_object(
 \arguments{
 \item{...}{}
 }
-\value{
-
-}
 \description{
 Update a SeuratTools Object
 }

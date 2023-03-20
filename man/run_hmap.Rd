@@ -18,9 +18,6 @@ run_hmap(
 \arguments{
 \item{out_pdf}{}
 }
-\value{
-
-}
 \description{
 http://cole-trapnell-lab.github.io/monocle-release/docs/#differential-expression-analysis
 }

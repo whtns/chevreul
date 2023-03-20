@@ -40,9 +40,6 @@ reformatMetadataDR(
 \arguments{
 \item{seu}{}
 }
-\value{
-
-}
 \description{
 Reformat Seurat Object Metadata Server
 }

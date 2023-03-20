@@ -11,15 +11,12 @@ diffex(
   seu,
   featureType,
   selected_cells,
-  tests = c(`t-test` = "t", `wilcoxon rank-sum test` = "wilcox", `Likelihood-ratio test
-    (bimodal)` = "bimod", MAST = "MAST")
+  tests = c(`t-test` = "t", `wilcoxon rank-sum test` = "wilcox",
+    `Likelihood-ratio test (bimodal)` = "bimod", MAST = "MAST")
 )
 }
 \arguments{
 \item{tests}{}
-}
-\value{
-
 }
 \description{
 Differential Expression

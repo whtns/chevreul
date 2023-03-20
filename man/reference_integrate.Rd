@@ -15,9 +15,6 @@ reference_integrate(
 \arguments{
 \item{...}{}
 }
-\value{
-
-}
 \description{
 Transfer labels between gene or transcript objects
 }

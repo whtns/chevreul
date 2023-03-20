@@ -9,9 +9,6 @@ cells_selected(input)
 \arguments{
 \item{input}{}
 }
-\value{
-
-}
 \description{
 Title
 }

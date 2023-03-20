@@ -13,9 +13,6 @@ process_monocle_child(
 \arguments{
 \item{monocle_cds}{}
 }
-\value{
-
-}
 \description{
 Preprocess a Monocle v2 object for heatmap based on provided pseudotime
 }

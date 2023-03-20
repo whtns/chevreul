@@ -25,9 +25,6 @@ monocle_module_heatmap(
 \arguments{
 \item{...}{}
 }
-\value{
-
-}
 \description{
 Title
 }

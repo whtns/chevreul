@@ -26,9 +26,6 @@ integration_workflow(
 
 \item{...}{}
 }
-\value{
-
-}
 \description{
 Integrate multiple seurat objects and save to file
 }

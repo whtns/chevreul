@@ -11,9 +11,6 @@ add_read_count_col(seu, thresh = 1e+05)
 
 \item{thresh}{}
 }
-\value{
-
-}
 \description{
 Add a Read Count Categorical Variable to Seurat Object (based on nCount_RNA)
 }

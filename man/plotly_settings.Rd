@@ -9,9 +9,6 @@ plotly_settings(plotly_plot, width = 600, height = 700)
 \arguments{
 \item{height}{}
 }
-\value{
-
-}
 \description{
 Plotly settings
 }

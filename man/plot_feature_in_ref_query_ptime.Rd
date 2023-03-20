@@ -18,9 +18,6 @@ plot_feature_in_ref_query_ptime(
 \arguments{
 \item{min_expr}{}
 }
-\value{
-
-}
 \description{
 Plot Expression of a Given Feature of a set of Pseudotimes
 }

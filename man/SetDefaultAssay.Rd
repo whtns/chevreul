@@ -9,9 +9,6 @@ SetDefaultAssay(seu, new_assay)
 \arguments{
 \item{new_assay}{}
 }
-\value{
-
-}
 \description{
 Reset the default assay of a seurat object
 }

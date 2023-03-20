@@ -16,9 +16,6 @@ plot_feature(
 \arguments{
 \item{dims}{}
 }
-\value{
-
-}
 \description{
 Plots gene or transcript expression overlaid on a given embedding.
 If multiple features are supplied the joint density of all features

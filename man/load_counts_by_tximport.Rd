@@ -20,9 +20,6 @@ load_counts_by_tximport(
 
 \item{edb}{}
 }
-\value{
-
-}
 \description{
 cells can be quantified using:
 \itemize{

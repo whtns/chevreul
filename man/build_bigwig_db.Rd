@@ -9,9 +9,6 @@ build_bigwig_db(bam_files, bigwig_db = "~/.cache/seuratTools/bw-files.db")
 \arguments{
 \item{bigwig_db}{}
 }
-\value{
-
-}
 \description{
 create a sqlite database of bigwig files matching cell ids in seurat objects
 }

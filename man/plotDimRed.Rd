@@ -18,9 +18,6 @@ plotDimRed(
 \arguments{
 \item{reductions}{}
 }
-\value{
-
-}
 \description{
 Plot Dimensional Reduduction
 }

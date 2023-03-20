@@ -9,9 +9,6 @@ tableSelectedui(id)
 \arguments{
 \item{id}{}
 }
-\value{
-
-}
 \description{
 Create Table of Selected Cells UI
 }

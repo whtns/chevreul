@@ -16,9 +16,6 @@ seurat_pipeline(
 \arguments{
 \item{organism}{}
 }
-\value{
-
-}
 \description{
 Preprocess, Cluster and Reduce Dimensions for a single seurat object
 }

@@ -9,9 +9,6 @@ merge_small_seus(seu_list, k.filter = 50)
 \arguments{
 \item{seu_list}{}
 }
-\value{
-
-}
 \description{
 Merge Small Seurat Objects
 }

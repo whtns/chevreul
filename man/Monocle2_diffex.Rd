@@ -9,9 +9,6 @@ Monocle2_diffex(seu)
 \arguments{
 \item{seu}{}
 }
-\value{
-
-}
 \description{
 Monocle2 differential expression
 }

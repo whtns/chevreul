@@ -460,7 +460,7 @@ plot_ridge <- function(seu, features){
 #' @param selected_values
 #' @param return_plotly
 #' @param featureType
-#' @param hide_pseudo
+#' @param hide_technical
 #' @param ...
 #'
 #' @return
@@ -474,7 +474,7 @@ plot_ridge <- function(seu, features){
 #' # static mode using "presto"
 #' plot_markers(panc8, metavar = "tech", marker_method = "genesorteR", return_plotly = FALSE)
 #'
-plot_markers <- function(seu, metavar = "batch", num_markers = 5, selected_values = NULL, return_plotly = TRUE, marker_method = c("presto", "genesorteR"), seurat_assay = "gene", hide_pseudo = FALSE, unique_markers = FALSE, p_val_cutoff = 1, ...){
+plot_markers <- function(seu, metavar = "batch", num_markers = 5, selected_values = NULL, return_plotly = TRUE, marker_method = c("presto", "genesorteR"), seurat_assay = "gene", hide_technical = NULL, unique_markers = FALSE, p_val_cutoff = 1, ...){
 
   Idents(seu) <- seu[[metavar]]
 
@@ -488,10 +488,22 @@ plot_markers <- function(seu, metavar = "batch", num_markers = 5, selected_value
     enframe_markers() %>%
     dplyr::mutate(dplyr::across(.fns = as.character))
 
-  if(hide_pseudo){
+  if(!is.null(hide_technical)){
 
     markers <- purrr::map(markers, c)
-    markers <- purrr::map(markers, ~.x[!.x %in% pseudogenes[[seurat_assay]]])
+
+    if(hide_technical == "pseudo"){
+      markers <- purrr::map(markers, ~.x[!.x %in% pseudogenes[[seurat_assay]]])
+    } else if(hide_technical == "mito_ribo"){
+      markers <- purrr::map(markers, ~.x[!str_detect(.x, "^MT-")])
+      markers <- purrr::map(markers, ~.x[!str_detect(.x, "^RPS")])
+      markers <- purrr::map(markers, ~.x[!str_detect(.x, "^RPL")])
+    } else if(hide_technical == "all"){
+      markers <- purrr::map(markers, ~.x[!.x %in% pseudogenes[[seurat_assay]]])
+      markers <- purrr::map(markers, ~.x[!str_detect(.x, "^MT-")])
+      markers <- purrr::map(markers, ~.x[!str_detect(.x, "^RPS")])
+      markers <- purrr::map(markers, ~.x[!str_detect(.x, "^RPL")])
+    }
 
     min_length <- min(purrr::map_int(markers, length))
 

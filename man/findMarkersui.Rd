@@ -9,9 +9,6 @@ findMarkersui(id)
 \arguments{
 \item{id}{}
 }
-\value{
-
-}
 \description{
 Find Markers UI
 }

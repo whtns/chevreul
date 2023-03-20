@@ -9,9 +9,6 @@ plot_all_ptimes(monocle_list, query_name, sig_slice = 1000, ...)
 \arguments{
 \item{...}{}
 }
-\value{
-
-}
 \description{
 Plot a Set of Heatmaps Based on a provided pseudotime
 }

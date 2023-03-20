@@ -9,9 +9,6 @@ plotReadCountui(id)
 \arguments{
 \item{plot_types}{}
 }
-\value{
-
-}
 \description{
 Plot Read Count UI
 }

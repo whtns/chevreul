@@ -13,9 +13,6 @@ create_project_db(
 \arguments{
 \item{verbose}{}
 }
-\value{
-
-}
 \description{
 Create a database of seuratTools projects
 }

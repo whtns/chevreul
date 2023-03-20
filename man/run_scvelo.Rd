@@ -13,9 +13,6 @@ run_scvelo(seu, loom_path, fit.quantile = 0.05, check_loom = FALSE, ...)
 
 \item{...}{}
 }
-\value{
-
-}
 \description{
 run scvelo on a gene or transcript level seurat object
 }

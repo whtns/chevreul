@@ -9,9 +9,6 @@ combine_looms(projectPaths, newProjectPath)
 \arguments{
 \item{newProjectPath}{}
 }
-\value{
-
-}
 \description{
 Combine Loom Files
 }

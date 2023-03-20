@@ -9,9 +9,6 @@ harmony_integrate(seu_list)
 \arguments{
 \item{seu_list}{}
 }
-\value{
-
-}
 \description{
 integrate small datasets with harmony
 }

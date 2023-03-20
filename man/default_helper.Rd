@@ -9,9 +9,6 @@ default_helper(ui_element, title = "", content = "test", type = "inline", ...)
 \arguments{
 \item{...}{}
 }
-\value{
-
-}
 \description{
 Default Shiny Helper
 }

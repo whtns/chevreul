@@ -13,9 +13,6 @@ regress_by_features(seu, feature_set, set_name, regress = TRUE, ...)
 
 \item{gene_set}{as a length 1 list containing a character vector of gene symbols}
 }
-\value{
-
-}
 \description{
 Regress Seurat Object by Given Set of Genes
 }

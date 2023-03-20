@@ -15,9 +15,6 @@ run_enrichmentbrowser(
 \arguments{
 \item{de_results}{}
 }
-\value{
-
-}
 \description{
 Run Enrichment Browser on Differentially Expressed Genes
 }

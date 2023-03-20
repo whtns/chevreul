@@ -11,9 +11,6 @@ run_census(sce, census_output_file)
 
 \item{census_output_file}{name to be given to output file}
 }
-\value{
-
-}
 \description{
 Run Census
 }

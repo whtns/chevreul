@@ -17,6 +17,7 @@ plot_gene_coverage_by_var(
   reverse_x = FALSE,
   start = NULL,
   end = NULL,
+  summarize_transcripts = FALSE,
   ...
 )
 }
@@ -26,9 +27,6 @@ plot_gene_coverage_by_var(
 \item{bigwig_tbl}{a tibble with colnames "name", "bigWig", and "sample_id" matching the filename, absolute path, and sample name of each cell in the cell_metadata}
 
 \item{...}{}
-}
-\value{
-
 }
 \description{
 Plot BigWig Coverage for Genes of Interest Colored by a Given Variable

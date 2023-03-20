@@ -16,9 +16,6 @@ seurat_preprocess(
 \arguments{
 \item{...}{}
 }
-\value{
-
-}
 \description{
 Preprocess Seurat Object
 }

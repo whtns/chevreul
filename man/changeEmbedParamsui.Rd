@@ -9,9 +9,6 @@ changeEmbedParamsui(id)
 \arguments{
 \item{id}{}
 }
-\value{
-
-}
 \description{
 Change Embedding Parameters UI
 }

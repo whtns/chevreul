@@ -9,9 +9,6 @@ assign_clusters_to_cds(cds, clusters)
 \arguments{
 \item{clusters}{}
 }
-\value{
-
-}
 \description{
 Assign Clusters to CDS
 }

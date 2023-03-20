@@ -9,9 +9,6 @@ format_new_metadata(seu, datapath)
 \arguments{
 \item{datapath}{}
 }
-\value{
-
-}
 \description{
 Title
 }

@@ -9,9 +9,6 @@ make_bigwig_db(destdir = "~/.cache/seuratTools/", destfile = "bw-files.db")
 \arguments{
 \item{destfile}{}
 }
-\value{
-
-}
 \description{
 Make Bigwig Database
 }

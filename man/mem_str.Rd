@@ -9,9 +9,6 @@ mem_str(s4object)
 \arguments{
 \item{s4object}{}
 }
-\value{
-
-}
 \description{
 Profile the memory of an s4object
 }

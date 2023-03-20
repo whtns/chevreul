@@ -9,9 +9,6 @@ plot_monocle_features(cds, resolution, genes = NULL, ...)
 \arguments{
 \item{resolution}{}
 }
-\value{
-
-}
 \description{
 Plot feature expression on a Monocle Cell Data Set
 }

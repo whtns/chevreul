@@ -27,9 +27,6 @@ plot_multiple_branches_heatmap(
 \arguments{
 \item{cores}{}
 }
-\value{
-
-}
 \description{
 Plot pseudotime over multiple branches
 }

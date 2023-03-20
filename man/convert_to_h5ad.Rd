@@ -9,9 +9,6 @@ convert_to_h5ad(seu, file_path)
 \arguments{
 \item{file_path}{}
 }
-\value{
-
-}
 \description{
 convert a seurat object to an on-disk anndata object
 }
