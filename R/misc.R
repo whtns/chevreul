@@ -4,7 +4,6 @@
 #' @param batch_id
 #'
 #' @return
-#' @export
 #'
 #' @examples
 rename_from_x_notation <- function(cell_ids, batch_id) {
