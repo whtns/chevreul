@@ -1,8 +1,9 @@
-FROM openanalytics/r-base
+# FROM openanalytics/r-base
+FROM openanalytics/r-ver:4.1.3
 
-MAINTAINER Kevin Stachelek "kstachelek@protonmail.com"
+MAINTAINER Kevin Stachelek "kevin.stachelek@gmail.com"
 
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install --no-install-recommends -y \
     sudo \
     pandoc \
     pandoc-citeproc \
@@ -11,72 +12,108 @@ RUN apt-get update && apt-get install -y \
     libxt-dev \
     libssl-dev \
     libssh2-1-dev \
-    libssl1.0.0 \
+    libssl1.1 \
     libhdf5-dev \
     libboost-all-dev \
     libudunits2-dev \
     libgdal-dev \
     libgeos-dev \
-    libproj-dev
+    libproj-dev \
+    libharfbuzz-dev \
+    libfribidi-dev \
+    librsvg2-dev \
+    cmake \
+    build-essential \
+    libglpk40 \
+    libbz2-dev \
+    liblzma-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# system library dependency for the euler app
+RUN apt-get update && apt-get install -y \
+    libmpfr-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 RUN R -e 'install.packages("remotes")'
 RUN R -e 'install.packages("sf")'
+RUN R -e "install.packages('igraph', dependencies = T, repos='https://cloud.r-project.org/')"
 RUN R -e 'install.packages("BiocManager")'
 RUN R -e 'BiocManager::install(c("batchelor", "DelayedArray", "DelayedMatrixStats", "limma", "S4Vectors", "SingleCellExperiment", "SummarizedExperiment"))'
-RUN R -e 'remotes::install_github("cole-trapnell-lab/monocle3")'
-RUN R -e 'remotes::install_github("r-lib/remotes", ref = "6c8fdaa")'
-RUN R -e 'install.packages("rlang")'
-RUN R -e 'install.packages("fs")'
-RUN R -e 'install.packages("rlang")'
-RUN R -e 'install.packages("magrittr")'
 RUN R -e 'BiocManager::install("pcaMethods")'
-RUN R -e 'remotes::install_github("velocyto-team/velocyto.R")'
-RUN R -e 'install.packages("future")'
-RUN R -e 'install.packages("DT")'
-RUN R -e 'install.packages("plotly")'
-RUN R -e 'install.packages("shinycssloaders")'
-RUN R -e 'install.packages("shinyFiles")'
-RUN R -e 'install.packages("janitor")'
-RUN R -e 'remotes::install_github("satijalab/seurat-wrappers")'
-RUN R -e 'install.packages("unglue")'
-RUN R -e 'install.packages("shinyjqui")'
 RUN R -e 'BiocManager::install("Biobase")'
 RUN R -e 'BiocManager::install("tximport")'
-RUN R -e 'install.packages("clustree")'
-RUN R -e 'install.packages("shinylogs")'
 RUN R -e 'BiocManager::install("annotables")'
 RUN R -e 'BiocManager::install("genefilter")'
-RUN R -e 'remotes::install_github("immunogenomics/presto")'
-RUN R -e 'install.packages("DBI")'
-RUN R -e 'install.packages("RSQLite")'
-RUN R -e 'install.packages("htmlwidgets")'
-RUN R -e 'install.packages("shinyWidgets")'
-RUN R -e 'install.packages("shinyjs")'
-RUN R -e 'install.packages("waiter")'
-RUN R -e 'install.packages("sessioninfo")'
-RUN R -e 'remotes::install_github("mahmoudibrahim/genesorteR")'
-RUN R -e 'install.packages("httr")'
-RUN R -e 'install.packages("patchwork")'
-RUN R -e 'remotes::install_github("jokergoo/ComplexHeatmap")'
 RUN R -e 'BiocManager::install("wiggleplotr")'
 RUN R -e 'BiocManager::install("ensembldb")'
+ARG GITHUB_PAT
+ENV GITHUB_PAT=$GITHUB_PAT
 RUN R -e 'install.packages("Seurat")'
-RUN R -e 'install.packages("shiny")'
-RUN R -e 'install.packages("shinydashboard")'
+RUN R -e 'install.packages("clustree", dependencies=TRUE)'
+RUN R -e 'install.packages("ggpubr", dependencies=TRUE)'
+RUN R -e 'remotes::install_github("velocyto-team/velocyto.R")'
+RUN R -e 'remotes::install_github("cole-trapnell-lab/monocle3")'
+#
+# # RUN install2.r --error --deps TRUE unglue
+# # RUN install2.r --error --deps TRUE rlang
+# # RUN install2.r --error --deps TRUE fs
+# # RUN install2.r --error --deps TRUE magrittr
+# # RUN install2.r --error --deps TRUE future
+# # RUN install2.r --error --deps TRUE DT
+# # RUN install2.r --error --deps TRUE plotly
+# # RUN install2.r --error --deps TRUE shinycssloaders
+# # RUN install2.r --error --deps TRUE shinyFiles
+# # RUN install2.r --error --deps TRUE janitor
+# # RUN install2.r --error --deps TRUE shinyjqui
+# # RUN install2.r --error --deps TRUE shinylogs
+# # RUN install2.r --error --deps TRUE DBI
+# # RUN install2.r --error --deps TRUE RSQLite
+# # RUN install2.r --error --deps TRUE htmlwidgets
+# # RUN install2.r --error --deps TRUE shinyWidgets
+# # RUN install2.r --error --deps TRUE shinyjs
+# # RUN install2.r --error --deps TRUE waiter
+# # RUN install2.r --error --deps TRUE sessioninfo
+# # RUN install2.r --error --deps TRUE httr
+# # RUN install2.r --error --deps TRUE patchwork
+# # RUN install2.r --error --deps TRUE textshaping
+# # RUN install2.r --error --deps TRUE shiny
+# # RUN install2.r --error --deps TRUE shinydashboard
+#
+#
+# # COPY seuratTools_*.tar.gz /app.tar.gz
+# # RUN remotes::install_local('/app.tar.gz')
+# # CMD R -e 'library(dockerfiler)'
+#
+# # install shinyproxy package with demo shiny application
+# # RUN apt-get update && apt-get install wget
+# # RUN wget https://github.com/openanalytics/shinyproxy-demo/raw/master/shinyproxy_0.0.1.tar.gz -O /root/shinyproxy_0.0# .1.tar.gz
+# # RUN R CMD INSTALL /root/shinyproxy_0.0.1.tar.gz
+# # RUN rm /root/shinyproxy_0.0.1.tar.gz
+#
+# # set host and port
+# # COPY application.yml /opt/shinyproxy/application.yml
+
+# install dependencies of the euler app
+RUN R -e "install.packages(c('shiny', 'rmarkdown'), repos='https://cloud.r-project.org/')"
+RUN R -e "install.packages('Rmpfr', repos='https://cloud.r-project.org/')"
+
+# copy the app to the image
+RUN mkdir /root/euler
+COPY euler /root/euler
+
+RUN R -e 'install.packages("R.utils", repos="https://cloud.r-project.org/")'
+RUN R -e 'remotes::install_github("satijalab/seurat-wrappers@e526e87")'
+
+RUN apt-get update && apt-get install -y python3 python3-pip
+RUN pip3 install matplotlib
+
 RUN R -e 'remotes::install_github("whtns/seuratTools")'
 
-COPY seuratTools_*.tar.gz /app.tar.gz
-RUN remotes::install_local('/app.tar.gz')
-CMD R -e 'library(dockerfiler)'
-
-# install shinyproxy package with demo shiny application
-COPY shinyproxy_0.0.1.tar.gz /root/
-RUN R CMD INSTALL /root/shinyproxy_0.0.1.tar.gz
-RUN rm /root/shinyproxy_0.0.1.tar.gz
-
-# set host and port
-COPY Rprofile.site /usr/lib/R/etc/
-
+COPY Rprofile.site /usr/local/lib/R/etc/
 EXPOSE 3838
 
-CMD ["R", "-e", "shinyproxy::run_01_hello()"]
+RUN R -e 'install.packages("tidyverse")'
+RUN R -e 'BiocManager::install("InteractiveComplexHeatmap")'
+RUN mkdir /root/dockerapp
+COPY dockerapp /root/dockerapp
+CMD ["R", "-e", "shiny::runApp('/root/dockerapp')"]
