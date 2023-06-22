@@ -8,3 +8,4 @@ inst/doc
 docs
 velocity_embedding.png
 velocity_expression.png
+*.Rproj
