@@ -9,7 +9,7 @@ run_seurat_de(
   cluster1,
   cluster2,
   resolution,
-  diffex_scheme = "seurat",
+  diffex_scheme = "louvain",
   featureType,
   tests = c("t", "wilcox", "bimod")
 )
