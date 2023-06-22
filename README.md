@@ -5,7 +5,7 @@
 <!-- badges: start -->
 
 [![Travis build
-status](https://travis-ci.org/whtns/seuratTools.svg?branch=master)](https://travis-ci.org/whtns/seuratTools)
+status](https://travis-ci.org/whtns/chevreul.svg?branch=master)](https://travis-ci.org/whtns/chevreul)
 <!-- badges: end -->
 
 This project is not associated with the Seurat team; It will likely
@@ -20,7 +20,7 @@ datasets processed with
 <a href="https://github.com/satijalab/seurat" target="_blank" rel="noopener noreferrer">Seurat</a>
 
 A demo using a pancreas dataset from the Seurat team is available
-<a href="http://cobriniklab.saban-chla.usc.edu:3838/seuratTools_demo/" target="_blank" rel="noopener noreferrer">here</a>
+<a href="http://cobriniklab.saban-chla.usc.edu:3838/chevreul_demo/" target="_blank" rel="noopener noreferrer">here</a>
 
 There are also convenient functions for: 
 * Clustering and Dimensional Reduction of Raw Sequencing Data 
@@ -32,29 +32,29 @@ and Label Transfer</a>
 
 ## Installation
 
-You can install the released version of seuratTools from
-<a href="https://github.com/whtns/seuratTools" target="_blank" rel="noopener noreferrer">github</a>
+You can install the released version of chevreul from
+<a href="https://github.com/whtns/chevreul" target="_blank" rel="noopener noreferrer">github</a>
 with:
 
 ### Install locally and run in three steps:
 
 ``` r
 install.packages("devtools")
-devtools::install_github("whtns/seuratTools")
-seuratTools::create_project_db()
+devtools::install_github("whtns/chevreul")
+chevreul::create_project_db()
 ```
 
 ### Install locally (custom location!) and run in three steps:
 
 ``` r
-devtools::install_github("whtns/seuratTools")
-seuratTools::create_project_db(destdir='/your/path/to/app')
+devtools::install_github("whtns/chevreul")
+chevreul::create_project_db(destdir='/your/path/to/app')
 ```
 
 ## Site
 
 You can view documentation on the
-<a href="https://whtns.github.io/seuratTools" target="_blank" rel="noopener noreferrer">seuratTools
+<a href="https://whtns.github.io/chevreul" target="_blank" rel="noopener noreferrer">chevreul
 website</a>
 
 ## How To
@@ -70,7 +70,7 @@ website</a>
 ## Getting Started
 
 ``` r
-library(seuratTools)
+library(chevreul)
 library(Seurat)
 library(tidyverse)
 library(ggraph)

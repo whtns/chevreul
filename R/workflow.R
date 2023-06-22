@@ -43,7 +43,7 @@ integration_workflow <- function(batches, excluded_cells = NULL, resolution = se
   batch_organisms <- map_chr(batches, list("misc", "experiment", "organism"))
 
   if (all(batch_organisms == "mouse")) {
-    merged_batches <- purrr::imap(batches, seuratTools::seurat_integration_pipeline, resolution = resolution, organism = "mouse", ...)
+    merged_batches <- purrr::imap(batches, seurat_integration_pipeline, resolution = resolution, organism = "mouse", ...)
     merged_batches@misc$batches <- names(batches)
 
   } else if (all(batch_organisms == "human")) {

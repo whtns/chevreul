@@ -8,8 +8,6 @@ test_that("heatmap is ordered by pseudotime", {
   library(ggraph)
   library(formattable)
   library(clustree)
-  # library(seuratTools)
-  # library(seuratTools, lib.loc = "/dataVolume/storage/rpkgs/devel_install/")
   devtools::load_all()
   library(Seurat)
 

@@ -109,7 +109,7 @@ list_plot_types <- function(seu) {
     dplyr::filter(meta_type == "continuous") %>%
     dplyr::pull(vars)
 
-  continuous_vars <- c("custom", continuous_vars) %>%
+  continuous_vars <- c("feature", continuous_vars) %>%
     purrr::set_names(stringr::str_to_title(stringr::str_replace(., "[[:punct:]]", " ")))
 
 
@@ -117,7 +117,7 @@ list_plot_types <- function(seu) {
     dplyr::filter(meta_type == "category") %>%
     dplyr::pull(vars)
 
-  category_vars <- c("seurat", category_vars) %>%
+  category_vars <- c("louvain", category_vars) %>%
     purrr::set_names(stringr::str_to_title(stringr::str_replace(., "[[:punct:]]", " ")))
 
   plot_types <- list(category_vars = category_vars, continuous_vars = continuous_vars)
@@ -242,7 +242,7 @@ record_experiment_data <- function(object, experiment_name = "default_experiment
     experiment$seurat_version <- object@version
   }
 
-  experiment$seuratTools_version <- utils::packageVersion("seuratTools")
+  experiment$chevreul_version <- utils::packageVersion("chevreul")
 
   object@misc[["experiment"]] <- NULL
   object@misc[["experiment"]] <- experiment
@@ -251,7 +251,7 @@ record_experiment_data <- function(object, experiment_name = "default_experiment
 }
 
 
-#' Update a SeuratTools Object
+#' Update a chevreul Object
 #'
 #' @param seu_path
 #' @param feature
@@ -262,7 +262,7 @@ record_experiment_data <- function(object, experiment_name = "default_experiment
 #' @export
 #'
 #' @examples
-update_seuratTools_object <- function(seu_path, feature, resolution = seq(0.2, 2.0, by = 0.2), return_seu = TRUE, ...) {
+update_chevreul_object <- function(seu_path, feature, resolution = seq(0.2, 2.0, by = 0.2), return_seu = TRUE, ...) {
   message(seu_path)
   seu <- readRDS(seu_path)
 
@@ -286,9 +286,9 @@ update_seuratTools_object <- function(seu_path, feature, resolution = seq(0.2, 2
 
   DefaultAssay(seu) <- default_assay
 
-  seuratTools_version <- seu@misc$experiment$seuratTools_version
+  chevreul_version <- seu@misc$experiment$chevreul_version
 
-  seuratTools_version <- ifelse(is.null(seuratTools_version), 0.1, seuratTools_version)
+  chevreul_version <- ifelse(is.null(chevreul_version), 0.1, chevreul_version)
 
   # update human gene symbols to grch38
   old_symbol <- "CTC-378H22.2"
@@ -298,7 +298,7 @@ update_seuratTools_object <- function(seu_path, feature, resolution = seq(0.2, 2
     }
   }
 
-  if (seuratTools_version < getNamespaceVersion("seuratTools")) {
+  if (chevreul_version < getNamespaceVersion("chevreul")) {
     message(paste0(seu_path, " is out of date! updating..."))
     if (!any(grepl("_snn_res", colnames(seu@meta.data)))) {
       seu <- seurat_cluster(seu = seu, resolution = resolution, reduction = "pca", ...)
@@ -369,7 +369,7 @@ propagate_spreadsheet_changes <- function(updated_table, seu) {
   return(seu)
 }
 
-#' Create a database of seuratTools projects
+#' Create a database of chevreul projects
 #'
 #' @param destdir
 #' @param destfile
@@ -379,7 +379,7 @@ propagate_spreadsheet_changes <- function(updated_table, seu) {
 #' @export
 #'
 #' @examples
-create_project_db <- function(destdir = "~/.cache/seuratTools",
+create_project_db <- function(destdir = "~/.cache/chevreul",
                               destfile = "single-cell-projects.db", verbose = TRUE) {
   if (!dir.exists(destdir)) {
     dir.create(destdir)
@@ -394,14 +394,14 @@ create_project_db <- function(destdir = "~/.cache/seuratTools",
     project_type = character(),
   )
 
-  message(paste0("building table of seuratTools projects at ", fs::path(destdir, destfile)))
+  message(paste0("building table of chevreul projects at ", fs::path(destdir, destfile)))
 
   DBI::dbWriteTable(con, "projects_tbl", projects_tbl)
 
   DBI::dbDisconnect(con)
 }
 
-#' Update a database of seuratTools projects
+#' Update a database of chevreul projects
 #'
 #' @param projects_dir
 #' @param destdir
@@ -413,7 +413,7 @@ create_project_db <- function(destdir = "~/.cache/seuratTools",
 #'
 #' @examples
 update_project_db <- function(projects_dir = NULL,
-                              destdir = "~/.cache/seuratTools",
+                              destdir = "~/.cache/chevreul",
                               destfile = "single-cell-projects.db",
                               verbose = TRUE) {
   if (!dir.exists(destdir)) {
@@ -443,7 +443,7 @@ update_project_db <- function(projects_dir = NULL,
   DBI::dbDisconnect(con)
 }
 
-#' Update a database of seuratTools projects
+#' Update a database of chevreul projects
 #'
 #' @param projects_dir
 #' @param destdir
@@ -455,7 +455,7 @@ update_project_db <- function(projects_dir = NULL,
 #'
 #' @examples
 read_project_db <- function(projects_dir = NULL,
-                              destdir = "~/.cache/seuratTools",
+                              destdir = "~/.cache/chevreul",
                               destfile = "single-cell-projects.db",
                               verbose = TRUE) {
   if (!dir.exists(destdir)) {
@@ -481,7 +481,7 @@ read_project_db <- function(projects_dir = NULL,
 #' @export
 #'
 #' @examples
-make_bigwig_db <- function(destdir = "~/.cache/seuratTools/", destfile = "bw-files.db") {
+make_bigwig_db <- function(destdir = "~/.cache/chevreul/", destfile = "bw-files.db") {
   bigwigfiles <- dir_ls(destdir, glob = "*.bw", recurse = TRUE) %>%
     set_names(path_file(.)) %>%
     enframe("name", "bigWig") %>%

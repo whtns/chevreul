@@ -19,7 +19,7 @@ rename_from_x_notation <- function(cell_ids, batch_id) {
 #' @export
 #'
 #' @examples
-reorg_seurat_files <- function(projects_db = "~/.cache/seuratTools/single-cell-projects.db") {
+reorg_seurat_files <- function(projects_db = "~/.cache/chevreul/single-cell-projects.db") {
   conn <- DBI::dbConnect(RSQLite::SQLite(), projects_db)
 
   project_paths <- tbl(conn, "projects_tbl") %>%
@@ -75,7 +75,7 @@ reorg_seurat_files <- function(projects_db = "~/.cache/seuratTools/single-cell-p
     # tibble::deframe() %>%
     identity()
 
-  safe_update <- purrr::safely(update_seuratTools_object)
+  safe_update <- purrr::safely(update_chevreul_object)
 
   map(seurat_objects, safe_update, return_seu = FALSE)
 
