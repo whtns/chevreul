@@ -9,7 +9,7 @@
 #' @export
 #'
 #' @examples
-build_bigwig_db <- function(bam_files, bigwig_db = "~/.cache/seuratTools/bw-files.db"){
+build_bigwig_db <- function(bam_files, bigwig_db = "~/.cache/chevreul/bw-files.db"){
 
   bam_files <- fs::path_abs(bam_files)
 
@@ -38,7 +38,7 @@ build_bigwig_db <- function(bam_files, bigwig_db = "~/.cache/seuratTools/bw-file
 #' @export
 #'
 #' @examples
-load_bigwigs <- function(seu, bigwig_db = "~/.cache/seuratTools/bw-files.db") {
+load_bigwigs <- function(seu, bigwig_db = "~/.cache/chevreul/bw-files.db") {
   con <- DBI::dbConnect(RSQLite::SQLite(), dbname = bigwig_db)
 
   bigwigfiles <- DBI::dbReadTable(con, "bigwigfiles") %>%

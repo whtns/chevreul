@@ -418,7 +418,7 @@ plot_all_ptimes <- function(monocle_list, query_name, sig_slice = 1000, ...) {
   monocle_list[[query_name]]$monocle_cds <- monocle_list[[query_name]]$monocle_cds[sig_gene_names, ]
 
   message("creating main heatmap")
-  monocle_list[[query_name]]$heatmap_matrix <- suppressWarnings(seuratTools::calc_pseudotime_heatmap(monocle_list[[query_name]]$monocle_cds,
+  monocle_list[[query_name]]$heatmap_matrix <- suppressWarnings(calc_pseudotime_heatmap(monocle_list[[query_name]]$monocle_cds,
     sig_gene_names = sig_gene_names,
     cores = 1,
     show_rownames = T,
@@ -438,7 +438,7 @@ plot_all_ptimes <- function(monocle_list, query_name, sig_slice = 1000, ...) {
     monocle_list[[i]]$monocle_cds <- monocle_list[[i]]$monocle_cds[heatmap_gene_order, ]
 
     message(paste0("creating reference heatmap ", i))
-    monocle_list[[i]]$heatmap_matrix <- suppressWarnings(seuratTools::calc_pseudotime_heatmap(monocle_list[[i]]$monocle_cds,
+    monocle_list[[i]]$heatmap_matrix <- suppressWarnings(calc_pseudotime_heatmap(monocle_list[[i]]$monocle_cds,
       cores = 1,
       show_rownames = F,
       return_heatmap = TRUE,
@@ -490,7 +490,7 @@ cross_check_heatmaps <- function(monocle_list, query_name, set_row_order = NULL,
 
 
   monocle_list[[query_name]]$heatmap_matrix <- monocle_list[[query_name]]$heatmap_matrix[common_genes, ]
-  query_results <- seuratTools::plot_pseudotime_heatmap(monocle_list[[query_name]]$heatmap_matrix, query_name, cluster_rows = cluster_rows, heatmap_width = 12, ...)
+  query_results <- plot_pseudotime_heatmap(monocle_list[[query_name]]$heatmap_matrix, query_name, cluster_rows = cluster_rows, heatmap_width = 12, ...)
 
   monocle_list[[query_name]]$heatmap <- query_results$heatmap
 

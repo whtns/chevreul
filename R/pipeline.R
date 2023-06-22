@@ -112,7 +112,7 @@ seurat_pipeline <- function(seu, assay = "gene", resolution = 0.6, reduction = "
   # }
 
   # annotate low read count category in seurat metadata
-  seu <- seuratTools::add_read_count_col(seu)
+  seu <- add_read_count_col(seu)
 
   # annotate cell cycle scoring to seurat objects
   seu <- annotate_cell_cycle(seu, organism = organism, ...)

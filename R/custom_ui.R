@@ -28,7 +28,7 @@ default_helper <- function(ui_element, title = "", content = "test", type = "inl
 #' @export
 #'
 #' @examples
-seuratToolsBox <- function(title = "", ...) {
+chevreulBox <- function(title = "", ...) {
   shinydashboard::box(
     title = title,
     status = "primary",
