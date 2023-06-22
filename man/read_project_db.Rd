@@ -2,11 +2,11 @@
 % Please edit documentation in R/utils.R
 \name{read_project_db}
 \alias{read_project_db}
-\title{Update a database of seuratTools projects}
+\title{Update a database of chevreul projects}
 \usage{
 read_project_db(
   projects_dir = NULL,
-  destdir = "~/.cache/seuratTools",
+  destdir = "~/.cache/chevreul",
   destfile = "single-cell-projects.db",
   verbose = TRUE
 )
@@ -15,5 +15,5 @@ read_project_db(
 \item{verbose}{}
 }
 \description{
-Update a database of seuratTools projects
+Update a database of chevreul projects
 }

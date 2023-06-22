@@ -2,10 +2,10 @@
 % Please edit documentation in R/utils.R
 \name{create_project_db}
 \alias{create_project_db}
-\title{Create a database of seuratTools projects}
+\title{Create a database of chevreul projects}
 \usage{
 create_project_db(
-  destdir = "~/.cache/seuratTools",
+  destdir = "~/.cache/chevreul",
   destfile = "single-cell-projects.db",
   verbose = TRUE
 )
@@ -14,5 +14,5 @@ create_project_db(
 \item{verbose}{}
 }
 \description{
-Create a database of seuratTools projects
+Create a database of chevreul projects
 }

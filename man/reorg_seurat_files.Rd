@@ -4,9 +4,7 @@
 \alias{reorg_seurat_files}
 \title{Reorganize seurat objects to a multimodal format}
 \usage{
-reorg_seurat_files(
-  projects_db = "~/.cache/seuratTools/single-cell-projects.db"
-)
+reorg_seurat_files(projects_db = "~/.cache/chevreul/single-cell-projects.db")
 }
 \arguments{
 \item{proj_dir}{}

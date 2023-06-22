@@ -4,7 +4,7 @@
 \alias{make_bigwig_db}
 \title{Make Bigwig Database}
 \usage{
-make_bigwig_db(destdir = "~/.cache/seuratTools/", destfile = "bw-files.db")
+make_bigwig_db(destdir = "~/.cache/chevreul/", destfile = "bw-files.db")
 }
 \arguments{
 \item{destfile}{}

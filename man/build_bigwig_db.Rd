@@ -4,7 +4,7 @@
 \alias{build_bigwig_db}
 \title{Create a database of bigwigfiles}
 \usage{
-build_bigwig_db(bam_files, bigwig_db = "~/.cache/seuratTools/bw-files.db")
+build_bigwig_db(bam_files, bigwig_db = "~/.cache/chevreul/bw-files.db")
 }
 \arguments{
 \item{bigwig_db}{}

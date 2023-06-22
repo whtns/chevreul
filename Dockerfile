@@ -80,7 +80,7 @@ RUN R -e 'remotes::install_github("cole-trapnell-lab/monocle3")'
 # # RUN install2.r --error --deps TRUE shinydashboard
 #
 #
-# # COPY seuratTools_*.tar.gz /app.tar.gz
+# # COPY chevreul_*.tar.gz /app.tar.gz
 # # RUN remotes::install_local('/app.tar.gz')
 # # CMD R -e 'library(dockerfiler)'
 #
@@ -107,7 +107,7 @@ RUN R -e 'remotes::install_github("satijalab/seurat-wrappers@e526e87")'
 RUN apt-get update && apt-get install -y python3 python3-pip
 RUN pip3 install matplotlib
 
-RUN R -e 'remotes::install_github("whtns/seuratTools")'
+RUN R -e 'remotes::install_github("whtns/chevreul")'
 
 COPY Rprofile.site /usr/local/lib/R/etc/
 EXPOSE 3838
