@@ -23,7 +23,7 @@ knitr::opts_chunk$set(
 
 This project is not associated with the Seurat team; It will likely [change names](https://www.njtierney.com/post/2017/10/27/change-pkg-name/) in the future
 
-# Seurat Tools
+# Chevreul
 
 This package includes a set of Shiny apps for exploring single cell RNA datasets processed with <a href="https://github.com/satijalab/seurat" target="_blank" rel="noopener noreferrer">Seurat</a>
 
