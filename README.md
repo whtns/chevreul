@@ -8,11 +8,6 @@
 status](https://travis-ci.org/whtns/chevreul.svg?branch=master)](https://travis-ci.org/whtns/chevreul)
 <!-- badges: end -->
 
-This project is not associated with the Seurat team; It will likely
-[change
-names](https://www.njtierney.com/post/2017/10/27/change-pkg-name/) in
-the future
-
 # Chevreul
 
 This package includes a set of Shiny apps for exploring single cell RNA
