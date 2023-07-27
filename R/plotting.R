@@ -453,14 +453,14 @@ plot_ridge <- function(seu, features){
 #' available methods are wilcoxon rank-sum test implemented in
 #' [presto](https://github.com/immunogenomics/presto) and specificity scores implemented in [genesorteR](https://github.com/mahmoudibrahim/genesorteR)
 #'
-#' @param seu
-#' @param marker_method
-#' @param metavar
-#' @param num_markers
+#' @param seu a seurat object
+#' @param marker_method either "presto" or "genesorteR"
+#' @param metavar the metadata variable from which to pick clusters
+#' @param num_markers default is 5
 #' @param selected_values
-#' @param return_plotly
+#' @param return_plotly whether to return an interactive ploly plot
 #' @param featureType
-#' @param hide_technical
+#' @param hide_technical whether to exclude mitochondrial or ribosomal genes
 #' @param ...
 #'
 #' @return
@@ -474,7 +474,7 @@ plot_ridge <- function(seu, features){
 #' # static mode using "presto"
 #' plot_markers(panc8, metavar = "tech", marker_method = "genesorteR", return_plotly = FALSE)
 #'
-plot_markers <- function(seu, metavar = "batch", num_markers = 5, selected_values = NULL, return_plotly = TRUE, marker_method = c("presto", "genesorteR"), seurat_assay = "gene", hide_technical = NULL, unique_markers = FALSE, p_val_cutoff = 1, ...){
+plot_markers <- function(seu, metavar = "batch", num_markers = 5, selected_values = NULL, return_plotly = TRUE, marker_method = "presto", seurat_assay = "gene", hide_technical = NULL, unique_markers = FALSE, p_val_cutoff = 1, ...){
 
   Idents(seu) <- seu[[metavar]]
 
@@ -539,12 +539,13 @@ plot_markers <- function(seu, metavar = "batch", num_markers = 5, selected_value
   if(!is.null(selected_values)){
     seu <- seu[,Idents(seu) %in% selected_values]
     sliced_markers <- sliced_markers %>%
-      dplyr::filter(group %in% selected_values)
+      dplyr::filter(group %in% selected_values) %>%
+      dplyr::distinct(feature, .keep_all = TRUE)
   }
+  # browser()
+  vline_coords = head(cumsum(table(sliced_markers$group))+0.5, -1)
 
   sliced_markers <- dplyr::pull(sliced_markers, feature)
-
-  sliced_markers <- unique(sliced_markers[sliced_markers %in% rownames(seu)])
 
   seu[[metavar]][is.na(seu[[metavar]])] <- "NA"
   Idents(seu) <- metavar
@@ -553,8 +554,10 @@ plot_markers <- function(seu, metavar = "batch", num_markers = 5, selected_value
     ggplot2::theme(axis.text.x = ggplot2::element_text(size = 10, angle = 45, vjust = 1, hjust=1),
           axis.text.y = ggplot2::element_text(size = 10)) +
     ggplot2::scale_y_discrete(position = "right") +
+    ggplot2::geom_vline(xintercept = vline_coords, linetype = 2) +
     ggplot2::coord_flip() +
     NULL
+
 
   if (return_plotly == FALSE) return(markerplot)
 
