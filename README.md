@@ -13,7 +13,7 @@ This project is not associated with the Seurat team; It will likely
 names](https://www.njtierney.com/post/2017/10/27/change-pkg-name/) in
 the future
 
-# Seurat Tools
+# Chevreul
 
 This package includes a set of Shiny apps for exploring single cell RNA
 datasets processed with
@@ -22,13 +22,15 @@ datasets processed with
 A demo using a pancreas dataset from the Seurat team is available
 <a href="http://cobriniklab.saban-chla.usc.edu:3838/chevreul_demo/" target="_blank" rel="noopener noreferrer">here</a>
 
-There are also convenient functions for: 
-* Clustering and Dimensional Reduction of Raw Sequencing Data 
-* <a href="https://satijalab.org/seurat/v3.0/pancreas_integration_label_transfer.html" target="_blank" rel="noopener noreferrer">Integration
-and Label Transfer</a> 
-* Louvain Clustering at a Range of Resolutions
-* Cell cycle state regression and labeling 
-* RNA velocity calculation with <a href="https://velocyto.org/" target="_blank" rel="noopener noreferrer">Velocyto.R</a> and <a href="https://scvelo.readthedocs.io/" target="_blank" rel="noopener noreferrer">scvelo</a>
+There are also convenient functions for: \* Clustering and Dimensional
+Reduction of Raw Sequencing Data \*
+<a href="https://satijalab.org/seurat/v3.0/pancreas_integration_label_transfer.html" target="_blank" rel="noopener noreferrer">Integration
+and Label Transfer</a> \* Louvain Clustering at a Range of Resolutions
+\* Cell cycle state regression and labeling \* RNA velocity calculation
+with
+<a href="https://velocyto.org/" target="_blank" rel="noopener noreferrer">Velocyto.R</a>
+and
+<a href="https://scvelo.readthedocs.io/" target="_blank" rel="noopener noreferrer">scvelo</a>
 
 ## Installation
 
