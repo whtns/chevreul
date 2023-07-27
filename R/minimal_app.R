@@ -1,7 +1,7 @@
 #' Create a minimal seurat app
 #'
 #' @param object a seurat object
-#' @param loom_path
+#' @param loom_path path to a loom file
 #' @param appTitle
 #' @param organism_type
 #' @param futureMb
