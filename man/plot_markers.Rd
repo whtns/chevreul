@@ -10,7 +10,7 @@ plot_markers(
   num_markers = 5,
   selected_values = NULL,
   return_plotly = TRUE,
-  marker_method = c("presto", "genesorteR"),
+  marker_method = "presto",
   seurat_assay = "gene",
   hide_technical = NULL,
   unique_markers = FALSE,
@@ -19,6 +19,18 @@ plot_markers(
 )
 }
 \arguments{
+\item{seu}{a seurat object}
+
+\item{metavar}{the metadata variable from which to pick clusters}
+
+\item{num_markers}{default is 5}
+
+\item{return_plotly}{whether to return an interactive ploly plot}
+
+\item{marker_method}{either "presto" or "genesorteR"}
+
+\item{hide_technical}{whether to exclude mitochondrial or ribosomal genes}
+
 \item{...}{}
 }
 \description{
