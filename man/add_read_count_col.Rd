@@ -9,7 +9,7 @@ add_read_count_col(seu, thresh = 1e+05)
 \arguments{
 \item{seu}{A seurat object}
 
-\item{thresh}{}
+\item{thresh}{Set a threshold for low read count}
 }
 \description{
 Add a Read Count Categorical Variable to Seurat Object (based on nCount_RNA)

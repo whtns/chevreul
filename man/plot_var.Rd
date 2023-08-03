@@ -6,8 +6,8 @@
 \usage{
 plot_var(
   seu,
-  embedding = "umap",
   group = "batch",
+  embedding = "umap",
   dims = c(1, 2),
   highlight = NULL,
   pt.size = 1,
@@ -19,7 +19,7 @@ plot_var(
 \item{...}{}
 }
 \description{
-Plot Metadata Variables
+plot_var() plots
 }
 \examples{
 

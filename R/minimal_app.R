@@ -14,7 +14,7 @@
 #' minimalSeuratApp(panc8)
 #'
 minimalSeuratApp <- function(object = panc8, loom_path = NULL, appTitle = NULL,
-                             organism_type = "human", futureMb = 13000) {
+                             organism_type = "human", futureMb = 13000, bigwig_db = "~/.cache/chevreul/bw-files.db") {
   future::plan(strategy = "multicore", workers = 6)
   future_size <- futureMb * 1024^2
   options(future.globals.maxSize = future_size)
@@ -35,6 +35,8 @@ minimalSeuratApp <- function(object = panc8, loom_path = NULL, appTitle = NULL,
         tabName = "comparePlots", icon = icon("chart-bar"), selected = TRUE
       ), shinydashboard::menuItem("Heatmap/Violin Plots",
         tabName = "violinPlots", icon = icon("sort")
+      ), shinydashboard::menuItem("Coverage Plots",
+        tabName = "coveragePlots", icon = icon("mountain")
       ), shinydashboard::menuItem("Differential Expression",
         tabName = "diffex", icon = icon("magnet")
       ), shinydashboard::menuItem("Pathway Enrichment Analysis",
@@ -84,6 +86,12 @@ minimalSeuratApp <- function(object = panc8, loom_path = NULL, appTitle = NULL,
         ),
         fluidRow(
           plotViolinui("violinPlot")
+        )
+      ),
+      shinydashboard::tabItem(
+        tabName = "coveragePlots",
+        fluidRow(
+          plotCoverage_UI("coverageplots")
         )
       ),
       shinydashboard::tabItem(
@@ -260,6 +268,9 @@ minimalSeuratApp <- function(object = panc8, loom_path = NULL, appTitle = NULL,
     callModule(
       plotHeatmap, "heatMap", seu, featureType,
       organism_type
+    )
+    callModule(
+      plotCoverage, "coverageplots", seu, plot_types, proj_dir, organism_type
     )
     callModule(plotClustree, "clustreePlot", seu)
     callModule(tableSelected, "tableselected", seu)

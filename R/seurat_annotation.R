@@ -95,10 +95,10 @@ transcripts_to_genes <- function(transcripts, organism = "human") {
 
 #' Annotate Low Read Count Category
 #'
-#'  Add a Read Count Categorical Variable to Seurat Object (based on nCount_RNA)
+#' Add a Read Count Categorical Variable to Seurat Object (based on nCount_RNA)
 #'
 #' @param seu A seurat object
-#' @param thresh
+#' @param thresh Set a threshold for low read count
 #'
 #' @return
 #' @export
@@ -114,7 +114,7 @@ add_read_count_col <- function(seu, thresh = 1e5) {
   )
 }
 
-#' Annotate Low Read Count Category
+#' Annotate percent mitochondrial reads per cell
 #'
 #'  Add a Read Count Categorical Variable to Seurat Object (based on nCount_RNA)
 #'

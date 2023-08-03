@@ -2,13 +2,15 @@
 % Please edit documentation in R/seurat_integrate.R
 \name{SetDefaultAssay}
 \alias{SetDefaultAssay}
-\title{Reset the default assay of a seurat object}
+\title{Reset default assay}
 \usage{
 SetDefaultAssay(seu, new_assay)
 }
 \arguments{
-\item{new_assay}{}
+\item{seu}{A seurat object}
+
+\item{new_assay}{Assay to set as default assay}
 }
 \description{
-Reset the default assay of a seurat object
+FUnction to reset the default assay of a seurat object
 }

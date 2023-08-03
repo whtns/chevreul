@@ -13,7 +13,13 @@ seurat_reduce_dimensions(
 )
 }
 \arguments{
-\item{...}{}
+\item{seu}{A Seurat object}
+
+\item{assay}{Assay of interest to be run on the seurat object}
+
+\item{reduction}{Set dimensional reduction object}
+
+\item{...}{Extra parameters passed to seurat_reduce_dimensions}
 }
 \description{
 Run PCA, TSNE and UMAP on a seurat object

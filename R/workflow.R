@@ -78,7 +78,7 @@ integration_workflow <- function(batches, excluded_cells = NULL, resolution = se
 #' @export
 #'
 #' @examples
-#' clustered_human_seu <- clustering_workflow(panc8)
+#' clustered_human_seu <- clustering_workflow(panc8, experiment_name = "seurat_pancreas", organism = "human")
 #' clustered_mouse_seu <- clustering_workflow(baron2016singlecell)
 clustering_workflow <- function(seu, excluded_cells, resolution = seq(0.2, 2.0, by = 0.2), organism = "human", experiment_name = "default_experiment", ...) {
   seu <- seurat_pipeline(seu, resolution = resolution, organism = organism, ...)

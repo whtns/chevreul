@@ -26,6 +26,6 @@ clustering_workflow(
 Cluster and Reduce Dimensions of a seurat object
 }
 \examples{
-clustered_human_seu <- clustering_workflow(panc8)
+clustered_human_seu <- clustering_workflow(panc8, experiment_name = "seurat_pancreas", organism = "human")
 clustered_mouse_seu <- clustering_workflow(baron2016singlecell)
 }
