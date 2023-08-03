@@ -2,7 +2,7 @@
 % Please edit documentation in R/seurat_annotation.R
 \name{add_percent_mito}
 \alias{add_percent_mito}
-\title{Annotate Low Read Count Category}
+\title{Annotate percent mitochondrial reads per cell}
 \usage{
 add_percent_mito(seu, organism = "human", seurat_assay = "gene")
 }

@@ -1,5 +1,8 @@
 
+
 #' Cross plot vars
+#'
+#'
 #'
 #' @param seu
 #' @param resolution
@@ -11,6 +14,7 @@
 #' @examples
 #'
 cross_plot_vars <- function(seu, resolution, mycols) {
+
 
   if ("integrated" %in% names(seu@assays)) {
     active_assay <- "integrated"
@@ -34,6 +38,8 @@ cross_plot_vars <- function(seu, resolution, mycols) {
 }
 
 #' Plot pseudotime over multiple branches
+#'
+#'
 #'
 #' @param cds
 #' @param branches
@@ -249,6 +255,8 @@ plot_multiple_branches_heatmap <- function(cds,
 
 #' Plot Metadata Variables
 #'
+#'plot_var() plots
+#'
 #' @param seu
 #' @param embedding
 #' @param group
@@ -266,7 +274,7 @@ plot_multiple_branches_heatmap <- function(cds,
 #' plotly_plot <- plot_var(panc8, group = "batch")
 #' print(plotly_plot)
 #'
-plot_var <- function(seu, embedding = "umap", group = "batch", dims = c(1,2), highlight = NULL, pt.size = 1.0, return_plotly = TRUE, ...){
+plot_var <- function(seu, group = "batch", embedding = "umap", dims = c(1,2), highlight = NULL, pt.size = 1.0, return_plotly = TRUE, ...){
 
   Seurat::DefaultAssay(seu) <- "gene"
 
@@ -533,6 +541,7 @@ plot_markers <- function(seu, metavar = "batch", num_markers = 5, selected_value
     dplyr::slice_head(n = num_markers) %>%
     tidyr::pivot_longer(everything(), names_to = "group", values_to = "feature") %>%
     dplyr::arrange(group) %>%
+    dplyr::distinct(feature, .keep_all = TRUE) %>%
     # dplyr::top_n(n = num_markers, wt = logFC) %>%
     identity()
 
@@ -550,10 +559,11 @@ plot_markers <- function(seu, metavar = "batch", num_markers = 5, selected_value
   seu[[metavar]][is.na(seu[[metavar]])] <- "NA"
   Idents(seu) <- metavar
 
-  markerplot <- DotPlot(seu, features = sliced_markers, group.by = metavar, dot.scale = 3) +
+  markerplot <- DotPlot(seu, assay = "gene", features = sliced_markers, group.by = metavar, dot.scale = 3) +
     ggplot2::theme(axis.text.x = ggplot2::element_text(size = 10, angle = 45, vjust = 1, hjust=1),
           axis.text.y = ggplot2::element_text(size = 10)) +
-    ggplot2::scale_y_discrete(position = "right") +
+    ggplot2::scale_y_discrete(position = "left") +
+    ggplot2::scale_x_discrete(limits = sliced_markers) +
     ggplot2::geom_vline(xintercept = vline_coords, linetype = 2) +
     ggplot2::coord_flip() +
     NULL

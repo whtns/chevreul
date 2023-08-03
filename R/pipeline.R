@@ -71,13 +71,14 @@ seurat_integration_pipeline <- function(seu_list, resolution = seq(0.2, 2.0, by 
 
 #' Run Seurat Pipeline
 #'
-#' Preprocess, Cluster and Reduce Dimensions for a single seurat object
+#' This functions allows you to Preprocess, Cluster and Reduce Dimensions for a single seurat object.
 #'
-#' @param seu
-#' @param assay
-#' @param resolution
-#' @param reduction
-#' @param organism
+#' @param seu A Seurat object
+#' @param assay Assay of interest in Seurat object
+#' @param resolution Resolution for clustering cells. Default set to 0.6.
+#' @param reduction Dimensional reduction object seu
+#' @param organism Organism
+#' @param ... Extra parameters passed to seurat_pipeline
 #'
 #' @return
 #' @export
@@ -86,7 +87,7 @@ seurat_integration_pipeline <- function(seu_list, resolution = seq(0.2, 2.0, by 
 #'
 #' processed_seu <- seurat_pipeline(panc8)
 #'
-seurat_pipeline <- function(seu, assay = "gene", resolution = 0.6, reduction = "pca", organism = "human", ...) {
+ seurat_pipeline <- function(seu, assay = "gene", resolution = 0.6, reduction = "pca", organism = "human", ...) {
 
   assays <- names(seu@assays)
 

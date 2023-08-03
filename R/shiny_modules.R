@@ -2124,6 +2124,14 @@ pathwayEnrichment <- function(input, output, session, seu, featureType) {
   })
 }
 
+#' Title
+#'
+#' @param id
+#'
+#' @return
+#' @export
+#'
+#' @examples
 techInfoui <- function(id) {
   ns <- NS(id)
   fluidRow(
@@ -2135,6 +2143,17 @@ techInfoui <- function(id) {
   )
 }
 
+#' Title
+#'
+#' @param input
+#' @param output
+#' @param session
+#' @param seu
+#'
+#' @return
+#' @export
+#'
+#' @examples
 techInfo <- function(input, output, session, seu) {
   ns <- session$ns
   ## ----------------------------------------------------------------------------##

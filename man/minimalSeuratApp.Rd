@@ -9,10 +9,15 @@ minimalSeuratApp(
   loom_path = NULL,
   appTitle = NULL,
   organism_type = "human",
-  futureMb = 13000
+  futureMb = 13000,
+  bigwig_db = "~/.cache/chevreul/bw-files.db"
 )
 }
 \arguments{
+\item{object}{a seurat object}
+
+\item{loom_path}{path to a loom file}
+
 \item{futureMb}{}
 }
 \description{

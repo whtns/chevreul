@@ -228,11 +228,11 @@ load_seurat_from_proj <- function(proj_dir, ...) {
 #' Run PCA, TSNE and UMAP on a seurat object
 #' perplexity should not be bigger than 3 * perplexity < nrow(X) - 1, see details for interpretation
 #'
-#' @param seu
-#' @param assay
-#' @param reduction
+#' @param seu A Seurat object
+#' @param assay Assay of interest to be run on the seurat object
+#' @param reduction Set dimensional reduction object
 #' @param legacy_settings
-#' @param ...
+#' @param ... Extra parameters passed to seurat_reduce_dimensions
 #'
 #' @return
 #' @export
@@ -273,24 +273,28 @@ seurat_reduce_dimensions <- function(seu, assay = "gene", reduction = "pca", leg
   return(seu)
 }
 
+#'
 #' Give a new project name to a seurat object
 #'
-#' @param seu
-#' @param new_name
+#' @param seu A Seurat object
+#' @param new_name New name to assign
 #'
 #' @return
 #' @export
 #'
 #' @examples
+#'
 rename_seurat <- function(seu, new_name) {
   seu@project.name <- new_name
   return(seu)
 }
 
-#' Reset the default assay of a seurat object
+#' Reset default assay
 #'
-#' @param seu
-#' @param new_assay
+#' FUnction to reset the default assay of a seurat object
+#'
+#' @param seu A seurat object
+#' @param new_assay Assay to set as default assay
 #'
 #' @return
 #' @export

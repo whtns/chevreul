@@ -14,10 +14,20 @@ seurat_pipeline(
 )
 }
 \arguments{
-\item{organism}{}
+\item{seu}{A Seurat object}
+
+\item{assay}{Assay of interest in Seurat object}
+
+\item{resolution}{Resolution for clustering cells. Default set to 0.6.}
+
+\item{reduction}{Dimensional reduction object seu}
+
+\item{organism}{Organism}
+
+\item{...}{Extra parameters passed to seurat_pipeline}
 }
 \description{
-Preprocess, Cluster and Reduce Dimensions for a single seurat object
+This functions allows you to Preprocess, Cluster and Reduce Dimensions for a single seurat object.
 }
 \examples{
 
