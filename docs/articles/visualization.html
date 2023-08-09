@@ -85,7 +85,7 @@
     
     
 <p>This article demonstrates data visualization tools present in
-Chevreul. Through this article we will be introducing differnt
+Chevreul. Through this article we will be introducing different
 visualization functions, their workings, and the resulting plots
 produced by these functions.</p>
 <p>First set is to load Chevreul anf all other packages required</p>
@@ -173,18 +173,20 @@ to “batch”</p>
 <div class="section level2">
 <h2 id="plot-metadata-vriable-using-plot_var">Plot Metadata Vriable using plot_var()<a class="anchor" aria-label="anchor" href="#plot-metadata-vriable-using-plot_var"></a>
 </h2>
-<p>Chevreul contains a function that produces a scatter plot of metadata
-variable, where each point in the plot represents a cell whose position
-on the plot is given by the cell embedding determined by the dimensional
-reduction technique. The default dimensionality reduction used is
-“umap”. The group argument in plot_var() function allows the user to
-enter the metadata variable by which to group the cells by, its default
-value is set to “batch”</p>
+<p>Chevreul contains a function that produces an interactive scatter
+plot of metadata variable, where each point in the plot represents a
+cell whose position on the plot is given by the cell embedding
+determined by the dimensional reduction technique. The default
+dimensionality reduction used is “umap”. The group argument in
+plot_var() function allows the user to enter the metadata variable by
+which to group the cells by, its default value is set to “batch”</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_var.html">plot_var</a></span><span class="op">(</span><span class="va">clustered_seu</span>, group <span class="op">=</span> <span class="st">"celltype"</span>, embedding <span class="op">=</span> <span class="st">"umap"</span>, return_plotly <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
 <p><img src="visualization_files/figure-html/unnamed-chunk-7-1.png" width="100%">
-This function contains a Seurat DimPlot() function as sub function which
-prduces the dimensional reduction plot</p>
+This function contains a Seurat function, DimPlot(), as sub function
+which produces the dimensional reduction plot.The interactive parameter,
+return_plotly, in plot_var when set to TRUE will convert the plot into
+an interactive plot using ggplotly function from R’s plotly package</p>
 </div>
 <div class="section level2">
 <h2 id="plot_violin">plot_violin<a class="anchor" aria-label="anchor" href="#plot_violin"></a>
@@ -204,6 +206,8 @@ seu_complex_heatmap</p>
 <div class="section level2">
 <h2 id="section-about-plotly">section about plotly<a class="anchor" aria-label="anchor" href="#section-about-plotly"></a>
 </h2>
+<p>plotly is a tool to make ggplots interactive; it is only useful in an
+interactive context (in a shiny app)</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside>
@@ -213,7 +217,7 @@ seu_complex_heatmap</p>
 
     <footer><div class="pkgdown-footer-left">
   <p></p>
-<p>Developed by Kevin Stachelek.</p>
+<p>Developed by Kevin Stachelek, Bhavana Bhat.</p>
 </div>
 
 <div class="pkgdown-footer-right">
