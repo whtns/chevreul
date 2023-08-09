@@ -1,0 +1,46 @@
+---
+title: "Integration"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+    # dev.args = list(png = list(type = "cairo")),
+  dpi=900,
+  out.width = "100%",
+  message = FALSE,
+  warning = FALSE
+)
+
+library(xfun)
+
+format_table <- function(mydf){
+  mydf %>% 
+    kableExtra::kbl() %>% 
+    kable_paper() %>% 
+    scroll_box(width = "800px", height = "200px")
+}
+
+```
+
+```{r setup, message = FALSE}
+library(chevreul)
+library(Seurat)
+library(tidyverse)
+library(ggraph)
+```
+
+# TLDR 
+
+you can integrate a list of seurat objects with the following function
+
+```{r, eval=FALSE}
+
+batches <- panc8 %>%
+  Seurat::SplitObject(split.by = "tech")
+
+integrated_seu <- integration_workflow(batches)
+
+
+```

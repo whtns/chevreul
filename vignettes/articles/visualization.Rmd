@@ -1,0 +1,114 @@
+---
+title: "Visualization"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+    # dev.args = list(png = list(type = "cairo")),
+  dpi=900,
+  out.width = "100%",
+  message = FALSE,
+  warning = FALSE
+)
+
+library(xfun)
+
+format_table <- function(mydf){
+  mydf %>% 
+    kableExtra::kbl() %>% 
+    kable_paper() %>% 
+    scroll_box(width = "700px", height = "200px")
+}
+
+```
+
+
+```{r setup, }
+library(chevreul)
+library(Seurat)
+library(tidyverse)
+library(ggraph)
+library(patchwork)
+```
+
+## TLDR
+
+chevreul provides a single command to:
+
+-   construct a Seurat object
+
+-   filter genes by minimum expression and ubiquity
+
+-   normalize and scale expression by any of several methods packaged in Seurat
+
+# run clustering on a single seurat object
+
+By default clustering will be run at ten different resolutions between 0.2 and 2.0. Any resolution can be specified by providing the resolution argument as a numeric vector.
+
+```{r, results=FALSE, echo=FALSE}
+clustered_seu <- cache_rds(
+  {clustering_workflow(panc8, experiment_name = "seurat_pancreas", organism = "human")},
+  file = "clustered_seu.rds")
+```
+
+## Basic 
+
+# Plotting features using Chevreul
+ Chevreul contains a function that plots a vector of one or more features, either gene or transcript expression, overlaid on a given embedding.  This function results in a interactive, single or multi-feature plot
+ 
+```{r}
+plot_feature(clustered_seu, embedding = "umap", features = "RXRG", return_plotly = FALSE) + 
+  plot_feature(clustered_seu, embedding = "umap", features = c("RXRG", "NRL"), return_plotly = FALSE)
+
+```
+
+This Chevreul function includes multiple sub-functions that ultimately helps in creation of an interactive feature plot
+- When plotting only one feature, an existing Seurat function is used. This function colors single cells on a dimensional reduction plot according to a 'feature'.
+
+```{r}
+FeaturePlot(clustered_seu, features = "RXRG")
+
+```
+
+- If multiple features are provided, the joint density of all the features are plotted using a function from the Nebulosa package.
+
+```{r}
+Nebulosa::plot_density(clustered_seu, features = c("RXRG", "NRL"), combine = "FALSE")
+
+```
+
+- Once a feature plot of produced, this plot is then converted to an interactive plot using plotly
+
+# Plotting cluster marker genes: plot_markers 
+
+Chevreul contains a function to create a plot of N number of marker features that are grouped by user specified cell metadata. The features are grouped by wilcoxon rank-sum test implemented in presto
+
+```{r}
+plot_markers(clustered_seu, metavar = "gene_snn_res.0.2", marker_method = "presto", return_plotly = FALSE)
+
+```
+
+
+
+
+
+
+plot_readcount 
+plot_var 
+plot_violin 
+
+## intermediate
+
+plot_all_transcripts 
+plot_transcript_composition 
+
+## complicated 
+
+cross_plot_vars 
+plot_multiple_branches_heatmap 
+plot_ridge 
+seu_complex_heatmap 
+
+# section about plotly
