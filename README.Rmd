@@ -15,10 +15,13 @@ knitr::opts_chunk$set(
 ```
 
 <!-- badges: start -->
+
 <!-- badges: end -->
 
 <!-- badges: start -->
+
 [![Travis build status](https://travis-ci.org/whtns/chevreul.svg?branch=master)](https://travis-ci.org/whtns/chevreul)
+
 <!-- badges: end -->
 
 # Chevreul
@@ -28,11 +31,12 @@ This package includes a set of Shiny apps for exploring single cell RNA datasets
 A demo using a pancreas dataset from the Seurat team is available <a href="http://cobriniklab.saban-chla.usc.edu:3838/chevreul_demo/" target="_blank" rel="noopener noreferrer">here</a>
 
 There are also convenient functions for:
-* Clustering and Dimensional Reduction of Raw Sequencing Data.
-* <a href="https://satijalab.org/seurat/v3.0/pancreas_integration_label_transfer.html" target="_blank" rel="noopener noreferrer">Integration and Label Transfer</a>
-* Louvain Clustering at a Range of Resolutions 
-* Cell cycle state regression and labeling
-* RNA velocity calculation with <a href="https://velocyto.org/" target="_blank" rel="noopener noreferrer">Velocyto.R</a> and <a href="https://scvelo.readthedocs.io/" target="_blank" rel="noopener noreferrer">scvelo</a>
+
+-   Clustering and Dimensional Reduction of Raw Sequencing Data.
+-   <a href="https://satijalab.org/seurat/v3.0/pancreas_integration_label_transfer.html" target="_blank" rel="noopener noreferrer">Integration and Label Transfer</a>
+-   Louvain Clustering at a Range of Resolutions
+-   Cell cycle state regression and labeling
+-   RNA velocity calculation with <a href="https://velocyto.org/" target="_blank" rel="noopener noreferrer">Velocyto.R</a> and <a href="https://scvelo.readthedocs.io/" target="_blank" rel="noopener noreferrer">scvelo</a>
 
 ## Installation
 
@@ -47,6 +51,7 @@ chevreul::create_project_db()
 ```
 
 ### Install locally (custom location!) and run in three steps:
+
 ```{r}
 devtools::install_github("whtns/chevreul")
 chevreul::create_project_db(destdir='/your/path/to/app')
@@ -56,7 +61,7 @@ chevreul::create_project_db(destdir='/your/path/to/app')
 
 You can view documentation on the <a href="https://whtns.github.io/chevreul" target="_blank" rel="noopener noreferrer">chevreul website</a>
 
-## How To 
+## How To
 
 ### subset by csv
 
@@ -66,7 +71,7 @@ You can view documentation on the <a href="https://whtns.github.io/chevreul" tar
 
 ![add custom metadata](README_docs/add_arbitrary_metadata.gif)
 
-## Getting Started 
+## Getting Started
 
 ```{r}
 library(chevreul)
@@ -75,7 +80,7 @@ library(tidyverse)
 library(ggraph)
 ```
 
-### view included dataset 
+### view included dataset
 
 ```{r}
 panc8
@@ -93,7 +98,7 @@ clustered_seu <- clustering_workflow(panc8, experiment_name = "seurat_pancreas",
 minimalSeuratApp(clustered_seu)
 ```
 
-### split included dataset based on collection technology 
+### split included dataset based on collection technology
 
 ```{r}
 split_panc8 <- SplitObject(panc8, split.by = "dataset")

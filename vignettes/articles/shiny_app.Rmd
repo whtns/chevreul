@@ -1,0 +1,45 @@
+---
+title: "Shiny App"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+    # dev.args = list(png = list(type = "cairo")),
+  dpi=900,
+  out.width = "100%",
+  message = FALSE,
+  warning = FALSE
+)
+
+library(kableExtra)
+```
+
+```{r setup, message = FALSE}
+library(chevreul)
+library(Seurat)
+library(tidyverse)
+library(ggraph)
+```
+
+## TLDR
+
+chevreul provides a single command to:
+
+-   construct a Seurat object
+
+-   filter genes by minimum expression and ubiquity
+
+-   normalize and scale expression by any of several methods packaged in Seurat
+
+# run clustering on a single seurat object
+
+By default clustering will be run at ten different resolutions between 0.2 and 2.0. Any resolution can be specified by providing the resolution argument as a numeric vector.
+
+```{r, cache = TRUE, results=FALSE}
+clustered_seu <- clustering_workflow(panc8, experiment_name = "seurat_pancreas", organism = "human")
+DimPlot(clustered_seu, group.by = "gene_snn_res.0.2")
+```
+
+# app sections
