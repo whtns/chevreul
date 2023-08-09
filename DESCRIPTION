@@ -59,6 +59,7 @@ Imports:
     unglue,
     waiter,
     wiggleplotr (>= 1.13.1)
+    SeuratWrappers (>= 0.2.0)
 Suggests: 
     ggplot2,
     knitr,
@@ -74,6 +75,7 @@ Remotes:
     jokergoo/ComplexHeatmap,
     mahmoudibrahim/genesorteR,
     stephenturner/annotables,
+    satijalab/seurat-wrappers
 biocViews:
 Encoding: UTF-8
 LazyData: true
