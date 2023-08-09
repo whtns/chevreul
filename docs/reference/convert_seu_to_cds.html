@@ -73,13 +73,8 @@
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">processed_seu</span> <span class="op">&lt;-</span> <span class="fu"><a href="clustering_workflow.html">clustering_workflow</a></span><span class="op">(</span><span class="va">human_gene_transcript_seu</span><span class="op">)</span></span></span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>selection.method set to 'vst' but count slot is empty; will use data slot instead</span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in `$&lt;-.data.frame`(`*tmp*`, "variance.expected", value = 0):</span> replacement has 1 row, data has 0</span>
-<span class="r-in"><span><span class="va">cds</span> <span class="op">&lt;-</span> <span class="fu">convert_seu_to_cds</span><span class="op">(</span><span class="va">processed_seu</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 1</span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in "integrated" %in% names(seu@assays):</span> object 'processed_seu' not found</span>
-</code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="va">processed_seu</span> <span class="op">&lt;-</span> <span class="fu"><a href="clustering_workflow.html">clustering_workflow</a></span><span class="op">(</span><span class="va">human_gene_transcript_seu</span><span class="op">)</span></span>
+<span><span class="va">cds</span> <span class="op">&lt;-</span> <span class="fu">convert_seu_to_cds</span><span class="op">(</span><span class="va">processed_seu</span><span class="op">)</span></span></code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside></div>

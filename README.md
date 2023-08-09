@@ -18,7 +18,7 @@ A demo using a pancreas dataset from the Seurat team is available
 <a href="http://cobriniklab.saban-chla.usc.edu:3838/chevreul_demo/" target="_blank" rel="noopener noreferrer">here</a>
 
 There are also convenient functions for: \* Clustering and Dimensional
-Reduction of Raw Sequencing Data \*
+Reduction of Raw Sequencing Data. \*
 <a href="https://satijalab.org/seurat/v3.0/pancreas_integration_label_transfer.html" target="_blank" rel="noopener noreferrer">Integration
 and Label Transfer</a> \* Louvain Clustering at a Range of Resolutions
 \* Cell cycle state regression and labeling \* RNA velocity calculation
@@ -55,14 +55,6 @@ You can view documentation on the
 website</a>
 
 ## How To
-
-### subset by csv
-
-![subset by csv](README_docs/subset_by_csv.gif)
-
-### add custom metadata
-
-![add custom metadata](README_docs/add_arbitrary_metadata.gif)
 
 ## Getting Started
 
@@ -114,7 +106,7 @@ minimalSeuratApp(integrated_seu)
 ### view analysis details
 
 ``` r
-Misc(integrated_seu, "experiment") %>% 
-  tibble::enframe() %>% 
+Misc(integrated_seu, "experiment") %>%
+  tibble::enframe() %>%
   knitr::kable()
 ```
