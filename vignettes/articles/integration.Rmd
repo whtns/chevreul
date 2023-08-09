@@ -44,3 +44,8 @@ integrated_seu <- integration_workflow(batches)
 
 
 ```
+
+```{r, echo=FALSE}
+
+integrated_seu <- readRDS("integrated_seu.rds")
+```

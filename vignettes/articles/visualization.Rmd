@@ -1,6 +1,7 @@
 ---
 title: "Visualization"
 ---
+This article demonstrates data visualization tools present in Chevreul. Through this article we will be introducing visualizations functions, how they work and the resulting out of these functions. 
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
@@ -24,6 +25,7 @@ format_table <- function(mydf){
 
 ```
 
+First set is to load Chevreul anf all other packages required 
 
 ```{r setup, }
 library(chevreul)
@@ -43,14 +45,12 @@ chevreul provides a single command to:
 
 -   normalize and scale expression by any of several methods packaged in Seurat
 
-# run clustering on a single seurat object
+# Run clustering on a single seurat object
 
 By default clustering will be run at ten different resolutions between 0.2 and 2.0. Any resolution can be specified by providing the resolution argument as a numeric vector.
 
 ```{r, results=FALSE, echo=FALSE}
-clustered_seu <- cache_rds(
-  {clustering_workflow(panc8, experiment_name = "seurat_pancreas", organism = "human")},
-  file = "clustered_seu.rds")
+clustered_seu <- readRDS("clustered_seu.rds")
 ```
 
 ## Basic 
@@ -67,31 +67,34 @@ plot_feature(clustered_seu, embedding = "umap", features = "RXRG", return_plotly
  plot_feature(clustered_seu, embedding = "umap", features = c("RXRG", "NRL"), return_plotly = FALSE) 
 ```
 
-
-This Chevreul function includes multiple sub-functions that ultimately helps in creation of an interactive feature plot
-
-- When plotting only one feature, an existing Seurat function, FeaturePlot() is used. This function colors single cells on a dimensional reduction plot according to a 'feature'.
-
-- If multiple features are provided, the joint density of all the features are plotted using a plot_density() function from the Nebulosa package.
-
-- Once a feature plot of produced, this plot can be converted to an interactive plot using return_plotly argument within the plot_feature() function
+This Chevreul function includes multiple sub-functions that ultimately helps in creation of an interactive feature plot. When plotting only one feature, an existing Seurat function, FeaturePlot() is used. This function colors single cells on a dimensional reduction plot according to a 'feature'. If multiple features are to be plotted, the joint density of all the features are plotted using a plot_density() function from the Nebulosa package. Once a feature plot of produced, this plot can be converted to an interactive plot using return_plotly = TRUE argument within the plot_feature() function
 
 # Plotting cluster marker genes: plot_markers 
 
-Chevreul contains a function to create a plot of N number of marker features that are grouped by user specified cell metadata. The features are grouped by wilcoxon rank-sum test implemented in presto
+Chevreul contains a function to create a dot plot of N number of marker features that are grouped by user specified cell metadata. The features are grouped by wilcoxon rank-sum test implemented in presto.
 
 ```{r}
 plot_markers(clustered_seu, metavar = "gene_snn_res.0.2", marker_method = "presto", return_plotly = FALSE)
 
 ```
 
+In this Chevreul function, metadata variable from which to pick clusters is provided by the user through the argument metavar. From this metavar, cells are grouped based on presence of N number of marker features using wilcoxon rank sum test. In the resulting dot plot the sixe of the dot corresponds to the percentage of cells expressing the feature in each cluster and the color represents the average expression level of the feature. 
 
+# Plot read count using plot_readcount()
 
+The plot_readcount function in Cheverul plots a bar plot of number of read counts present in a metadata variable for each sample in the Seurat object. Here, the bars of the plot can be colored based on categorical metadata variable using the argument color.by whose default value is set to "batch"
 
+```{r}
+plot_readcount(clustered_seu, metavar = "nCount_RNA", color.by = "dataset", return_plotly = FALSE)
+```
 
+# Plot Metadata Vriable using plot_var() 
 
-plot_readcount 
-plot_var 
+```{r}
+plot_var(clustered_seu, return_plotly = FALSE)
+
+```
+
 plot_violin 
 
 ## intermediate

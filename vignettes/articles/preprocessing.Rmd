@@ -51,9 +51,7 @@ clustered_seu <- clustering_workflow(panc8, experiment_name = "seurat_pancreas",
 ```
 
 ```{r, results=FALSE, echo=FALSE}
-clustered_seu <- cache_rds(
-  {clustering_workflow(panc8, experiment_name = "seurat_pancreas", organism = "human")},
-  file = "clustered_seu.rds")
+clustered_seu <- readRDS("clustered_seu.rds")
 ```
 
 ## Clustering at several resolutions {.tabset}
@@ -178,9 +176,7 @@ Clustering analysis is performed via Louvain(default) or alternative algorithms 
 ```
 
 ```{r, results=FALSE, echo=FALSE}
- seu <- cache_rds(
-   seurat_cluster(seu = Dim_Red_seu, resolution = seq(0.2, 2, by = 0.2)),
-   file = "seu.rds")
+ seu <- readRDS("clustered_seu.rds")
 ```
 
 This function produces clustering analysis via two steps performed using two different sub-functions
@@ -205,27 +201,16 @@ integrated_seu <- integration_workflow(split_panc8)
 ```
 
 ```{r, results=FALSE, echo=FALSE}
-integrated_seu <- 
-  cache_rds(
-    integration_workflow(split_panc8),
-    file = "integrated_seu.rds"
-  )
+integrated_seu <- readRDS("integrated_seu.rds")
 ```
 
 # launch app to inspect
 
 ```{r, eval = FALSE}
-"asdf"
 
 minimalSeuratApp(integrated_seu)
 
 ```
 
-# view analysis details
 
-```{r, eval = TRUE}
-Misc(integrated_seu, "experiment") %>% 
-  tibble::enframe() %>% 
-  format_table()
-```
 
