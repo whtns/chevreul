@@ -37,7 +37,7 @@ cross_plot_vars <- function(seu, resolution, mycols) {
 
 }
 
-#' Plot pseudotime over multiple branches
+#' Plot monocle pseudotime over multiple branches
 #'
 #'
 #'

@@ -20,7 +20,7 @@ format_table <- function(mydf){
   mydf %>% 
     kableExtra::kbl() %>% 
     kable_paper() %>% 
-    scroll_box(width = "350px", height = "100px")
+    scroll_box(width = "700px", height = "200px")
 }
 
 ```
@@ -96,7 +96,7 @@ Chevreul contains a function that produces an interactive scatter plot of metada
 plot_var(clustered_seu, group = "celltype", embedding = "umap", return_plotly = FALSE)
 
 ```
-This function contains a Seurat funtion, DimPlot(), as sub function which produces the dimensional reduction plot
+This function contains a Seurat function, DimPlot(), as sub function which produces the dimensional reduction plot.The interactive parameter, return_plotly, in plot_var when set to TRUE will convert the plot into an interactive plot using ggplotly function from R's plotly package
 
 
 # plot_violin 
@@ -106,7 +106,7 @@ This function contains a Seurat funtion, DimPlot(), as sub function which produc
 plot_all_transcripts 
 plot_transcript_composition 
 
-## complicated 
+## complicated
 
 cross_plot_vars 
 plot_multiple_branches_heatmap 
@@ -114,3 +114,5 @@ plot_ridge
 seu_complex_heatmap 
 
 # section about plotly
+
+plotly is a tool to make ggplots interactive; it is only useful in an interactive context (in a shiny app)
