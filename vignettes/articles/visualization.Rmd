@@ -59,27 +59,22 @@ clustered_seu <- cache_rds(
  Chevreul contains a function that plots a vector of one or more features, either gene or transcript expression, overlaid on a given embedding.  This function results in a interactive, single or multi-feature plot
  
 ```{r}
-plot_feature(clustered_seu, embedding = "umap", features = "RXRG", return_plotly = FALSE) + 
-  plot_feature(clustered_seu, embedding = "umap", features = c("RXRG", "NRL"), return_plotly = FALSE)
+plot_feature(clustered_seu, embedding = "umap", features = "RXRG", return_plotly = FALSE)
 
 ```
+
+```{r}
+ plot_feature(clustered_seu, embedding = "umap", features = c("RXRG", "NRL"), return_plotly = FALSE) 
+```
+
 
 This Chevreul function includes multiple sub-functions that ultimately helps in creation of an interactive feature plot
-- When plotting only one feature, an existing Seurat function is used. This function colors single cells on a dimensional reduction plot according to a 'feature'.
 
-```{r}
-FeaturePlot(clustered_seu, features = "RXRG")
+- When plotting only one feature, an existing Seurat function, FeaturePlot() is used. This function colors single cells on a dimensional reduction plot according to a 'feature'.
 
-```
+- If multiple features are provided, the joint density of all the features are plotted using a plot_density() function from the Nebulosa package.
 
-- If multiple features are provided, the joint density of all the features are plotted using a function from the Nebulosa package.
-
-```{r}
-Nebulosa::plot_density(clustered_seu, features = c("RXRG", "NRL"), combine = "FALSE")
-
-```
-
-- Once a feature plot of produced, this plot is then converted to an interactive plot using plotly
+- Once a feature plot of produced, this plot can be converted to an interactive plot using return_plotly argument within the plot_feature() function
 
 # Plotting cluster marker genes: plot_markers 
 
