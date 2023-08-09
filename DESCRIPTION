@@ -50,7 +50,6 @@ Imports:
     rlang,
     RSQLite,
     sessioninfo,
-    SeuratWrappers (>= 0.2.0),
     shinyFiles,
     shinyhelper,
     shinyjs,
@@ -59,7 +58,8 @@ Imports:
     tidyr,
     unglue,
     waiter,
-    wiggleplotr (>= 1.13.1)
+    wiggleplotr (>= 1.13.1),
+    SeuratWrappers
 Suggests: 
     ggplot2,
     knitr,
@@ -74,8 +74,8 @@ Remotes:
     immunogenomics/presto,
     jokergoo/ComplexHeatmap,
     mahmoudibrahim/genesorteR,
-    satijalab/seurat-wrappers,
-    stephenturner/annotables
+    stephenturner/annotables,
+    satijalab/seurat-wrappers
 biocViews:
 Encoding: UTF-8
 LazyData: true
