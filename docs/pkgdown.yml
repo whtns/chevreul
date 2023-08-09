@@ -7,7 +7,7 @@ articles:
   shiny_app: shiny_app.html
   visualization: visualization.html
   getting-started: getting-started.html
-last_built: 2023-08-09T20:19Z
+last_built: 2023-08-09T20:35Z
 urls:
   reference: https://whtns.github.io/chevreul/reference
   article: https://whtns.github.io/chevreul/articles
