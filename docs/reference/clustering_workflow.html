@@ -24,6 +24,10 @@
 <li class="nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
+    <a class="dropdown-item" href="../articles/integration.html">Integration of Seurat objects</a>
+    <a class="dropdown-item" href="../articles/preprocessing.html">Preprocessing</a>
+    <a class="dropdown-item" href="../articles/shiny_app.html">Shiny App</a>
+    <a class="dropdown-item" href="../articles/visualization.html">Visualization</a>
     <a class="dropdown-item" href="../articles/getting-started.html">Getting Started</a>
   </div>
 </li>
@@ -128,10 +132,10 @@
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>The default method for RunUMAP has changed from calling Python UMAP via reticulate to the R-native UWOT using the cosine metric</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> To use Python UMAP via reticulate, set umap.method to 'umap-learn' and metric to 'correlation'</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> This message will be shown once per session</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> 16:49:15 UMAP embedding parameters a = 0.9922 b = 1.112</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> 16:49:15 Read 1011 rows and found 30 numeric columns</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> 16:49:15 Using Annoy for neighbor search, n_neighbors = 30</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> 16:49:15 Building Annoy index with metric = cosine, n_trees = 50</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 11:47:45 UMAP embedding parameters a = 0.9922 b = 1.112</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 11:47:45 Read 1011 rows and found 30 numeric columns</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 11:47:45 Using Annoy for neighbor search, n_neighbors = 30</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 11:47:45 Building Annoy index with metric = cosine, n_trees = 50</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> 0%   10   20   30   40   50   60   70   80   90   100%</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> [----|----|----|----|----|----|----|----|----|----|</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> *</span>
@@ -185,15 +189,15 @@
 <span class="r-msg co"><span class="r-pr">#&gt;</span> *</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> *</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> |</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> 16:49:15 Writing NN index file to temp file /tmp/RtmpqvPvHu/file18a689770bc4c3</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> 16:49:15 Searching Annoy index using 1 thread, search_k = 3000</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> 16:49:15 Annoy recall = 100%</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> 16:49:15 Commencing smooth kNN distance calibration using 1 thread</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 11:47:45 Writing NN index file to temp file /tmp/RtmphevHpM/file222a7368f4bfae</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 11:47:45 Searching Annoy index using 1 thread, search_k = 3000</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 11:47:45 Annoy recall = 100%</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 11:47:45 Commencing smooth kNN distance calibration using 1 thread</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>  with target n_neighbors = 30</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> 16:49:16 Initializing from normalized Laplacian + noise (using irlba)</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> 16:49:16 Commencing optimization for 500 epochs, with 40366 positive edges</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> 16:49:17 Optimization finished</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> [16:49:17] Clustering Cells...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 11:47:46 Initializing from normalized Laplacian + noise (using irlba)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 11:47:46 Commencing optimization for 500 epochs, with 40366 positive edges</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 11:47:47 Optimization finished</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> [11:47:48] Clustering Cells...</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Computing nearest neighbor graph</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Computing SNN</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> clustering at 0.2 resolution</span>
@@ -300,34 +304,44 @@
 <span class="r-msg co"><span class="r-pr">#&gt;</span> stashing genesorteR markers for gene_snn_res.0.2</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>A Friendly Warning: Some genes were removed because they were zeros in all cells after binarization. You probably don't need to do anything but you might want to look into this. Maybe you forgot to pre-filter the genes? You can also use a different binarization method. Excluded genes are available in the output under '$removed'.</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> as(&lt;dgeMatrix&gt;, "dgCMatrix") is deprecated since Matrix 1.5-0; do as(., "CsparseMatrix") instead</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>partial argument match of 'length' to 'length.out'</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> stashing presto markers for gene_snn_res.0.4</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> stashing genesorteR markers for gene_snn_res.0.4</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>A Friendly Warning: Some genes were removed because they were zeros in all cells after binarization. You probably don't need to do anything but you might want to look into this. Maybe you forgot to pre-filter the genes? You can also use a different binarization method. Excluded genes are available in the output under '$removed'.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>partial argument match of 'length' to 'length.out'</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> stashing presto markers for gene_snn_res.0.6</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> stashing genesorteR markers for gene_snn_res.0.6</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>A Friendly Warning: Some genes were removed because they were zeros in all cells after binarization. You probably don't need to do anything but you might want to look into this. Maybe you forgot to pre-filter the genes? You can also use a different binarization method. Excluded genes are available in the output under '$removed'.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>partial argument match of 'length' to 'length.out'</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> stashing presto markers for gene_snn_res.0.8</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> stashing genesorteR markers for gene_snn_res.0.8</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>A Friendly Warning: Some genes were removed because they were zeros in all cells after binarization. You probably don't need to do anything but you might want to look into this. Maybe you forgot to pre-filter the genes? You can also use a different binarization method. Excluded genes are available in the output under '$removed'.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>partial argument match of 'length' to 'length.out'</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> stashing presto markers for gene_snn_res.1</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> stashing genesorteR markers for gene_snn_res.1</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>A Friendly Warning: Some genes were removed because they were zeros in all cells after binarization. You probably don't need to do anything but you might want to look into this. Maybe you forgot to pre-filter the genes? You can also use a different binarization method. Excluded genes are available in the output under '$removed'.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>partial argument match of 'length' to 'length.out'</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> stashing presto markers for gene_snn_res.1.2</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> stashing genesorteR markers for gene_snn_res.1.2</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>A Friendly Warning: Some genes were removed because they were zeros in all cells after binarization. You probably don't need to do anything but you might want to look into this. Maybe you forgot to pre-filter the genes? You can also use a different binarization method. Excluded genes are available in the output under '$removed'.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>partial argument match of 'length' to 'length.out'</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> stashing presto markers for gene_snn_res.1.4</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> stashing genesorteR markers for gene_snn_res.1.4</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>A Friendly Warning: Some genes were removed because they were zeros in all cells after binarization. You probably don't need to do anything but you might want to look into this. Maybe you forgot to pre-filter the genes? You can also use a different binarization method. Excluded genes are available in the output under '$removed'.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>partial argument match of 'length' to 'length.out'</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> stashing presto markers for gene_snn_res.1.6</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> stashing genesorteR markers for gene_snn_res.1.6</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>A Friendly Warning: Some genes were removed because they were zeros in all cells after binarization. You probably don't need to do anything but you might want to look into this. Maybe you forgot to pre-filter the genes? You can also use a different binarization method. Excluded genes are available in the output under '$removed'.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>partial argument match of 'length' to 'length.out'</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> stashing presto markers for gene_snn_res.1.8</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> stashing genesorteR markers for gene_snn_res.1.8</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>A Friendly Warning: Some genes were removed because they were zeros in all cells after binarization. You probably don't need to do anything but you might want to look into this. Maybe you forgot to pre-filter the genes? You can also use a different binarization method. Excluded genes are available in the output under '$removed'.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>partial argument match of 'length' to 'length.out'</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> stashing presto markers for gene_snn_res.2</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> stashing genesorteR markers for gene_snn_res.2</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>A Friendly Warning: Some genes were removed because they were zeros in all cells after binarization. You probably don't need to do anything but you might want to look into this. Maybe you forgot to pre-filter the genes? You can also use a different binarization method. Excluded genes are available in the output under '$removed'.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> [16:51:30] Logging Technical Details...</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>partial argument match of 'length' to 'length.out'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> [11:49:47] Logging Technical Details...</span>
 <span class="r-in"><span><span class="va">clustered_mouse_seu</span> <span class="op">&lt;-</span> <span class="fu">clustering_workflow</span><span class="op">(</span><span class="va">baron2016singlecell</span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Centering and scaling data matrix</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> PC_ 1 </span>
@@ -365,10 +379,10 @@
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Negative:  Pyy, Rbp4, Gpx3, Gnas, Gc, Tmem27, Etv1, Gcg, Eef1a2, Arg1 </span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> 	   Ppy, Sst, Kcnk3, Sfrp5, Resp18, Itpr1, Ttr, Cst3, Irx1, Irx2 </span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> 	   Fev, Hhex, Serping1, Ache, Dpp6, Nefm, Egr1, Arx, Fos, Mest </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> 16:51:40 UMAP embedding parameters a = 0.9922 b = 1.112</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> 16:51:40 Read 1886 rows and found 30 numeric columns</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> 16:51:40 Using Annoy for neighbor search, n_neighbors = 30</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> 16:51:40 Building Annoy index with metric = cosine, n_trees = 50</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 11:49:53 UMAP embedding parameters a = 0.9922 b = 1.112</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 11:49:53 Read 1886 rows and found 30 numeric columns</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 11:49:53 Using Annoy for neighbor search, n_neighbors = 30</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 11:49:53 Building Annoy index with metric = cosine, n_trees = 50</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> 0%   10   20   30   40   50   60   70   80   90   100%</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> [----|----|----|----|----|----|----|----|----|----|</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> *</span>
@@ -422,15 +436,15 @@
 <span class="r-msg co"><span class="r-pr">#&gt;</span> *</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> *</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> |</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> 16:51:40 Writing NN index file to temp file /tmp/RtmpqvPvHu/file18a689457e2be7</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> 16:51:40 Searching Annoy index using 1 thread, search_k = 3000</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> 16:51:41 Annoy recall = 100%</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> 16:51:41 Commencing smooth kNN distance calibration using 1 thread</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 11:49:54 Writing NN index file to temp file /tmp/RtmphevHpM/file222a734a4e8cfc</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 11:49:54 Searching Annoy index using 1 thread, search_k = 3000</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 11:49:54 Annoy recall = 100%</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 11:49:54 Commencing smooth kNN distance calibration using 1 thread</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>  with target n_neighbors = 30</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> 16:51:42 Initializing from normalized Laplacian + noise (using irlba)</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> 16:51:42 Commencing optimization for 500 epochs, with 75976 positive edges</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> 16:51:44 Optimization finished</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> [16:51:44] Clustering Cells...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 11:49:55 Initializing from normalized Laplacian + noise (using irlba)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 11:49:55 Commencing optimization for 500 epochs, with 75976 positive edges</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 11:49:58 Optimization finished</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> [11:49:58] Clustering Cells...</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Computing nearest neighbor graph</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Computing SNN</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> clustering at 0.2 resolution</span>
@@ -536,37 +550,47 @@
 <span class="r-msg co"><span class="r-pr">#&gt;</span> stashing presto markers for gene_snn_res.0.2</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> stashing genesorteR markers for gene_snn_res.0.2</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>A Friendly Warning: Some genes were removed because they were zeros in all cells after binarization. You probably don't need to do anything but you might want to look into this. Maybe you forgot to pre-filter the genes? You can also use a different binarization method. Excluded genes are available in the output under '$removed'.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>partial argument match of 'length' to 'length.out'</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> stashing presto markers for gene_snn_res.0.4</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> stashing genesorteR markers for gene_snn_res.0.4</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>A Friendly Warning: Some genes were removed because they were zeros in all cells after binarization. You probably don't need to do anything but you might want to look into this. Maybe you forgot to pre-filter the genes? You can also use a different binarization method. Excluded genes are available in the output under '$removed'.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>partial argument match of 'length' to 'length.out'</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> stashing presto markers for gene_snn_res.0.6</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> stashing genesorteR markers for gene_snn_res.0.6</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>A Friendly Warning: Some genes were removed because they were zeros in all cells after binarization. You probably don't need to do anything but you might want to look into this. Maybe you forgot to pre-filter the genes? You can also use a different binarization method. Excluded genes are available in the output under '$removed'.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>partial argument match of 'length' to 'length.out'</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> stashing presto markers for gene_snn_res.0.8</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> stashing genesorteR markers for gene_snn_res.0.8</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>A Friendly Warning: Some genes were removed because they were zeros in all cells after binarization. You probably don't need to do anything but you might want to look into this. Maybe you forgot to pre-filter the genes? You can also use a different binarization method. Excluded genes are available in the output under '$removed'.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>partial argument match of 'length' to 'length.out'</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> stashing presto markers for gene_snn_res.1</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> stashing genesorteR markers for gene_snn_res.1</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>A Friendly Warning: Some genes were removed because they were zeros in all cells after binarization. You probably don't need to do anything but you might want to look into this. Maybe you forgot to pre-filter the genes? You can also use a different binarization method. Excluded genes are available in the output under '$removed'.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>partial argument match of 'length' to 'length.out'</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> stashing presto markers for gene_snn_res.1.2</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> stashing genesorteR markers for gene_snn_res.1.2</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>A Friendly Warning: Some genes were removed because they were zeros in all cells after binarization. You probably don't need to do anything but you might want to look into this. Maybe you forgot to pre-filter the genes? You can also use a different binarization method. Excluded genes are available in the output under '$removed'.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>partial argument match of 'length' to 'length.out'</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> stashing presto markers for gene_snn_res.1.4</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> stashing genesorteR markers for gene_snn_res.1.4</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>A Friendly Warning: Some genes were removed because they were zeros in all cells after binarization. You probably don't need to do anything but you might want to look into this. Maybe you forgot to pre-filter the genes? You can also use a different binarization method. Excluded genes are available in the output under '$removed'.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>partial argument match of 'length' to 'length.out'</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> stashing presto markers for gene_snn_res.1.6</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> stashing genesorteR markers for gene_snn_res.1.6</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>A Friendly Warning: Some genes were removed because they were zeros in all cells after binarization. You probably don't need to do anything but you might want to look into this. Maybe you forgot to pre-filter the genes? You can also use a different binarization method. Excluded genes are available in the output under '$removed'.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>partial argument match of 'length' to 'length.out'</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> stashing presto markers for gene_snn_res.1.8</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> stashing genesorteR markers for gene_snn_res.1.8</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>A Friendly Warning: Some genes were removed because they were zeros in all cells after binarization. You probably don't need to do anything but you might want to look into this. Maybe you forgot to pre-filter the genes? You can also use a different binarization method. Excluded genes are available in the output under '$removed'.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>partial argument match of 'length' to 'length.out'</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> stashing presto markers for gene_snn_res.2</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> stashing genesorteR markers for gene_snn_res.2</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>A Friendly Warning: Some genes were removed because they were zeros in all cells after binarization. You probably don't need to do anything but you might want to look into this. Maybe you forgot to pre-filter the genes? You can also use a different binarization method. Excluded genes are available in the output under '$removed'.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>partial argument match of 'length' to 'length.out'</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>The following features are not present in the object: MCM5, PCNA, TYMS, FEN1, MCM2, MCM4, RRM1, UNG, GINS2, MCM6, CDCA7, DTL, PRIM1, UHRF1, MLF1IP, HELLS, RFC2, RPA2, NASP, RAD51AP1, GMNN, WDR76, SLBP, CCNE2, UBR7, POLD3, MSH2, ATAD2, RAD51, RRM2, CDC45, CDC6, EXO1, TIPIN, DSCC1, BLM, CASP8AP2, USP1, CLSPN, POLA1, CHAF1B, BRIP1, E2F8, not searching for symbol synonyms</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>The following features are not present in the object: HMGB2, CDK1, NUSAP1, UBE2C, BIRC5, TPX2, TOP2A, NDC80, CKS2, NUF2, CKS1B, MKI67, TMPO, CENPF, TACC3, FAM64A, SMC4, CCNB2, CKAP2L, CKAP2, AURKB, BUB1, KIF11, ANP32E, TUBB4B, GTSE1, KIF20B, HJURP, CDCA3, HN1, CDC20, TTK, CDC25C, KIF2C, RANGAP1, NCAPD2, DLGAP5, CDCA2, CDCA8, ECT2, KIF23, HMMR, AURKA, PSRC1, ANLN, LBR, CKAP5, CENPE, CTCF, NEK2, G2E3, GAS2L3, CBX5, CENPA, not searching for symbol synonyms</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Could not find enough features in the object from the following feature lists: S.Score Attempting to match case...Could not find enough features in the object from the following feature lists: G2M.Score Attempting to match case...</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> [16:52:59] Logging Technical Details...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> [11:51:03] Logging Technical Details...</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>

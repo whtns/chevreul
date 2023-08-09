@@ -11,7 +11,9 @@
 #'
 #' @examples
 #'
+#' /dontrun{
 #' minimalSeuratApp(panc8)
+#' }
 #'
 minimalSeuratApp <- function(object = panc8, loom_path = NULL, appTitle = NULL,
                              organism_type = "human", futureMb = 13000, bigwig_db = "~/.cache/chevreul/bw-files.db") {
