@@ -59,7 +59,7 @@ Imports:
     unglue,
     waiter,
     wiggleplotr (>= 1.13.1),
-    SeuratWrappers
+    SeuratWrappers (>= 0.2.0)
 Suggests: 
     ggplot2,
     knitr,
@@ -68,13 +68,14 @@ Suggests:
     testthat (>= 2.1.0)
 VignetteBuilder: 
     knitr
-Remotes: 
+Remotes:  
     cole-trapnell-lab/monocle3,
     DillonHammill/DataEditR,
     immunogenomics/presto,
     jokergoo/ComplexHeatmap,
     mahmoudibrahim/genesorteR,
     stephenturner/annotables,
+    satijalab/seurat-wrappers,
     satijalab/seurat-wrappers
 biocViews:
 Encoding: UTF-8
