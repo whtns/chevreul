@@ -1,7 +1,7 @@
 ---
 title: "Visualization"
 ---
-This article demonstrates data visualization tools present in Chevreul. Through this article we will be introducing visualizations functions, how they work and the resulting out of these functions. 
+This article demonstrates data visualization tools present in Chevreul. Through this article we will be introducing different visualization functions, their workings, and the resulting plots produced by these functions. 
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
@@ -20,7 +20,7 @@ format_table <- function(mydf){
   mydf %>% 
     kableExtra::kbl() %>% 
     kable_paper() %>% 
-    scroll_box(width = "700px", height = "200px")
+    scroll_box(width = "350px", height = "100px")
 }
 
 ```
@@ -82,7 +82,7 @@ In this Chevreul function, metadata variable from which to pick clusters is prov
 
 # Plot read count using plot_readcount()
 
-The plot_readcount function in Cheverul plots a bar plot of number of read counts present in a metadata variable for each sample in the Seurat object. Here, the bars of the plot can be colored based on categorical metadata variable using the argument color.by whose default value is set to "batch"
+The plot_readcount function in Chevreul plots a bar plot of number of read counts present in a metadata variable for each sample in the Seurat object. Here, the bars of the plot can be colored based on categorical metadata variable using the argument color.by whose default value is set to "batch"
 
 ```{r}
 plot_readcount(clustered_seu, metavar = "nCount_RNA", color.by = "dataset", return_plotly = FALSE)
@@ -90,12 +90,16 @@ plot_readcount(clustered_seu, metavar = "nCount_RNA", color.by = "dataset", retu
 
 # Plot Metadata Vriable using plot_var() 
 
+Chevreul contains a function that produces an interactive scatter plot of metadata variable, where each point in the plot represents a cell whose position on the plot is given by the cell embedding determined by the dimensional reduction technique. The default dimensionality reduction used is "umap". The group argument in plot_var() function allows the user to enter the metadata variable by which to group the cells by, its default value is set to "batch"
+
 ```{r}
-plot_var(clustered_seu, return_plotly = FALSE)
+plot_var(clustered_seu, group = "celltype", embedding = "umap", return_plotly = FALSE)
 
 ```
+This function contains a Seurat funtion, DimPlot(), as sub function which produces the dimensional reduction plot
 
-plot_violin 
+
+# plot_violin 
 
 ## intermediate
 
