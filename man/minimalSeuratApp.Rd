@@ -25,6 +25,8 @@ Create a minimal seurat app
 }
 \examples{
 
+/dontrun{
 minimalSeuratApp(panc8)
+}
 
 }

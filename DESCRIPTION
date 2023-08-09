@@ -59,12 +59,12 @@ Imports:
     unglue,
     waiter,
     wiggleplotr (>= 1.13.1)
-    SeuratWrappers (>= 0.2.0)
 Suggests: 
     ggplot2,
     knitr,
     monocle3 (>= 0.2.1),
     rmarkdown,
+    SeuratWrappers (>= 0.2.0),
     testthat (>= 2.1.0)
 VignetteBuilder: 
     knitr
