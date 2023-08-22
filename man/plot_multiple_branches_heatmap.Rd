@@ -2,7 +2,7 @@
 % Please edit documentation in R/plotting.R
 \name{plot_multiple_branches_heatmap}
 \alias{plot_multiple_branches_heatmap}
-\title{Plot pseudotime over multiple branches}
+\title{Plot monocle pseudotime over multiple branches}
 \usage{
 plot_multiple_branches_heatmap(
   cds,
@@ -28,5 +28,5 @@ plot_multiple_branches_heatmap(
 \item{cores}{}
 }
 \description{
-Plot pseudotime over multiple branches
+Plot monocle pseudotime over multiple branches
 }

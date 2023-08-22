@@ -24,7 +24,7 @@ seurat_preprocess <- function(assay, scale = TRUE, normalize = TRUE, features = 
 
     logtransform_exp <- as.matrix(log1p(Seurat::GetAssayData(assay)))
 
-    seu <- Seurat::SetAssayData(assay, slot = "data", logtransform_exp) %>%
+    assay <- Seurat::SetAssayData(assay, slot = "data", logtransform_exp) %>%
       Seurat::ScaleData(features = rownames(.))
 
     return(assay)
@@ -124,30 +124,27 @@ stash_marker_features <- function(metavar, seu, seurat_assay, top_n = 200, p_val
     dplyr::arrange(group, desc(logFC)) %>%
     dplyr::select(Gene.Name = feature, Average.Log.Fold.Change = logFC, Adjusted.pvalue = padj, avgExpr, Cluster = group)
 
-
-
-  message(paste0("stashing genesorteR markers for ", metavar))
-
-  markers$genesorteR <- tryCatch(
-    {
-      gs <- genesorteR::sortGenes(
-        Seurat::GetAssayData(seu, assay = seurat_assay, slot = "data"),
-        tidyr::replace_na(seu[[]][[metavar]], "NA")
-      )
-
-      pp <- genesorteR::getPValues(gs)
-
-      genesorter_table <- genesorteR::getTable(gs, pp, adjpval_cutoff = p_val_cutoff)
-
-    },
-    error = function(e) {
-      message(sprintf("Error in %s: %s", deparse(e[["call"]]), e[["message"]]))
-      NULL
-    },
-    finally = {
-    }
-  )
-
+  # message(paste0("stashing genesorteR markers for ", metavar))
+  #
+  # markers$genesorteR <- tryCatch(
+  #   {
+  #     gs <- genesorteR::sortGenes(
+  #       Seurat::GetAssayData(seu, assay = seurat_assay, slot = "data"),
+  #       tidyr::replace_na(seu[[]][[metavar]], "NA")
+  #     )
+  #
+  #     pp <- genesorteR::getPValues(gs)
+  #
+  #     genesorter_table <- genesorteR::getTable(gs, pp, adjpval_cutoff = p_val_cutoff)
+  #
+  #   },
+  #   error = function(e) {
+  #     message(sprintf("Error in %s: %s", deparse(e[["call"]]), e[["message"]]))
+  #     NULL
+  #   },
+  #   finally = {
+  #   }
+  # )
 
   return(markers)
 }

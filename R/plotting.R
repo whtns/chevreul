@@ -1,8 +1,6 @@
 
 
-#' Cross plot vars
-#'
-#'
+#' Unite metadata
 #'
 #' @param seu
 #' @param resolution
@@ -13,7 +11,7 @@
 #'
 #' @examples
 #'
-cross_plot_vars <- function(seu, resolution, mycols) {
+unite_metadata <- function(seu, resolution, metavars) {
 
 
   if ("integrated" %in% names(seu@assays)) {
@@ -25,11 +23,11 @@ cross_plot_vars <- function(seu, resolution, mycols) {
 
   cluster_resolution = paste0(active_assay,
                               "_snn_res.", resolution)
-  mycols <- gsub("^seurat$", cluster_resolution, mycols)
-  newcolname = paste(mycols, collapse = "_by_")
+  metavars <- gsub("^seurat$", cluster_resolution, metavars)
+  newcolname = paste(metavars, collapse = "_by_")
 
-  newdata <- seu[[mycols]] %>%
-    tidyr::unite(!!newcolname, mycols)
+  newdata <- seu[[metavars]] %>%
+    tidyr::unite(!!newcolname, metavars)
 
   Idents(seu) <- newdata
 
@@ -274,7 +272,7 @@ plot_multiple_branches_heatmap <- function(cds,
 #' plotly_plot <- plot_var(panc8, group = "batch")
 #' print(plotly_plot)
 #'
-plot_var <- function(seu, group = "batch", embedding = "umap", dims = c(1,2), highlight = NULL, pt.size = 1.0, return_plotly = TRUE, ...){
+plot_var <- function(seu, group = "batch", embedding = "umap", dims = c(1,2), highlight = NULL, pt.size = 1.0, return_plotly = FALSE, ...){
 
   Seurat::DefaultAssay(seu) <- "gene"
 
@@ -393,7 +391,7 @@ plot_violin <- function(seu, plot_var = "batch", plot_vals = NULL, features = "R
 #' plotly_plot <- plot_feature(panc8, embedding = "umap", features = c("RXRG", "NRL"))
 #' print(plotly_plot)
 #'
-plot_feature <- function(seu, embedding = c("umap", "pca", "tsne"), features, dims = c(1,2), return_plotly = TRUE, pt.size = 1.0){
+plot_feature <- function(seu, embedding = c("umap", "pca", "tsne"), features, dims = c(1,2), return_plotly = FALSE, pt.size = 1.0){
 
   Seurat::DefaultAssay(seu) <- "gene"
 
@@ -427,18 +425,18 @@ plot_feature <- function(seu, embedding = c("umap", "pca", "tsne"), features, di
 
 }
 
-#' Plot Ridges
+#' Plot cell cycle distribution grouped by metadata
 #'
-#' Plot ridge plots for cell cycle scoring
+#' Plot ridge plots of G1, S, and G2M phases grouped by provided metadata
 #'
 #' @param seu
-#' @param features
+#' @param features  Features to plot (gene expression, metrics, PC scores, anything that can be retreived by Seurat::FetchData)
 #'
 #' @return
 #' @export
 #'
 #' @examples
-plot_ridge <- function(seu, features){
+plot_cell_cycle_distribution <- function(seu, features){
 
   cc_genes_path <- "~/single_cell_projects/resources/regev_lab_cell_cycle_genes.txt"
   cc.genes <- readLines(con = cc_genes_path)
@@ -450,8 +448,6 @@ plot_ridge <- function(seu, features){
 
   RidgePlot(object = seu, features = features)
 
-  # plotly::ggplotly(r, height = 750)
-  #
 }
 
 
@@ -482,7 +478,7 @@ plot_ridge <- function(seu, features){
 #' # static mode using "presto"
 #' plot_markers(panc8, metavar = "tech", marker_method = "genesorteR", return_plotly = FALSE)
 #'
-plot_markers <- function(seu, metavar = "batch", num_markers = 5, selected_values = NULL, return_plotly = TRUE, marker_method = "presto", seurat_assay = "gene", hide_technical = NULL, unique_markers = FALSE, p_val_cutoff = 1, ...){
+plot_markers <- function(seu, metavar = "batch", num_markers = 5, selected_values = NULL, return_plotly = FALSE, marker_method = "presto", seurat_assay = "gene", hide_technical = NULL, unique_markers = FALSE, p_val_cutoff = 1, ...){
 
   Idents(seu) <- seu[[metavar]]
 
@@ -602,7 +598,7 @@ plot_markers <- function(seu, metavar = "batch", num_markers = 5, selected_value
 #' plot_readcount(panc8, return_plotly = FALSE)
 #'
 #' @importFrom ggplot2 ggplot aes geom_bar theme labs scale_y_log10
-plot_readcount <- function(seu, metavar = "nCount_RNA", color.by = "batch", yscale = "linear", return_plotly = TRUE, ...){
+plot_readcount <- function(seu, metavar = "nCount_RNA", color.by = "batch", yscale = "linear", return_plotly = FALSE, ...){
 
   seu_tbl <- tibble::rownames_to_column(seu[[]], "SID") %>%
     dplyr::select(SID, !!as.symbol(metavar), !!as.symbol(color.by))
@@ -637,17 +633,16 @@ plot_readcount <- function(seu, metavar = "nCount_RNA", color.by = "batch", ysca
 #' Plot Annotated Complexheatmap from Seurat object
 #'
 #' @param object
-#' @param features
-#' @param cells
-#' @param group.by
+#' @param features Vector of features to plot. Features can come
+#' @param cells Cells to retain
+#' @param group.by  Name of one or more metadata columns to annotate columns by (for example, orig.ident)
 #' @param slot
 #' @param assay
 #' @param group.bar.height
-#' @param cluster_columns FALSE
-#' @param col_dendrogram
-#' @param column_split
-#' @param mm_col_dend
-#' @param ...
+#' @param col_arrangement how to arrange columns whether with a dendrogram (Ward.D2, average, etc.) or exclusively by metadata category
+#' @param column_split whether to split columns by metadat value
+#' @param mm_col_dend height of column dendrogram
+#' @param ... additional arguments passed to ComplexHeatmap::Heatmap
 #'
 #' @return
 #' @export
@@ -660,7 +655,7 @@ plot_readcount <- function(seu, metavar = "nCount_RNA", color.by = "batch", ysca
 #'
 seu_complex_heatmap <- function(seu, features = NULL, group.by = "ident", cells = NULL,
                                 slot = "scale.data", assay = NULL, group.bar.height = 0.01,
-                                cluster_columns = FALSE, column_split = NULL, col_dendrogram = "ward.D2", mm_col_dend = 30, ...)
+                                column_split = NULL, col_arrangement = "ward.D2", mm_col_dend = 30, ...)
 {
 
   if (length(GetAssayData(seu, "scale.data")) == 0){
@@ -694,16 +689,16 @@ seu_complex_heatmap <- function(seu, features = NULL, group.by = "ident", cells 
   seu <- suppressMessages(expr = StashIdent(object = seu,
                                                save.name = "ident"))
 
-  if (col_dendrogram %in% c("ward.D", "single", "complete", "average", "mcquitty",
+  if (col_arrangement %in% c("ward.D", "single", "complete", "average", "mcquitty",
                             "median", "centroid", "ward.D2")){
     if("pca" %in% Seurat::Reductions(seu)){
       cluster_columns <-
         Seurat::Embeddings(seu, "pca") %>%
         dist() %>%
-        hclust(col_dendrogram)
+        hclust(col_arrangement)
     } else {
       message("pca not computed for this dataset; cells will be clustered by displayed features")
-      cluster_columns <- function(m) as.dendrogram(cluster::agnes(m), method = col_dendrogram)
+      cluster_columns <- function(m) as.dendrogram(cluster::agnes(m), method = col_arrangement)
 
     }
 
@@ -711,13 +706,15 @@ seu_complex_heatmap <- function(seu, features = NULL, group.by = "ident", cells 
 
     cells <-
       seu %>%
-      Seurat::FetchData(vars = col_dendrogram) %>%
-      dplyr::arrange(across(all_of(col_dendrogram))) %>%
+      Seurat::FetchData(vars = col_arrangement) %>%
+      dplyr::arrange(across(all_of(col_arrangement))) %>%
       rownames()
 
     data <- data[cells,]
 
-    group.by = union(group.by, col_dendrogram)
+    group.by = union(group.by, col_arrangement)
+
+    cluster_columns = FALSE
   }
 
   group.by <- group.by %||% "ident"
@@ -846,8 +843,12 @@ plot_transcript_composition <- function(seu, gene_symbol, group.by = "batch", st
 
 #' Plot All Transcripts
 #'
+#' plot expression all transcripts for an input gene superimposed on an embedding
+#'
 #' @param seu
-#' @param transcripts
+#' @param features gene or vector of transcripts
+#' @param embedding umap
+#' @param from_gene whether to look up transcripts for an input gene
 #'
 #' @return
 #' @export
@@ -858,17 +859,28 @@ plot_transcript_composition <- function(seu, gene_symbol, group.by = "batch", st
 #' transcripts_to_plot <- genes_to_transcripts("RXRG")
 #' plot_all_transcripts(processed_seu, features = transcripts_to_plot)
 #'
-plot_all_transcripts <- function(seu, features, embedding = "umap"){
+plot_all_transcripts <- function(seu, features, embedding = "umap", from_gene = TRUE, combine = TRUE){
+
+  if(from_gene){
+    features <- genes_to_transcripts(features)
+  }
+
+  features = features[features %in% rownames(seu[["transcript"]])]
 
   transcript_cols <- as.data.frame(t(as.matrix(seu[["transcript"]][features,])))
 
   seu <- AddMetaData(seu, transcript_cols)
 
-  pList <- purrr::map(features, ~plot_feature(seu,
+  plot_out <- purrr::map(features, ~plot_feature(seu,
                                               embedding = embedding,
-                                              features = .x, return_plotly = FALSE))
-  names(pList) <- features
+                                              features = .x, return_plotly = FALSE)) %>%
+    purrr::set_names(features)
 
-  return(pList)
+  if(combine){
+    plot_out <- wrap_plots(plot_out)
+  }
+
+
+  return(plot_out)
 
 }

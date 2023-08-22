@@ -4,13 +4,23 @@
 \alias{plot_all_transcripts}
 \title{Plot All Transcripts}
 \usage{
-plot_all_transcripts(seu, features, embedding = "umap")
+plot_all_transcripts(
+  seu,
+  features,
+  embedding = "umap",
+  from_gene = TRUE,
+  combine = TRUE
+)
 }
 \arguments{
-\item{transcripts}{}
+\item{features}{gene or vector of transcripts}
+
+\item{embedding}{umap}
+
+\item{from_gene}{whether to look up transcripts for an input gene}
 }
 \description{
-Plot All Transcripts
+plot expression all transcripts for an input gene superimposed on an embedding
 }
 \examples{
 

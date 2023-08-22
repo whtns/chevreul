@@ -1,0 +1,38 @@
+---
+title: "Pipeline"
+---
+In this article we will demonstrate different data visualization tools present in Chevreul that allows users to visualize their data. Through this article we will be introducing different visualization functions, their usage, and the resulting plots produced by these functions. 
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+    # dev.args = list(png = list(type = "cairo")),
+  dpi=900,
+  out.width = "100%",
+  message = FALSE,
+  warning = FALSE
+)
+
+library(xfun)
+
+format_table <- function(mydf){
+  mydf %>% 
+    kableExtra::kbl() %>% 
+    kable_paper() %>% 
+    scroll_box(width = "700px", height = "200px")
+}
+
+```
+
+First step is to load Chevreul and all other packages required 
+
+```{r setup, }
+library(chevreul)
+library(Seurat)
+library(tidyverse)
+library(ggraph)
+library(patchwork)
+```
+
+

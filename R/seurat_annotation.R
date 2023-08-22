@@ -48,18 +48,20 @@ annotate_cell_cycle <- function(seu, organism = "human", ...) {
 #'
 genes_to_transcripts <- function(genes, organism = "human") {
   if (organism == "human") {
-    gene_table <- annotables::grch38
-    transcript_table <- annotables::grch38_tx2gene
+    feature_table <- ensembldb::transcripts(EnsDb.Hsapiens.v86::EnsDb.Hsapiens.v86,
+                                            columns = c("gene_name", "gene_biotype", "gene_id"),
+                                            return.type="DataFrame")
   } else if (organism == "mouse") {
-    gene_table <- annotables::grcm38
-    transcript_table <- annotables::grcm38_tx2gene
+    feature_table <- ensembldb::transcripts(EnsDb.Mmusculus.v79::EnsDb.Mmusculus.v79,
+                                            columns = c("gene_name", "gene_biotype", "gene_id"),
+                                            return.type="DataFrame")
   }
 
-  tibble::tibble(symbol = genes) %>%
-    dplyr::left_join(gene_table, by = "symbol") %>%
-    dplyr::left_join(transcript_table, by = "ensgene") %>%
-    dplyr::pull("enstxp") %>%
-    identity()
+  feature_table %>%
+    as_tibble() %>%
+    dplyr::filter(gene_name %in% genes) %>%
+    dplyr::pull(tx_id)
+
 }
 
 #' Ensembl Transcript Ids to Gene Symbols
