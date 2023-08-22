@@ -9,7 +9,7 @@ plot_feature(
   embedding = c("umap", "pca", "tsne"),
   features,
   dims = c(1, 2),
-  return_plotly = TRUE,
+  return_plotly = FALSE,
   pt.size = 1
 )
 }

@@ -11,7 +11,7 @@ plot_var(
   dims = c(1, 2),
   highlight = NULL,
   pt.size = 1,
-  return_plotly = TRUE,
+  return_plotly = FALSE,
   ...
 )
 }

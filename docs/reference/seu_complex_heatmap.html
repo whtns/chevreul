@@ -25,6 +25,7 @@
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
     <a class="dropdown-item" href="../articles/integration.html">Integration of Seurat objects</a>
+    <a class="dropdown-item" href="../articles/pipeline.html">Pipeline</a>
     <a class="dropdown-item" href="../articles/preprocessing.html">Preprocessing</a>
     <a class="dropdown-item" href="../articles/shiny_app.html">Shiny App</a>
     <a class="dropdown-item" href="../articles/visualization.html">Visualization</a>
@@ -69,9 +70,8 @@
 <span>  slot <span class="op">=</span> <span class="st">"scale.data"</span>,</span>
 <span>  assay <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  group.bar.height <span class="op">=</span> <span class="fl">0.01</span>,</span>
-<span>  cluster_columns <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  column_split <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  col_dendrogram <span class="op">=</span> <span class="st">"ward.D2"</span>,</span>
+<span>  col_arrangement <span class="op">=</span> <span class="st">"ward.D2"</span>,</span>
 <span>  mm_col_dend <span class="op">=</span> <span class="fl">30</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -79,12 +79,32 @@
 
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
-    <dl><dt>cluster_columns</dt>
-<dd><p>FALSE</p></dd>
+    <dl><dt>features</dt>
+<dd><p>Vector of features to plot. Features can come</p></dd>
+
+
+<dt>group.by</dt>
+<dd><p>Name of one or more metadata columns to annotate columns by (for example, orig.ident)</p></dd>
+
+
+<dt>cells</dt>
+<dd><p>Cells to retain</p></dd>
+
+
+<dt>column_split</dt>
+<dd><p>whether to split columns by metadat value</p></dd>
+
+
+<dt>col_arrangement</dt>
+<dd><p>how to arrange columns whether with a dendrogram (Ward.D2, average, etc.) or exclusively by metadata category</p></dd>
+
+
+<dt>mm_col_dend</dt>
+<dd><p>height of column dendrogram</p></dd>
 
 
 <dt>...</dt>
-<dd></dd>
+<dd><p>additional arguments passed to ComplexHeatmap::Heatmap</p></dd>
 
 </dl></div>
 
@@ -101,7 +121,7 @@
 
 
     <footer><div class="pkgdown-footer-left">
-  <p></p><p>Developed by Kevin Stachelek.</p>
+  <p></p><p>Developed by Kevin Stachelek, Bhavana Bhat.</p>
 </div>
 
 <div class="pkgdown-footer-right">

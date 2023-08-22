@@ -42,6 +42,7 @@
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
     <a class="dropdown-item" href="../articles/integration.html">Integration of Seurat objects</a>
+    <a class="dropdown-item" href="../articles/pipeline.html">Pipeline</a>
     <a class="dropdown-item" href="../articles/preprocessing.html">Preprocessing</a>
     <a class="dropdown-item" href="../articles/shiny_app.html">Shiny App</a>
     <a class="dropdown-item" href="../articles/visualization.html">Visualization</a>
@@ -84,130 +85,191 @@
 
     
     
-<p>This article demonstrates data visualization tools present in
-Chevreul. Through this article we will be introducing different
-visualization functions, their workings, and the resulting plots
-produced by these functions.</p>
-<p>First set is to load Chevreul anf all other packages required</p>
+<p>This article will demonstrate different data visualization tools
+present in Chevreul that allows users to visualize their data. Through
+this article we will be introducing different visualization functions,
+their usage, and the resulting plots produced by these functions.</p>
+<p>First step is to load Chevreul package and all other packages
+required</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/cobriniklab/chevreul" class="external-link">chevreul</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://satijalab.org/seurat" class="external-link">Seurat</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org" class="external-link">tidyverse</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggraph.data-imaginist.com" class="external-link">ggraph</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://patchwork.data-imaginist.com" class="external-link">patchwork</a></span><span class="op">)</span></span></code></pre></div>
+<div class="section level2">
+<h2 id="tldr">TLDR<a class="anchor" aria-label="anchor" href="#tldr"></a>
+</h2>
 <div class="section level3">
-<h3 id="tldr">TLDR<a class="anchor" aria-label="anchor" href="#tldr"></a>
+<h3 id="run-clustering-on-a-single-seurat-object">Run clustering on a single seurat object<a class="anchor" aria-label="anchor" href="#run-clustering-on-a-single-seurat-object"></a>
 </h3>
-<p>chevreul provides a single command to:</p>
+<p>Chevreul provides a single command, clustering_workflow(), to:</p>
 <ul>
 <li><p>construct a Seurat object</p></li>
 <li><p>filter genes by minimum expression and ubiquity</p></li>
 <li><p>normalize and scale expression by any of several methods packaged
 in Seurat</p></li>
 </ul>
-</div>
-<div class="section level2">
-<h2 id="run-clustering-on-a-single-seurat-object">Run clustering on a single seurat object<a class="anchor" aria-label="anchor" href="#run-clustering-on-a-single-seurat-object"></a>
-</h2>
-<p>By default clustering will be run at ten different resolutions
-between 0.2 and 2.0. Any resolution can be specified by providing the
-resolution argument as a numeric vector.</p>
-<div class="section level3">
-<h3 id="basic">Basic<a class="anchor" aria-label="anchor" href="#basic"></a>
-</h3>
+<p>This function is called Clustering Workflow, by default clustering
+will be run at ten different resolutions between 0.2 and 2.0. Any
+resolution can be specified by providing the resolution argument as a
+numeric vector. The new object is then saved as rds file which can be
+read using readRDS()</p>
+<p>Chevreul contains many plotting functions that allows for
+visualization, these plots can be customized to display the required
+information.</p>
 </div>
 </div>
 <div class="section level2">
-<h2 id="plotting-features-using-chevreul">Plotting features using Chevreul<a class="anchor" aria-label="anchor" href="#plotting-features-using-chevreul"></a>
+<h2 id="plotting-features">Plotting features<a class="anchor" aria-label="anchor" href="#plotting-features"></a>
 </h2>
 <p>Chevreul contains a function that plots a vector of one or more
-features, either gene or transcript expression, overlaid on a given
-embedding. This function results in a interactive, single or
-multi-feature plot</p>
+features, which is either a gene or transcript expression, overlaid on a
+given embedding, resulting in an interactive, single or multi-feature
+plot. This Chevreul function includes multiple sub-functions that
+ultimately helps in creation of an interactive feature plot.</p>
+<p>When plotting only one feature, an existing Seurat function,
+FeaturePlot() is used. This function colors single cells on a
+dimensional reduction plot according to a ‘feature’.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_feature.html">plot_feature</a></span><span class="op">(</span><span class="va">clustered_seu</span>, embedding <span class="op">=</span> <span class="st">"umap"</span>, features <span class="op">=</span> <span class="st">"RXRG"</span>, return_plotly <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
 <p><img src="visualization_files/figure-html/unnamed-chunk-3-1.png" width="100%"></p>
+<p>If multiple features are to be plotted, the joint density of all the
+features are plotted using a plot_density() function from the R package
+Nebulosa embedded within the plot_feature() function.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span> <span class="fu"><a href="../reference/plot_feature.html">plot_feature</a></span><span class="op">(</span><span class="va">clustered_seu</span>, embedding <span class="op">=</span> <span class="st">"umap"</span>, features <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"RXRG"</span>, <span class="st">"NRL"</span><span class="op">)</span>, return_plotly <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> </span></code></pre></div>
 <p><img src="visualization_files/figure-html/unnamed-chunk-4-1.png" width="100%"></p>
-<p>This Chevreul function includes multiple sub-functions that
-ultimately helps in creation of an interactive feature plot. When
-plotting only one feature, an existing Seurat function, FeaturePlot() is
-used. This function colors single cells on a dimensional reduction plot
-according to a ‘feature’. If multiple features are to be plotted, the
-joint density of all the features are plotted using a plot_density()
-function from the Nebulosa package. Once a feature plot of produced,
-this plot can be converted to an interactive plot using return_plotly =
-TRUE argument within the plot_feature() function</p>
+<p>Once a feature plot of produced, this plot can be converted to an
+interactive plot using return_plotly = TRUE argument within the
+plot_feature() function. This function utilizes a sub-function called
+ggplotly() to create interactive plot that allows user to manually
+select cells in the plot for further investigation.</p>
 </div>
 <div class="section level2">
-<h2 id="plotting-cluster-marker-genes-plot_markers">Plotting cluster marker genes: plot_markers<a class="anchor" aria-label="anchor" href="#plotting-cluster-marker-genes-plot_markers"></a>
+<h2 id="plotting-cluster-marker-genes">Plotting cluster marker genes<a class="anchor" aria-label="anchor" href="#plotting-cluster-marker-genes"></a>
 </h2>
 <p>Chevreul contains a function to create a dot plot of N number of
 marker features that are grouped by user specified cell metadata. The
 features are grouped by wilcoxon rank-sum test implemented in
 presto.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_markers.html">plot_markers</a></span><span class="op">(</span><span class="va">clustered_seu</span>, metavar <span class="op">=</span> <span class="st">"gene_snn_res.0.2"</span>, marker_method <span class="op">=</span> <span class="st">"presto"</span>, return_plotly <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_markers.html">plot_markers</a></span><span class="op">(</span><span class="va">clustered_seu</span>, metavar <span class="op">=</span> <span class="st">"gene_snn_res.0.2"</span>, marker_method <span class="op">=</span> <span class="st">"presto"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="visualization_files/figure-html/unnamed-chunk-5-1.png" width="100%"></p>
 <p>In this Chevreul function, metadata variable from which to pick
 clusters is provided by the user through the argument metavar. From this
 metavar, cells are grouped based on presence of N number of marker
 features using wilcoxon rank sum test. In the resulting dot plot the
-sixe of the dot corresponds to the percentage of cells expressing the
+size of the dot corresponds to the percentage of cells expressing the
 feature in each cluster and the color represents the average expression
 level of the feature.</p>
 </div>
 <div class="section level2">
-<h2 id="plot-read-count-using-plot_readcount">Plot read count using plot_readcount()<a class="anchor" aria-label="anchor" href="#plot-read-count-using-plot_readcount"></a>
+<h2 id="ploting-read-count">Ploting read count<a class="anchor" aria-label="anchor" href="#ploting-read-count"></a>
 </h2>
 <p>The plot_readcount function in Chevreul plots a bar plot of number of
-read counts present in a metadata variable for each sample in the Seurat
+reads present in a metadata variable for each sample in the Seurat
 object. Here, the bars of the plot can be colored based on categorical
 metadata variable using the argument color.by whose default value is set
 to “batch”</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_readcount.html">plot_readcount</a></span><span class="op">(</span><span class="va">clustered_seu</span>, metavar <span class="op">=</span> <span class="st">"nCount_RNA"</span>, color.by <span class="op">=</span> <span class="st">"dataset"</span>, return_plotly <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_readcount.html">plot_readcount</a></span><span class="op">(</span><span class="va">clustered_seu</span>, metavar <span class="op">=</span> <span class="st">"nCount_RNA"</span>, color.by <span class="op">=</span> <span class="st">"dataset"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="visualization_files/figure-html/unnamed-chunk-6-1.png" width="100%"></p>
 </div>
 <div class="section level2">
-<h2 id="plot-metadata-vriable-using-plot_var">Plot Metadata Vriable using plot_var()<a class="anchor" aria-label="anchor" href="#plot-metadata-vriable-using-plot_var"></a>
+<h2 id="ploting-metadata-vriable">Ploting Metadata Vriable<a class="anchor" aria-label="anchor" href="#ploting-metadata-vriable"></a>
 </h2>
 <p>Chevreul contains a function that produces an interactive scatter
-plot of metadata variable, where each point in the plot represents a
+plot of a metadata variable, where each point in the plot represents a
 cell whose position on the plot is given by the cell embedding
-determined by the dimensional reduction technique. The default
-dimensionality reduction used is “umap”. The group argument in
-plot_var() function allows the user to enter the metadata variable by
-which to group the cells by, its default value is set to “batch”</p>
+determined by the dimensional reduction technique. The default dimension
+reduction used is “UMAP”. The group argument in plot_var() function
+allows the user to enter the metadata variable by which to group the
+cells by, its default value is set to “batch”.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_var.html">plot_var</a></span><span class="op">(</span><span class="va">clustered_seu</span>, group <span class="op">=</span> <span class="st">"celltype"</span>, embedding <span class="op">=</span> <span class="st">"umap"</span>, return_plotly <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_var.html">plot_var</a></span><span class="op">(</span><span class="va">clustered_seu</span>, group <span class="op">=</span> <span class="st">"celltype"</span>, embedding <span class="op">=</span> <span class="st">"umap"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="visualization_files/figure-html/unnamed-chunk-7-1.png" width="100%">
-This function contains a Seurat function, DimPlot(), as sub function
+This function utilizes a Seurat function, DimPlot(), as sub function
 which produces the dimensional reduction plot.The interactive parameter,
 return_plotly, in plot_var when set to TRUE will convert the plot into
 an interactive plot using ggplotly function from R’s plotly package</p>
 </div>
 <div class="section level2">
-<h2 id="plot_violin">plot_violin<a class="anchor" aria-label="anchor" href="#plot_violin"></a>
+<h2 id="violin-plot">Violin plot<a class="anchor" aria-label="anchor" href="#violin-plot"></a>
 </h2>
-<div class="section level3">
-<h3 id="intermediate">intermediate<a class="anchor" aria-label="anchor" href="#intermediate"></a>
-</h3>
-<p>plot_all_transcripts plot_transcript_composition</p>
-</div>
-<div class="section level3">
-<h3 id="complicated">complicated<a class="anchor" aria-label="anchor" href="#complicated"></a>
-</h3>
-<p>cross_plot_vars plot_multiple_branches_heatmap plot_ridge
-seu_complex_heatmap</p>
-</div>
+<p>To visualize the distribution of expression level of a feature in
+different groups of cells Chevreul draws a violin plot. This function
+uses Seurat’s VInPlot() function as a sub-function to create the violin
+plot, where the metadata variable, provided to the function through the
+variable plot_var, is used to group the cells and based on the level of
+feature expression a violin plot is produced.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_violin.html">plot_violin</a></span><span class="op">(</span><span class="va">clustered_seu</span>, plot_var <span class="op">=</span> <span class="st">"celltype"</span>, features <span class="op">=</span> <span class="st">"ISL1"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="visualization_files/figure-html/unnamed-chunk-8-1.png" width="100%"></p>
 </div>
 <div class="section level2">
-<h2 id="section-about-plotly">section about plotly<a class="anchor" aria-label="anchor" href="#section-about-plotly"></a>
+<h2 id="ploting-all-transcripts">Ploting all transcripts<a class="anchor" aria-label="anchor" href="#ploting-all-transcripts"></a>
 </h2>
-<p>plotly is a tool to make ggplots interactive; it is only useful in an
-interactive context (in a shiny app)</p>
+<p>This function plots the expression level of all the transcripts
+present in a given Seurat object, coding for a feature/gene of interest.
+The gene of interest is specified by the argument ‘features’ and by
+default the data is superimposed on UMAP embedding.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span></span>
+<span><span class="fu"><a href="../reference/plot_all_transcripts.html">plot_all_transcripts</a></span><span class="op">(</span><span class="va">human_gene_transcript_seu</span>, features <span class="op">=</span> <span class="st">"NRL"</span><span class="op">)</span> </span></code></pre></div>
+<p><img src="visualization_files/figure-html/unnamed-chunk-9-1.png" width="100%"></p>
+</div>
+<div class="section level2">
+<h2 id="ploting-transcrpit-composition">Ploting transcrpit composition<a class="anchor" aria-label="anchor" href="#ploting-transcrpit-composition"></a>
+</h2>
+<p>This Chevreul function produces a visual representation of the
+expression levels of each transcript in a gene map. The function
+plot_transcript_composition() plots the proportion of reads of a given
+gene map to each transcript. The gene of interest is specified by the
+argument ‘gene_symbol’.</p>
+<p><img src="visualization_files/figure-html/unnamed-chunk-10-1.png" width="100%"></p>
+</div>
+<div class="section level2">
+<h2 id="ploting-ridge-plots-for-cell-cycle-scoring">Ploting ridge plots for cell cycle scoring<a class="anchor" aria-label="anchor" href="#ploting-ridge-plots-for-cell-cycle-scoring"></a>
+</h2>
+<p>The plot_ridge() function in Chevreul plots a ridge plot for cell
+cycle scoring of a feature, providing a visual representation of
+expression level of the feature in each cell cycle. This function uses
+two embedded Seurat functions. The function CellCycleScoring() assigns
+each cell a score based on its expression of G2/M and S phase markers.
+This data is then used by the function, RidgePlot(), which uses user
+provided ‘features’ argument to plot the ridge plot of the features.</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span></span>
+<span><span class="fu"><a href="../reference/plot_cell_cycle_distribution.html">plot_cell_cycle_distribution</a></span><span class="op">(</span><span class="va">human_gene_transcript_seu</span>, <span class="st">"NRL"</span><span class="op">)</span> </span></code></pre></div>
+<p><img src="visualization_files/figure-html/unnamed-chunk-11-1.png" width="100%"></p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span></span>
+<span><span class="fu"><a href="../reference/plot_cell_cycle_distribution.html">plot_cell_cycle_distribution</a></span><span class="op">(</span><span class="va">human_gene_transcript_seu</span>, <span class="st">"nFeature_RNA"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="visualization_files/figure-html/unnamed-chunk-11-2.png" width="100%"></p>
+</div>
+<div class="section level2">
+<h2 id="plot-complex-heatmap-from-seurat-object">Plot Complex heatmap from Seurat object<a class="anchor" aria-label="anchor" href="#plot-complex-heatmap-from-seurat-object"></a>
+</h2>
+<p>The Chevreul function plots an annotated complex heat map from the
+Seurat object with a dendogram added to the left side and the top.</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">top_10_features</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/VariableFeatures.html" class="external-link">VariableFeatures</a></span><span class="op">(</span><span class="va">human_gene_transcript_seu</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">]</span></span>
+<span></span>
+<span><span class="fu"><a href="../reference/seu_complex_heatmap.html">seu_complex_heatmap</a></span><span class="op">(</span><span class="va">human_gene_transcript_seu</span>, features <span class="op">=</span> <span class="va">top_10_features</span>, group.by <span class="op">=</span> <span class="st">"gene_snn_res.0.2"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="visualization_files/figure-html/unnamed-chunk-12-1.png" width="100%"></p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span></span>
+<span><span class="fu"><a href="../reference/seu_complex_heatmap.html">seu_complex_heatmap</a></span><span class="op">(</span><span class="va">human_gene_transcript_seu</span>, features <span class="op">=</span> <span class="va">top_10_features</span>, group.by <span class="op">=</span> <span class="st">"gene_snn_res.0.2"</span>, col_arrangement <span class="op">=</span> <span class="st">"average"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="visualization_files/figure-html/unnamed-chunk-12-2.png" width="100%"></p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span></span>
+<span><span class="fu"><a href="../reference/seu_complex_heatmap.html">seu_complex_heatmap</a></span><span class="op">(</span><span class="va">human_gene_transcript_seu</span>, features <span class="op">=</span> <span class="va">top_10_features</span>, group.by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Prep.Method"</span>, <span class="st">"gene_snn_res.0.2"</span><span class="op">)</span>, col_arrangement <span class="op">=</span> <span class="st">"gene_snn_res.0.2"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="visualization_files/figure-html/unnamed-chunk-12-3.png" width="100%"></p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span></span>
+<span><span class="fu"><a href="../reference/seu_complex_heatmap.html">seu_complex_heatmap</a></span><span class="op">(</span><span class="va">human_gene_transcript_seu</span>, features <span class="op">=</span> <span class="va">top_10_features</span>, group.by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Prep.Method"</span>, <span class="st">"gene_snn_res.0.2"</span><span class="op">)</span>, col_arrangement <span class="op">=</span> <span class="st">"Prep.Method"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="visualization_files/figure-html/unnamed-chunk-12-4.png" width="100%"></p>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside>

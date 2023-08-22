@@ -9,7 +9,7 @@ plot_markers(
   metavar = "batch",
   num_markers = 5,
   selected_values = NULL,
-  return_plotly = TRUE,
+  return_plotly = FALSE,
   marker_method = "presto",
   seurat_assay = "gene",
   hide_technical = NULL,

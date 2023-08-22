@@ -9,7 +9,7 @@ plot_readcount(
   metavar = "nCount_RNA",
   color.by = "batch",
   yscale = "linear",
-  return_plotly = TRUE,
+  return_plotly = FALSE,
   ...
 )
 }

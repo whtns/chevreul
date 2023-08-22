@@ -251,7 +251,7 @@ plotHeatmap <- function(input, output, session, seu, featureType, organism_type)
       assay <- "gene"
     }
 
-    hm <- seu_complex_heatmap(seu(), features = input$customFeature, assay = assay, group.by = input$colAnnoVar, slot = input$slot, col_dendrogram = input$dendroSelect)
+    hm <- seu_complex_heatmap(seu(), features = input$customFeature, assay = assay, group.by = input$colAnnoVar, slot = input$slot, col_arrangement = input$dendroSelect)
 
     hm = ComplexHeatmap::draw(hm)
     return(hm)
@@ -602,7 +602,7 @@ plotDimRed <- function(input, output, session, seu, plot_types, featureType,
     req(seu())
     req(input$embedding)
     if (length(input$plottype) > 1) {
-      cross_plot_seu <- cross_plot_vars(seu(), input$resolution, input$plottype)
+      cross_plot_seu <- unite_metadata(seu(), input$resolution, input$plottype)
 
       newcolname <- paste(input$plottype, collapse = "_")
       cross_plot_seu[[newcolname]] <- Idents(cross_plot_seu)
@@ -611,7 +611,8 @@ plotDimRed <- function(input, output, session, seu, plot_types, featureType,
 
       plot_var(cross_plot_seu,
         dims = c(input$dim1, input$dim2),
-        embedding = input$embedding, group = NULL, pt.size = input$dotSize
+        embedding = input$embedding, group = NULL, pt.size = input$dotSize,
+        return_plotly = TRUE
       )
     }
     else {
@@ -621,7 +622,8 @@ plotDimRed <- function(input, output, session, seu, plot_types, featureType,
             input$dim1,
             input$dim2
           ), embedding = input$embedding,
-          features = input$customFeature, pt.size = input$dotSize
+          features = input$customFeature, pt.size = input$dotSize,
+          return_plotly = TRUE
         )
       }
       else if (input$plottype %in% plot_types()$continuous_vars) {
@@ -630,7 +632,8 @@ plotDimRed <- function(input, output, session, seu, plot_types, featureType,
             input$dim1,
             input$dim2
           ), embedding = input$embedding,
-          features = input$plottype, pt.size = input$dotSize
+          features = input$plottype, pt.size = input$dotSize,
+          return_plotly = TRUE
         )
       }
       else if (input$plottype == "louvain") {
@@ -647,13 +650,15 @@ plotDimRed <- function(input, output, session, seu, plot_types, featureType,
 
         plot_var(seu(),
           dims = c(input$dim1, input$dim2),
-          embedding = input$embedding, group = louvain_resolution(), pt.size = input$dotSize
+          embedding = input$embedding, group = louvain_resolution(), pt.size = input$dotSize,
+          return_plotly = TRUE
         )
       }
       else if (input$plottype %in% plot_types()$category_vars) {
         plot_var(seu(),
           dims = c(input$dim1, input$dim2),
-          embedding = input$embedding, group = input$plottype, pt.size = input$dotSize
+          embedding = input$embedding, group = input$plottype, pt.size = input$dotSize,
+          return_plotly = TRUE
         )
       }
     }
@@ -1028,7 +1033,7 @@ findMarkers <- function(input, output, session, seu, plot_types, featureType) {
   # })
 
   marker_plot_return <- eventReactive(input$plotDots, {
-    plot_markers(seu(), metavar = metavar(), num_markers = input$num_markers, selected_values = input$displayValues, marker_method = input$markerMethod, seurat_assay = input$dotFeature, featureType = featureType(), hide_pseudo = input$hidePseudo, unique_markers = input$uniqueMarkers, p_val_cutoff = input$pValCutoff)
+    plot_markers(seu(), metavar = metavar(), num_markers = input$num_markers, selected_values = input$displayValues, marker_method = input$markerMethod, seurat_assay = input$dotFeature, featureType = featureType(), hide_pseudo = input$hidePseudo, unique_markers = input$uniqueMarkers, p_val_cutoff = input$pValCutoff, return_plotly = TRUE)
   })
 
   output$markerplot <- plotly::renderPlotly({
@@ -1111,10 +1116,10 @@ plotReadCount <- function(input, output, session, seu, plot_types) {
       }
 
       louvain_resolution <- paste0(assay, "_snn_res.", input$resolution)
-      plot_readcount(seu(), metavar = input$metavar, color.by = louvain_resolution, yscale = input$yScale)
+      plot_readcount(seu(), metavar = input$metavar, color.by = louvain_resolution, yscale = input$yScale, return_plotly = TRUE)
     }
     else if (input$colorby %in% purrr::flatten_chr(plot_types())) {
-      plot_readcount(seu(), metavar = input$metavar, color.by = input$colorby, yscale = input$yScale)
+      plot_readcount(seu(), metavar = input$metavar, color.by = input$colorby, yscale = input$yScale, return_plotly = TRUE)
     }
   })
 }
@@ -1254,7 +1259,7 @@ allTranscripts <- function(input, output, session, seu,
 
   pList <- reactive({
     req(transcripts())
-    pList <- plot_all_transcripts(seu(), transcripts(), input$embedding)
+    pList <- plot_all_transcripts(seu(), transcripts(), input$embedding, from_gene = FALSE, combine = FALSE)
   })
 
   output$transcriptPlot <- plotly::renderPlotly({
@@ -1632,7 +1637,7 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
   seudimplot <- reactive({
     req(seu_monocle())
 
-    plot_var(seu_monocle(), embedding = "umap", group = louvain_resolution())
+    plot_var(seu_monocle(), embedding = "umap", group = louvain_resolution(), return_plotly = TRUE)
   })
 
   output$seudimplot <- plotly::renderPlotly({

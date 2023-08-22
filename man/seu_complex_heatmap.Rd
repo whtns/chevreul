@@ -12,17 +12,26 @@ seu_complex_heatmap(
   slot = "scale.data",
   assay = NULL,
   group.bar.height = 0.01,
-  cluster_columns = FALSE,
   column_split = NULL,
-  col_dendrogram = "ward.D2",
+  col_arrangement = "ward.D2",
   mm_col_dend = 30,
   ...
 )
 }
 \arguments{
-\item{cluster_columns}{FALSE}
+\item{features}{Vector of features to plot. Features can come}
 
-\item{...}{}
+\item{group.by}{Name of one or more metadata columns to annotate columns by (for example, orig.ident)}
+
+\item{cells}{Cells to retain}
+
+\item{column_split}{whether to split columns by metadat value}
+
+\item{col_arrangement}{how to arrange columns whether with a dendrogram (Ward.D2, average, etc.) or exclusively by metadata category}
+
+\item{mm_col_dend}{height of column dendrogram}
+
+\item{...}{additional arguments passed to ComplexHeatmap::Heatmap}
 }
 \description{
 Plot Annotated Complexheatmap from Seurat object

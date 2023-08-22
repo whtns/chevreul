@@ -19,6 +19,9 @@
     <loc>/articles/integration.html</loc>
   </url>
   <url>
+    <loc>/articles/pipeline.html</loc>
+  </url>
+  <url>
     <loc>/articles/preprocessing.html</loc>
   </url>
   <url>
@@ -349,6 +352,9 @@
     <loc>/reference/plot_cds.html</loc>
   </url>
   <url>
+    <loc>/reference/plot_cell_cycle_distribution.html</loc>
+  </url>
+  <url>
     <loc>/reference/plot_cells.html</loc>
   </url>
   <url>
@@ -536,6 +542,9 @@
   </url>
   <url>
     <loc>/reference/transcripts_to_genes.html</loc>
+  </url>
+  <url>
+    <loc>/reference/unite_metadata.html</loc>
   </url>
   <url>
     <loc>/reference/update_chevreul_object.html</loc>
