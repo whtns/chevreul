@@ -19,7 +19,7 @@ library(xfun)
 format_table <- function(mydf){
   mydf %>% 
     kableExtra::kbl() %>% 
-    kable_paper() %>% 
+    kable_material() %>% 
     scroll_box(width = "800px", height = "200px")
 }
 
@@ -27,7 +27,7 @@ format_table <- function(mydf){
 
 First step is to load Chevreul package and all other packages required 
 
-```{r setup, }
+```{r setup }
 library(chevreul)
 library(Seurat)
 library(tidyverse)
@@ -56,19 +56,7 @@ clustered_seu <- clustering_workflow(panc8, experiment_name = "seurat_pancreas",
 clustered_seu <- readRDS("clustered_seu.rds")
 ```
 
-### Clustering at several resolutions {.tabset}
-
-#### 0.2
-
-```{r, echo = FALSE}
-DimPlot(clustered_seu, group.by = "gene_snn_res.0.2")
-```
-
-#### 0.4
-
-```{r, echo = FALSE}
-DimPlot(clustered_seu, group.by = "gene_snn_res.0.4")
-```
+### Clustering at several resolutions 
 
 #### 0.6
 
@@ -88,13 +76,13 @@ minimalSeuratApp(clustered_seu)
 We start with a gene by cell matrix of count/UMI values 
 
 ```{r, eval=FALSE}
-panc8_count_mat[1:5, 1:5]
+panc8_count_mat[1:10, 1:10]
 
 head(panc8_metadata)
 ```
 
 ```{r, echo=FALSE}
-panc8_count_mat %>% 
+panc8_count_mat[1:10, 1:10] %>% 
   format_table()
 ```
 
@@ -158,14 +146,6 @@ Dim_Red_seu <- RunPCA(myseu,features = VariableFeatures(myseu),
       do.print = FALSE)
 ```
 
--   Perform tSNE: Runs t-SNE dimensionality reduction on selected features
-
-```{r, results=FALSE}
-Dim_Red_seu <- RunTSNE(Dim_Red_seu, dims = 1:30)
-DimPlot(Dim_Red_seu, reduction = "tsne")
-
-```
-
 -   Perform UMAP: Runs the Uniform Manifold Approximation and Projection (UMAP) dimensional reduction technique.
 
 ```{r, results=FALSE}
@@ -179,10 +159,6 @@ Clustering analysis is performed via Louvain(default) or alternative algorithms 
 
 ```{r, results=FALSE, eval=FALSE}
  seu <- seurat_cluster(seu = Dim_Red_seu, resolution = seq(0.2, 2, by = 0.2) )
-```
-
-```{r, results=FALSE, echo=FALSE}
- seu <- readRDS("clustered_seu.rds")
 ```
 
 This function produces clustering analysis via two steps performed using two different sub-functions

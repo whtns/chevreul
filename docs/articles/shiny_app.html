@@ -46,7 +46,6 @@
     <a class="dropdown-item" href="../articles/preprocessing.html">Preprocessing</a>
     <a class="dropdown-item" href="../articles/shiny_app.html">Shiny App</a>
     <a class="dropdown-item" href="../articles/visualization.html">Visualization</a>
-    <a class="dropdown-item" href="../articles/getting-started.html">Getting Started</a>
   </div>
 </li>
 <li class="nav-item">
@@ -110,40 +109,38 @@ in Seurat</p></li>
 <div class="section level2">
 <h2 id="app-sections">App sections<a class="anchor" aria-label="anchor" href="#app-sections"></a>
 </h2>
+<p>*** include text to indicate that we will be going through sections
+in the app and providing info</p>
 <div class="section level4">
 <h4 id="integrate-projects">Integrate Projects<a class="anchor" aria-label="anchor" href="#integrate-projects"></a>
 </h4>
 <p>Integration of 2 or more single-cell datasets is important for its
-joint analyses, but poses unique challenges caused due to undesirable
-technical effects. Most existing scRNAseq graphical tools operate either
-upon individual batches or post-integration to adjust for such technical
-effects while retaining relevant biological variation. However, choices
-of cell-level and batch-level qc are highly relevant when performing
-batch integration.</p>
+joint analyses. Choices of cell-level and batch-level qc are highly
+relevant when performing batch integration.</p>
 <p>Chevreul provides tools for cell-level exploratory data analysis and
 for specifying integration settings. While operating Chevreul in server
 mode, separate sequencing batches can be <a href="https://www.cell.com/cell/fulltext/S0092-8674(19)30559-8" class="external-link">integrated</a>
 and compared to validate sample processing steps and exclude technical
-variation in favor of relevant biological variation. This section of
-Chevreul, includes a list of projects which can be filtered through to
-select and run the integration.</p>
+variation in favor of relevant biological variation.</p>
+<p>This section of Chevreul, includes a list of projects which can be
+filtered through to select and run the integration.</p>
 </div>
 <div class="section level4">
 <h4 id="reformat-metadata">Reformat Metadata<a class="anchor" aria-label="anchor" href="#reformat-metadata"></a>
 </h4>
-<p>** Make spreadsheet smaller **</p>
-<p>Arbitrary variables can be appended to the cell metadata based on the
-results of exploratory data analysis. Metadata addition can be executed
-by uploading a csv with rownames matching cell ids with new variables as
+<p>** Make spreadsheet smaller in the app<strong> #### Arbitrary
+variables can be appended to the cell metadata based on the results of
+exploratory data analysis. Metadata addition can be executed by
+uploading a csv with row names matching cell ids with new variables as
 columns. Metadata editing can also be accomplished using a built-in
-spreadsheet tool.</p>
+spreadsheet tool. </strong>** where is the split by option in the
+app?</p>
 <p>Cevreul makes it simple to subset a dataset consisting of a single
 batch or batch-integrated dataset. Subsetting can be accomplished either
 in a graphical setting by selection from a dimensionally reduced plot or
 by specifying a properly formatted file. Subsetting of single or batch
-integrated data will trigger renewal of all relevant preprocessing steps
-including dimensional reduction, clustering, marker gene, and pathway
-enrichment as well as integration based on a ‘batch’ variable.</p>
+integrated data will trigger renewal of all relevant preprocessing
+steps.</p>
 </div>
 <div class="section level4">
 <h4 id="heat-mapsviolin-plots">Heat Maps/Violin Plots<a class="anchor" aria-label="anchor" href="#heat-mapsviolin-plots"></a>
@@ -154,11 +151,12 @@ enrichment as well as integration based on a ‘batch’ variable.</p>
 </h5>
 <p>When plotting the heat map, gene/transcript expression values for
 each cell are normalized by that cell’s total expression then multiplied
-by 10,000 and natural-log transformed before plotting. By default, 50
-most highly variable genes are displayed. However, an arbitrary lists of
-genes can be plotted for comparison. The genes/transcripts are displayed
-in the order they are listed. Clustering model or metadata for column
-arrangement is taken as a parameter to produce a complex heat map.</p>
+by 10,000 and natural-log transformed before plotting.</p>
+<p>Clustering model or metadata for column arrangement is taken as a
+parameter to produce a complex heat map.</p>
+<p>By default, 50 most highly variable genes are displayed. However, an
+arbitrary lists of genes can be plotted for comparison. The
+genes/transcripts are displayed in the order they are listed.</p>
 <p><img src="images/Heatmap2.0.PNG"></p>
 </div>
 <div class="section level5">
@@ -178,17 +176,6 @@ variable’ 2. ‘Data Type (Transformed/Raw)’</p>
 </div>
 </div>
 <div class="section level4">
-<h4 id="differential-expression">Differential expression<a class="anchor" aria-label="anchor" href="#differential-expression"></a>
-</h4>
-<p>In Chevreul, DE testing results in a data frame containing the
-following information: * p_val : Unadjusted p-value * avg_log2FC : log
-fold-chage of the average expression between the two groups. * pct.1 :
-The percentage of cells where the feature is detected in the first group
-* pct.2 : The percentage of cells where the feature is detected in the
-second group * p_val_adj : Adjusted p-value, based on bonferroni
-correction using all features in the dataset.</p>
-</div>
-<div class="section level4">
 <h4 id="coverage-plots">Coverage plots<a class="anchor" aria-label="anchor" href="#coverage-plots"></a>
 </h4>
 <p>Coverage plots indicate the **resd depts across all transcripts for
@@ -199,27 +186,27 @@ group the cells by 3. ‘Groups to display’- Select the groups to be
 displayed</p>
 <p><img src="images/PlotCoverage2.0.PNG" style="width:80.0%;height:80.0%"></p>
 </div>
+<div class="section level4">
+<h4 id="differential-expression">Differential expression<a class="anchor" aria-label="anchor" href="#differential-expression"></a>
+</h4>
+<p>Chevreul provides different methods of differential expression
+analysis that users can choose from to determine differential expression
+of gene. DE methods included in Chvreul are t-test, Wilcoxon rank-sum
+test, Likelihood ratio test, and MAST</p>
+<p>Running DE testing results in a data frame containing the following
+information: * p_val : Unadjusted p-value * avg_log2FC : log fold-change
+of the average expression between the two groups. * pct.1 : The
+percentage of cells where the feature is detected in the first group *
+pct.2 : The percentage of cells where the feature is detected in the
+second group * p_val_adj : Adjusted p-value, based on bonferroni
+correction using all features in the dataset.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">d1</span><span class="op">&lt;-</span><span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="st">"Dominic.csv"</span>, header <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 </div>
-<div class="section level2">
-<h2 id="pseudotime-analysis-by-monocle-3">Pseudotime Analysis by <a href="https://cole-trapnell-lab.github.io/monocle3/" class="external-link">Monocle 3</a><a class="anchor" aria-label="anchor" href="#pseudotime-analysis-by-monocle-3"></a>
-</h2>
-<p>Pseudotime analysis is broken into several steps, mirroring a typical
-command-line workflow. seurattools provides graphical tools to
-optionally subset an embedded dataset then calculate a trajectory graph.
-Root cells can be specified and cells ordered in pseudotime with
-monocle3. Features that vary signicantly over pseduotime based on
-autocorrelation can then be determined and grouped into modules that
-vary similarly over pseudotime. Heatmap and scatter plot visualiation of
-pseudotime analysis results are available at gene and module levels</p>
+<div class="section level4">
+<h4 id="find-markers">Find Markers<a class="anchor" aria-label="anchor" href="#find-markers"></a>
+</h4>
 </div>
-<div class="section level2">
-<h2 id="pathway-enrichment-analysis">Pathway Enrichment Analysis<a class="anchor" aria-label="anchor" href="#pathway-enrichment-analysis"></a>
-</h2>
-<p>Pathway enrichment is determined based on marker genes.</p>
-<p>Reference pathway datasets include: 1. ‘GO_Biological_Process_2018’,
-2. ‘GO_Cellular_Component_2018’, 3. ‘GO_Molecular_Function_2018’, 4.
-‘KEGG_2016’, 5. ‘WikiPathways_2016’, 6. ‘Reactome_2016’, 7.
-‘Panther_2016’, 8. ‘Human_Gene_Atlas’, 9. ‘Mouse_Gene_Atlas’</p>
 </div>
 <div class="section level2">
 <h2 id="rna-velocity">RNA Velocity<a class="anchor" aria-label="anchor" href="#rna-velocity"></a>
@@ -251,6 +238,18 @@ effects, for <a href="https://satijalab.org/seurat/v3.0/cell_cycle_vignette.html
 <p>Such regression can be performed for any arbitrary gene set. Some
 preset gene lists are included in <code>seuratTools</code> including
 cell-cycle, mitochondrial, and apoptosis related gene sets.</p>
+</div>
+<div class="section level2">
+<h2 id="pseudotime-analysis-by-monocle-3">Pseudotime Analysis by <a href="https://cole-trapnell-lab.github.io/monocle3/" class="external-link">Monocle 3</a><a class="anchor" aria-label="anchor" href="#pseudotime-analysis-by-monocle-3"></a>
+</h2>
+<p>Pseudotime analysis is broken into several steps, mirroring a typical
+command-line workflow. Chevreul provides graphical tools to optionally
+subset an embedded dataset then calculate a trajectory graph. Root cells
+can be specified and cells ordered in pseudotime with monocle3. Features
+that vary significantly over pseudotime based on autocorrelation can
+then be determined and grouped into modules that vary similarly over
+pseudotime. Heatmap and scatter plot visualiation of pseudotime analysis
+results are available at gene and module levels</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside>

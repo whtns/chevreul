@@ -371,21 +371,21 @@ propagate_spreadsheet_changes <- function(updated_table, seu) {
 
 #' Create a database of chevreul projects
 #'
-#' @param destdir
-#' @param destfile
+#' @param cache_location
+#' @param sqlite_db
 #' @param verbose
 #'
 #' @return
 #' @export
 #'
 #' @examples
-create_project_db <- function(destdir = "~/.cache/chevreul",
-                              destfile = "single-cell-projects.db", verbose = TRUE) {
-  if (!dir.exists(destdir)) {
-    dir.create(destdir)
+create_project_db <- function(cache_location = "~/.cache/chevreul",
+                              sqlite_db = "single-cell-projects.db", verbose = TRUE) {
+  if (!dir.exists(cache_location)) {
+    dir.create(cache_location)
   }
 
-  con <- DBI::dbConnect(RSQLite::SQLite(), fs::path(destdir, destfile))
+  con <- DBI::dbConnect(RSQLite::SQLite(), fs::path(cache_location, sqlite_db))
 
   projects_tbl <- tibble::tibble(
     project_name = character(),
@@ -394,9 +394,19 @@ create_project_db <- function(destdir = "~/.cache/chevreul",
     project_type = character(),
   )
 
-  message(paste0("building table of chevreul projects at ", fs::path(destdir, destfile)))
+  message(paste0("building table of chevreul projects at ", fs::path(cache_location, sqlite_db)))
+  # DBI::dbWriteTable(con, "projects_tbl", projects_tbl)
 
-  DBI::dbWriteTable(con, "projects_tbl", projects_tbl)
+  tryCatch({
+    DBI::dbWriteTable(con, "projects_tbl", projects_tbl)
+  }, warning = function(w) {
+      message(sprintf("Warning in %s: %s", deparse(w[["call"]]), w[["message"]]))
+
+  }, error = function(e) {
+      message("projects db already exists!")
+
+  }, finally = {
+  })
 
   DBI::dbDisconnect(con)
 }
@@ -404,8 +414,8 @@ create_project_db <- function(destdir = "~/.cache/chevreul",
 #' Update a database of chevreul projects
 #'
 #' @param projects_dir
-#' @param destdir
-#' @param destfile
+#' @param cache_location
+#' @param sqlite_db
 #' @param verbose
 #'
 #' @return
@@ -413,14 +423,14 @@ create_project_db <- function(destdir = "~/.cache/chevreul",
 #'
 #' @examples
 update_project_db <- function(projects_dir = NULL,
-                              destdir = "~/.cache/chevreul",
-                              destfile = "single-cell-projects.db",
+                              cache_location = "~/.cache/chevreul",
+                              sqlite_db = "single-cell-projects.db",
                               verbose = TRUE) {
-  if (!dir.exists(destdir)) {
-    dir.create(destdir)
+  if (!dir.exists(cache_location)) {
+    dir.create(cache_location)
   }
 
-  con <- DBI::dbConnect(RSQLite::SQLite(), fs::path(destdir, destfile))
+  con <- DBI::dbConnect(RSQLite::SQLite(), fs::path(cache_location, sqlite_db))
 
   projects_tbl <-
     fs::dir_ls(projects_dir, glob = "*.here", recurse = TRUE, fail = FALSE, all = TRUE) %>%
@@ -446,8 +456,8 @@ update_project_db <- function(projects_dir = NULL,
 #' Update a database of chevreul projects
 #'
 #' @param projects_dir
-#' @param destdir
-#' @param destfile
+#' @param cache_location
+#' @param sqlite_db
 #' @param verbose
 #'
 #' @return
@@ -455,14 +465,14 @@ update_project_db <- function(projects_dir = NULL,
 #'
 #' @examples
 read_project_db <- function(projects_dir = NULL,
-                              destdir = "~/.cache/chevreul",
-                              destfile = "single-cell-projects.db",
+                              cache_location = "~/.cache/chevreul",
+                              sqlite_db = "single-cell-projects.db",
                               verbose = TRUE) {
-  if (!dir.exists(destdir)) {
-    dir.create(destdir)
+  if (!dir.exists(cache_location)) {
+    dir.create(cache_location)
   }
 
-  con <- DBI::dbConnect(RSQLite::SQLite(), fs::path(destdir, destfile))
+  con <- DBI::dbConnect(RSQLite::SQLite(), fs::path(cache_location, sqlite_db))
 
   current_projects_tbl <-
     DBI::dbReadTable(con, "projects_tbl")
@@ -474,15 +484,15 @@ read_project_db <- function(projects_dir = NULL,
 
 #' Make Bigwig Database
 #'
-#' @param destdir
-#' @param destfile
+#' @param cache_location
+#' @param sqlite_db
 #'
 #' @return
 #' @export
 #'
 #' @examples
-make_bigwig_db <- function(destdir = "~/.cache/chevreul/", destfile = "bw-files.db") {
-  bigwigfiles <- dir_ls(destdir, glob = "*.bw", recurse = TRUE) %>%
+make_bigwig_db <- function(cache_location = "~/.cache/chevreul/", sqlite_db = "bw-files.db") {
+  bigwigfiles <- dir_ls(cache_location, glob = "*.bw", recurse = TRUE) %>%
     set_names(path_file(.)) %>%
     enframe("name", "bigWig") %>%
     dplyr::mutate(sample_id = str_remove(name, "_Aligned.sortedByCoord.out.bw")) %>%
@@ -490,7 +500,7 @@ make_bigwig_db <- function(destdir = "~/.cache/chevreul/", destfile = "bw-files.
     dplyr::distinct(sample_id, .keep_all = TRUE) %>%
     identity()
 
-  con <- dbConnect(RSQLite::SQLite(), dbname = fs::path(destdir, destfile))
+  con <- dbConnect(RSQLite::SQLite(), dbname = fs::path(cache_location, sqlite_db))
 
   DBI::dbWriteTable(con, "bigwigfiles", bigwigfiles)
 }

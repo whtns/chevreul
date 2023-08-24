@@ -42,10 +42,10 @@
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
     <a class="dropdown-item" href="../articles/integration.html">Integration of Seurat objects</a>
+    <a class="dropdown-item" href="../articles/pipeline.html">Pipeline</a>
     <a class="dropdown-item" href="../articles/preprocessing.html">Preprocessing</a>
     <a class="dropdown-item" href="../articles/shiny_app.html">Shiny App</a>
     <a class="dropdown-item" href="../articles/visualization.html">Visualization</a>
-    <a class="dropdown-item" href="../articles/getting-started.html">Getting Started</a>
   </div>
 </li>
 <li class="nav-item">
@@ -84,14 +84,16 @@
 
     
     
+<p>First step is to load Chevreul package and all other packages
+required</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/cobriniklab/chevreul" class="external-link">chevreul</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://satijalab.org/seurat" class="external-link">Seurat</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org" class="external-link">tidyverse</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggraph.data-imaginist.com" class="external-link">ggraph</a></span><span class="op">)</span></span></code></pre></div>
-<div class="section level3">
-<h3 id="tldr">TLDR<a class="anchor" aria-label="anchor" href="#tldr"></a>
-</h3>
+<div class="section level2">
+<h2 id="tldr">TLDR<a class="anchor" aria-label="anchor" href="#tldr"></a>
+</h2>
 <p>chevreul provides a single command to:</p>
 <ul>
 <li><p>construct a Seurat object</p></li>
@@ -101,7 +103,7 @@ in Seurat</p></li>
 </ul>
 </div>
 <div class="section level2">
-<h2 id="run-clustering-on-a-single-seurat-object">run clustering on a single seurat object<a class="anchor" aria-label="anchor" href="#run-clustering-on-a-single-seurat-object"></a>
+<h2 id="run-clustering-on-a-single-seurat-object">Run clustering on a single seurat object<a class="anchor" aria-label="anchor" href="#run-clustering-on-a-single-seurat-object"></a>
 </h2>
 <p>By default clustering will be run at ten different resolutions
 between 0.2 and 2.0. Any resolution can be specified by providing the
@@ -109,42 +111,32 @@ resolution argument as a numeric vector.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">clustered_seu</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/clustering_workflow.html">clustering_workflow</a></span><span class="op">(</span><span class="va">panc8</span>, experiment_name <span class="op">=</span> <span class="st">"seurat_pancreas"</span>, organism <span class="op">=</span> <span class="st">"human"</span><span class="op">)</span></span></code></pre></div>
 <div class="section level3">
-<h3 class="tabset" id="clustering-at-several-resolutions">Clustering at several resolutions<a class="anchor" aria-label="anchor" href="#clustering-at-several-resolutions"></a>
+<h3 id="clustering-at-several-resolutions">Clustering at several resolutions<a class="anchor" aria-label="anchor" href="#clustering-at-several-resolutions"></a>
 </h3>
 <div class="section level4">
-<h4 id="section">0.2<a class="anchor" aria-label="anchor" href="#section"></a>
+<h4 id="section">0.6<a class="anchor" aria-label="anchor" href="#section"></a>
 </h4>
 <p><img src="preprocessing_files/figure-html/unnamed-chunk-4-1.png" width="100%"></p>
 </div>
-<div class="section level4">
-<h4 id="section-1">0.4<a class="anchor" aria-label="anchor" href="#section-1"></a>
-</h4>
-<p><img src="preprocessing_files/figure-html/unnamed-chunk-5-1.png" width="100%"></p>
-</div>
-<div class="section level4">
-<h4 id="section-2">0.6<a class="anchor" aria-label="anchor" href="#section-2"></a>
-</h4>
-<p><img src="preprocessing_files/figure-html/unnamed-chunk-6-1.png" width="100%"></p>
 </div>
 </div>
-<div class="section level3">
-<h3 id="get-a-first-look-at-a-processed-dataset-using-an-interactive-shiny-app">Get a first look at a processed dataset using an interactive shiny
+<div class="section level2">
+<h2 id="get-a-first-look-at-a-processed-dataset-using-an-interactive-shiny-app">Get a first look at a processed dataset using an interactive shiny
 app<a class="anchor" aria-label="anchor" href="#get-a-first-look-at-a-processed-dataset-using-an-interactive-shiny-app"></a>
-</h3>
+</h2>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/minimalSeuratApp.html">minimalSeuratApp</a></span><span class="op">(</span><span class="va">clustered_seu</span><span class="op">)</span></span></code></pre></div>
 </div>
-<div class="section level3">
-<h3 id="set-up-a-seurat-object">Set up a seurat object<a class="anchor" aria-label="anchor" href="#set-up-a-seurat-object"></a>
-</h3>
-<p>We start with a gene by cell matrix of count/UMI values and a table
-of cell metadata</p>
+<div class="section level2">
+<h2 id="set-up-a-seurat-object">Set up a seurat object<a class="anchor" aria-label="anchor" href="#set-up-a-seurat-object"></a>
+</h2>
+<p>We start with a gene by cell matrix of count/UMI values</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">panc8_count_mat</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">]</span></span>
+<code class="sourceCode R"><span><span class="va">panc8_count_mat</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">]</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">panc8_metadata</span><span class="op">)</span></span></code></pre></div>
 <div style="border: 1px solid #ddd; padding: 0px; overflow-y: scroll; height:200px; overflow-x: scroll; width:800px; ">
-<table class="table  lightable-paper" style='font-family: "Arial Narrow", arial, helvetica, sans-serif; margin-left: auto; margin-right: auto;'>
+<table class="table  lightable-material" style='font-family: "Source Sans Pro", helvetica, sans-serif; margin-left: auto; margin-right: auto;'>
 <thead><tr>
 <th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
 </th>
@@ -163,11 +155,41 @@ AZ_C1
 <th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
 AZ_C2
 </th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+AZ_B2
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+AZ_A10
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+AZ_E12
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+AZ_G6
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+AZ_D6
+</th>
 </tr></thead>
 <tbody>
 <tr>
 <td style="text-align:left;">
 A1BG-AS1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
 </td>
 <td style="text-align:right;">
 0
@@ -204,6 +226,21 @@ A1BG
 <td style="text-align:right;">
 0
 </td>
+<td style="text-align:right;">
+49
+</td>
+<td style="text-align:right;">
+86
+</td>
+<td style="text-align:right;">
+113
+</td>
+<td style="text-align:right;">
+94
+</td>
+<td style="text-align:right;">
+0
+</td>
 </tr>
 <tr>
 <td style="text-align:left;">
@@ -224,10 +261,40 @@ A1CF
 <td style="text-align:right;">
 162
 </td>
+<td style="text-align:right;">
+173
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+329
+</td>
+<td style="text-align:right;">
+192
+</td>
+<td style="text-align:right;">
+290
+</td>
 </tr>
 <tr>
 <td style="text-align:left;">
 A2M-AS1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
 </td>
 <td style="text-align:right;">
 0
@@ -264,12 +331,203 @@ A2ML1
 <td style="text-align:right;">
 0
 </td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+A2MP1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+A2M
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+6
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+A4GALT
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+A4GNT
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AAAS
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+139
+</td>
+<td style="text-align:right;">
+34
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+121
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
 </tr>
 </tbody>
 </table>
 </div>
+<p>and a table of cell metadata</p>
 <div style="border: 1px solid #ddd; padding: 0px; overflow-y: scroll; height:200px; overflow-x: scroll; width:800px; ">
-<table class="table  lightable-paper" style='font-family: "Arial Narrow", arial, helvetica, sans-serif; margin-left: auto; margin-right: auto;'>
+<table class="table  lightable-material" style='font-family: "Source Sans Pro", helvetica, sans-serif; margin-left: auto; margin-right: auto;'>
 <thead><tr>
 <th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
 </th>
@@ -791,7 +1049,8 @@ NA
 </tbody>
 </table>
 </div>
-<p>we can create a seurat object in the usual manner</p>
+<p>Then using these 2 datasets we can create a Seurat object in the
+usual manner using the <code>CreateSeuratObject</code> function</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">myseu</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/CreateSeuratObject.html" class="external-link">CreateSeuratObject</a></span><span class="op">(</span><span class="va">panc8_count_mat</span>, assay <span class="op">=</span> <span class="st">"gene"</span>, meta.data <span class="op">=</span> <span class="va">panc8_metadata</span><span class="op">)</span></span>
 <span><span class="va">myseu</span></span>
@@ -799,9 +1058,9 @@ NA
 <span><span class="co">#&gt; 34363 features across 1011 samples within 1 assay </span></span>
 <span><span class="co">#&gt; Active assay: gene (34363 features, 0 variable features)</span></span></code></pre></div>
 </div>
-<div class="section level3">
-<h3 id="preprocess-the-seurat-object">Preprocess the seurat object<a class="anchor" aria-label="anchor" href="#preprocess-the-seurat-object"></a>
-</h3>
+<div class="section level2">
+<h2 id="preprocess-the-seurat-object">Preprocess the seurat object<a class="anchor" aria-label="anchor" href="#preprocess-the-seurat-object"></a>
+</h2>
 <p>Chevreul includes a handy function to preprocess the data that
 handles normalization and scaling required for downstream analysis.
 Preprocessing is performed using existing Seurat functions. If needed,
@@ -833,9 +1092,9 @@ cells is 1.</li>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">pre_process_seu</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/ScaleData.html" class="external-link">ScaleData</a></span><span class="op">(</span><span class="va">preprocess_seu</span><span class="op">)</span></span></code></pre></div>
 </div>
-<div class="section level3">
-<h3 id="perform-dimension-reduction">Perform dimension reduction<a class="anchor" aria-label="anchor" href="#perform-dimension-reduction"></a>
-</h3>
+<div class="section level2">
+<h2 id="perform-dimension-reduction">Perform dimension reduction<a class="anchor" aria-label="anchor" href="#perform-dimension-reduction"></a>
+</h2>
 <p>Chevreul also implements a standardized dimension reduction step to
 select variable features at a user-specified threshold and perform PCA,
 tSNE, and UMAP. The default assay the dimension reduction is being run
@@ -851,57 +1110,29 @@ dimension reduction techniques.</p>
 <code class="sourceCode R"><span><span class="va">Dim_Red_seu</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/RunPCA.html" class="external-link">RunPCA</a></span><span class="op">(</span><span class="va">myseu</span>,features <span class="op">=</span> <span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/VariableFeatures.html" class="external-link">VariableFeatures</a></span><span class="op">(</span><span class="va">myseu</span><span class="op">)</span>, </span>
 <span>      do.print <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
 <ul>
-<li>Perform tSNE: Runs t-SNE dimensionality reduction on selected
-features</li>
-</ul>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">Dim_Red_seu</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/RunTSNE.html" class="external-link">RunTSNE</a></span><span class="op">(</span><span class="va">Dim_Red_seu</span>, dims <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">30</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://satijalab.org/seurat/reference/DimPlot.html" class="external-link">DimPlot</a></span><span class="op">(</span><span class="va">Dim_Red_seu</span>, reduction <span class="op">=</span> <span class="st">"tsne"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="preprocessing_files/figure-html/unnamed-chunk-17-1.png" width="100%"></p>
-<ul>
 <li>Perform UMAP: Runs the Uniform Manifold Approximation and Projection
 (UMAP) dimensional reduction technique.</li>
 </ul>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">Dim_Red_seu</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/RunUMAP.html" class="external-link">RunUMAP</a></span><span class="op">(</span><span class="va">Dim_Red_seu</span>, dims <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">30</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://satijalab.org/seurat/reference/DimPlot.html" class="external-link">DimPlot</a></span><span class="op">(</span><span class="va">Dim_Red_seu</span>, reduction <span class="op">=</span> <span class="st">"umap"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="preprocessing_files/figure-html/unnamed-chunk-18-1.png" width="100%"></p>
+<p><img src="preprocessing_files/figure-html/unnamed-chunk-16-1.png" width="100%"></p>
 </div>
-<div class="section level3">
-<h3 id="community-detection-by-clustering">Community detection by clustering<a class="anchor" aria-label="anchor" href="#community-detection-by-clustering"></a>
-</h3>
+<div class="section level2">
+<h2 id="community-detection-by-clustering">Community detection by clustering<a class="anchor" aria-label="anchor" href="#community-detection-by-clustering"></a>
+</h2>
 <p>Clustering analysis is performed via Louvain(default) or alternative
 algorithms available in Seurat. Clustering is performed at a range of
 resolutions with default value ranging from 0.2 to 2 and pca
 reduction</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span> <span class="va">seu</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/seurat_cluster.html">seurat_cluster</a></span><span class="op">(</span>seu <span class="op">=</span> <span class="va">Dim_Red_seu</span>, resolution <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0.2</span>, <span class="fl">2</span>, by <span class="op">=</span> <span class="fl">0.2</span><span class="op">)</span> <span class="op">)</span></span></code></pre></div>
 <p>This function produces clustering analysis via two steps performed
 using two different sub-functions</p>
 <ul>
 <li><p>FindNeighbours:</p></li>
-<li><h3 id="findclusters">FindClusters:</h3></li>
+<li><h2 id="findclusters">FindClusters:</h2></li>
 </ul>
-</div>
-<div class="section level3">
-<h3 id="split-included-dataset-based-on-collection-technology">split included dataset based on collection technology<a class="anchor" aria-label="anchor" href="#split-included-dataset-based-on-collection-technology"></a>
-</h3>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">split_panc8</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/SplitObject.html" class="external-link">SplitObject</a></span><span class="op">(</span><span class="va">panc8</span>, split.by <span class="op">=</span> <span class="st">"dataset"</span><span class="op">)</span></span></code></pre></div>
-</div>
-</div>
-<div class="section level2">
-<h2 id="run-seurat-batch-integration-on-child-projects">run seurat batch integration on ‘child’ projects<a class="anchor" aria-label="anchor" href="#run-seurat-batch-integration-on-child-projects"></a>
-</h2>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">integrated_seu</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/integration_workflow.html">integration_workflow</a></span><span class="op">(</span><span class="va">split_panc8</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level2">
-<h2 id="launch-app-to-inspect">launch app to inspect<a class="anchor" aria-label="anchor" href="#launch-app-to-inspect"></a>
-</h2>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span></span>
-<span><span class="fu"><a href="../reference/minimalSeuratApp.html">minimalSeuratApp</a></span><span class="op">(</span><span class="va">integrated_seu</span><span class="op">)</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside>

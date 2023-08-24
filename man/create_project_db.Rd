@@ -5,8 +5,8 @@
 \title{Create a database of chevreul projects}
 \usage{
 create_project_db(
-  destdir = "~/.cache/chevreul",
-  destfile = "single-cell-projects.db",
+  cache_location = "~/.cache/chevreul",
+  sqlite_db = "single-cell-projects.db",
   verbose = TRUE
 )
 }

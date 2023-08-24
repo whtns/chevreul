@@ -88,7 +88,7 @@ plot_readcount(human_gene_transcript_seu, metavar = "nCount_RNA", color.by = "Pr
 Chevreul contains a function that produces an interactive scatter plot of a metadata variable, where each point in the plot represents a cell whose position on the plot is given by the cell embedding determined by the dimensional reduction technique. The default dimension reduction used is "UMAP". The group argument in plot_var() function allows the user to enter the metadata variable by which to group the cells by, its default value is set to "batch".
 
 ```{r}
-plot_var(human_gene_transcript_seu, group = "celltype", embedding = "umap")
+plot_var(human_gene_transcript_seu, group = "type", embedding = "umap")
 
 ```
 
@@ -109,7 +109,7 @@ plot_markers(human_gene_transcript_seu, metavar = "gene_snn_res.0.2", marker_met
 To visualize the distribution of expression level of a feature in different groups of cells Chevreul draws a violin plot. This function uses Seurat's VInPlot() function as a sub-function to create the violin plot, where the metadata variable, provided to the function through the variable plot_var, is used to group the cells and based on the level of feature expression a violin plot is produced. 
 
 ```{r}
-plot_violin(human_gene_transcript_seu, plot_var = "celltype", features = "ISL1")
+plot_violin(human_gene_transcript_seu, plot_var = "type", features = "NRL")
 ```
 
 
