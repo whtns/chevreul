@@ -267,8 +267,8 @@ seuratApp <- function(preset_project, appTitle = "chevreul", organism_type = "hu
         tabName = "coveragePlots", icon = icon("mountain")
       ), shinydashboard::menuItem("Differential Expression",
         tabName = "diffex", icon = icon("magnet")
-      ), shinydashboard::menuItem("Pathway Enrichment Analysis",
-        tabName = "pathwayEnrichment", icon = icon("sitemap")
+      # ), shinydashboard::menuItem("Pathway Enrichment Analysis",
+      #   tabName = "pathwayEnrichment", icon = icon("sitemap")
       ), shinydashboard::menuItem("Find Markers",
         tabName = "findMarkers", icon = icon("bullhorn")
       ), shinydashboard::menuItem("Subset Seurat Input",
@@ -385,13 +385,13 @@ seuratApp <- function(preset_project, appTitle = "chevreul", organism_type = "hu
         plotDimRedui("diffex"),
         diffexui("diffex")
       ),
-      shinydashboard::tabItem(
-        tabName = "pathwayEnrichment",
-        h2("Pathway Enrichment"),
-        fluidRow(
-          pathwayEnrichmentui("pathwayEnrichment")
-        )
-      ),
+      # shinydashboard::tabItem(
+      #   tabName = "pathwayEnrichment",
+      #   h2("Pathway Enrichment"),
+      #   fluidRow(
+      #     pathwayEnrichmentui("pathwayEnrichment")
+      #   )
+      # ),
       shinydashboard::tabItem(
         tabName = "regressFeatures",
         fluidRow(
