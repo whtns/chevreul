@@ -7,13 +7,14 @@ This package includes a set of Shiny apps for exploring single cell RNA
 datasets processed with
 <a href="https://github.com/satijalab/seurat" target="_blank" rel="noopener noreferrer">Seurat</a>
 
-A demo using a pancreas dataset from the Seurat team is available
-<a href="http://cobriniklab.saban-chla.usc.edu:3838/chevreul_demo/" target="_blank" rel="noopener noreferrer">here</a>
+A demo using a human gene transcript dataset from the Seurat team is
+available
+<a href="http://cobrinik-1.saban-chla.usc.edu:8080/app/0seuratApp" target="_blank" rel="noopener noreferrer">here</a>
 
 There are also convenient functions for:
 
 -   Clustering and Dimensional Reduction of Raw Sequencing Data.
--   <a href="https://satijalab.org/seurat/v3.0/pancreas_integration_label_transfer.html" target="_blank" rel="noopener noreferrer">Integration
+-   <a href="https://satijalab.org/seurat/archive/v3.0/integration.html" target="_blank" rel="noopener noreferrer">Integration
     and Label Transfer</a>
 -   Louvain Clustering at a Range of Resolutions
 -   Cell cycle state regression and labeling
@@ -43,14 +44,6 @@ devtools::install_github("whtns/chevreul")
 chevreul::create_project_db(destdir='/your/path/to/app')
 ```
 
-## Site
-
-You can view documentation on the
-<a href="https://whtns.github.io/chevreul" target="_blank" rel="noopener noreferrer">chevreul
-website</a>
-
-## How To
-
 ## Getting Started
 
 ``` r
@@ -78,7 +71,7 @@ By default clustering will be run at ten different resolutions between
 argument as a numeric vector.
 
 ``` r
-clustered_seu <- clustering_workflow(panc8, experiment_name = "seurat_pancreas", organism = "human")
+clustered_seu <- clustering_workflow(human_gene_transcript_seu, experiment_name = "seurat_pancreas", organism = "human")
 ```
 
 ## Get a first look at a processed dataset using an interactive shiny app
@@ -93,16 +86,15 @@ We start with a gene by cell matrix of count/UMI values and a table of
 cell metadata
 
 ``` r
-panc8_count_mat[1:5, 1:5]
+human_count[1:5, 1:5]
 
-head(panc8_metadata)
+head(human_meta)
 ```
 
 we can create a seurat object in the usual manner
 
 ``` r
-myseu <- CreateSeuratObject(panc8_count_mat, assay = "gene", meta.data = panc8_metadata)
-myseu
+myseu <- CreateSeuratObject(human_count, assay = "gene", meta.data = human_meta)
 ```
 
 ## Preprocess the seurat object
@@ -170,7 +162,6 @@ Dim_Red_seu <- RunPCA(myseu,features = VariableFeatures(myseu),
 
 ``` r
 Dim_Red_seu <- RunTSNE(Dim_Red_seu, dims = 1:30)
-DimPlot(Dim_Red_seu, reduction = "tsne")
 ```
 
 -   Perform UMAP: Runs the Uniform Manifold Approximation and Projection
