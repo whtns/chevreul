@@ -25,6 +25,8 @@ format_table <- function(mydf){
 
 ```
 
+First step is to load Chevreul package and all other packages required 
+
 ```{r setup, }
 library(chevreul)
 library(Seurat)
@@ -42,7 +44,7 @@ chevreul provides a single command to:
 
 -   normalize and scale expression by any of several methods packaged in Seurat
 
-# run clustering on a single seurat object
+## Run clustering on a single seurat object
 
 By default clustering will be run at ten different resolutions between 0.2 and 2.0. Any resolution can be specified by providing the resolution argument as a numeric vector.
 
@@ -54,21 +56,21 @@ clustered_seu <- clustering_workflow(panc8, experiment_name = "seurat_pancreas",
 clustered_seu <- readRDS("clustered_seu.rds")
 ```
 
-## Clustering at several resolutions {.tabset}
+### Clustering at several resolutions {.tabset}
 
-### 0.2
+#### 0.2
 
 ```{r, echo = FALSE}
 DimPlot(clustered_seu, group.by = "gene_snn_res.0.2")
 ```
 
-### 0.4
+#### 0.4
 
 ```{r, echo = FALSE}
 DimPlot(clustered_seu, group.by = "gene_snn_res.0.4")
 ```
 
-### 0.6
+#### 0.6
 
 ```{r, echo = FALSE}
 DimPlot(clustered_seu, group.by = "gene_snn_res.0.6")
@@ -83,7 +85,7 @@ minimalSeuratApp(clustered_seu)
 
 ## Set up a seurat object
 
-We start with a gene by cell matrix of count/UMI values and a table of cell metadata
+We start with a gene by cell matrix of count/UMI values 
 
 ```{r, eval=FALSE}
 panc8_count_mat[1:5, 1:5]
@@ -92,14 +94,18 @@ head(panc8_metadata)
 ```
 
 ```{r, echo=FALSE}
-panc8_count_mat[1:5, 1:5] %>% 
+panc8_count_mat %>% 
   format_table()
+```
 
+and a table of cell metadata
+
+```{r, echo=FALSE}
 head(panc8_metadata) %>% 
   format_table()
 ```
 
-we can create a seurat object in the usual manner
+Then using these 2 datasets we can create a Seurat object in the usual manner using the `CreateSeuratObject` function
 
 ```{r}
 myseu <- CreateSeuratObject(panc8_count_mat, assay = "gene", meta.data = panc8_metadata)
@@ -187,30 +193,7 @@ This function produces clustering analysis via two steps performed using two dif
 
     ## FindClusters:
 
-## split included dataset based on collection technology
 
-```{r}
-split_panc8 <- SplitObject(panc8, split.by = "dataset")
-
-```
-
-# run seurat batch integration on 'child' projects
-
-```{r, results=FALSE, eval=FALSE}
-integrated_seu <- integration_workflow(split_panc8)
-```
-
-```{r, results=FALSE, echo=FALSE}
-integrated_seu <- readRDS("integrated_seu.rds")
-```
-
-# launch app to inspect
-
-```{r, eval = FALSE}
-
-minimalSeuratApp(integrated_seu)
-
-```
 
 
 
