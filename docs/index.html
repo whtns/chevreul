@@ -74,11 +74,11 @@
 <div class="page-header"><h1 id="chevreul">Chevreul<a class="anchor" aria-label="anchor" href="#chevreul"></a>
 </h1></div>
 <p>This package includes a set of Shiny apps for exploring single cell RNA datasets processed with <a href="https://github.com/satijalab/seurat" target="_blank" rel="noopener noreferrer" class="external-link">Seurat</a></p>
-<p>A demo using a pancreas dataset from the Seurat team is available <a href="http://cobrinik-1.saban-chla.usc.edu:8080/app/seuratApp" target="_blank" rel="noopener noreferrer" class="external-link">here</a></p>
+<p>A demo using a human gene transcript dataset from the Seurat team is available <a href="http://cobrinik-1.saban-chla.usc.edu:8080/app/seuratApp" target="_blank" rel="noopener noreferrer" class="external-link">here</a></p>
 <p>There are also convenient functions for:</p>
 <ul>
 <li>Clustering and Dimensional Reduction of Raw Sequencing Data.</li>
-<li><a href="https://satijalab.org/seurat/v3.0/pancreas_integration_label_transfer.html" target="_blank" rel="noopener noreferrer" class="external-link">Integration and Label Transfer</a></li>
+<li><a href="https://satijalab.org/seurat/archive/v3.0/integration.html" target="_blank" rel="noopener noreferrer" class="external-link">Integration and Label Transfer</a></li>
 <li>Louvain Clustering at a Range of Resolutions</li>
 <li>Cell cycle state regression and labeling</li>
 <li>RNA velocity calculation with <a href="https://velocyto.org/" target="_blank" rel="noopener noreferrer" class="external-link">Velocyto.R</a> and <a href="https://scvelo.readthedocs.io/" target="_blank" rel="noopener noreferrer" class="external-link">scvelo</a>
@@ -91,14 +91,12 @@
 <div class="section level3">
 <h3 id="install-locally-and-run-in-three-steps">Install locally and run in three steps:<a class="anchor" aria-label="anchor" href="#install-locally-and-run-in-three-steps"></a>
 </h3>
+<p>You can install Chevreul locally using the following steps:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"devtools"</span><span class="op">)</span></span>
 <span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"whtns/chevreul"</span><span class="op">)</span></span>
 <span><span class="fu">chevreul</span><span class="fu">::</span><span class="fu"><a href="reference/create_project_db.html">create_project_db</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="install-locally-custom-location-and-run-in-three-steps">Install locally (custom location!) and run in three steps:<a class="anchor" aria-label="anchor" href="#install-locally-custom-location-and-run-in-three-steps"></a>
-</h3>
+<p>You can also customize the location of the app using these steps:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"whtns/chevreul"</span><span class="op">)</span></span>
 <span><span class="fu">chevreul</span><span class="fu">::</span><span class="fu"><a href="reference/create_project_db.html">create_project_db</a></span><span class="op">(</span>destdir<span class="op">=</span><span class="st">'/your/path/to/app'</span><span class="op">)</span></span></code></pre></div>
@@ -107,6 +105,7 @@
 <div class="section level2">
 <h2 id="getting-started">Getting Started<a class="anchor" aria-label="anchor" href="#getting-started"></a>
 </h2>
+<p>First, load Chevreul and all other packages required</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/cobriniklab/chevreul" class="external-link">chevreul</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://satijalab.org/seurat" class="external-link">Seurat</a></span><span class="op">)</span></span>
@@ -116,7 +115,7 @@
 <div class="section level2">
 <h2 id="tldr">TLDR<a class="anchor" aria-label="anchor" href="#tldr"></a>
 </h2>
-<p>chevreul provides a single command to:</p>
+<p>Chevreul provides a single command to:</p>
 <ul>
 <li><p>construct a Seurat object</p></li>
 <li><p>filter genes by minimum expression and ubiquity</p></li>
@@ -128,7 +127,9 @@
 </h2>
 <p>By default clustering will be run at ten different resolutions between 0.2 and 2.0. Any resolution can be specified by providing the resolution argument as a numeric vector.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">clustered_seu</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/clustering_workflow.html">clustering_workflow</a></span><span class="op">(</span><span class="va">human_gene_transcript_seu</span>, experiment_name <span class="op">=</span> <span class="st">"seurat_pancreas"</span>, organism <span class="op">=</span> <span class="st">"human"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">clustered_seu</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/clustering_workflow.html">clustering_workflow</a></span><span class="op">(</span><span class="va">human_gene_transcript_seu</span>, </span>
+<span>                                     experiment_name <span class="op">=</span> <span class="st">"seurat_hu_trans"</span>, </span>
+<span>                                     organism <span class="op">=</span> <span class="st">"human"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="get-a-first-look-at-a-processed-dataset-using-an-interactive-shiny-app">Get a first look at a processed dataset using an interactive shiny app<a class="anchor" aria-label="anchor" href="#get-a-first-look-at-a-processed-dataset-using-an-interactive-shiny-app"></a>
@@ -144,96 +145,52 @@
 <code class="sourceCode R"><span><span class="va">human_count</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">]</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">human_meta</span><span class="op">)</span></span></code></pre></div>
-<p>we can create a seurat object in the usual manner</p>
+<p>We can then create a seurat object in the usual manner using <code>CreatSeuratObject</code> function</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">myseu</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/CreateSeuratObject.html" class="external-link">CreateSeuratObject</a></span><span class="op">(</span><span class="va">human_count</span>, assay <span class="op">=</span> <span class="st">"gene"</span>, meta.data <span class="op">=</span> <span class="va">human_meta</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="preprocess-the-seurat-object">Preprocess the seurat object<a class="anchor" aria-label="anchor" href="#preprocess-the-seurat-object"></a>
 </h2>
-<p>Chevreul includes a handy function to preprocess the data that handles normalization and scaling required for downstream analysis. Preprocessing is performed using existing Seurat functions. If needed, parameters can be specified by the user.</p>
+<p>Chevreul includes a handy function to preprocess the data that handles normalization and scaling required for downstream analysis. If needed, parameters can be specified by the user.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">myseu</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/seurat_preprocess.html">seurat_preprocess</a></span><span class="op">(</span><span class="va">myseu</span><span class="op">)</span></span></code></pre></div>
-<p>This single function includes sub-functions that normalizes, identifies highly variable features and scales the data:</p>
-<ul>
-<li>The normalizing sub-function performs log normalization using a default scale factor of 10,000.</li>
-</ul>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">preprocess_seu</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/NormalizeData.html" class="external-link">NormalizeData</a></span><span class="op">(</span><span class="va">myseu</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
-<ul>
-<li>After normalization, subset of features that exhibit high cell-to-cell variation in the dataset are identified. By default, 2,000 features per dataset are returned by this function.</li>
-</ul>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">preprocess_seu</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/FindVariableFeatures.html" class="external-link">FindVariableFeatures</a></span><span class="op">(</span><span class="va">preprocess_seu</span>, selection.method <span class="op">=</span> <span class="st">"vst"</span>, </span>
-<span>    verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
-<ul>
-<li>Finally, the data is scaled by applying linear transformation. This step shifts the gene expression, so that the mean expression across cells is 0 and scales the gene expression, so that the variance across cells is 1.</li>
-</ul>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">pre_process_seu</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/ScaleData.html" class="external-link">ScaleData</a></span><span class="op">(</span><span class="va">preprocess_seu</span><span class="op">)</span></span></code></pre></div>
+<p>This single function includes seurat sub-functions that normalizes, identifies highly variable features and scales the data</p>
 </div>
 <div class="section level2">
 <h2 id="perform-dimension-reduction">Perform dimension reduction<a class="anchor" aria-label="anchor" href="#perform-dimension-reduction"></a>
 </h2>
 <p>Chevreul also implements a standardized dimension reduction step to select variable features at a user-specified threshold and perform PCA, tSNE, and UMAP. The default assay the dimension reduction is being run on is “gene”.</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">myseu</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/seurat_reduce_dimensions.html">seurat_reduce_dimensions</a></span><span class="op">(</span><span class="va">myseu</span>, assay <span class="op">=</span> <span class="st">"RNA"</span><span class="op">)</span> </span></code></pre></div>
-<p>This function includes existing seurat functions which performs dimension reduction techniques.</p>
-<ul>
-<li>Perform PCA: Runs a PCA dimensionality reduction.</li>
-</ul>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">Dim_Red_seu</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/RunPCA.html" class="external-link">RunPCA</a></span><span class="op">(</span><span class="va">myseu</span>,features <span class="op">=</span> <span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/VariableFeatures.html" class="external-link">VariableFeatures</a></span><span class="op">(</span><span class="va">myseu</span><span class="op">)</span>, </span>
-<span>      do.print <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
-<ul>
-<li>Perform tSNE: Runs t-SNE dimensionality reduction on selected features</li>
-</ul>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">Dim_Red_seu</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/RunTSNE.html" class="external-link">RunTSNE</a></span><span class="op">(</span><span class="va">Dim_Red_seu</span>, dims <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">30</span><span class="op">)</span></span></code></pre></div>
-<ul>
-<li>Perform UMAP: Runs the Uniform Manifold Approximation and Projection (UMAP) dimensional reduction technique.</li>
-</ul>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">Dim_Red_seu</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/RunUMAP.html" class="external-link">RunUMAP</a></span><span class="op">(</span><span class="va">Dim_Red_seu</span>, dims <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">30</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://satijalab.org/seurat/reference/DimPlot.html" class="external-link">DimPlot</a></span><span class="op">(</span><span class="va">Dim_Red_seu</span>, reduction <span class="op">=</span> <span class="st">"umap"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="community-detection-by-clustering">Community detection by clustering<a class="anchor" aria-label="anchor" href="#community-detection-by-clustering"></a>
 </h2>
 <p>Clustering analysis is performed via Louvain(default) or alternative algorithms available in Seurat. Clustering is performed at a range of resolutions with default value ranging from 0.2 to 2 and pca reduction</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span> <span class="va">seu</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/seurat_cluster.html">seurat_cluster</a></span><span class="op">(</span>seu <span class="op">=</span> <span class="va">Dim_Red_seu</span>, resolution <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0.2</span>, <span class="fl">2</span>, by <span class="op">=</span> <span class="fl">0.2</span><span class="op">)</span> <span class="op">)</span></span></code></pre></div>
 <p>This function produces clustering analysis via two steps performed using two different sub-functions</p>
-<ul>
-<li><p><code>FindNeighbours</code>: This function computes the nearest neighbors for a given dataset using k-nearest neighbor algorithm.</p></li>
-<li><p><code>FindClusters</code>: The output from FindNeighbours is then used to compute</p></li>
-</ul>
 </div>
 <div class="section level2">
 <h2 id="split-included-dataset-based-on-collection-technology">Split included dataset based on collection technology<a class="anchor" aria-label="anchor" href="#split-included-dataset-based-on-collection-technology"></a>
 </h2>
 <p>Chevreul includes a function, <code>SplitObject</code>, which is capable of splitting the dataset into subsets based on a single attribute indicated by the split.by argument</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">split_panc8</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/SplitObject.html" class="external-link">SplitObject</a></span><span class="op">(</span><span class="va">panc8</span>, split.by <span class="op">=</span> <span class="st">"dataset"</span><span class="op">)</span></span></code></pre></div>
-<p>Here, the split_panc8 object consists of a list of subsetted objects which are split based on batch</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">split_human</span><span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/SplitObject.html" class="external-link">SplitObject</a></span><span class="op">(</span><span class="va">human_gene_transcript_seu</span>, split.by <span class="op">=</span> <span class="st">"dataset"</span><span class="op">)</span></span></code></pre></div>
+<p>In this example the <code>split_human</code> object consists of a list of subsetted objects which are split based on batch</p>
 </div>
 <div class="section level2">
 <h2 id="run-seurat-batch-integration-on-child-projects">Run seurat batch integration on ‘child’ projects<a class="anchor" aria-label="anchor" href="#run-seurat-batch-integration-on-child-projects"></a>
 </h2>
-<p>Multiple seurat objects can be integrated using a Chevreul function which takes in a list of seurat objects for all batches as an argument and returns an integrated seurat object containg merged batches</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">integrated_seu</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/integration_workflow.html">integration_workflow</a></span><span class="op">(</span><span class="va">split_panc8</span><span class="op">)</span></span></code></pre></div>
+<p>When joint analysis of 2 or more datasets is to be performed <code>integration_workflow</code> function can be used, which takes in a list of seurat objects as input and returns an integrated seurat object</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">integrated_seu</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/integration_workflow.html">integration_workflow</a></span><span class="op">(</span><span class="va">split_human</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="launch-app-to-inspect">launch app to inspect<a class="anchor" aria-label="anchor" href="#launch-app-to-inspect"></a>
+<h2 id="view-analysis-details">View analysis details<a class="anchor" aria-label="anchor" href="#view-analysis-details"></a>
 </h2>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="reference/minimalSeuratApp.html">minimalSeuratApp</a></span><span class="op">(</span><span class="va">integrated_seu</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level2">
-<h2 id="view-analysis-details">view analysis details<a class="anchor" aria-label="anchor" href="#view-analysis-details"></a>
-</h2>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/Misc.html" class="external-link">Misc</a></span><span class="op">(</span><span class="va">integrated_seu</span>, <span class="st">"experiment"</span><span class="op">)</span> <span class="op"><a href="reference/pipe.html">%&gt;%</a></span> </span>
 <span>  <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/enframe.html" class="external-link">enframe</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="reference/pipe.html">%&gt;%</a></span> </span>
 <span>  <span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>

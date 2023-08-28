@@ -65,7 +65,7 @@ reformatMetadataDR <- function(input, output, session, seu, featureType = "gene"
                                logo_side = "left",
                                viewer = "dialog",
                                viewer_height = 800,
-                               viewer_width = 1200,
+                               viewer_width = 2000,
                                theme = "yeti",
                                read_fun = "read.csv",
                                read_args = NULL,
@@ -171,7 +171,7 @@ reformatMetadataDR <- function(input, output, session, seu, featureType = "gene"
     col_bind = NULL, col_edit = col_edit, col_options = col_options,
     col_stretch = col_stretch, col_names = col_names,
     col_readonly = col_readonly, col_factor = col_factor,
-    row_bind = NULL, row_edit = row_edit, quiet = quiet
+    row_bind = NULL, row_edit = row_edit, quiet = quiet, height = viewer_height, width = viewer_width
   )
   observe({
     values$data_active <- data_update()

@@ -130,7 +130,7 @@ This Chevreul function produces a visual representation of the expression levels
  
 ```{r, results=FALSE, echo=FALSE}
 
-plot_transcript_composition(human_gene_transcript_seu, "NRL")
+plot_transcript_composition(human_gene_transcript_seu, "NRL", group.by = "gene_snn_res.0.2", standardize = TRUE)
 
 ```
 
