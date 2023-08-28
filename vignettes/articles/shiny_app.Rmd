@@ -16,49 +16,58 @@ knitr::opts_chunk$set(
 library(kableExtra)
 ```
 
-```{r setup, message = FALSE}
-library(chevreul)
-library(Seurat)
-library(tidyverse)
-library(ggraph)
-```
+### TLDR
 
-## TLDR
+#### Solo Mode 
 
-chevreul provides a single command to:
+Chevreul allows exploratory data analysis of a single cell dataset processed using `Seurat` with the command `minimalSeuratApp()`
 
--   construct a Seurat object
+#### Server Mode
 
--   filter genes by minimum expression and ubiquity
+Chevreul has increased functionality if operating in server mode. These functions include: 
+1. Coverage plotting
+2. Batch integration
+3. Project management
+  a. Reformat metadata
+  b. Subset datasets
 
--   normalize and scale expression by any of several methods packaged in Seurat
-
-# Run clustering on a single seurat object
-
-```{r, eval =FALSE}
-minimalSeuratApp()
-```
-
-# App sections
-
-*** include text to indicate that we will be going through sections in the app and providing info 
+Here we'll provide a brief tour of the app organized by section with app functions organized as tabs along the sidebar upon startup.
 
 ### Integrate Projects
 
-Integration of 2 or more single-cell datasets is important for its joint analyses. Choices of cell-level and batch-level qc are highly relevant when performing batch integration. 
+While operating Chevreul in server mode, separate sequencing batches can be [integrated](https://www.cell.com/cell/fulltext/S0092-8674(19)30559-8) and compared to validate sample processing steps and exclude technical variation in favor of relevant biological variation. 
 
-Chevreul provides tools for cell-level exploratory data analysis and for specifying integration settings. While operating Chevreul in server mode, separate sequencing batches can be [integrated](https://www.cell.com/cell/fulltext/S0092-8674(19)30559-8) and compared to validate sample processing steps and exclude technical variation in favor of relevant biological variation. 
+This section includes a list of projects that can be selected, integrated, and saved for future analysis.
 
-This section of Chevreul, includes a list of projects which can be filtered through to select and run the integration.
+
 
 ### Reformat Metadata 
 
-** Make spreadsheet smaller in the app**
-#### 
-Arbitrary variables can be appended to the cell metadata based on the results of exploratory data analysis. Metadata addition can be executed by uploading a csv with row names matching cell ids with new variables as columns. Metadata editing can also be accomplished using a built-in spreadsheet tool. 
-**** where is the split by option in the app?
+<!-- ** Make spreadsheet smaller in the app** -->
+Arbitrary variables can be appended to the cell metadata based on the results of exploratory data analysis. 
+<!-- **** where is the split by option in the app? -->
+Metadata addition can be executed by uploading a csv with row names matching cell ids with new variables as columns. Metadata editing can also be accomplished using a built-in spreadsheet tool. 
 
-Cevreul makes it simple to subset a dataset consisting of a single batch or batch-integrated dataset. Subsetting can be accomplished either in a graphical setting by selection from a dimensionally reduced plot or by specifying a properly formatted file. Subsetting of single or batch integrated data will trigger renewal of all relevant preprocessing steps.
+### Plot Data
+
+#### Dimensional reduction plots 
+chevreul provides visualization of embeddings in PCA, tSNE, and UMAP for scRNAseq data summarized at the gene and transcript level. 
+Plots can be customized to display cell metadata and the results of community detection clustering by Louvain or Leiden algorithms as implemented in Seurat. 
+In addition, gene and transcript feature expression can be overlaid on embedding plots both at the gene and transcript level. 
+
+![](images/louvain_and_feature_umap_plot.png)
+
+#### read/UMI count histograms 
+To facilitate quality control, cell-level summarized umi and read count values can also be overlaid with cell metadata and clustering results.   
+
+![](images/pair_of_histograms.png)
+
+#### Clustering trees
+
+A cluster tree of cell identities is displayed using [scclustviz](https://lazappi.github.io/clustree/articles/clustree.html). 
+This plot can be used to help establish an optimal clustering resolution. 
+
+![](images/clustree.png)
 
 ### Heat Maps/Violin Plots
 
@@ -86,10 +95,12 @@ The parameters that could to be chosen here are:
 
 ### Coverage plots
 
-Coverage plots indicate the **resd depts across all transcripts for different groups of cells within a genomic region. 
+Fine-grained analysis of isoform contributions can be achieved by plotting absolute read coverage plots across a given gene. 
+
+indicate the **read depths across all transcripts for different groups of cells within a genomic region. 
 
 The three user input parameters are:
-1. 'Select a gene'- Select a gene of intreset
+1. 'Select a gene'- Select a gene of interest
 2. 'Color by variable'- Select a variable by which to group the cells by
 3. 'Groups to display'- Select the groups to be displayed
 
@@ -97,7 +108,7 @@ The three user input parameters are:
 
 ### Differential expression
 
-Chevreul provides different methods of differential expression analysis that users can choose from to determine differential expression of gene. DE methods included in Chvreul are t-test, Wilcoxon rank-sum test, Likelihood ratio test, and MAST
+Chevreul provides different methods of differential expression analysis that users can choose from to determine differential expression of gene. DE methods included in Chevreul are t-test, Wilcoxon rank-sum test, Likelihood ratio test, and MAST
 
 Running DE testing results in a data frame containing the following information:
 *  p_val : Unadjusted p-value 
@@ -111,25 +122,67 @@ d1<-read.csv("Dominic.csv", header = TRUE)
 
 ```
 
-
 ### Find Markers
 
-# RNA Velocity
+Marker features based on louvain/leiden cluster identities or cell metadata can be defined based on results of wilcoxon rank-sum test via [presto](https://www.biorxiv.org/content/10.1101/653253v1) or measures of cluster specificity with genesorteR (Ibrahim, 2020) . Variable numbers of marker genes per cell group can be specified based on adjusted p value and thresholded log fold change.
 
-RNA velocity is the time-derivative of the gene expression state of a cell. RNA velocity can be used to forecast the future state of a given cell in a developmental or time-dependent process. seuratTools provides visualization and processing functionality using [velocyto](https://velocyto.org/). Velocity can be represented on UMAP or tSNE plots in multiple formats and exported as needed. 
-RNA velocity necessitates the calculation of spliced and unspliced transcript counts as implemented on the command-line in velocyto. As a result integration within seuratTools demands some familiarity with the command-line and the availability of a properly formatted [loom](https://velocyto.org/velocyto.py/tutorial/cli.html#about-the-output-loom-file) file. This file must be generated separately from the seurat object. To enable plotting of RNA velocity, the path to the corresponding loom file must be provided.
+![](images/marker_gene_plot.png)
 
-# Regress Features
+### Subset Seurat Input
 
-Often we would like to correct for expression variation in our analysis due to phenomena unrelated to our focus of study. Such unwanted effects can include cell-cycle variability or systematic differences in mitochondrial expression.
+It is often useful to subset a single cell data set based on cell metadata whether experimentally determined (age, collection method, etc.) or derived from analysis (quality control metrics, annotated cell type)
 
-Rather than excluding count values attributable to such process, we adjust the expression of all remaining genes or transcripts in each cell based on the sum score of relevant genes, to regress out cell-cycle effects, for [example](https://satijalab.org/seurat/v3.0/cell_cycle_vignette.html)
+chevreul makes it simple to subset a dataset consisting of a single batch or batch-integrated dataset. Subsetting can be accomplished either in a graphical setting by lasso-selection from a dimensionally reduced plot or by by specification of a formatted .csv file. 
 
-Such regression can be performed for any arbitrary gene set. Some preset gene lists are included in `seuratTools` including cell-cycle, mitochondrial, and apoptosis related gene sets.
+Subsetting of single or batch integrated data will trigger renewal of all relevant preprocessing steps including dimensional reduction, clustering, marker gene, and pathway enrichment as well as integration based on a 'batch' variable
 
+### All Transcripts
 
+If expression is summarized with both gene and transcript assays, it is possible to plot all constituent transcripts (labeled by ensembl transcript ids) making up a given gene.
 
+The two parameters that must be chosen are:
 
-# Pseudotime Analysis by [Monocle 3](https://cole-trapnell-lab.github.io/monocle3/)
+1. dimensional reduction method: PCA, UMAP or tSNE
+2. The name of the gene of interest 
 
-Pseudotime analysis is broken into several steps, mirroring a typical command-line workflow. Chevreul provides graphical tools to optionally subset an embedded dataset then calculate a trajectory graph. Root cells can be specified and cells ordered in pseudotime with monocle3. Features that vary significantly over pseudotime based on autocorrelation can then be determined and grouped into modules that vary similarly over pseudotime. Heatmap and scatter plot visualiation of pseudotime analysis results are available at gene and module levels
+![](images/unnamed-chunk-9-1.png)
+
+Direct comparison of the contribution of individual transcripts can be achieved using stacked bar plots to answer the question: What contribution does each transcript make for each gene expression?
+
+![](images/transcript_composisiont.png)
+
+### RNA Velocity
+
+RNA velocity can be used to forecast the future state of a given cell in a developmental or time-dependent process. Chevreul provides visualization and processing functionality using [velocyto](https://velocyto.org/). Velocity can be represented on UMAP or tSNE plots in multiple formats and exported as needed. 
+
+RNA velocity necessitates the calculation of spliced and unspliced transcript counts as implemented on the command-line in velocyto. As a result integration within Chevreul demands some familiarity with the command-line and the availability of a properly formatted [loom](https://velocyto.org/velocyto.py/tutorial/cli.html#about-the-output-loom-file) file. To enable plotting of RNA velocity, the path to the corresponding loom file must be provided.
+
+![](images/Screenshot 2023-08-25 at 1.28.26 PM.png)
+
+### Pseudotime Analysis by [Monocle 3](https://cole-trapnell-lab.github.io/monocle3/)
+
+Pseudotime analysis is broken into several steps, mirroring a typical command-line workflow. 
+1. Users can subset an embedded dataset then calculate a trajectory graph. 
+1. Root cells can be specified and cells ordered in pseudotime with monocle3. 
+2. Features that vary significantly over pseudotime based on autocorrelation can then be determined and grouped into modules that vary similarly over pseudotime. 
+
+![](images/monocle_first_steps.png)
+
+Heat maps and scatter plots are available at gene and module levels.
+
+![](images/monocle_final_steps.png)
+
+### Regress Features
+
+To correct for expression variation in analysis due to phenomena unrelated to focus of the study,
+rather than excluding count values attributable to such process, we can adjust the expression of all remaining genes or transcripts in each cell based on the sum score of relevant genes, to regress out cell-cycle effects, for [example](https://satijalab.org/seurat/v3.0/cell_cycle_vignette.html)
+
+Such regression can be performed for any arbitrary gene set. Some preset gene lists are included in `Chevreul` including cell-cycle, mitochondrial, and apoptosis related gene sets.
+
+![](images/Screenshot 2023-08-25 at 1.40.35 PM.png)
+
+### Technical information
+
+Technical information regarding upstream processing, software version numbers, and dataset features can be viewed. 
+
+![](images/Screenshot 2023-08-25 at 1.40.57 PM.png)

@@ -166,7 +166,7 @@ seurat_cluster <- function(seu = seu, resolution = 0.6, custom_clust = NULL, red
   if (!is.null(custom_clust)) {
     seu <- Seurat::StashIdent(object = seu, save.name = "old.ident")
     clusters <- tibble::tibble("sample_id" = rownames(seu[[]])) %>%
-      tibbl::rownames_to_column("order") %>%
+      tibble::rownames_to_column("order") %>%
       dplyr::inner_join(custom_clust, by = "sample_id") %>%
       dplyr::pull(cluster) %>%
       identity()

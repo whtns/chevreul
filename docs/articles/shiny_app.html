@@ -84,71 +84,85 @@
 
     
     
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/cobriniklab/chevreul" class="external-link">chevreul</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://satijalab.org/seurat" class="external-link">Seurat</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org" class="external-link">tidyverse</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggraph.data-imaginist.com" class="external-link">ggraph</a></span><span class="op">)</span></span></code></pre></div>
 <div class="section level3">
 <h3 id="tldr">TLDR<a class="anchor" aria-label="anchor" href="#tldr"></a>
 </h3>
-<p>chevreul provides a single command to:</p>
-<ul>
-<li><p>construct a Seurat object</p></li>
-<li><p>filter genes by minimum expression and ubiquity</p></li>
-<li><p>normalize and scale expression by any of several methods packaged
-in Seurat</p></li>
-</ul>
-</div>
-<div class="section level2">
-<h2 id="run-clustering-on-a-single-seurat-object">Run clustering on a single seurat object<a class="anchor" aria-label="anchor" href="#run-clustering-on-a-single-seurat-object"></a>
-</h2>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/minimalSeuratApp.html">minimalSeuratApp</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level2">
-<h2 id="app-sections">App sections<a class="anchor" aria-label="anchor" href="#app-sections"></a>
-</h2>
-<p>*** include text to indicate that we will be going through sections
-in the app and providing info</p>
 <div class="section level4">
-<h4 id="integrate-projects">Integrate Projects<a class="anchor" aria-label="anchor" href="#integrate-projects"></a>
+<h4 id="solo-mode">Solo Mode<a class="anchor" aria-label="anchor" href="#solo-mode"></a>
 </h4>
-<p>Integration of 2 or more single-cell datasets is important for its
-joint analyses. Choices of cell-level and batch-level qc are highly
-relevant when performing batch integration.</p>
-<p>Chevreul provides tools for cell-level exploratory data analysis and
-for specifying integration settings. While operating Chevreul in server
-mode, separate sequencing batches can be <a href="https://www.cell.com/cell/fulltext/S0092-8674(19)30559-8" class="external-link">integrated</a>
+<p>Chevreul allows exploratory data analysis of a single cell dataset
+processed using <code>Seurat</code> with the command
+<code><a href="../reference/minimalSeuratApp.html">minimalSeuratApp()</a></code></p>
+</div>
+<div class="section level4">
+<h4 id="server-mode">Server Mode<a class="anchor" aria-label="anchor" href="#server-mode"></a>
+</h4>
+<p>Chevreul has increased functionality if operating in server mode.
+These functions include: 1. Coverage plotting 2. Batch integration 3.
+Project management a. Reformat metadata b. Subset datasets</p>
+<p>Here we’ll provide a brief tour of the app organized by section with
+app functions organized as tabs along the sidebar upon startup.</p>
+</div>
+</div>
+<div class="section level3">
+<h3 id="integrate-projects">Integrate Projects<a class="anchor" aria-label="anchor" href="#integrate-projects"></a>
+</h3>
+<p>While operating Chevreul in server mode, separate sequencing batches
+can be <a href="https://www.cell.com/cell/fulltext/S0092-8674(19)30559-8" class="external-link">integrated</a>
 and compared to validate sample processing steps and exclude technical
 variation in favor of relevant biological variation.</p>
-<p>This section of Chevreul, includes a list of projects which can be
-filtered through to select and run the integration.</p>
+<p>This section includes a list of projects that can be selected,
+integrated, and saved for future analysis.</p>
+</div>
+<div class="section level3">
+<h3 id="reformat-metadata">Reformat Metadata<a class="anchor" aria-label="anchor" href="#reformat-metadata"></a>
+</h3>
+<!-- ** Make spreadsheet smaller in the app** -->
+<p>Arbitrary variables can be appended to the cell metadata based on the
+results of exploratory data analysis.
+<!-- **** where is the split by option in the app? --> Metadata addition
+can be executed by uploading a csv with row names matching cell ids with
+new variables as columns. Metadata editing can also be accomplished
+using a built-in spreadsheet tool.</p>
+</div>
+<div class="section level3">
+<h3 id="plot-data">Plot Data<a class="anchor" aria-label="anchor" href="#plot-data"></a>
+</h3>
+<div class="section level4">
+<h4 id="dimensional-reduction-plots">Dimensional reduction plots<a class="anchor" aria-label="anchor" href="#dimensional-reduction-plots"></a>
+</h4>
+<p>chevreul provides visualization of embeddings in PCA, tSNE, and UMAP
+for scRNAseq data summarized at the gene and transcript level. Plots can
+be customized to display cell metadata and the results of community
+detection clustering by Louvain or Leiden algorithms as implemented in
+Seurat. In addition, gene and transcript feature expression can be
+overlaid on embedding plots both at the gene and transcript level.</p>
+<p><img src="images/louvain_and_feature_umap_plot.png"></p>
 </div>
 <div class="section level4">
-<h4 id="reformat-metadata">Reformat Metadata<a class="anchor" aria-label="anchor" href="#reformat-metadata"></a>
+<h4 id="readumi-count-histograms">read/UMI count histograms<a class="anchor" aria-label="anchor" href="#readumi-count-histograms"></a>
 </h4>
-<p>** Make spreadsheet smaller in the app<strong> #### Arbitrary
-variables can be appended to the cell metadata based on the results of
-exploratory data analysis. Metadata addition can be executed by
-uploading a csv with row names matching cell ids with new variables as
-columns. Metadata editing can also be accomplished using a built-in
-spreadsheet tool. </strong>** where is the split by option in the
-app?</p>
-<p>Cevreul makes it simple to subset a dataset consisting of a single
-batch or batch-integrated dataset. Subsetting can be accomplished either
-in a graphical setting by selection from a dimensionally reduced plot or
-by specifying a properly formatted file. Subsetting of single or batch
-integrated data will trigger renewal of all relevant preprocessing
-steps.</p>
+<p>To facilitate quality control, cell-level summarized umi and read
+count values can also be overlaid with cell metadata and clustering
+results.</p>
+<p><img src="images/pair_of_histograms.png"></p>
 </div>
 <div class="section level4">
-<h4 id="heat-mapsviolin-plots">Heat Maps/Violin Plots<a class="anchor" aria-label="anchor" href="#heat-mapsviolin-plots"></a>
+<h4 id="clustering-trees">Clustering trees<a class="anchor" aria-label="anchor" href="#clustering-trees"></a>
 </h4>
-<div class="section level5">
-<h5 id="heat-maps">
+<p>A cluster tree of cell identities is displayed using <a href="https://lazappi.github.io/clustree/articles/clustree.html" class="external-link">scclustviz</a>.
+This plot can be used to help establish an optimal clustering
+resolution.</p>
+<p><img src="images/clustree.png"></p>
+</div>
+</div>
+<div class="section level3">
+<h3 id="heat-mapsviolin-plots">Heat Maps/Violin Plots<a class="anchor" aria-label="anchor" href="#heat-mapsviolin-plots"></a>
+</h3>
+<div class="section level4">
+<h4 id="heat-maps">
 <em>Heat Maps</em><a class="anchor" aria-label="anchor" href="#heat-maps"></a>
-</h5>
+</h4>
 <p>When plotting the heat map, gene/transcript expression values for
 each cell are normalized by that cell’s total expression then multiplied
 by 10,000 and natural-log transformed before plotting.</p>
@@ -159,10 +173,10 @@ arbitrary lists of genes can be plotted for comparison. The
 genes/transcripts are displayed in the order they are listed.</p>
 <p><img src="images/Heatmap2.0.PNG"></p>
 </div>
-<div class="section level5">
-<h5 id="violin-plots">
+<div class="section level4">
+<h4 id="violin-plots">
 <em>Violin Plots</em><a class="anchor" aria-label="anchor" href="#violin-plots"></a>
-</h5>
+</h4>
 <p>Feature (gene or transcript) expression can be viewed by violin plot
 based on sample metadata</p>
 <p>Violin plots are a hybrid of density and box plots. It shows the
@@ -175,23 +189,25 @@ variable’ 2. ‘Data Type (Transformed/Raw)’</p>
 <p><img src="images/violinPlot.PNG"></p>
 </div>
 </div>
-<div class="section level4">
-<h4 id="coverage-plots">Coverage plots<a class="anchor" aria-label="anchor" href="#coverage-plots"></a>
-</h4>
-<p>Coverage plots indicate the **resd depts across all transcripts for
-different groups of cells within a genomic region.</p>
+<div class="section level3">
+<h3 id="coverage-plots">Coverage plots<a class="anchor" aria-label="anchor" href="#coverage-plots"></a>
+</h3>
+<p>Fine-grained analysis of isoform contributions can be achieved by
+plotting absolute read coverage plots across a given gene.</p>
+<p>indicate the **read depths across all transcripts for different
+groups of cells within a genomic region.</p>
 <p>The three user input parameters are: 1. ‘Select a gene’- Select a
-gene of intreset 2. ‘Color by variable’- Select a variable by which to
+gene of interest 2. ‘Color by variable’- Select a variable by which to
 group the cells by 3. ‘Groups to display’- Select the groups to be
 displayed</p>
 <p><img src="images/PlotCoverage2.0.PNG" style="width:80.0%;height:80.0%"></p>
 </div>
-<div class="section level4">
-<h4 id="differential-expression">Differential expression<a class="anchor" aria-label="anchor" href="#differential-expression"></a>
-</h4>
+<div class="section level3">
+<h3 id="differential-expression">Differential expression<a class="anchor" aria-label="anchor" href="#differential-expression"></a>
+</h3>
 <p>Chevreul provides different methods of differential expression
 analysis that users can choose from to determine differential expression
-of gene. DE methods included in Chvreul are t-test, Wilcoxon rank-sum
+of gene. DE methods included in Chevreul are t-test, Wilcoxon rank-sum
 test, Likelihood ratio test, and MAST</p>
 <p>Running DE testing results in a data frame containing the following
 information: * p_val : Unadjusted p-value * avg_log2FC : log fold-change
@@ -200,56 +216,101 @@ percentage of cells where the feature is detected in the first group *
 pct.2 : The percentage of cells where the feature is detected in the
 second group * p_val_adj : Adjusted p-value, based on bonferroni
 correction using all features in the dataset.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">d1</span><span class="op">&lt;-</span><span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="st">"Dominic.csv"</span>, header <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 </div>
-<div class="section level4">
-<h4 id="find-markers">Find Markers<a class="anchor" aria-label="anchor" href="#find-markers"></a>
-</h4>
+<div class="section level3">
+<h3 id="find-markers">Find Markers<a class="anchor" aria-label="anchor" href="#find-markers"></a>
+</h3>
+<p>Marker features based on louvain/leiden cluster identities or cell
+metadata can be defined based on results of wilcoxon rank-sum test via
+<a href="https://www.biorxiv.org/content/10.1101/653253v1" class="external-link">presto</a> or
+measures of cluster specificity with genesorteR (Ibrahim, 2020) .
+Variable numbers of marker genes per cell group can be specified based
+on adjusted p value and thresholded log fold change.</p>
+<p><img src="images/marker_gene_plot.png"></p>
 </div>
+<div class="section level3">
+<h3 id="subset-seurat-input">Subset Seurat Input<a class="anchor" aria-label="anchor" href="#subset-seurat-input"></a>
+</h3>
+<p>It is often useful to subset a single cell data set based on cell
+metadata whether experimentally determined (age, collection method,
+etc.) or derived from analysis (quality control metrics, annotated cell
+type)</p>
+<p>chevreul makes it simple to subset a dataset consisting of a single
+batch or batch-integrated dataset. Subsetting can be accomplished either
+in a graphical setting by lasso-selection from a dimensionally reduced
+plot or by by specification of a formatted .csv file.</p>
+<p>Subsetting of single or batch integrated data will trigger renewal of
+all relevant preprocessing steps including dimensional reduction,
+clustering, marker gene, and pathway enrichment as well as integration
+based on a ‘batch’ variable</p>
 </div>
-<div class="section level2">
-<h2 id="rna-velocity">RNA Velocity<a class="anchor" aria-label="anchor" href="#rna-velocity"></a>
-</h2>
-<p>RNA velocity is the time-derivative of the gene expression state of a
-cell. RNA velocity can be used to forecast the future state of a given
-cell in a developmental or time-dependent process. seuratTools provides
+<div class="section level3">
+<h3 id="all-transcripts">All Transcripts<a class="anchor" aria-label="anchor" href="#all-transcripts"></a>
+</h3>
+<p>If expression is summarized with both gene and transcript assays, it
+is possible to plot all constituent transcripts (labeled by ensembl
+transcript ids) making up a given gene.</p>
+<p>The two parameters that must be chosen are:</p>
+<ol style="list-style-type: decimal">
+<li>dimensional reduction method: PCA, UMAP or tSNE</li>
+<li>The name of the gene of interest</li>
+</ol>
+<p><img src="images/unnamed-chunk-9-1.png"></p>
+<p>Direct comparison of the contribution of individual transcripts can
+be achieved using stacked bar plots to answer the question: What
+contribution does each transcript make for each gene expression?</p>
+<p><img src="images/transcript_composisiont.png"></p>
+</div>
+<div class="section level3">
+<h3 id="rna-velocity">RNA Velocity<a class="anchor" aria-label="anchor" href="#rna-velocity"></a>
+</h3>
+<p>RNA velocity can be used to forecast the future state of a given cell
+in a developmental or time-dependent process. Chevreul provides
 visualization and processing functionality using <a href="https://velocyto.org/" class="external-link">velocyto</a>. Velocity can be represented
-on UMAP or tSNE plots in multiple formats and exported as needed. RNA
-velocity necessitates the calculation of spliced and unspliced
+on UMAP or tSNE plots in multiple formats and exported as needed.</p>
+<p>RNA velocity necessitates the calculation of spliced and unspliced
 transcript counts as implemented on the command-line in velocyto. As a
-result integration within seuratTools demands some familiarity with the
+result integration within Chevreul demands some familiarity with the
 command-line and the availability of a properly formatted <a href="https://velocyto.org/velocyto.py/tutorial/cli.html#about-the-output-loom-file" class="external-link">loom</a>
-file. This file must be generated separately from the seurat object. To
-enable plotting of RNA velocity, the path to the corresponding loom file
-must be provided.</p>
+file. To enable plotting of RNA velocity, the path to the corresponding
+loom file must be provided.</p>
+<p><img src="images/Screenshot%202023-08-25%20at%201.28.26%20PM.png"></p>
 </div>
-<div class="section level2">
-<h2 id="regress-features">Regress Features<a class="anchor" aria-label="anchor" href="#regress-features"></a>
-</h2>
-<p>Often we would like to correct for expression variation in our
-analysis due to phenomena unrelated to our focus of study. Such unwanted
-effects can include cell-cycle variability or systematic differences in
-mitochondrial expression.</p>
-<p>Rather than excluding count values attributable to such process, we
-adjust the expression of all remaining genes or transcripts in each cell
-based on the sum score of relevant genes, to regress out cell-cycle
-effects, for <a href="https://satijalab.org/seurat/v3.0/cell_cycle_vignette.html" class="external-link">example</a></p>
-<p>Such regression can be performed for any arbitrary gene set. Some
-preset gene lists are included in <code>seuratTools</code> including
-cell-cycle, mitochondrial, and apoptosis related gene sets.</p>
-</div>
-<div class="section level2">
-<h2 id="pseudotime-analysis-by-monocle-3">Pseudotime Analysis by <a href="https://cole-trapnell-lab.github.io/monocle3/" class="external-link">Monocle 3</a><a class="anchor" aria-label="anchor" href="#pseudotime-analysis-by-monocle-3"></a>
-</h2>
+<div class="section level3">
+<h3 id="pseudotime-analysis-by-monocle-3">Pseudotime Analysis by <a href="https://cole-trapnell-lab.github.io/monocle3/" class="external-link">Monocle 3</a><a class="anchor" aria-label="anchor" href="#pseudotime-analysis-by-monocle-3"></a>
+</h3>
 <p>Pseudotime analysis is broken into several steps, mirroring a typical
-command-line workflow. Chevreul provides graphical tools to optionally
-subset an embedded dataset then calculate a trajectory graph. Root cells
-can be specified and cells ordered in pseudotime with monocle3. Features
-that vary significantly over pseudotime based on autocorrelation can
-then be determined and grouped into modules that vary similarly over
-pseudotime. Heatmap and scatter plot visualiation of pseudotime analysis
-results are available at gene and module levels</p>
+command-line workflow. 1. Users can subset an embedded dataset then
+calculate a trajectory graph. 1. Root cells can be specified and cells
+ordered in pseudotime with monocle3. 2. Features that vary significantly
+over pseudotime based on autocorrelation can then be determined and
+grouped into modules that vary similarly over pseudotime.</p>
+<p><img src="images/monocle_first_steps.png"></p>
+<p>Heat maps and scatter plots are available at gene and module
+levels.</p>
+<p><img src="images/monocle_final_steps.png"></p>
+</div>
+<div class="section level3">
+<h3 id="regress-features">Regress Features<a class="anchor" aria-label="anchor" href="#regress-features"></a>
+</h3>
+<p>To correct for expression variation in analysis due to phenomena
+unrelated to focus of the study, rather than excluding count values
+attributable to such process, we can adjust the expression of all
+remaining genes or transcripts in each cell based on the sum score of
+relevant genes, to regress out cell-cycle effects, for <a href="https://satijalab.org/seurat/v3.0/cell_cycle_vignette.html" class="external-link">example</a></p>
+<p>Such regression can be performed for any arbitrary gene set. Some
+preset gene lists are included in <code>Chevreul</code> including
+cell-cycle, mitochondrial, and apoptosis related gene sets.</p>
+<p><img src="images/Screenshot%202023-08-25%20at%201.40.35%20PM.png"></p>
+</div>
+<div class="section level3">
+<h3 id="technical-information">Technical information<a class="anchor" aria-label="anchor" href="#technical-information"></a>
+</h3>
+<p>Technical information regarding upstream processing, software version
+numbers, and dataset features can be viewed.</p>
+<p><img src="images/Screenshot%202023-08-25%20at%201.40.57%20PM.png"></p>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside>
