@@ -689,8 +689,8 @@ seu_complex_heatmap <- function(seu, features = NULL, group.by = "ident", cells 
   seu <- suppressMessages(expr = StashIdent(object = seu,
                                                save.name = "ident"))
 
-  if (col_arrangement %in% c("ward.D", "single", "complete", "average", "mcquitty",
-                            "median", "centroid", "ward.D2")){
+  if (any(col_arrangement %in% c("ward.D", "single", "complete", "average", "mcquitty",
+                            "median", "centroid", "ward.D2"))){
     if("pca" %in% Seurat::Reductions(seu)){
       cluster_columns <-
         Seurat::Embeddings(seu, "pca") %>%
@@ -712,7 +712,7 @@ seu_complex_heatmap <- function(seu, features = NULL, group.by = "ident", cells 
 
     data <- data[cells,]
 
-    group.by = union(group.by, col_arrangement)
+    group.by = base::union(group.by, col_arrangement)
 
     cluster_columns = FALSE
   }
@@ -722,6 +722,7 @@ seu_complex_heatmap <- function(seu, features = NULL, group.by = "ident", cells 
 
   groups.use <- groups.use %>%
     tibble::rownames_to_column("sample_id") %>%
+    dplyr::mutate(across(where(is.character), ~str_wrap(str_replace_all(.x, ",", " "), 10))) %>%
     dplyr::mutate(across(where(is.character), as.factor)) %>%
     data.frame(row.names = 1) %>%
     identity()

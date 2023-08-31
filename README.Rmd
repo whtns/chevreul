@@ -86,7 +86,7 @@ clustered_seu <- clustering_workflow(human_gene_transcript_seu,
 ## Get a first look at a processed dataset using an interactive shiny app
 
 ```{r, eval = FALSE}
-minimalSeuratApp(clustered_seu)
+minimalSeuratApp(human_gene_transcript_seu)
 ```
 
 ## Set up a seurat object
