@@ -8,8 +8,8 @@
 <meta name="description" content="chevreul">
 <title>Visualization • chevreul</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="../deps/bootstrap-5.1.3/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.1.3/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
+<link href="../deps/bootstrap-5.2.2/bootstrap.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.2.2/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
 <!-- bootstrap-toc --><script src="https://cdn.rawgit.com/afeld/bootstrap-toc/v1.0.1/dist/bootstrap-toc.min.js"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Visualization">
 <meta property="og:description" content="chevreul">
@@ -94,28 +94,9 @@ required</p>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org" class="external-link">tidyverse</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggraph.data-imaginist.com" class="external-link">ggraph</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://patchwork.data-imaginist.com" class="external-link">patchwork</a></span><span class="op">)</span></span></code></pre></div>
-<div class="section level2">
-<h2 id="tldr">TLDR<a class="anchor" aria-label="anchor" href="#tldr"></a>
-</h2>
-<div class="section level3">
-<h3 id="run-clustering-on-a-single-seurat-object">Run clustering on a single seurat object<a class="anchor" aria-label="anchor" href="#run-clustering-on-a-single-seurat-object"></a>
-</h3>
-<p>Chevreul provides a single command, clustering_workflow(), to:</p>
-<ul>
-<li><p>construct a Seurat object</p></li>
-<li><p>filter genes by minimum expression and ubiquity</p></li>
-<li><p>normalize and scale expression by any of several methods packaged
-in Seurat</p></li>
-</ul>
-<p>This function is called <code>clustering_workflow</code>. By default
-clustering will be run at ten different resolutions between 0.2 and 2.0
-but resolution can be specified with the <code>resolution</code>
-argument.</p>
 <p>Chevreul contains many plotting functions that allows for
 visualization, these plots can be customized for interactive or
 non-interactive display.</p>
-</div>
-</div>
 <div class="section level2">
 <h2 id="plot-expression">Plot expression<a class="anchor" aria-label="anchor" href="#plot-expression"></a>
 </h2>
@@ -125,13 +106,17 @@ multi-feature plot.</p>
 <p>When plotting only one feature, output is identical to
 <code><a href="https://satijalab.org/seurat/reference/FeaturePlot.html" class="external-link">Seurat::FeaturePlot</a></code></p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_feature.html">plot_feature</a></span><span class="op">(</span><span class="va">human_gene_transcript_seu</span>, embedding <span class="op">=</span> <span class="st">"umap"</span>, features <span class="op">=</span> <span class="st">"NRL"</span>, return_plotly <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_feature.html">plot_feature</a></span><span class="op">(</span><span class="va">human_gene_transcript_seu</span>,</span>
+<span>  embedding <span class="op">=</span> <span class="st">"umap"</span>,</span>
+<span>  features <span class="op">=</span> <span class="st">"NRL"</span>, return_plotly <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 <p><img src="visualization_files/figure-html/unnamed-chunk-3-1.png" width="100%"></p>
 <p>If multiple features are to be plotted, the joint density of all the
 features are plotted using a <code>plot_density</code> function from the
 R package <code>Nebulosa</code>.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span> <span class="fu"><a href="../reference/plot_feature.html">plot_feature</a></span><span class="op">(</span><span class="va">human_gene_transcript_seu</span>, embedding <span class="op">=</span> <span class="st">"umap"</span>, features <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"NRL"</span>, <span class="st">"RHO"</span><span class="op">)</span>, return_plotly <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> </span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_feature.html">plot_feature</a></span><span class="op">(</span><span class="va">human_gene_transcript_seu</span>, embedding <span class="op">=</span> <span class="st">"umap"</span>, </span>
+<span>             features <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"NRL"</span>, <span class="st">"RHO"</span><span class="op">)</span>, return_plotly <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
 <p><img src="visualization_files/figure-html/unnamed-chunk-4-1.png" width="100%"></p>
 <p>An interactive output plot can be generated by specifying
 <code>return_plotly = TRUE</code> which uses <code>ggplotly</code>
@@ -146,7 +131,8 @@ argument <code>color.by</code>. Here we can see that read counts for
 this dataset are not distinctly different depending on the method of
 organoid preparation used (Kuwahara or Zhong)</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_readcount.html">plot_readcount</a></span><span class="op">(</span><span class="va">human_gene_transcript_seu</span>, metavar <span class="op">=</span> <span class="st">"nCount_RNA"</span>, color.by <span class="op">=</span> <span class="st">"Prep.Method"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_readcount.html">plot_readcount</a></span><span class="op">(</span><span class="va">human_gene_transcript_seu</span>, metavar <span class="op">=</span> <span class="st">"nCount_RNA"</span>, </span>
+<span>               color.by <span class="op">=</span> <span class="st">"Prep.Method"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="visualization_files/figure-html/unnamed-chunk-5-1.png" width="100%"></p>
 </div>
 <div class="section level3">
@@ -156,16 +142,17 @@ organoid preparation used (Kuwahara or Zhong)</p>
 plot of a metadata variable, where each point in the plot represents a
 cell whose position on the plot is given by the cell embedding
 determined by the dimensional reduction technique. The default dimension
-reduction used is “UMAP”. The group argument in plot_var() function
-allows the user to enter the metadata variable by which to group the
-cells by, its default value is set to “batch”.</p>
+reduction used is “UMAP”. The group argument in <code><a href="../reference/plot_var.html">plot_var()</a></code>
+function allows the user to enter the metadata variable by which to
+group the cells by, its default value is set to “batch”.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_var.html">plot_var</a></span><span class="op">(</span><span class="va">human_gene_transcript_seu</span>, group <span class="op">=</span> <span class="st">"type"</span>, embedding <span class="op">=</span> <span class="st">"umap"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="visualization_files/figure-html/unnamed-chunk-6-1.png" width="100%"></p>
-<p>This function utilizes a Seurat function, DimPlot(), as sub function
-which produces the dimensional reduction plot.The interactive parameter,
-return_plotly, in plot_var when set to TRUE will convert the plot into
-an interactive plot using ggplotly function from R’s plotly package</p>
+<p>This function utilizes a Seurat function, <code><a href="https://satijalab.org/seurat/reference/DimPlot.html" class="external-link">DimPlot()</a></code>, as
+sub function which produces the dimensional reduction plot.The
+interactive parameter, <code>return_plotly</code>, in plot_var when set
+to TRUE will convert the plot into an interactive plot using ggplotly
+function from R’s plotly package</p>
 </div>
 <div class="section level3">
 <h3 id="plot-cluster-marker-genes">Plot cluster marker genes<a class="anchor" aria-label="anchor" href="#plot-cluster-marker-genes"></a>
@@ -179,7 +166,8 @@ corresponds to the percentage of cells expressing the feature in each
 cluster and the color represents the average expression level of the
 feature.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_markers.html">plot_markers</a></span><span class="op">(</span><span class="va">human_gene_transcript_seu</span>, metavar <span class="op">=</span> <span class="st">"gene_snn_res.0.2"</span>, marker_method <span class="op">=</span> <span class="st">"presto"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_markers.html">plot_markers</a></span><span class="op">(</span><span class="va">human_gene_transcript_seu</span>, metavar <span class="op">=</span> <span class="st">"gene_snn_res.0.2"</span>, </span>
+<span>             marker_method <span class="op">=</span> <span class="st">"presto"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="visualization_files/figure-html/unnamed-chunk-7-1.png" width="100%"></p>
 </div>
 <div class="section level3">
@@ -187,10 +175,11 @@ feature.</p>
 </h3>
 <p>To visualize the distribution of expression level of a feature in
 different groups of cells Chevreul draws a violin plot. This function
-uses Seurat’s VInPlot() function as a sub-function to create the violin
-plot, where the metadata variable, provided to the function through the
-variable plot_var, is used to group the cells and based on the level of
-feature expression a violin plot is produced.</p>
+uses Seurat’s <code>VInPlot()</code> function as a sub-function to
+create the violin plot, where the metadata variable, provided to the
+function through the variable <code>plot_var</code>, is used to group
+the cells and based on the level of feature expression a violin plot is
+produced.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_violin.html">plot_violin</a></span><span class="op">(</span><span class="va">human_gene_transcript_seu</span>, plot_var <span class="op">=</span> <span class="st">"type"</span>, features <span class="op">=</span> <span class="st">"NRL"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="visualization_files/figure-html/unnamed-chunk-8-1.png" width="100%"></p>
@@ -204,7 +193,7 @@ The gene of interest is specified by the argument ‘features’ and by
 default the data is superimposed on UMAP embedding.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
-<span><span class="fu"><a href="../reference/plot_all_transcripts.html">plot_all_transcripts</a></span><span class="op">(</span><span class="va">human_gene_transcript_seu</span>, features <span class="op">=</span> <span class="st">"NRL"</span><span class="op">)</span> </span></code></pre></div>
+<span><span class="fu"><a href="../reference/plot_all_transcripts.html">plot_all_transcripts</a></span><span class="op">(</span><span class="va">human_gene_transcript_seu</span>, features <span class="op">=</span> <span class="st">"NRL"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="visualization_files/figure-html/unnamed-chunk-9-1.png" width="100%"></p>
 </div>
 <div class="section level3">
@@ -229,7 +218,7 @@ This data is then used by the function, RidgePlot(), which uses user
 provided ‘features’ argument to plot the ridge plot of the features.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
-<span><span class="fu"><a href="../reference/plot_cell_cycle_distribution.html">plot_cell_cycle_distribution</a></span><span class="op">(</span><span class="va">human_gene_transcript_seu</span>, <span class="st">"NRL"</span><span class="op">)</span> </span></code></pre></div>
+<span><span class="fu"><a href="../reference/plot_cell_cycle_distribution.html">plot_cell_cycle_distribution</a></span><span class="op">(</span><span class="va">human_gene_transcript_seu</span>, <span class="st">"NRL"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="visualization_files/figure-html/unnamed-chunk-11-1.png" width="100%"></p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
@@ -244,19 +233,22 @@ Seurat object with a dendogram added to the left side and the top.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">top_10_features</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/VariableFeatures.html" class="external-link">VariableFeatures</a></span><span class="op">(</span><span class="va">human_gene_transcript_seu</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">]</span></span>
 <span></span>
-<span><span class="fu"><a href="../reference/seu_complex_heatmap.html">seu_complex_heatmap</a></span><span class="op">(</span><span class="va">human_gene_transcript_seu</span>, features <span class="op">=</span> <span class="va">top_10_features</span>, group.by <span class="op">=</span> <span class="st">"gene_snn_res.0.2"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/seu_complex_heatmap.html">seu_complex_heatmap</a></span><span class="op">(</span><span class="va">human_gene_transcript_seu</span>, features <span class="op">=</span> <span class="va">top_10_features</span>, </span>
+<span>                    group.by <span class="op">=</span> <span class="st">"gene_snn_res.0.2"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="visualization_files/figure-html/unnamed-chunk-12-1.png" width="100%"></p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span></span>
-<span><span class="fu"><a href="../reference/seu_complex_heatmap.html">seu_complex_heatmap</a></span><span class="op">(</span><span class="va">human_gene_transcript_seu</span>, features <span class="op">=</span> <span class="va">top_10_features</span>, group.by <span class="op">=</span> <span class="st">"gene_snn_res.0.2"</span>, col_arrangement <span class="op">=</span> <span class="st">"average"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/seu_complex_heatmap.html">seu_complex_heatmap</a></span><span class="op">(</span><span class="va">human_gene_transcript_seu</span>, features <span class="op">=</span> <span class="va">top_10_features</span>, </span>
+<span>                    group.by <span class="op">=</span> <span class="st">"gene_snn_res.0.2"</span>, col_arrangement <span class="op">=</span> <span class="st">"average"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="visualization_files/figure-html/unnamed-chunk-12-2.png" width="100%"></p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span></span>
-<span><span class="fu"><a href="../reference/seu_complex_heatmap.html">seu_complex_heatmap</a></span><span class="op">(</span><span class="va">human_gene_transcript_seu</span>, features <span class="op">=</span> <span class="va">top_10_features</span>, group.by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Prep.Method"</span>, <span class="st">"gene_snn_res.0.2"</span><span class="op">)</span>, col_arrangement <span class="op">=</span> <span class="st">"gene_snn_res.0.2"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/seu_complex_heatmap.html">seu_complex_heatmap</a></span><span class="op">(</span><span class="va">human_gene_transcript_seu</span>, features <span class="op">=</span> <span class="va">top_10_features</span>, </span>
+<span>                    group.by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Prep.Method"</span>, <span class="st">"gene_snn_res.0.2"</span><span class="op">)</span>, </span>
+<span>                    col_arrangement <span class="op">=</span> <span class="st">"gene_snn_res.0.2"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="visualization_files/figure-html/unnamed-chunk-12-3.png" width="100%"></p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span></span>
-<span><span class="fu"><a href="../reference/seu_complex_heatmap.html">seu_complex_heatmap</a></span><span class="op">(</span><span class="va">human_gene_transcript_seu</span>, features <span class="op">=</span> <span class="va">top_10_features</span>, group.by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Prep.Method"</span>, <span class="st">"gene_snn_res.0.2"</span><span class="op">)</span>, col_arrangement <span class="op">=</span> <span class="st">"Prep.Method"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/seu_complex_heatmap.html">seu_complex_heatmap</a></span><span class="op">(</span><span class="va">human_gene_transcript_seu</span>, features <span class="op">=</span> <span class="va">top_10_features</span>, </span>
+<span>                    group.by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Prep.Method"</span>, <span class="st">"gene_snn_res.0.2"</span><span class="op">)</span>, </span>
+<span>                    col_arrangement <span class="op">=</span> <span class="st">"Prep.Method"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="visualization_files/figure-html/unnamed-chunk-12-4.png" width="100%"></p>
 </div>
 </div>

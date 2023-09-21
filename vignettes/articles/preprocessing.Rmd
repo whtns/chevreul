@@ -49,7 +49,9 @@ chevreul provides a single command to:
 By default clustering will be run at ten different resolutions between 0.2 and 2.0. Any resolution can be specified by providing the resolution argument as a numeric vector.
 
 ```{r, results=FALSE, eval=FALSE}
-clustered_seu <- clustering_workflow(human_gene_transcript_seu, experiment_name = "seurat_hu_trans", organism = "human")
+clustered_seu <- clustering_workflow(human_gene_transcript_seu, 
+                                     experiment_name = "seurat_hu_trans", 
+                                     organism = "human")
 ```
 
 ```{r, results=FALSE, echo=FALSE}
@@ -117,7 +119,9 @@ preprocess_seu <- NormalizeData(myseu, verbose = FALSE)
 -   After normalization, subset of features that exhibit high cell-to-cell variation in the dataset are identified. By default, 2,000 features per dataset are returned by this function.
 
 ```{r}
-preprocess_seu <- FindVariableFeatures(preprocess_seu, selection.method = "vst", verbose = FALSE)
+preprocess_seu <- FindVariableFeatures(preprocess_seu, 
+                                       selection.method = "vst", 
+                                       verbose = FALSE)
 ```
 
 -   Finally, the data is scaled by applying linear transformation. This step shifts the gene expression, so that the mean expression across cells is 0 and scales the gene expression, so that the variance across cells is 1.

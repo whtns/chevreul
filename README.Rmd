@@ -30,6 +30,9 @@ There are also convenient functions for:
 -   Cell cycle state regression and labeling
 -   RNA velocity calculation with <a href="https://velocyto.org/" target="_blank" rel="noopener noreferrer">Velocyto.R</a> and <a href="https://scvelo.readthedocs.io/" target="_blank" rel="noopener noreferrer">scvelo</a>
 
+> [!WARNING]
+> Chevreul was designed for full-length smart-seq based single cell data. Default settings may not be appropriate for droplet (10x) data, though most can be adjusted. Keep in mind [best practices](https://satijalab.org/seurat/articles/pbmc3k_tutorial) regarding normalization, dimensional reduction, etc. when using. 
+
 ## Installation
 
 You can install the released version of chevreul from <a href="https://github.com/whtns/chevreul" target="_blank" rel="noopener noreferrer">github</a> with:
@@ -38,7 +41,7 @@ You can install the released version of chevreul from <a href="https://github.co
 
 You can install Chevreul locally using the following steps:
 
-```{r}
+```{r, eval=FALSE}
 install.packages("devtools")
 devtools::install_github("whtns/chevreul")
 chevreul::create_project_db()
@@ -46,7 +49,7 @@ chevreul::create_project_db()
 
 You can also customize the location of the app using these steps:
 
-```{r}
+```{r, eval=FALSE}
 devtools::install_github("whtns/chevreul")
 chevreul::create_project_db(destdir='/your/path/to/app')
 ```

@@ -8,8 +8,8 @@
 <meta name="description" content="chevreul">
 <title>Integration of Seurat objects • chevreul</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="../deps/bootstrap-5.1.3/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.1.3/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
+<link href="../deps/bootstrap-5.2.2/bootstrap.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.2.2/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
 <!-- bootstrap-toc --><script src="https://cdn.rawgit.com/afeld/bootstrap-toc/v1.0.1/dist/bootstrap-toc.min.js"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Integration of Seurat objects">
 <meta property="og:description" content="chevreul">
@@ -42,10 +42,10 @@
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
     <a class="dropdown-item" href="../articles/integration.html">Integration of Seurat objects</a>
+    <a class="dropdown-item" href="../articles/pipeline.html">Pipeline</a>
     <a class="dropdown-item" href="../articles/preprocessing.html">Preprocessing</a>
     <a class="dropdown-item" href="../articles/shiny_app.html">Shiny App</a>
     <a class="dropdown-item" href="../articles/visualization.html">Visualization</a>
-    <a class="dropdown-item" href="../articles/getting-started.html">Getting Started</a>
   </div>
 </li>
 <li class="nav-item">
@@ -84,6 +84,11 @@
 
     
     
+<p>When joint analysis of two or more single cell sequencing data is to
+be performed, we need to first integrate the individual datasets. In
+Chevreul, a single function <code>integration_workflow</code> is capable
+of integrating multiple Seurat objects provided as a list.</p>
+<p>First step in this process is to load all the packages required</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/cobriniklab/chevreul" class="external-link">chevreul</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://satijalab.org/seurat" class="external-link">Seurat</a></span><span class="op">)</span></span>
@@ -92,16 +97,86 @@
 <div class="section level2">
 <h2 id="tldr">TLDR<a class="anchor" aria-label="anchor" href="#tldr"></a>
 </h2>
-<p>you can integrate a list of seurat objects with the following
-function</p>
+<p>Here, we are using the <code>panc8</code> dataset, which is produced
+in two batches using different technologies. The
+<code><a href="https://satijalab.org/seurat/reference/SplitObject.html" class="external-link">SplitObject()</a></code> function splits the seurat object into a list
+containing each batch as element. This list of seurat objects can then
+be integrated using the <code><a href="../reference/integration_workflow.html">integration_workflow()</a></code> function,
+which identifies shared cell states that are present across different
+single cell datasets.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span></span>
-<span><span class="va">batches</span> <span class="op">&lt;-</span> <span class="va">panc8</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
-<span>  <span class="fu">Seurat</span><span class="fu">::</span><span class="fu"><a href="https://satijalab.org/seurat/reference/SplitObject.html" class="external-link">SplitObject</a></span><span class="op">(</span>split.by <span class="op">=</span> <span class="st">"tech"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">batches</span> <span class="op">&lt;-</span></span>
+<span>  <span class="va">human_gene_transcript_seu</span><span class="op">[</span>,<span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">human_gene_transcript_seu</span><span class="op">$</span><span class="va">Prep.Method</span><span class="op">)</span><span class="op">]</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
+<span>  <span class="fu">Seurat</span><span class="fu">::</span><span class="fu"><a href="https://satijalab.org/seurat/reference/SplitObject.html" class="external-link">SplitObject</a></span><span class="op">(</span>split.by <span class="op">=</span> <span class="st">"Prep.Method"</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/identity.html" class="external-link">identity</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">integrated_seu</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/integration_workflow.html">integration_workflow</a></span><span class="op">(</span><span class="va">batches</span><span class="op">)</span></span></code></pre></div>
 </div>
-  </main>
+<div class="section level2">
+<h2 id="batch-effects-are-problematic">Batch effects are problematic<a class="anchor" aria-label="anchor" href="#batch-effects-are-problematic"></a>
+</h2>
+<p>When analyzing data across multiple batches, batch effects can become
+problematic and compromise integration and interpretation of the data.
+For instance, the dataset <code>human_gene_transcript_seu</code>
+contains data obtained following two different preparation method. When
+this data is analyzed without integration we notice that in the Zhong
+method cluster 2 is barely represented. from the plot of marker features
+we know that cluster 2 has high expression of features associated with
+cones. this absence of cluster 2 in in Zhong method can become
+problematic during downstream analysis</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_markers.html">plot_markers</a></span><span class="op">(</span><span class="va">human_gene_transcript_seu</span>, metavar <span class="op">=</span> <span class="st">"gene_snn_res.0.2"</span>, num_markers <span class="op">=</span> <span class="fl">10</span><span class="op">)</span> <span class="op">+</span> </span>
+<span>   <span class="fu"><a href="https://satijalab.org/seurat/reference/DimPlot.html" class="external-link">DimPlot</a></span><span class="op">(</span><span class="va">human_gene_transcript_seu</span>, group.by <span class="op">=</span> <span class="st">"gene_snn_res.0.2"</span>, split.by <span class="op">=</span> <span class="st">"Prep.Method"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="integration_files/figure-html/unnamed-chunk-4-1.png" width="100%"></p>
+<div class="section level3">
+<h3 id="integrate-within-species">Integrate within species<a class="anchor" aria-label="anchor" href="#integrate-within-species"></a>
+</h3>
+<p>The <code><a href="../reference/integration_workflow.html">integration_workflow()</a></code> function can integrate
+datasets obtained from mouse or human source. When integrating datasets
+obtained from the same species, the data is processed according to
+standard integration workflow.</p>
+</div>
+<div class="section level3">
+<h3 id="integrate-accross-species">Integrate accross species<a class="anchor" aria-label="anchor" href="#integrate-accross-species"></a>
+</h3>
+<p><code><a href="../reference/integration_workflow.html">integration_workflow()</a></code> can also be used to integrate
+datasets collected from different species, i.e., human and mouse. In
+this case, the sub-function <code><a href="../reference/cross_species_integrate.html">cross_species_integrate()</a></code> first
+converts the mouse seurat objects to human by transforming features in
+the mouse dataset into human specific features and then integrates the
+two objects using standard integration workflow.</p>
+</div>
+<div class="section level3">
+<h3 id="steps-of-integration">Steps of integration<a class="anchor" aria-label="anchor" href="#steps-of-integration"></a>
+</h3>
+<p>The standard integration procedure in
+<code><a href="../reference/integration_workflow.html">integration_workflow()</a></code> includes multiple sub-functions
+responsible for performing different steps of integration.</p>
+<p>Prior to integration, <code>seurat_preprocess</code> performs
+standard preprocessing (log-normalization) and identifies variable
+features individually for each element in the list. Then, anchors are
+identified between the individual datasets using
+<code>FindIntegrationAnchors</code> which is then used by
+<code>IntegrateData</code>to return a Seurat object containing a new
+Assay, which holds an integrated expression matrix for all cells.</p>
+<p>Downstream analysis is performed on this integrated matrix by
+<code>seurat_integration_pipeline</code> sub-function which scales the
+integrated data, reduces the dimensions of seurat object, performs
+clustering at different resolutions and identifies marker genes.</p>
+<p>Finally, the resulting integrated datasets can be visualized by
+plotting the output</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://satijalab.org/seurat/reference/DimPlot.html" class="external-link">DimPlot</a></span><span class="op">(</span><span class="va">integrated_seu</span>, reduction <span class="op">=</span> <span class="st">"umap"</span>, group.by <span class="op">=</span> <span class="st">"Prep.Method"</span>, <span class="op">)</span></span></code></pre></div>
+<p><img src="integration_files/figure-html/unnamed-chunk-5-1.png" width="100%"></p>
+<p><img src="images/integration_image.png"></p>
+</div>
+<div class="section level3">
+<h3 id="asumtions-of-the-input-data">Asumtions of the input data<a class="anchor" aria-label="anchor" href="#asumtions-of-the-input-data"></a>
+</h3>
+</div>
+</div>
+  </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
+    </nav></aside>
 </div>
 
 
