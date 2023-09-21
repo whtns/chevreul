@@ -11,19 +11,8 @@
 #'
 #' @examples
 #'
-unite_metadata <- function(seu, resolution, metavars) {
+unite_metadata <- function(seu, metavars) {
 
-
-  if ("integrated" %in% names(seu@assays)) {
-    active_assay <- "integrated"
-  }
-  else {
-    active_assay <- "gene"
-  }
-
-  cluster_resolution = paste0(active_assay,
-                              "_snn_res.", resolution)
-  metavars <- gsub("^seurat$", cluster_resolution, metavars)
   newcolname = paste(metavars, collapse = "_by_")
 
   newdata <- seu[[metavars]] %>%

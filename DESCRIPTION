@@ -33,6 +33,7 @@ Imports:
     fs,
     future,
     genesorteR (>= 0.4.3),
+    glue,
     ggplotify,
     tximport,
     ggpubr,

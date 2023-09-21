@@ -37,12 +37,12 @@ minimalSeuratApp <- function(object = panc8, loom_path = NULL, appTitle = NULL,
         tabName = "comparePlots", icon = icon("chart-bar"), selected = TRUE
       ), shinydashboard::menuItem("Heatmap/Violin Plots",
         tabName = "violinPlots", icon = icon("sort")
-      ), shinydashboard::menuItem("Coverage Plots",
-        tabName = "coveragePlots", icon = icon("mountain")
+      # ), shinydashboard::menuItem("Coverage Plots",
+      #   tabName = "coveragePlots", icon = icon("mountain")
       ), shinydashboard::menuItem("Differential Expression",
         tabName = "diffex", icon = icon("magnet")
-      ), shinydashboard::menuItem("Pathway Enrichment Analysis",
-        tabName = "pathwayEnrichment", icon = icon("sitemap")
+      # ), shinydashboard::menuItem("Pathway Enrichment Analysis",
+      #   tabName = "pathwayEnrichment", icon = icon("sitemap")
       ), shinydashboard::menuItem("Find Markers",
         tabName = "findMarkers", icon = icon("bullhorn")
       ), shinydashboard::menuItem("Subset Seurat Input",

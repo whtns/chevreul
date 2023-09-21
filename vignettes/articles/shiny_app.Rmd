@@ -16,30 +16,10 @@ knitr::opts_chunk$set(
 library(kableExtra)
 ```
 
-### TLDR
-
-#### Solo Mode 
 
 Chevreul allows exploratory data analysis of a single cell dataset processed using `Seurat` with the command `minimalSeuratApp()`
 
-#### Server Mode
-
-Chevreul has increased functionality if operating in server mode. These functions include: 
-1. Coverage plotting
-2. Batch integration
-3. Project management
-  a. Reformat metadata
-  b. Subset datasets
-
-Here we'll provide a brief tour of the app organized by section with app functions organized as tabs along the sidebar upon startup.
-
-### Integrate Projects
-
-While operating Chevreul in server mode, separate sequencing batches can be [integrated](https://www.cell.com/cell/fulltext/S0092-8674(19)30559-8) and compared to validate sample processing steps and exclude technical variation in favor of relevant biological variation. 
-
-This section includes a list of projects that can be selected, integrated, and saved for future analysis.
-
-
+Here we'll provide a brief tour of this app organized by section with app functions organized as tabs along the sidebar upon startup.
 
 ### Reformat Metadata 
 
@@ -79,7 +59,7 @@ Clustering model or metadata for column arrangement is taken as a parameter to p
 
 By default, 50 most highly variable genes are displayed. However, an arbitrary lists of genes can be plotted for comparison. The genes/transcripts are displayed in the order they are listed. 
 
-![](images/Heatmap2.0.PNG)
+![](images/Heatmap2.0.png)
 
 #### _Violin Plots_
 
@@ -91,20 +71,7 @@ The parameters that could to be chosen here are:
 1. 'Grouping variable'
 2. 'Data Type (Transformed/Raw)'
 
-![](images/violinPlot.PNG)
-
-### Coverage plots
-
-Fine-grained analysis of isoform contributions can be achieved by plotting absolute read coverage plots across a given gene. 
-
-indicate the **read depths across all transcripts for different groups of cells within a genomic region. 
-
-The three user input parameters are:
-1. 'Select a gene'- Select a gene of interest
-2. 'Color by variable'- Select a variable by which to group the cells by
-3. 'Groups to display'- Select the groups to be displayed
-
-![](images/PlotCoverage2.0.PNG){width=80% height=80%}
+![](images/violinPlot.png)
 
 ### Differential expression
 
@@ -121,6 +88,8 @@ Running DE testing results in a data frame containing the following information:
 d1<-read.csv("Dominic.csv", header = TRUE)
 
 ```
+
+
 
 ### Find Markers
 
@@ -151,13 +120,6 @@ Direct comparison of the contribution of individual transcripts can be achieved 
 
 ![](images/transcript_composisiont.png)
 
-### RNA Velocity
-
-RNA velocity can be used to forecast the future state of a given cell in a developmental or time-dependent process. Chevreul provides visualization and processing functionality using [velocyto](https://velocyto.org/). Velocity can be represented on UMAP or tSNE plots in multiple formats and exported as needed. 
-
-RNA velocity necessitates the calculation of spliced and unspliced transcript counts as implemented on the command-line in velocyto. As a result integration within Chevreul demands some familiarity with the command-line and the availability of a properly formatted [loom](https://velocyto.org/velocyto.py/tutorial/cli.html#about-the-output-loom-file) file. To enable plotting of RNA velocity, the path to the corresponding loom file must be provided.
-
-![](images/Screenshot 2023-08-25 at 1.28.26 PM.png)
 
 ### Pseudotime Analysis by [Monocle 3](https://cole-trapnell-lab.github.io/monocle3/)
 
@@ -179,10 +141,56 @@ rather than excluding count values attributable to such process, we can adjust t
 
 Such regression can be performed for any arbitrary gene set. Some preset gene lists are included in `Chevreul` including cell-cycle, mitochondrial, and apoptosis related gene sets.
 
-![](images/Screenshot 2023-08-25 at 1.40.35 PM.png)
+![](images/Screenshot_2023-08-25_at_1.40.35_PM.png)
 
 ### Technical information
 
 Technical information regarding upstream processing, software version numbers, and dataset features can be viewed. 
 
-![](images/Screenshot 2023-08-25 at 1.40.57 PM.png)
+![](images/Screenshot_2023-08-25_at_1.40.57_PM.png)
+
+
+
+## Server Mode
+If we want work with seurat objects interactively and save the results of our exploratory data analysis we need to operate chevreul in *server mode*. When operating in this manner it is possible to carry out basic project management tasks including:
+* Loading saved seurat objects 
+* Saving seurat objects after making changes in the app such as :
+  * Reformatting metadata 
+  * Subsetting to remove cells
+  * Regressing feature expression as well as
+* Integrating multiple saved seurat objects 
+
+Finally, server mode is necessary for some expanded functionality including:
+* Coverage plotting
+* RNA velocity
+
+*server mode* requires access to a few sqlite databases with file path details stored in `~/.cache/chevreul`. `single_cell_projects.db` and `bigwig_files.db` allowing dynamic loading of seurat objects and bigwig (.bw) sample coverage files for each cell. These are initialized upon package installation using the `creat_project_db` function.
+
+The following sections will give details on this expanded functionality.
+
+### Integrate Projects
+
+While operating Chevreul in server mode, separate sequencing batches can be [integrated](https://www.cell.com/cell/fulltext/S0092-8674(19)30559-8) and compared to validate sample processing steps and exclude technical variation in favor of relevant biological variation. 
+
+This section includes a list of projects that can be selected, integrated, and saved for future analysis.
+
+### Coverage plots
+
+Fine-grained analysis of isoform contributions can be achieved by plotting absolute read coverage plots across a given gene. 
+
+indicate the **read depths across all transcripts for different groups of cells within a genomic region. 
+
+The three user input parameters are:
+1. 'Select a gene'- Select a gene of interest
+2. 'Color by variable'- Select a variable by which to group the cells by
+3. 'Groups to display'- Select the groups to be displayed
+
+![](images/PlotCoverage2.0.png){width=80% height=80%}
+
+### RNA Velocity
+
+RNA velocity can be used to forecast the future state of a given cell in a developmental or time-dependent process. Chevreul provides visualization and processing functionality using [velocyto](https://velocyto.org/). Velocity can be represented on UMAP or tSNE plots in multiple formats and exported as needed. 
+
+RNA velocity necessitates the calculation of spliced and unspliced transcript counts as implemented on the command-line in velocyto. As a result integration within Chevreul demands some familiarity with the command-line and the availability of a properly formatted [loom](https://velocyto.org/velocyto.py/tutorial/cli.html#about-the-output-loom-file) file. To enable plotting of RNA velocity, the path to the corresponding loom file must be provided.
+
+![](images/Screenshot_2023-08-25_at_1.28.26_PM.png)

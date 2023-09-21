@@ -228,8 +228,11 @@ plotHeatmap <- function(input, output, session, seu, featureType, organism_type)
   output$colAnnoVarui <- renderUI({
     req(seu())
 
+    formatted_col_names <- colnames(seu()@meta.data) %>%
+      make_chevreul_clean_names()
+
     selectizeInput(ns("colAnnoVar"), "Column Annotation(s)",
-      choices = colnames(seu()[[]]), selected = "batch", multiple = TRUE
+      choices = formatted_col_names, selected = "batch", multiple = TRUE
     )
   })
 
@@ -511,7 +514,6 @@ plotDimRedui <- function(id) {
     ),
     selectizeInput(ns("plottype"), "Variable to Plot", choices = NULL, multiple = TRUE),
     selectizeInput(ns("customFeature"), "Gene or transcript expression by which to color the plot; eg. 'RXRG' or 'ENST00000488147'", choices = NULL, multiple = TRUE),
-    sliderInput(ns("resolution"), "Resolution of clustering algorithm (affects number of clusters)", min = 0.2, max = 2, step = 0.2, value = 0.6),
     plotly::plotlyOutput(ns("dplot"), height = 500),
     width = 6
   )
@@ -566,7 +568,7 @@ plotDimRed <- function(input, output, session, seu, plot_types, featureType,
     #                         selected_plot())
     updateSelectizeInput(session, "plottype",
       choices = purrr::flatten_chr(plot_types()),
-      selected = "louvain"
+      selected = "batch"
     )
   })
   prefill_feature <- reactive({
@@ -602,7 +604,7 @@ plotDimRed <- function(input, output, session, seu, plot_types, featureType,
     req(seu())
     req(input$embedding)
     if (length(input$plottype) > 1) {
-      cross_plot_seu <- unite_metadata(seu(), input$resolution, input$plottype)
+      cross_plot_seu <- unite_metadata(seu(), input$plottype)
 
       newcolname <- paste(input$plottype, collapse = "_")
       cross_plot_seu[[newcolname]] <- Idents(cross_plot_seu)
@@ -633,24 +635,6 @@ plotDimRed <- function(input, output, session, seu, plot_types, featureType,
             input$dim2
           ), embedding = input$embedding,
           features = input$plottype, pt.size = input$dotSize,
-          return_plotly = TRUE
-        )
-      }
-      else if (input$plottype == "louvain") {
-        if ("integrated" %in% names(seu()@assays)) {
-          assay <- "integrated"
-        }
-        else {
-          assay <- "gene"
-        }
-
-        louvain_resolution <- reactive({
-          paste0(assay, "_snn_res.", input$resolution)
-        })
-
-        plot_var(seu(),
-          dims = c(input$dim1, input$dim2),
-          embedding = input$embedding, group = louvain_resolution(), pt.size = input$dotSize,
           return_plotly = TRUE
         )
       }
@@ -1217,7 +1201,11 @@ allTranscripts <- function(input, output, session, seu,
     req(seu())
     updateSelectizeInput(session, "compositionGene", choices = rownames(seu()[["gene"]]), selected = "RXRG", server = TRUE)
     updateSelectizeInput(session, "embeddingGene", choices = rownames(seu()[["gene"]]), selected = "RXRG", server = TRUE)
-    updateSelectizeInput(session, "groupby", choices = colnames(seu()@meta.data), selected = "batch", server = TRUE)
+
+    formatted_col_names <- colnames(seu()@meta.data) %>%
+      make_chevreul_clean_names()
+
+    updateSelectizeInput(session, "groupby", choices = formatted_col_names, selected = "batch", server = TRUE)
   })
 
   transcripts <- reactive({
@@ -1307,6 +1295,7 @@ plotVelocityui <- function(id) {
         choices = c("pca", "tsne", "umap"),
         selected = "umap"
       ),
+      selectizeInput(ns("varSelect"), "Color by Variable", choices = NULL, multiple = FALSE),
       sliderInput(ns("resolution"), "Resolution of clustering algorithm (affects number of clusters)", min = 0.2, max = 2, step = 0.2, value = 0.6),
       radioButtons(ns("plotFormat"), "velocity format", choices = c("arrow", "stream"), selected = "arrow", inline = TRUE),
       actionButton(ns("plot_velocity_embedding"), "plot velocity on embedding"),
@@ -1344,6 +1333,7 @@ plotVelocity <- function(input, output, session, seu, loom_path) {
 
   observe({
     req(seu())
+    updateSelectizeInput(session, "varSelect", choices = colnames(seu()[[]]), selected = "batch", server = TRUE)
     updateSelectizeInput(session, "geneSelect", choices = rownames(seu()[["gene"]]), selected = "RXRG", server = TRUE)
   })
 
@@ -1397,7 +1387,7 @@ plotVelocity <- function(input, output, session, seu, loom_path) {
 
     cluster_resolution <- paste0(assay, "_snn_res.", input$resolution)
 
-    plot_scvelo(adata(), group.by = cluster_resolution, plot_method = input$plotFormat)
+    plot_scvelo(adata(), group.by = input$varSelect, plot_method = input$plotFormat)
     fig <- pyplot$gcf()
     # fig$savefig("velocity_embedding.pdf")
     fig$savefig("velocity_embedding.svg")
@@ -2340,7 +2330,11 @@ plotCoverage <- function(input, output, session, seu, plot_types, proj_dir, orga
   observe({
     req(seu())
     updateSelectizeInput(session, "geneSelect", choices = rownames(seu()[["gene"]]), server = TRUE)
-    updateSelectizeInput(session, "varSelect", choices = colnames(seu()@meta.data), selected = "batch")
+
+    formatted_col_names <- colnames(seu()@meta.data) %>%
+      make_chevreul_clean_names()
+
+    updateSelectizeInput(session, "varSelect", choices = formatted_col_names, selected = "batch")
   })
 
   displayvalues <- reactive({

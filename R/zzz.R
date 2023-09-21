@@ -10,6 +10,7 @@ pyplot <- NULL
   matplotlib <<- reticulate::import("matplotlib", convert = TRUE)
   matplotlib$use("Agg", force = TRUE)
   pyplot <<- reticulate::import("matplotlib.pyplot", delay_load = TRUE)
+  # human_gene_transcript_seu <- RunUMAP(human_gene_transcript_seu, dims = 1:30)
 }
 
 install_scvelo <- function(method = "auto", conda = "auto") {

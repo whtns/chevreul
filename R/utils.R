@@ -99,7 +99,7 @@ list_plot_types <- function(seu) {
     dplyr::filter(!grepl("_snn_res", vars)) %>%
     dplyr::mutate(meta_type = dplyr::case_when(
       var_type %in% c("int", "dbl") ~ "continuous",
-      var_type %in% c("chr", "fct", "ord") ~ "category"
+      var_type %in% c("chr", "fct", "ord", "lgl") ~ "category"
     )) %>%
     dplyr::mutate(meta_type = ifelse(meta_type == "continuous" & num_levels < 30, "category", meta_type)) %>%
     dplyr::filter(num_levels > 1) %>%
@@ -110,15 +110,13 @@ list_plot_types <- function(seu) {
     dplyr::pull(vars)
 
   continuous_vars <- c("feature", continuous_vars) %>%
-    purrr::set_names(stringr::str_to_title(stringr::str_replace(., "[[:punct:]]", " ")))
+    purrr::set_names(stringr::str_to_title(stringr::str_replace_all(., "[[:punct:]]", " ")))
 
 
   category_vars <- meta_types %>%
     dplyr::filter(meta_type == "category") %>%
-    dplyr::pull(vars)
-
-  category_vars <- c("louvain", category_vars) %>%
-    purrr::set_names(stringr::str_to_title(stringr::str_replace(., "[[:punct:]]", " ")))
+    dplyr::pull(vars) %>%
+    purrr::set_names(stringr::str_to_title(stringr::str_replace_all(., "[^[:alnum:][:space:]\\.]", " ")))
 
   plot_types <- list(category_vars = category_vars, continuous_vars = continuous_vars)
 
@@ -285,6 +283,12 @@ update_chevreul_object <- function(seu_path, feature, resolution = seq(0.2, 2.0,
   }
 
   DefaultAssay(seu) <- default_assay
+
+  cluster_tag <- glue::glue("{DefaultAssay(seu)}_snn_res\\.")
+
+  new_cluster_names <- str_replace(names(seu@meta.data), cluster_tag, "cluster_resolution_")
+  names(seu@meta.data) <- new_cluster_names
+
 
   chevreul_version <- seu@misc$experiment$chevreul_version
 
@@ -590,4 +594,9 @@ convert_seu_list_to_multimodal <- function(seu_list) {
 
 
   return(multimodal_seu)
+}
+
+make_chevreul_clean_names <- function(myvec){
+  myvec %>%
+    purrr::set_names(stringr::str_to_title(stringr::str_replace_all(., "[^[:alnum:][:space:]\\.]", " ")))
 }
