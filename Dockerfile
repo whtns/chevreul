@@ -1,5 +1,5 @@
 # FROM openanalytics/r-base
-FROM openanalytics/r-ver:4.1.3
+FROM openanalytics/r-ver:4.3.1
 
 MAINTAINER Kevin Stachelek "kevin.stachelek@gmail.com"
 

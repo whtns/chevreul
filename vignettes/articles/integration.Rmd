@@ -33,6 +33,7 @@ library(chevreul)
 library(Seurat)
 library(tidyverse)
 library(ggraph)
+library(patchwork)
 ```
 
 
@@ -63,8 +64,11 @@ When analyzing data across multiple batches, batch effects can become problemati
 
 
 ```{r }
-plot_markers(human_gene_transcript_seu, metavar = "gene_snn_res.0.2", num_markers = 10) + 
-   DimPlot(human_gene_transcript_seu, group.by = "gene_snn_res.0.2", split.by = "Prep.Method")
+markerp <- plot_markers(human_gene_transcript_seu, metavar = "gene_snn_res.0.2", num_markers = 10)
+dp <- DimPlot(human_gene_transcript_seu, group.by = "gene_snn_res.0.2", split.by = "Prep.Method")
+
+wrap_plots(markerp, dp) + 
+  plot_layout(widths = c(1,6), ncol = 1)
 ```
 
 ## Integrate within species
@@ -88,8 +92,6 @@ Finally, the resulting integrated datasets can be visualized by plotting the out
 ```{r, eval=TRUE}
 DimPlot(integrated_seu, reduction = "umap", group.by = "Prep.Method", )
 ```
-
-![](images/integration_image.png)
 
 ## Asumtions of the input data
 

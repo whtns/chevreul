@@ -647,7 +647,7 @@ seu_complex_heatmap <- function(seu, features = NULL, group.by = "ident", cells 
                                 column_split = NULL, col_arrangement = "ward.D2", mm_col_dend = 30, ...)
 {
 
-  if (length(GetAssayData(seu, "scale.data")) == 0){
+  if (length(GetAssayData(seu, slot = "scale.data")) == 0){
     message("seurat object has not been scaled. Please run `Seurat::ScaleData` to view a scaled heatmap; showing unscaled expression data")
     slot = "data"
   }

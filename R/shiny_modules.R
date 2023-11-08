@@ -724,14 +724,15 @@ diffexui <- function(id) {
   tagList(
     chevreulBox(
       title = "Differential Expression Settings",
-      shinyWidgets::prettyRadioButtons(ns("diffex_scheme"),
+      radioButtons(ns("diffex_scheme"),
         "Cells to Compare",
-        choiceNames = c("Seurat Cluster", "Feature"), choiceValues = c("louvain", "feature"),
+        choiceNames = c("Seurat Cluster", "Custom Selection"), choiceValues = c("louvain", "custom"),
         selected = "louvain",
         inline = TRUE
-      ), conditionalPanel(
+      ),
+      conditionalPanel(
         ns = ns,
-        condition = "input.diffex_scheme == 'seurat'",
+        condition = "input.diffex_scheme == 'louvain'",
         sliderInput(ns("seuratResolution"), "Resolution of clustering algorithm (affects number of clusters)",
           min = 0.2, max = 2, step = 0.2, value = 0.6
         ),
@@ -742,7 +743,8 @@ diffexui <- function(id) {
           "second cluster to compare",
           value = 1
         )
-      ), conditionalPanel(
+      ),
+      conditionalPanel(
         ns = ns,
         condition = "input.diffex_scheme == 'custom'",
         sliderInput(ns("customResolution"), "Resolution of clustering algorithm (affects number of clusters)",
@@ -755,7 +757,8 @@ diffexui <- function(id) {
           ns("saveClust2"),
           "Save to Custom Cluster 2"
         )
-      ), uiOutput(ns("testChoices")),
+      ),
+      uiOutput(ns("testChoices")),
       radioButtons(ns("featureType"), "Features to Compare", choices = c("gene", "transcript")),
       actionButton(
         ns("diffex"),
@@ -766,17 +769,31 @@ diffexui <- function(id) {
       width = 6
     ),
     chevreulBox(
-      title = "Selected Cells",
-      tableSelectedui("diffex"),
+      title = "Cells",
+      tabsetPanel(type = "tabs",
+                  tabPanel("Selected Cells", tableSelectedui("diffex")),
+                  tabPanel("Custom Cluster 1", DT::DTOutput(ns("cc1"))),
+                  tabPanel("Custom Cluster 2", DT::DTOutput(ns("cc2")))
+      ),
       width = 6
     ),
     chevreulBox(
-      title = "Custom Cluster 1", DT::DTOutput(ns("cc1")),
-      width = 6
-    ), chevreulBox(
-      title = "Custom Cluster 2", DT::DTOutput(ns("cc2")),
+      title = "Volcano",
+      plotOutput(ns("volcano")),
       width = 6
     )
+    # chevreulBox(
+    #   title = "Selected Cells",
+    #   tableSelectedui("diffex"),
+    #   width = 6
+    # ),
+    # chevreulBox(
+    #   title = "Custom Cluster 1", DT::DTOutput(ns("cc1")),
+    #   width = 6
+    # ), chevreulBox(
+    #   title = "Custom Cluster 2", DT::DTOutput(ns("cc2")),
+    #   width = 6
+    # )
   )
 }
 
@@ -884,7 +901,7 @@ diffex <- function(input, output, session, seu, featureType, selected_cells, tes
       )
     }
 
-    else if (input$diffex_scheme == "feature") {
+    else if (input$diffex_scheme == "custom") {
       cluster1 <- unlist(strsplit(
         custom_cluster1(),
         " "
@@ -905,6 +922,16 @@ diffex <- function(input, output, session, seu, featureType, selected_cells, tes
       dom = "Bfptr",
       buttons = c("copy", "csv"), scrollX = "100px", scrollY = "600px"
     ), class = "display"
+  )
+
+  output$volcano <- renderPlot(
+    {de_results()[[input$diffex_method]] %>%
+        dplyr::distinct(symbol, .keep_all = TRUE) %>%
+        tibble::column_to_rownames("symbol") %>%
+        EnhancedVolcano::EnhancedVolcano(
+                          lab = rownames(.),
+                          x = 'avg_log2FC',
+                          y = 'p_val_adj')}
   )
 
   cluster_list <- reactive({
