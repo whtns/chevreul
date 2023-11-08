@@ -119,7 +119,7 @@ seu_from_tximport <- function(txi, meta_tbl, ...) {
   seu <- Seurat::CreateSeuratObject(counts = gene_expression, project = expid, assay = "gene", meta.data = meta_tbl)
   seu@assays[["gene"]] <- AddMetaData(seu@assays[["gene"]], featuredata)
 
-  if ("transcript" %in% names(txi_features)){
+  if ("transcript" %in% names(txi)){
     #create transcript assay
     transcript_expression <- as.matrix(txi$transcript$counts)
     seu[["transcript"]] <- CreateAssayObject(transcript_expression)

@@ -264,6 +264,10 @@ update_chevreul_object <- function(seu_path, feature, resolution = seq(0.2, 2.0,
   message(seu_path)
   seu <- readRDS(seu_path)
 
+  if(packageVersion("Seurat") == '5.0.0' & seu@misc$experiment$seurat_version < 5){
+    seu <- convert_v3_to_v5(seu)
+  }
+
   if (is.list(seu)) {
     seu <- convert_seu_list_to_multimodal(seu)
     # seu <- Seurat::UpdateSeuratObject(seu)
@@ -286,8 +290,17 @@ update_chevreul_object <- function(seu_path, feature, resolution = seq(0.2, 2.0,
 
   cluster_tag <- glue::glue("{DefaultAssay(seu)}_snn_res\\.")
 
-  new_cluster_names <- str_replace(names(seu@meta.data), cluster_tag, "cluster_resolution_")
-  names(seu@meta.data) <- new_cluster_names
+  cluster_names <- str_subset(names(seu@meta.data), cluster_tag)
+  new_cluster_names <- str_replace(cluster_names, cluster_tag, "cluster_resolution_")
+
+  new_cluster_cols <- seu@meta.data[cluster_names]
+  names(new_cluster_cols) <- new_cluster_names
+
+  new_meta <- cbind(seu@meta.data, new_cluster_cols)
+
+  seu@meta.data <- new_meta
+
+  # names(seu@meta.data) <- new_cluster_names
 
 
   chevreul_version <- seu@misc$experiment$chevreul_version
@@ -468,6 +481,47 @@ update_project_db <- function(projects_dir = NULL,
 #' @export
 #'
 #' @examples
+append_to_project_db <- function(new_project_path, projects_dir = NULL,
+                              cache_location = "~/.cache/chevreul",
+                              sqlite_db = "single-cell-projects.db",
+                              verbose = TRUE) {
+  if (!dir.exists(cache_location)) {
+    dir.create(cache_location)
+  }
+
+  con <- DBI::dbConnect(RSQLite::SQLite(), fs::path(cache_location, sqlite_db))
+
+  projects_tbl <-
+    new_project_path %>%
+    purrr::set_names(fs::path_file(.)) %>%
+    tibble::enframe("project_name", "project_path") %>%
+    dplyr::mutate(project_slug = stringr::str_remove(project_name, "_proj$")) %>%
+    dplyr::mutate(project_type = fs::path_file(fs::path_dir(project_path))) %>%
+    identity()
+
+  current_projects_tbl <-
+    DBI::dbReadTable(con, "projects_tbl") %>%
+    dplyr::filter(fs::file_exists(project_path)) %>%
+    dplyr::filter(!project_path %in% projects_tbl$project_path) %>%
+    dplyr::bind_rows(projects_tbl) %>%
+    dplyr::distinct(project_path, .keep_all = TRUE)
+
+  DBI::dbWriteTable(con, "projects_tbl", current_projects_tbl, overwrite = TRUE)
+
+  DBI::dbDisconnect(con)
+}
+
+#' Read a database of chevreul projects
+#'
+#' @param projects_dir
+#' @param cache_location
+#' @param sqlite_db
+#' @param verbose
+#'
+#' @return
+#' @export
+#'
+#' @examples
 read_project_db <- function(projects_dir = NULL,
                               cache_location = "~/.cache/chevreul",
                               sqlite_db = "single-cell-projects.db",
@@ -495,18 +549,24 @@ read_project_db <- function(projects_dir = NULL,
 #' @export
 #'
 #' @examples
-make_bigwig_db <- function(cache_location = "~/.cache/chevreul/", sqlite_db = "bw-files.db") {
-  bigwigfiles <- dir_ls(cache_location, glob = "*.bw", recurse = TRUE) %>%
-    set_names(path_file(.)) %>%
-    enframe("name", "bigWig") %>%
-    dplyr::mutate(sample_id = str_remove(name, "_Aligned.sortedByCoord.out.bw")) %>%
-    dplyr::filter(!str_detect(path, "integrated")) %>%
+make_bigwig_db <- function(new_project = NULL, cache_location = "~/.cache/chevreul/", sqlite_db = "bw-files.db") {
+  new_bigwigfiles <- fs::dir_ls(new_project, glob = "*.bw", recurse = TRUE) %>%
+    purrr::set_names(fs::path_file(.)) %>%
+    tibble::enframe("name", "bigWig") %>%
+    dplyr::mutate(sample_id = stringr::str_remove(name, "_Aligned.sortedByCoord.out.*bw$")) %>%
+    dplyr::filter(!stringr::str_detect(name, "integrated")) %>%
     dplyr::distinct(sample_id, .keep_all = TRUE) %>%
     identity()
 
-  con <- dbConnect(RSQLite::SQLite(), dbname = fs::path(cache_location, sqlite_db))
+  con <- DBI::dbConnect(RSQLite::SQLite(), dbname = fs::path(cache_location, sqlite_db))
 
-  DBI::dbWriteTable(con, "bigwigfiles", bigwigfiles)
+  all_bigwigfiles <-
+    dbReadTable(con, "bigwigfiles") %>%
+    dplyr::bind_rows(new_bigwigfiles)
+
+  DBI::dbWriteTable(con, "bigwigfiles", all_bigwigfiles, overwrite = TRUE)
+
+  return(all_bigwigfiles)
 }
 
 #' Retrieve Metadata from Batch
@@ -599,4 +659,30 @@ convert_seu_list_to_multimodal <- function(seu_list) {
 make_chevreul_clean_names <- function(myvec){
   myvec %>%
     purrr::set_names(stringr::str_to_title(stringr::str_replace_all(., "[^[:alnum:][:space:]\\.]", " ")))
+}
+
+
+convert_v3_to_v5 <- function(seu_v3){
+  # browser()
+
+  meta <- seu_v3@meta.data
+
+  seu_v5 <- CreateSeuratObject(counts = seu_v3$gene@counts, assay = "gene", meta.data = meta)
+
+  transcript_assay.v5 <- CreateAssay5Object(counts = seu_v3$transcript@counts)
+  seu_v5$transcript <- transcript_assay.v5
+
+  seu_v5 <- seurat_preprocess(seu_v5)
+
+  # seu_v5 <- clustering_workflow(seu_v5)
+  seu_v5@reductions <- seu_v3@reductions
+  seu_v5@graphs <- seu_v3@graphs
+  seu_v5@neighbors <- seu_v3@neighbors
+
+  seu_v5@misc <- seu_v3@misc
+
+  Idents(seu_v5) <- Idents(seu_v3)
+
+  return(seu_v5)
+
 }

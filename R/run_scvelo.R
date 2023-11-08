@@ -11,12 +11,25 @@
 #' @export
 #'
 #' @examples
-run_scvelo <- function(seu, loom_path, fit.quantile = 0.05, check_loom = FALSE, ...) {
+run_scvelo <- function(seu, loom_path, assay = "gene", fit.quantile = 0.05, check_loom = FALSE, ...) {
+
+  # if(DefaultAssay(seu) == "SCT"){
+  #   seu <-
+  #     seu %>%
+  #     Seurat::FindVariableFeatures(nfeatures= 3000)
+  # }
 
   ldat <- SeuratWrappers::ReadVelocity(file = loom_path)
-  bm <- Seurat::as.Seurat(x = ldat)
 
-  bm[["gene"]] <- bm[["spliced"]]
+  for(assay in names(ldat)){
+    colnames(ldat[[assay]]) <- str_replace(colnames(ldat[[assay]]), ".*:","")
+    colnames(ldat[[assay]]) <- str_replace(colnames(ldat[[assay]]), "x$","-1")
+  }
+
+  bm <- Seurat::as.Seurat(x = ldat)
+  bm <- bm[rownames(bm) %in% rownames(seu),]
+
+  bm[[assay]] <- bm[["spliced"]]
 
   # subset bm by seurat object.size
   bm <- bm[, colnames(bm) %in% colnames(seu)]
@@ -25,9 +38,17 @@ run_scvelo <- function(seu, loom_path, fit.quantile = 0.05, check_loom = FALSE, 
   sub_seu <- seu[, colnames(seu) %in% colnames(bm)]
 
   sub_seu@assays[names(bm@assays)] <- bm@assays
-  DefaultAssay(sub_seu) <- "gene"
+  DefaultAssay(sub_seu) <- assay
   sub_seu@misc$vel <- NULL
   sub_seu@misc[names(sub_seu@misc) == "experiment"] <- NULL
+
+  # sub_seu <- SeuratObject::RenameAssays(sub_seu, gene = "RNA")
+
+  h5ad_path <- stringr::str_replace(loom_path, ".loom", ".h5ad")
+
+  # sceasy::convertFormat(sub_seu, from="seurat", to="anndata",
+  #                       outFile=fs::path_expand(h5ad_path))
+
   convert_to_h5ad(sub_seu, file_path = loom_path)
 
   return(sub_seu)
@@ -85,15 +106,17 @@ prep_scvelo <- function(seu, loom_path, velocity_mode = c("deterministic", "stoc
     adata <- scvelo$read(fs::path_expand(h5ad_path))
 
     if (!adata_matches_seu(seu, adata)) {
-      seu <- run_scvelo(seu, loom_path)
+      seu <- run_scvelo(seu, loom_path, ...)
     }
   } else {
-    seu <- run_scvelo(seu, loom_path)
+    seu <- run_scvelo(seu, loom_path, ...)
   }
 
   adata <- scvelo$read(fs::path_expand(h5ad_path))
   # reticulate::source_python("scripts/rename_raw.py")
   # adata$raw$var$rename(columns = list('_index' = 'symbol'), inplace = True)
+
+  scvelo$pp$filter_and_normalize(adata, min_shared_counts=20L, n_top_genes=2000L)
 
   scvelo$pp$moments(adata, n_pcs = 30L, n_neighbors = 30L)
 
@@ -124,18 +147,18 @@ prep_scvelo <- function(seu, loom_path, velocity_mode = c("deterministic", "stoc
 #' @export
 #'
 #' @examples
-plot_scvelo <- function(adata, group.by = "batch", plot_method = c("stream", "arrow", "dynamics")) {
+plot_scvelo <- function(adata, group.by = "batch", basis = "umap", plot_method = c("stream", "arrow", "dynamics"), ...) {
 
   num_cols <- length(unique(adata$obs[[group.by]]))
 
   mycols <- scales::hue_pal()(num_cols)
 
   if (plot_method == "stream") {
-    scvelo$pl$velocity_embedding_stream(adata, basis = "umap", palette = mycols, color = group.by, dpi = 200, figsize = c(20, 12))
+    scvelo$pl$velocity_embedding_stream(adata, basis = basis, palette = mycols, color = group.by, dpi = 200, figsize = c(20, 12), ...)
   } else if (plot_method == "arrow") {
-    scvelo$pl$velocity_embedding(adata, basis = "umap", palette = mycols, color = group.by, arrow_length = 3, arrow_size = 2, dpi = 200, figsize = c(20, 12))
+    scvelo$pl$velocity_embedding(adata, basis = basis, palette = mycols, color = group.by, arrow_length = 3, arrow_size = 2, dpi = 200, figsize = c(20, 12), ...)
   } else if (plot_method == "dynamics") {
-    scvelo$pl$scatter(adata, color = "latent_time", color_map = "gnuplot", figsize = c(20, 12), dpi = 200)
+    scvelo$pl$scatter(adata, color = "latent_time", color_map = "gnuplot", figsize = c(20, 12), dpi = 200, ...)
   }
 
   # pyplot$show()
