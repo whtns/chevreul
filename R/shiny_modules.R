@@ -768,13 +768,25 @@ diffexui <- function(id) {
       DT::dataTableOutput(ns("DT1")),
       width = 6
     ),
+    # chevreulBox(
+    #   title = "Cells",
+    #   tabsetPanel(type = "tabs",
+    #               tabPanel("Selected Cells", tableSelectedui("diffex")),
+    #               tabPanel("Custom Cluster 1", DT::DTOutput(ns("cc1"))),
+    #               tabPanel("Custom Cluster 2", DT::DTOutput(ns("cc2")))
+    #   ),
+    #   width = 6
+    # ),
     chevreulBox(
-      title = "Cells",
-      tabsetPanel(type = "tabs",
-                  tabPanel("Selected Cells", tableSelectedui("diffex")),
-                  tabPanel("Custom Cluster 1", DT::DTOutput(ns("cc1"))),
-                  tabPanel("Custom Cluster 2", DT::DTOutput(ns("cc2")))
-      ),
+      title = "Selected Cells",
+      tableSelectedui("diffex"),
+      width = 6
+    ),
+    chevreulBox(
+      title = "Custom Cluster 1", DT::DTOutput(ns("cc1")),
+      width = 6
+    ), chevreulBox(
+      title = "Custom Cluster 2", DT::DTOutput(ns("cc2")),
       width = 6
     ),
     chevreulBox(
@@ -782,18 +794,6 @@ diffexui <- function(id) {
       plotOutput(ns("volcano")),
       width = 6
     )
-    # chevreulBox(
-    #   title = "Selected Cells",
-    #   tableSelectedui("diffex"),
-    #   width = 6
-    # ),
-    # chevreulBox(
-    #   title = "Custom Cluster 1", DT::DTOutput(ns("cc1")),
-    #   width = 6
-    # ), chevreulBox(
-    #   title = "Custom Cluster 2", DT::DTOutput(ns("cc2")),
-    #   width = 6
-    # )
   )
 }
 
@@ -842,7 +842,8 @@ diffex <- function(input, output, session, seu, featureType, selected_cells, tes
   output$testChoices <- renderUI(
     selectizeInput(ns("diffex_method"),
       "Method of Differential Expression",
-      choices = tests
+      choices = tests,
+      selected = "t"
     )
   )
 
@@ -897,11 +898,13 @@ diffex <- function(input, output, session, seu, featureType, selected_cells, tes
   de_results <- eventReactive(input$diffex, {
     if (input$diffex_scheme == "louvain") {
       run_seurat_de(seu(), input$cluster1, input$cluster2,
-        resolution = input$seuratResolution, diffex_scheme = "louvain", input$featureType, tests = tests
+        resolution = input$seuratResolution, diffex_scheme = "louvain", input$featureType, tests = input$diffex_method
       )
     }
 
     else if (input$diffex_scheme == "custom") {
+      # req(custom_cluster1())
+      # req(custom_cluster2())
       cluster1 <- unlist(strsplit(
         custom_cluster1(),
         " "
@@ -912,7 +915,7 @@ diffex <- function(input, output, session, seu, featureType, selected_cells, tes
       ))
       run_seurat_de(seu(), cluster1, cluster2,
         input$customResolution,
-        diffex_scheme = "feature", input$featureType, tests = tests
+        diffex_scheme = "feature", input$featureType, tests = input$diffex_method
       )
     }
   })

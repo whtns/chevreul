@@ -260,15 +260,13 @@ plot_multiple_branches_heatmap <- function(cds,
 #'
 #' @examples
 #'
-#' # Scale and perform dimenstional reduction on the seurat object
-#' panc8 <- ScaleData(panc8)
-#' panc8 <- seurat_reduce_dimensions(panc8)
+#'
 #'
 #' # static mode
-#' plot_var(panc8, group = "batch", return_plotly  = FALSE)
+#' plot_var(human_gene_transcript_seu, group = "batch", return_plotly  = FALSE)
 #'
 #' # interactive plotly plot
-#' plotly_plot <- plot_var(panc8, group = "batch")
+#' plotly_plot <- plot_var(human_gene_transcript_seu, group = "batch")
 #' print(plotly_plot)
 #'
 plot_var <- function(seu, group = "batch", embedding = "umap", dims = c(1,2), highlight = NULL, pt.size = 1.0, return_plotly = FALSE, ...){
@@ -310,7 +308,7 @@ plot_var <- function(seu, group = "batch", embedding = "umap", dims = c(1,2), hi
 
 #' Plotly settings
 #'
-#'Change settings of a plotly plot
+#' Change settings of a plotly plot
 #'
 #' @param plotly_plot  A plotly plot
 #' @param width Default set to '600'
@@ -335,7 +333,8 @@ plotly_settings <- function(plotly_plot, width = 600, height = 700){
 
 #' Plot Violin plot
 #'
-#' Plots a Violin plot of a single data
+#' Plots a Violin plot of a single data (gene expression, metrics, etc.)
+#' grouped by a metadata variable
 #'
 #' @param seu A Seurat object
 #' @param plot_var Variable to group (color) cells by
@@ -349,7 +348,7 @@ plotly_settings <- function(plotly_plot, width = 600, height = 700){
 #'
 #' @examples
 #'
-#' plot_violin(panc8, plot_var = "batch", features = c("NRL"))
+#' plot_violin(human_gene_transcript_seu, plot_var = "batch", features = c("NRL", "GNAT2"))
 #'
 plot_violin <- function(seu, plot_var = "batch", plot_vals = NULL, features = "RXRG", assay = "gene", ...){
 
@@ -377,7 +376,7 @@ plot_violin <- function(seu, plot_var = "batch", plot_vals = NULL, features = "R
 #'
 #' @param seu A Seurat object
 #' @param embedding Dimensional reduction technique to be used
-#' @param features
+#' @param features Features to plot
 #' @param dims Dimensions to plot, must be a two-length numeric vector
 #'
 #' @return
@@ -387,11 +386,11 @@ plot_violin <- function(seu, plot_var = "batch", plot_vals = NULL, features = "R
 #' @examples
 #'
 #' # static, single feature
-#' plot_feature(panc8, embedding = "umap", features = c("NRL"), return_plotly = FALSE)
+#' plot_feature(human_gene_transcript_seu, embedding = "umap", features = c("NRL"), return_plotly = FALSE)
 #' # static, multi-feature
-#' plot_feature(panc8, embedding = "umap", features = c("RXRG", "NRL"), return_plotly = FALSE)
+#' plot_feature(human_gene_transcript_seu, embedding = "umap", features = c("RXRG", "NRL"), return_plotly = FALSE)
 #' # interactive, multi-feature
-#' plotly_plot <- plot_feature(panc8, embedding = "umap", features = c("RXRG", "NRL"))
+#' plotly_plot <- plot_feature(human_gene_transcript_seu, embedding = "umap", features = c("RXRG", "NRL"))
 #' print(plotly_plot)
 #'
 plot_feature <- function(seu, embedding = c("umap", "pca", "tsne"), features, dims = c(1,2), return_plotly = FALSE, pt.size = 1.0){
@@ -476,10 +475,10 @@ plot_cell_cycle_distribution <- function(seu, features){
 #' @examples
 #'
 #' # interactive mode using "presto"
-#' plot_markers(panc8, metavar = "tech", marker_method = "presto", return_plotly = TRUE)
+#' plot_markers(human_gene_transcript_seu, metavar = "tech", marker_method = "presto", return_plotly = TRUE)
 #'
 #' # static mode using "presto"
-#' plot_markers(panc8, metavar = "tech", marker_method = "genesorteR", return_plotly = FALSE)
+#' plot_markers(human_gene_transcript_seu, metavar = "tech", marker_method = "genesorteR", return_plotly = FALSE)
 #'
 plot_markers <- function(seu, metavar = "batch", num_markers = 5, selected_values = NULL, return_plotly = FALSE, marker_method = "presto", seurat_assay = "gene", hide_technical = NULL, unique_markers = FALSE, p_val_cutoff = 1, ...){
 
@@ -585,20 +584,22 @@ plot_markers <- function(seu, metavar = "batch", num_markers = 5, selected_value
 
 #' Plot Read Count
 #'
+#' Draw a box plot for read count data of a metadata variable
+#'
 #' @param seu A seurat object
-#' @param metavar
-#' @param color.by
-#' @param yscale
-#' @param return_plotly
+#' @param metavar Metadata variable to plot. Default set to "nCount_RNA"
+#' @param color.by Variable to color bins by. Default set to "batch"
+#' @param yscale Scale of y axis. Default set to "linear"
+#' @param return_plotly whether to return an interactive ploly plot. Default set to FALSE
 #'
 #' @return
 #' @export
 #'
 #' @examples
 #' #interactive plotly
-#' plot_readcount(panc8)
+#' plot_readcount(human_gene_transcript_seu, return_plotly = TRUE)
 #' # static plot
-#' plot_readcount(panc8, return_plotly = FALSE)
+#' plot_readcount(human_gene_transcript_seu, return_plotly = FALSE)
 #'
 #' @importFrom ggplot2 ggplot aes geom_bar theme labs scale_y_log10
 plot_readcount <- function(seu, metavar = "nCount_RNA", color.by = "batch", yscale = "linear", return_plotly = FALSE, ...){
@@ -635,11 +636,11 @@ plot_readcount <- function(seu, metavar = "nCount_RNA", color.by = "batch", ysca
 
 #' Plot Annotated Complexheatmap from Seurat object
 #'
-#' @param object
+#' @param object A Seurat object
 #' @param features Vector of features to plot. Features can come
 #' @param cells Cells to retain
 #' @param group.by  Name of one or more metadata columns to annotate columns by (for example, orig.ident)
-#' @param slot
+#' @param layer
 #' @param assay
 #' @param group.bar.height
 #' @param col_arrangement how to arrange columns whether with a dendrogram (Ward.D2, average, etc.) or exclusively by metadata category
@@ -653,17 +654,17 @@ plot_readcount <- function(seu, metavar = "nCount_RNA", color.by = "batch", ysca
 #' @examples
 #'
 #' # plot top 50 variable genes
-#' top_50_features <- VariableFeatures(panc8)[1:50]
-#' seu_complex_heatmap(panc8, features = top_50_features)
+#' top_50_features <- VariableFeatures(human_gene_transcript_seu)[1:50]
+#' seu_complex_heatmap(human_gene_transcript_seu, features = top_50_features)
 #'
 seu_complex_heatmap <- function(seu, features = NULL, group.by = "ident", cells = NULL,
-                                slot = "scale.data", assay = NULL, group.bar.height = 0.01,
+                                layer = "scale.data", assay = NULL, group.bar.height = 0.01,
                                 column_split = NULL, col_arrangement = "ward.D2", mm_col_dend = 30, ...)
 {
 
-  if (length(GetAssayData(seu, slot = "scale.data")) == 0){
+  if (length(GetAssayData(seu, layer = "scale.data")) == 0){
     message("seurat object has not been scaled. Please run `Seurat::ScaleData` to view a scaled heatmap; showing unscaled expression data")
-    slot = "data"
+    layer = "data"
   }
 
   cells <- cells %||% colnames(x = seu)
@@ -675,20 +676,20 @@ seu_complex_heatmap <- function(seu, features = NULL, group.by = "ident", cells 
   features <- features %||% VariableFeatures(object = seu)
   features <- rev(x = unique(x = features))
   possible.features <- rownames(x = GetAssayData(object = seu,
-                                                 slot = slot))
+                                                 layer = layer))
   if (any(!features %in% possible.features)) {
     bad.features <- features[!features %in% possible.features]
     features <- features[features %in% possible.features]
     if (length(x = features) == 0) {
-      stop("No requested features found in the ", slot,
-           " slot for the ", assay, " assay.")
+      stop("No requested features found in the ", layer,
+           " layer for the ", assay, " assay.")
     }
     warning("The following features were omitted as they were not found in the ",
-            slot, " slot for the ", assay, " assay: ", paste(bad.features,
+            layer, " layer for the ", assay, " assay: ", paste(bad.features,
                                                              collapse = ", "))
   }
   data <- as.data.frame(x = t(x = as.matrix(x = GetAssayData(object = seu,
-                                                             slot = slot)[features, cells, drop = FALSE])))
+                                                             layer = layer)[features, cells, drop = FALSE])))
   seu <- suppressMessages(expr = StashIdent(object = seu,
                                                save.name = "ident"))
 

@@ -11,6 +11,9 @@
 #'
 #' @examples
 run_seurat_de <- function(seu, cluster1, cluster2, resolution, diffex_scheme = "louvain", featureType, tests = c("t", "wilcox", "bimod")) {
+
+  match.arg(tests)
+
   if (diffex_scheme == "louvain") {
     if ("integrated" %in% names(seu@assays)) {
       active_assay <- "integrated"

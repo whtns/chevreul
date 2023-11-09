@@ -684,13 +684,13 @@ convert_v3_to_v5 <- function(seu_v3){
 
   meta <- seu_v3@meta.data
 
-  seu_v5 <- CreateSeuratObject(counts = seu_v3$gene@counts, assay = "gene", meta.data = meta)
+  seu_v5 <- CreateSeuratObject(counts = seu_v3$gene@counts, data = seu_v3$gene@data, assay = "gene", meta.data = meta)
 
-  transcript_assay.v5 <- CreateAssay5Object(counts = seu_v3$transcript@counts)
+  transcript_assay.v5 <- CreateAssay5Object(counts = seu_v3$transcript@counts, data = seu_v3$transcript@data)
   seu_v5$transcript <- transcript_assay.v5
 
-  seu_v5$gene <- seurat_preprocess(seu_v5$gene)
-  seu_v5$transcript <- seurat_preprocess(seu_v5$transcript)
+  seu_v5$gene <- seurat_preprocess(seu_v5$gene, normalize = FALSE)
+  seu_v5$transcript <- seurat_preprocess(seu_v5$transcript, normalize = FALSE)
 
   # seu_v5 <- clustering_workflow(seu_v5)
   seu_v5@reductions <- seu_v3@reductions
@@ -700,6 +700,8 @@ convert_v3_to_v5 <- function(seu_v3){
   seu_v5@misc <- seu_v3@misc
 
   Idents(seu_v5) <- Idents(seu_v3)
+
+  seu_v5@misc$experiment$seurat_version <- packageVersion("Seurat")
 
   return(seu_v5)
 
