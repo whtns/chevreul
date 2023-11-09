@@ -2,9 +2,10 @@
 
 #' Unite metadata
 #'
-#' @param seu
-#' @param resolution
-#' @param mycols
+#'
+#'
+#' @param seu A seurat object
+#' @param metavars A feature or variable to combine
 #'
 #' @return
 #' @export
@@ -26,10 +27,10 @@ unite_metadata <- function(seu, metavars) {
 
 #' Plot monocle pseudotime over multiple branches
 #'
+#'Plots heatmap to de
 #'
-#'
-#' @param cds
-#' @param branches
+#' @param cds CellDataSet for the experiment
+#' @param branches The terminal branches on the developmental tree to be investigated.
 #' @param branches_name
 #' @param cluster_rows
 #' @param hclust_method
@@ -47,7 +48,6 @@ unite_metadata <- function(seu, metavars) {
 #' @param cores
 #'
 #' @return
-#' @export
 #'
 #' @examples
 plot_multiple_branches_heatmap <- function(cds,
@@ -242,17 +242,25 @@ plot_multiple_branches_heatmap <- function(cds,
 
 #' Plot Metadata Variables
 #'
-#'plot_var() plots
+#' Plots static or interactive graph where each point represents a cell metadata variable whose position on the map depends on cell embeddings determined by the reduction technique used
 #'
-#' @param seu
-#' @param embedding
-#' @param group
+#' @param seu A Seurat object
+#' @param embedding The dimensional reduction technique to be used
+#' @param group Name of one or more metadata columns to group (color) cells by.
+#' @param dims Dimensions to plot, must be a two-length numeric vector
+#' @param highlight A list of character or numeric vectors of cells to highlight
+#' @param pt.size Adjust point size on the plot
+#' @param return_plotly Convert plot to interactive web-based graph
 #' @param ...
 #'
 #' @return
 #' @export
 #'
 #' @examples
+#'
+#' # Scale and perform dimenstional reduction on the seurat object
+#' panc8 <- ScaleData(panc8)
+#' panc8 <- seurat_reduce_dimensions(panc8)
 #'
 #' # static mode
 #' plot_var(panc8, group = "batch", return_plotly  = FALSE)
@@ -300,9 +308,11 @@ plot_var <- function(seu, group = "batch", embedding = "umap", dims = c(1,2), hi
 
 #' Plotly settings
 #'
-#' @param plotly_plot
-#' @param width
-#' @param height
+#'Change settings of a plotly plot
+#'
+#' @param plotly_plot  A plotly plot
+#' @param width Default set to '600'
+#' @param height Default set to '700'
 #'
 #' @return
 #'
@@ -321,13 +331,15 @@ plotly_settings <- function(plotly_plot, width = 600, height = 700){
 }
 
 
-#' plot Violin plot
+#' Plot Violin plot
 #'
-#' @param seu
-#' @param plot_var
+#' Plots a Violin plot of a single data
+#'
+#' @param seu A Seurat object
+#' @param plot_var Variable to group (color) cells by
 #' @param plot_vals
-#' @param features
-#' @param assay
+#' @param features Features to plot
+#' @param assay Name of assay to use, defaults to the active assay
 #' @param ...
 #'
 #' @return
@@ -361,10 +373,10 @@ plot_violin <- function(seu, plot_var = "batch", plot_vals = NULL, features = "R
 #' If multiple features are supplied the joint density of all features
 #' will be plotted using [Nebulosa](https://www.bioconductor.org/packages/devel/bioc/html/Nebulosa.html)
 #'
-#' @param seu
-#' @param embedding
+#' @param seu A Seurat object
+#' @param embedding Dimensional reduction technique to be used
 #' @param features
-#' @param dims
+#' @param dims Dimensions to plot, must be a two-length numeric vector
 #'
 #' @return
 #' @export
@@ -469,7 +481,7 @@ plot_cell_cycle_distribution <- function(seu, features){
 #'
 plot_markers <- function(seu, metavar = "batch", num_markers = 5, selected_values = NULL, return_plotly = FALSE, marker_method = "presto", seurat_assay = "gene", hide_technical = NULL, unique_markers = FALSE, p_val_cutoff = 1, ...){
 
-  Idents(seu) <- seu[[metavar]]
+  Idents(seu) <- seu[[]][[metavar]]
 
   # by default only resolution markers are calculated in pre-processing
   seu <- find_all_markers(seu, metavar, seurat_assay = seurat_assay, p_val_cutoff = p_val_cutoff)
@@ -788,9 +800,9 @@ plot_transcript_composition <- function(seu, gene_symbol, group.by = "batch", st
     tibble::rownames_to_column("sample_id") %>%
     dplyr::select(sample_id, group.by = {{group.by}})
 
-  data <- GetAssayData(seu, assay = "transcript", slot = "data")[transcripts,]
+  data <- FetchData(seu$transcript, vars = transcripts)
 
-  data <- t(expm1(as.matrix(data)))
+  data <- expm1(as.matrix(data))
 
   data <-
     data %>%
@@ -857,11 +869,13 @@ plot_all_transcripts <- function(seu, features, embedding = "umap", from_gene = 
 
   features = features[features %in% rownames(seu[["transcript"]])]
 
-  transcript_cols <- as.data.frame(t(as.matrix(seu[["transcript"]][features,])))
+  # transcript_cols <- as.data.frame(t(as.matrix(seu[["transcript"]][features,])))
+
+  transcript_cols <- FetchData(seu, features)
 
   seu <- AddMetaData(seu, transcript_cols)
 
-  plot_out <- purrr::map(features, ~plot_feature(seu,
+  plot_out <- purrr::map(paste0("transcript_", features), ~plot_feature(seu,
                                               embedding = embedding,
                                               features = .x, return_plotly = FALSE)) %>%
     purrr::set_names(features)
@@ -869,7 +883,6 @@ plot_all_transcripts <- function(seu, features, embedding = "umap", from_gene = 
   if(combine){
     plot_out <- wrap_plots(plot_out)
   }
-
 
   return(plot_out)
 

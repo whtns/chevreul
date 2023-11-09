@@ -109,7 +109,6 @@ plot_violin(human_gene_transcript_seu, plot_var = "type", features = "NRL")
 This function plots the expression level of all the transcripts present in a given Seurat object, coding for a feature/gene of interest. The gene of interest is specified by the argument 'features' and by default the data is superimposed on UMAP embedding. 
 
 ```{r}
-
 plot_all_transcripts(human_gene_transcript_seu, features = "NRL")
 ```
 

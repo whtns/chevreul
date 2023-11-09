@@ -25,8 +25,12 @@ plot_multiple_branches_heatmap(
 )
 }
 \arguments{
+\item{cds}{CellDataSet for the experiment}
+
+\item{branches}{The terminal branches on the developmental tree to be investigated.}
+
 \item{cores}{}
 }
 \description{
-Plot monocle pseudotime over multiple branches
+Plots heatmap to de
 }

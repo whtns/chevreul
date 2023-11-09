@@ -16,12 +16,30 @@ plot_var(
 )
 }
 \arguments{
+\item{seu}{A Seurat object}
+
+\item{group}{Name of one or more metadata columns to group (color) cells by.}
+
+\item{embedding}{The dimensional reduction technique to be used}
+
+\item{dims}{Dimensions to plot, must be a two-length numeric vector}
+
+\item{highlight}{A list of character or numeric vectors of cells to highlight}
+
+\item{pt.size}{Adjust point size on the plot}
+
+\item{return_plotly}{Convert plot to interactive web-based graph}
+
 \item{...}{}
 }
 \description{
-plot_var() plots
+Plots static or interactive graph where each point represents a cell metadata variable whose position on the map depends on cell embeddings determined by the reduction technique used
 }
 \examples{
+
+# Scale and perform dimenstional reduction on the seurat object
+panc8 <- ScaleData(panc8)
+panc8 <- seurat_reduce_dimensions(panc8)
 
 # static mode
 plot_var(panc8, group = "batch", return_plotly  = FALSE)

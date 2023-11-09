@@ -656,12 +656,29 @@ convert_seu_list_to_multimodal <- function(seu_list) {
   return(multimodal_seu)
 }
 
+#' Title
+#'
+#' @param myvec
+#'
+#' @return
+#' @export
+#'
+#' @examples
 make_chevreul_clean_names <- function(myvec){
   myvec %>%
     purrr::set_names(stringr::str_to_title(stringr::str_replace_all(., "[^[:alnum:][:space:]\\.]", " ")))
 }
 
 
+#' Convert seurat object to seurat V5 format
+#'
+#' @param seu_v3 a seurat object
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#' convert_v3_to_v5(human_gene_transcript_seu)
 convert_v3_to_v5 <- function(seu_v3){
   # browser()
 
@@ -672,7 +689,8 @@ convert_v3_to_v5 <- function(seu_v3){
   transcript_assay.v5 <- CreateAssay5Object(counts = seu_v3$transcript@counts)
   seu_v5$transcript <- transcript_assay.v5
 
-  seu_v5 <- seurat_preprocess(seu_v5)
+  seu_v5$gene <- seurat_preprocess(seu_v5$gene)
+  seu_v5$transcript <- seurat_preprocess(seu_v5$transcript)
 
   # seu_v5 <- clustering_workflow(seu_v5)
   seu_v5@reductions <- seu_v3@reductions

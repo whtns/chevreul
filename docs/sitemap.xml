@@ -64,6 +64,9 @@
     <loc>/reference/annotate_excluded.html</loc>
   </url>
   <url>
+    <loc>/reference/append_to_project_db.html</loc>
+  </url>
+  <url>
     <loc>/reference/arrange_ptime_heatmaps.html</loc>
   </url>
   <url>
@@ -134,6 +137,9 @@
   </url>
   <url>
     <loc>/reference/convert_to_h5ad.html</loc>
+  </url>
+  <url>
+    <loc>/reference/convert_v3_to_v5.html</loc>
   </url>
   <url>
     <loc>/reference/create_proj_matrix.html</loc>
@@ -260,6 +266,9 @@
   </url>
   <url>
     <loc>/reference/make_bigwig_db.html</loc>
+  </url>
+  <url>
+    <loc>/reference/make_chevreul_clean_names.html</loc>
   </url>
   <url>
     <loc>/reference/mem_str.html</loc>

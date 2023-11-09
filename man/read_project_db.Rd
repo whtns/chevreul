@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{read_project_db}
 \alias{read_project_db}
-\title{Update a database of chevreul projects}
+\title{Read a database of chevreul projects}
 \usage{
 read_project_db(
   projects_dir = NULL,
@@ -15,5 +15,5 @@ read_project_db(
 \item{verbose}{}
 }
 \description{
-Update a database of chevreul projects
+Read a database of chevreul projects
 }

@@ -4,10 +4,12 @@
 \alias{unite_metadata}
 \title{Unite metadata}
 \usage{
-unite_metadata(seu, resolution, metavars)
+unite_metadata(seu, metavars)
 }
 \arguments{
-\item{mycols}{}
+\item{seu}{A seurat object}
+
+\item{metavars}{A feature or variable to combine}
 }
 \description{
 Unite metadata

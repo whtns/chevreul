@@ -5,6 +5,7 @@
 \title{Make Bigwig Database}
 \usage{
 make_bigwig_db(
+  new_project = NULL,
   cache_location = "~/.cache/chevreul/",
   sqlite_db = "bw-files.db"
 )

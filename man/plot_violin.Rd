@@ -2,7 +2,7 @@
 % Please edit documentation in R/plotting.R
 \name{plot_violin}
 \alias{plot_violin}
-\title{plot Violin plot}
+\title{Plot Violin plot}
 \usage{
 plot_violin(
   seu,
@@ -14,10 +14,18 @@ plot_violin(
 )
 }
 \arguments{
+\item{seu}{A Seurat object}
+
+\item{plot_var}{Variable to group (color) cells by}
+
+\item{features}{Features to plot}
+
+\item{assay}{Name of assay to use, defaults to the active assay}
+
 \item{...}{}
 }
 \description{
-plot Violin plot
+Plots a Violin plot of a single data
 }
 \examples{
 
