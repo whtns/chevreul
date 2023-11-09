@@ -10,7 +10,7 @@ Authors@R: c(
   )
 Description: Tools for using seurat with single cell projects
 License: MIT + file LICENSE
-URL: https://github.com/cobriniklab/chevreul,
+URL: https://github.com/whtns/chevreul,
     https://whtns.github.io/chevreul/
 BugReports: https://github.com/cobriniklab/chevreul/issues
 Depends: 
