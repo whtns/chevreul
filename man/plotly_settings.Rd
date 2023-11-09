@@ -7,8 +7,12 @@
 plotly_settings(plotly_plot, width = 600, height = 700)
 }
 \arguments{
-\item{height}{}
+\item{plotly_plot}{A plotly plot}
+
+\item{width}{Default set to '600'}
+
+\item{height}{Default set to '700'}
 }
 \description{
-Plotly settings
+Change settings of a plotly plot
 }

@@ -26,7 +26,7 @@ run batch correction, followed by:
 \enumerate{
 \item stashing of batches in metadata 'batch'
 \item clustering with resolution 0.2 to 2.0 in increments of 0.2
-\item saving to <proj_dir>/output/sce/<feature>\emph{seu}<suffix>.rds
+\item saving to <proj_dir>/output/sce/\if{html}{\out{<feature>}}\emph{seu}\if{html}{\out{<suffix>}}.rds
 }
 }
 \examples{

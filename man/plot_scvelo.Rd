@@ -7,7 +7,9 @@
 plot_scvelo(
   adata,
   group.by = "batch",
-  plot_method = c("stream", "arrow", "dynamics")
+  basis = "umap",
+  plot_method = c("stream", "arrow", "dynamics"),
+  ...
 )
 }
 \arguments{

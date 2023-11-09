@@ -12,7 +12,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
     libxt-dev \
     libssl-dev \
     libssh2-1-dev \
-    libssl1.1 \
+    libssl3 \
     libhdf5-dev \
     libboost-all-dev \
     libudunits2-dev \
@@ -102,7 +102,7 @@ RUN mkdir /root/euler
 COPY euler /root/euler
 
 RUN R -e 'install.packages("R.utils", repos="https://cloud.r-project.org/")'
-RUN R -e 'remotes::install_github("satijalab/seurat-wrappers@e526e87")'
+RUN R -e 'remotes::install_github("satijalab/seurat-wrappers")'
 
 RUN apt-get update && apt-get install -y python3 python3-pip
 RUN pip3 install matplotlib
@@ -117,3 +117,4 @@ RUN R -e 'BiocManager::install("InteractiveComplexHeatmap")'
 RUN mkdir /root/dockerapp
 COPY dockerapp /root/dockerapp
 CMD ["R", "-e", "shiny::runApp('/root/dockerapp')"]
+

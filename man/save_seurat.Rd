@@ -2,7 +2,7 @@
 % Please edit documentation in R/create_seu.R
 \name{save_seurat}
 \alias{save_seurat}
-\title{Save seurat object to <project>/output/sce/<feature>_seu.rds}
+\title{Save seurat object to \if{html}{\out{<project>}}/output/sce/\if{html}{\out{<feature>}}_seu.rds}
 \usage{
 save_seurat(seu, prefix = "unfiltered", proj_dir = getwd())
 }
@@ -12,7 +12,7 @@ save_seurat(seu, prefix = "unfiltered", proj_dir = getwd())
 \item{...}{named arguments specifying seurat objects list of seurat objects; default "gene" and "transcript"}
 }
 \description{
-Save seurat object to <project>/output/sce/<feature>_seu.rds
+Save seurat object to \if{html}{\out{<project>}}/output/sce/\if{html}{\out{<feature>}}_seu.rds
 }
 \examples{
 \dontrun{

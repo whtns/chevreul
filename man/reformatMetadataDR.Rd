@@ -26,7 +26,7 @@ reformatMetadataDR(
   logo_side = "left",
   viewer = "dialog",
   viewer_height = 800,
-  viewer_width = 1200,
+  viewer_width = 2000,
   theme = "yeti",
   read_fun = "read.csv",
   read_args = NULL,

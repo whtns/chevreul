@@ -18,5 +18,5 @@ local_cellalign(
 \item{numPts}{}
 }
 \description{
-Align two trajectories via cellalign
+cell align
 }

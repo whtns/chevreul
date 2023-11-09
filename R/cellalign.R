@@ -1,5 +1,7 @@
 #' Align two trajectories via cellalign
 #'
+#'cell align
+#'
 #' @param exp_ref
 #' @param exp_query
 #' @param traj_ref
