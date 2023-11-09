@@ -242,7 +242,9 @@ plot_multiple_branches_heatmap <- function(cds,
 
 #' Plot Metadata Variables
 #'
-#' Plots static or interactive graph where each point represents a cell metadata variable whose position on the map depends on cell embeddings determined by the reduction technique used
+#' Plots static or interactive plot where each point represents a cell metadata
+#' variable whose position on the map depends on cell embeddings determined by the
+#' reduction technique used
 #'
 #' @param seu A Seurat object
 #' @param embedding The dimensional reduction technique to be used
@@ -583,7 +585,7 @@ plot_markers <- function(seu, metavar = "batch", num_markers = 5, selected_value
 
 #' Plot Read Count
 #'
-#' @param seu
+#' @param seu A seurat object
 #' @param metavar
 #' @param color.by
 #' @param yscale
