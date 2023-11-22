@@ -41,9 +41,9 @@ available methods are wilcoxon rank-sum test implemented in
 \examples{
 
 # interactive mode using "presto"
-plot_markers(panc8, metavar = "tech", marker_method = "presto", return_plotly = TRUE)
+plot_markers(human_gene_transcript_seu, metavar = "tech", marker_method = "presto", return_plotly = TRUE)
 
 # static mode using "presto"
-plot_markers(panc8, metavar = "tech", marker_method = "genesorteR", return_plotly = FALSE)
+plot_markers(human_gene_transcript_seu, metavar = "tech", marker_method = "genesorteR", return_plotly = FALSE)
 
 }
