@@ -25,10 +25,11 @@ plot_violin(
 \item{...}{}
 }
 \description{
-Plots a Violin plot of a single data
+Plots a Violin plot of a single data (gene expression, metrics, etc.)
+grouped by a metadata variable
 }
 \examples{
 
-plot_violin(panc8, plot_var = "batch", features = c("NRL"))
+plot_violin(human_gene_transcript_seu, plot_var = "batch", features = c("NRL", "GNAT2"))
 
 }

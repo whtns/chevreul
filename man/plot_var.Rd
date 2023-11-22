@@ -33,19 +33,19 @@ plot_var(
 \item{...}{}
 }
 \description{
-Plots static or interactive graph where each point represents a cell metadata variable whose position on the map depends on cell embeddings determined by the reduction technique used
+Plots static or interactive plot where each point represents a cell metadata
+variable whose position on the map depends on cell embeddings determined by the
+reduction technique used
 }
 \examples{
 
-# Scale and perform dimenstional reduction on the seurat object
-panc8 <- ScaleData(panc8)
-panc8 <- seurat_reduce_dimensions(panc8)
+
 
 # static mode
-plot_var(panc8, group = "batch", return_plotly  = FALSE)
+plot_var(human_gene_transcript_seu, group = "batch", return_plotly  = FALSE)
 
 # interactive plotly plot
-plotly_plot <- plot_var(panc8, group = "batch")
+plotly_plot <- plot_var(human_gene_transcript_seu, group = "batch")
 print(plotly_plot)
 
 }

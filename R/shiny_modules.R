@@ -725,30 +725,30 @@ diffexui <- function(id) {
     chevreulBox(
       title = "Differential Expression Settings",
       radioButtons(ns("diffex_scheme"),
-        "Cells to Compare",
-        choiceNames = c("Seurat Cluster", "Custom Selection"), choiceValues = c("louvain", "custom"),
-        selected = "louvain",
-        inline = TRUE
+                   "Cells to Compare",
+                   choiceNames = c("Seurat Cluster", "Custom Selection"), choiceValues = c("louvain", "custom"),
+                   selected = "louvain",
+                   inline = TRUE
       ),
       conditionalPanel(
         ns = ns,
         condition = "input.diffex_scheme == 'louvain'",
         sliderInput(ns("seuratResolution"), "Resolution of clustering algorithm (affects number of clusters)",
-          min = 0.2, max = 2, step = 0.2, value = 0.6
+                    min = 0.2, max = 2, step = 0.2, value = 0.6
         ),
         numericInput(ns("cluster1"),
-          "first cluster to compare",
-          value = 0
+                     "first cluster to compare",
+                     value = 0
         ), numericInput(ns("cluster2"),
-          "second cluster to compare",
-          value = 1
+                        "second cluster to compare",
+                        value = 1
         )
       ),
       conditionalPanel(
         ns = ns,
         condition = "input.diffex_scheme == 'custom'",
         sliderInput(ns("customResolution"), "Resolution of clustering algorithm (affects number of clusters)",
-          min = 0.2, max = 2, step = 0.2, value = 0.6
+                    min = 0.2, max = 2, step = 0.2, value = 0.6
         ),
         actionButton(
           ns("saveClust1"),
@@ -768,6 +768,18 @@ diffexui <- function(id) {
       DT::dataTableOutput(ns("DT1")),
       width = 6
     ),
+    chevreulBox(
+      title = "Volcano Plot",
+      sliderInput(ns("FCcutoff"), "FC cutoff value (log2 fold change)",
+                  min = 0, max = 10, step = 0.5, value = 1
+      ),
+      sliderInput(ns("pCutoff"), "-log10 p adj value",
+                  min = 0, max = 5, step = 0.5, value = 1.5
+      ),
+      plotOutput(ns("volcano")),
+      downloadButton(ns("downloadVolcanoPlot"), "Download Volcano Plot"),
+      width = 6
+    ),
     # chevreulBox(
     #   title = "Cells",
     #   tabsetPanel(type = "tabs",
@@ -777,10 +789,11 @@ diffexui <- function(id) {
     #   ),
     #   width = 6
     # ),
+
     chevreulBox(
       title = "Selected Cells",
       tableSelectedui("diffex"),
-      width = 6
+      width = 12
     ),
     chevreulBox(
       title = "Custom Cluster 1", DT::DTOutput(ns("cc1")),
@@ -789,13 +802,10 @@ diffexui <- function(id) {
       title = "Custom Cluster 2", DT::DTOutput(ns("cc2")),
       width = 6
     ),
-    chevreulBox(
-      title = "Volcano",
-      plotOutput(ns("volcano")),
-      width = 6
-    )
+
   )
 }
+
 
 #' Title
 #'
@@ -927,14 +937,29 @@ diffex <- function(input, output, session, seu, featureType, selected_cells, tes
     ), class = "display"
   )
 
-  output$volcano <- renderPlot(
-    {de_results()[[input$diffex_method]] %>%
-        dplyr::distinct(symbol, .keep_all = TRUE) %>%
-        tibble::column_to_rownames("symbol") %>%
-        EnhancedVolcano::EnhancedVolcano(
-                          lab = rownames(.),
-                          x = 'avg_log2FC',
-                          y = 'p_val_adj')}
+
+  Volcano <- reactive( {de_results()[[input$diffex_method]] %>%
+      dplyr::distinct(symbol, .keep_all = TRUE) %>%
+      tibble::column_to_rownames("symbol") %>%
+      EnhancedVolcano::EnhancedVolcano(
+        lab = rownames(.),
+        x = 'avg_log2FC',
+        y = 'p_val_adj',
+        pCutoff = 1/(10^as.numeric(input$pValCutoff)),
+        FCcutoff = as.numeric(input$FCcutoff)
+      )})
+
+  output$volcano <- renderPlot({
+    print(Volcano())
+  })
+
+  output$downloadVolcanoPlot <- downloadHandler(
+    filename = function() {
+      paste("DE_Volcano_plot", ".pdf", sep = "")
+    },
+    content = function(file) {
+      ggplot2::ggsave(file, Volcano() + ggpubr::theme_pubr(base_size = 20, x.text.angle = 45), width = 16, height = 12)
+    }
   )
 
   cluster_list <- reactive({
@@ -2349,7 +2374,7 @@ plotCoverage_UI <- function(id) {
 #'
 #' @examples
 #'
-plotCoverage <- function(input, output, session, seu, plot_types, proj_dir, organism_type = "human") {
+plotCoverage <- function(input, output, session, seu, plot_types, proj_dir, organism_type = "human", bigwig_db = "~/.cache/chevreul/bw-files.db") {
   ns <- session$ns
 
   w <- waiter::Waiter$new(ns("coveragePlot"),
@@ -2379,7 +2404,7 @@ plotCoverage <- function(input, output, session, seu, plot_types, proj_dir, orga
   })
 
   bigwig_tbl <- reactive({
-    load_bigwigs(seu())
+    load_bigwigs(seu(), bigwig_db)
   })
 
   coverage_return <- eventReactive(input$plotCoverage, {

@@ -14,15 +14,23 @@ plot_readcount(
 )
 }
 \arguments{
-\item{return_plotly}{}
+\item{seu}{A seurat object}
+
+\item{metavar}{Metadata variable to plot. Default set to "nCount_RNA"}
+
+\item{color.by}{Variable to color bins by. Default set to "batch"}
+
+\item{yscale}{Scale of y axis. Default set to "linear"}
+
+\item{return_plotly}{whether to return an interactive ploly plot. Default set to FALSE}
 }
 \description{
-Plot Read Count
+Draw a box plot for read count data of a metadata variable
 }
 \examples{
 #interactive plotly
-plot_readcount(panc8)
+plot_readcount(human_gene_transcript_seu, return_plotly = TRUE)
 # static plot
-plot_readcount(panc8, return_plotly = FALSE)
+plot_readcount(human_gene_transcript_seu, return_plotly = FALSE)
 
 }

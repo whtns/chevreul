@@ -14,7 +14,13 @@ plot_feature(
 )
 }
 \arguments{
-\item{dims}{}
+\item{seu}{A Seurat object}
+
+\item{embedding}{Dimensional reduction technique to be used}
+
+\item{features}{Features to plot}
+
+\item{dims}{Dimensions to plot, must be a two-length numeric vector}
 }
 \description{
 Plots gene or transcript expression overlaid on a given embedding.
@@ -24,11 +30,11 @@ will be plotted using \href{https://www.bioconductor.org/packages/devel/bioc/htm
 \examples{
 
 # static, single feature
-plot_feature(panc8, embedding = "umap", features = c("NRL"), return_plotly = FALSE)
+plot_feature(human_gene_transcript_seu, embedding = "umap", features = c("NRL"), return_plotly = FALSE)
 # static, multi-feature
-plot_feature(panc8, embedding = "umap", features = c("RXRG", "NRL"), return_plotly = FALSE)
+plot_feature(human_gene_transcript_seu, embedding = "umap", features = c("RXRG", "NRL"), return_plotly = FALSE)
 # interactive, multi-feature
-plotly_plot <- plot_feature(panc8, embedding = "umap", features = c("RXRG", "NRL"))
+plotly_plot <- plot_feature(human_gene_transcript_seu, embedding = "umap", features = c("RXRG", "NRL"))
 print(plotly_plot)
 
 }

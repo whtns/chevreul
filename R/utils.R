@@ -264,10 +264,6 @@ update_chevreul_object <- function(seu_path, feature, resolution = seq(0.2, 2.0,
   message(seu_path)
   seu <- readRDS(seu_path)
 
-  if(packageVersion("Seurat") == '5.0.0' & seu@misc$experiment$seurat_version < 5){
-    seu <- convert_v3_to_v5(seu)
-  }
-
   if (is.list(seu)) {
     seu <- convert_seu_list_to_multimodal(seu)
     # seu <- Seurat::UpdateSeuratObject(seu)
@@ -275,6 +271,12 @@ update_chevreul_object <- function(seu_path, feature, resolution = seq(0.2, 2.0,
     seu <- RenameAssays(seu, RNA = "gene")
   } else if (identical(names(seu@assays), c("RNA", "integrated"))) {
     seu <- RenameAssays(seu, RNA = "gene")
+  }
+
+  seurat_version <- seu@misc$experiment$seurat_version
+
+  if(packageVersion("Seurat") == '5.0.0' & (seurat_version < 5 || is.null(seurat_version))){
+    seu <- convert_v3_to_v5(seu)
   }
 
   seu <- propagate_spreadsheet_changes(seu@meta.data, seu)
@@ -680,8 +682,10 @@ make_chevreul_clean_names <- function(myvec){
 #' @examples
 #' convert_v3_to_v5(human_gene_transcript_seu)
 convert_v3_to_v5 <- function(seu_v3){
-  # browser()
 
+  seurat_version <- seu_v3@misc$experiment$seurat_version
+
+  if(seurat_version < 5 || is.null(seurat_version)){
   meta <- seu_v3@meta.data
 
   seu_v5 <- CreateSeuratObject(counts = seu_v3$gene@counts, data = seu_v3$gene@data, assay = "gene", meta.data = meta)
@@ -702,6 +706,9 @@ convert_v3_to_v5 <- function(seu_v3){
   Idents(seu_v5) <- Idents(seu_v3)
 
   seu_v5@misc$experiment$seurat_version <- packageVersion("Seurat")
+  } else{
+   seu_v5 <- seu_v3
+  }
 
   return(seu_v5)
 

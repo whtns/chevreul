@@ -9,7 +9,7 @@ seu_complex_heatmap(
   features = NULL,
   group.by = "ident",
   cells = NULL,
-  slot = "scale.data",
+  layer = "scale.data",
   assay = NULL,
   group.bar.height = 0.01,
   column_split = NULL,
@@ -32,6 +32,8 @@ seu_complex_heatmap(
 \item{mm_col_dend}{height of column dendrogram}
 
 \item{...}{additional arguments passed to ComplexHeatmap::Heatmap}
+
+\item{object}{A Seurat object}
 }
 \description{
 Plot Annotated Complexheatmap from Seurat object
@@ -39,7 +41,7 @@ Plot Annotated Complexheatmap from Seurat object
 \examples{
 
 # plot top 50 variable genes
-top_50_features <- VariableFeatures(panc8)[1:50]
-seu_complex_heatmap(panc8, features = top_50_features)
+top_50_features <- VariableFeatures(human_gene_transcript_seu)[1:50]
+seu_complex_heatmap(human_gene_transcript_seu, features = top_50_features)
 
 }
