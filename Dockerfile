@@ -1,3 +1,4 @@
+# shinyproxy
 # FROM openanalytics/r-base
 FROM openanalytics/r-ver:4.3.1
 
@@ -38,6 +39,7 @@ RUN R -e 'install.packages("remotes")'
 RUN R -e 'install.packages("sf")'
 RUN R -e "install.packages('igraph', dependencies = T, repos='https://cloud.r-project.org/')"
 RUN R -e 'install.packages("BiocManager")'
+RUN R -e 'BiocManager::install(version = "3.18")'
 RUN R -e 'BiocManager::install(c("batchelor", "DelayedArray", "DelayedMatrixStats", "limma", "S4Vectors", "SingleCellExperiment", "SummarizedExperiment"))'
 RUN R -e 'BiocManager::install("pcaMethods")'
 RUN R -e 'BiocManager::install("Biobase")'
@@ -84,14 +86,6 @@ RUN R -e 'remotes::install_github("cole-trapnell-lab/monocle3")'
 # # RUN remotes::install_local('/app.tar.gz')
 # # CMD R -e 'library(dockerfiler)'
 #
-# # install shinyproxy package with demo shiny application
-# # RUN apt-get update && apt-get install wget
-# # RUN wget https://github.com/openanalytics/shinyproxy-demo/raw/master/shinyproxy_0.0.1.tar.gz -O /root/shinyproxy_0.0# .1.tar.gz
-# # RUN R CMD INSTALL /root/shinyproxy_0.0.1.tar.gz
-# # RUN rm /root/shinyproxy_0.0.1.tar.gz
-#
-# # set host and port
-# # COPY application.yml /opt/shinyproxy/application.yml
 
 # install dependencies of the euler app
 RUN R -e "install.packages(c('shiny', 'rmarkdown'), repos='https://cloud.r-project.org/')"
@@ -107,14 +101,28 @@ RUN R -e 'remotes::install_github("satijalab/seurat-wrappers")'
 RUN apt-get update && apt-get install -y python3 python3-pip
 RUN pip3 install matplotlib
 
-RUN R -e 'remotes::install_github("whtns/chevreul")'
-
-COPY Rprofile.site /usr/local/lib/R/etc/
-EXPOSE 3838
-
 RUN R -e 'install.packages("tidyverse")'
 RUN R -e 'BiocManager::install("InteractiveComplexHeatmap")'
+
+COPY Rprofile.site /usr/local/lib/R/etc/
+RUN R -e 'remotes::install_github("whtns/chevreul")'
+# EXPOSE 3838
+
+# # install shinyproxy package with demo shiny application
+# RUN apt-get update && apt-get install wget
+# RUN wget https://github.com/openanalytics/shinyproxy-demo/raw/master/shinyproxy_0.0.1.tar.gz -O /root/shinyproxy_0.0# .1.tar.gz
+# RUN R CMD INSTALL /root/shinyproxy_0.0.1.tar.gz
+# RUN rm /root/shinyproxy_0.0.1.tar.gz
+# # set host and port
+# COPY application.yml /opt/shinyproxy/application.yml
+
+COPY application.yml /opt/shinyproxy/application.yml
+
 RUN mkdir /root/dockerapp
 COPY dockerapp /root/dockerapp
 CMD ["R", "-e", "shiny::runApp('/root/dockerapp')"]
+
+FROM openanalytics/shinyproxy:3.0.0
+
+COPY application.yml /opt/shinyproxy/application.yml
 
