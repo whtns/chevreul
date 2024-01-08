@@ -14,6 +14,8 @@ reintegrate_seu(
 )
 }
 \arguments{
+\item{seu}{A seurat object}
+
 \item{suffix}{to be appended to file saved in output dir}
 
 \item{reduction}{to use default is pca}

@@ -3,7 +3,7 @@
 #' @param object a seurat object
 #' @param loom_path path to a loom file
 #' @param appTitle
-#' @param organism_type
+#' @param organism_type Organism
 #' @param futureMb
 #'
 #' @return
@@ -37,8 +37,8 @@ minimalSeuratApp <- function(object = panc8, loom_path = NULL, appTitle = NULL,
         tabName = "comparePlots", icon = icon("chart-bar"), selected = TRUE
       ), shinydashboard::menuItem("Heatmap/Violin Plots",
         tabName = "violinPlots", icon = icon("sort")
-      # ), shinydashboard::menuItem("Coverage Plots",
-      #   tabName = "coveragePlots", icon = icon("mountain")
+       # ), shinydashboard::menuItem("Coverage Plots",
+       #   tabName = "coveragePlots", icon = icon("mountain")
       ), shinydashboard::menuItem("Differential Expression",
         tabName = "diffex", icon = icon("magnet")
       # ), shinydashboard::menuItem("Pathway Enrichment Analysis",

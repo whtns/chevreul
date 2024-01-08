@@ -2,15 +2,21 @@
 % Please edit documentation in R/seurat_cluster.R
 \name{find_all_markers}
 \alias{find_all_markers}
-\title{Find All Markers at a range of resolutions}
+\title{Find All Markers}
 \usage{
 find_all_markers(seu, metavar = NULL, seurat_assay = "gene", ...)
 }
 \arguments{
-\item{metavar}{}
+\item{seu}{A seurat object.}
+
+\item{metavar}{A metadata variable to group by.}
+
+\item{seurat_assay}{Assay to use, Default "gene".}
+
+\item{...}{}
 }
 \description{
-Find All Markers at a range of resolutions
+Find all markers at a range of resolutions
 }
 \examples{
 markers_stashed_seu <- find_all_markers(panc8)

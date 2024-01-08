@@ -13,6 +13,8 @@ plot_all_transcripts(
 )
 }
 \arguments{
+\item{seu}{A seurat object}
+
 \item{features}{gene or vector of transcripts}
 
 \item{embedding}{umap}

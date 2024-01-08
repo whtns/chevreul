@@ -7,7 +7,7 @@
 merge_small_seus(seu_list, k.filter = 50)
 }
 \arguments{
-\item{seu_list}{}
+\item{seu_list}{List of two or more seurat objects}
 }
 \description{
 Merge Small Seurat Objects

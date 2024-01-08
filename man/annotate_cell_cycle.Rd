@@ -7,7 +7,9 @@
 annotate_cell_cycle(seu, organism = "human", ...)
 }
 \arguments{
-\item{organism}{}
+\item{seu}{A seurat object}
+
+\item{organism}{organism. Default "human"}
 }
 \description{
 Annotate Cell Cycle for Gene and Transcript Seurat Objects

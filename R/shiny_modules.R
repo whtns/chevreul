@@ -80,12 +80,14 @@ plotViolinui <- function(id) {
 
 #' Plot Violin Server
 #'
+#' Plots a Violin plot of a single data (gene expression, metrics, etc.) in the server Seurat app.
+#'
 #' @param input
 #' @param output
 #' @param session
-#' @param seu
-#' @param featureType
-#' @param organism_type
+#' @param seu Seurat object
+#' @param featureType Gene or Transcript
+#' @param organism_type Organism
 #'
 #' @return
 #' @export

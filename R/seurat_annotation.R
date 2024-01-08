@@ -2,8 +2,8 @@
 #'
 #' Annotate Cell Cycle for Gene and Transcript Seurat Objects
 #'
-#' @param seu
-#' @param organism
+#' @param seu A seurat object
+#' @param organism organism. Default "human"
 #'
 #' @return
 #' @export

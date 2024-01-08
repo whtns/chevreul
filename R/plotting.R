@@ -431,7 +431,7 @@ plot_feature <- function(seu, embedding = c("umap", "pca", "tsne"), features, di
 #'
 #' Plot ridge plots of G1, S, and G2M phases grouped by provided metadata
 #'
-#' @param seu
+#' @param seu A seurat object
 #' @param features  Features to plot (gene expression, metrics, PC scores, anything that can be retreived by Seurat::FetchData)
 #'
 #' @return
@@ -777,10 +777,12 @@ seu_complex_heatmap <- function(seu, features = NULL, group.by = "ident", cells 
 #'
 #' plot the proportion of reads of a given gene map to each transcript
 #'
-#' @param seu
-#' @param gene_symbol
-#' @param group.by
+#' @param seu A seurat object
+#' @param gene_symbol Gene symbol of gene of intrest
+#' @param group.by Name of one or more metadata columns to annotate columns by
+#' (for example, orig.ident)
 #' @param standardize
+#' @param drop_zero Drop zero values
 #'
 #' @return
 #' @export
@@ -850,7 +852,7 @@ plot_transcript_composition <- function(seu, gene_symbol, group.by = "batch", st
 #'
 #' plot expression all transcripts for an input gene superimposed on an embedding
 #'
-#' @param seu
+#' @param seu A seurat object
 #' @param features gene or vector of transcripts
 #' @param embedding umap
 #' @param from_gene whether to look up transcripts for an input gene

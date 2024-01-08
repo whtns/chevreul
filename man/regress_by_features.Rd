@@ -7,11 +7,11 @@
 regress_by_features(seu, feature_set, set_name, regress = TRUE, ...)
 }
 \arguments{
+\item{seu}{A seurat object}
+
 \item{set_name}{as a string}
 
-\item{...}{}
-
-\item{gene_set}{as a length 1 list containing a character vector of gene symbols}
+\item{regress}{}
 }
 \description{
 Regress Seurat Object by Given Set of Genes

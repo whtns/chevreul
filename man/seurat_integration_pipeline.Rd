@@ -17,12 +17,20 @@ seurat_integration_pipeline(
 )
 }
 \arguments{
+\item{seu_list}{List of seurat objects to be integrated}
+
+\item{resolution}{Range of resolution}
+
 \item{suffix}{a suffix to be appended to a file save in output dir}
+
+\item{algorithm}{Algorithm for modularity optimization. Default 1:original Louvain algorithm}
+
+\item{organism}{Default "human"}
 
 \item{...}{}
 }
 \description{
-run batch correction, followed by:
+Run batch correction, followed by:
 \enumerate{
 \item stashing of batches in metadata 'batch'
 \item clustering with resolution 0.2 to 2.0 in increments of 0.2

@@ -56,8 +56,8 @@ run_scvelo <- function(seu, loom_path, assay = "gene", fit.quantile = 0.05, chec
 
 #' convert a seurat object to an on-disk anndata object
 #'
-#' @param seu
-#' @param file_path
+#' @param seu A seurat object
+#' @param file_path Path to file
 #'
 #' @return
 #' @export

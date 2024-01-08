@@ -7,6 +7,8 @@
 filter_merged_seu(seu, filter_var, filter_val, .drop = .drop)
 }
 \arguments{
+\item{seu}{A seurat object}
+
 \item{.drop}{}
 }
 \description{

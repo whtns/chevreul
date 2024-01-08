@@ -7,7 +7,13 @@
 plotViolin(input, output, session, seu, featureType, organism_type)
 }
 \arguments{
-\item{organism_type}{}
+\item{input}{one or more feature to be plots}
+
+\item{seu}{Seurat object}
+
+\item{featureType}{Gene or Transcript}
+
+\item{organism_type}{Organism}
 }
 \description{
 Plot Violin Server

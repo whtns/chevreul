@@ -1,6 +1,6 @@
 #' Create a database of bigwigfiles
 #'
-#' create a sqlite database of bigwig files matching cell ids in seurat objects
+#' Create a sqlite database of bigwig files matching cell ids in seurat objects
 #'
 #' @param bam_files
 #' @param bigwig_db
@@ -16,7 +16,7 @@ build_bigwig_db <- function(bam_files, bigwig_db = "~/.cache/chevreul/bw-files.d
   bigwigfiles <- purrr::map_chr(bam_files, ~megadepth::bam_to_bigwig(.x, prefix = fs::path_ext_remove(.x), overwrite = TRUE)) %>%
     purrr::set_names(fs::path_file) %>%
     tibble::enframe("name", "bigWig") %>%
-    dplyr::mutate(sample_id = stringr::str_remove(name, "_.*")) %>%
+    dplyr::mutate(sample_id = stringr::str_remove(name, "_Aligned.sortedByCoord.out.bw")) %>%
     identity()
 
   con <- DBI::dbConnect(RSQLite::SQLite(), dbname = bigwig_db)
@@ -31,8 +31,8 @@ build_bigwig_db <- function(bam_files, bigwig_db = "~/.cache/chevreul/bw-files.d
 #'
 #' Load a tibble of bigwig file paths by cell id
 #'
-#' @param seu
-#' @param bigwig_db
+#' @param seu A seurat object
+#' @param bigwig_db Sqlite database of bigwig files
 #'
 #' @return
 #' @export
@@ -59,16 +59,18 @@ load_bigwigs <- function(seu, bigwig_db = "~/.cache/chevreul/bw-files.db") {
   return(bigwigfiles)
 }
 
-#' Plot BigWig Coverage for Genes of Interest Colored by a Given Variable
+#' Plot BigWig Coverage for Genes of Interest by a Given Variable
 #'
-#' @param genes_of_interest
+#' Plot BigWig coverage for genes of interest colored by a given variable
+#'
+#' @param genes_of_interest Gene of interest
 #' @param cell_metadata a dataframe with cell metadata from seurat
 #' @param bigwig_tbl a tibble with colnames "name", "bigWig", and "sample_id" matching the filename, absolute path, and sample name of each cell in the cell_metadata
-#' @param var_of_interest
+#' @param var_of_interest Variable to color by
 #' @param values_of_interest
-#' @param organism
-#' @param edb
-#' @param heights
+#' @param organism Organism
+#' @param edb ensembldb object
+#' @param heights The heights of each row in the grid of plot
 #' @param ...
 #'
 #' @return

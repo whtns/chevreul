@@ -7,7 +7,9 @@
 load_seurat_path(proj_dir = getwd(), prefix = "unfiltered")
 }
 \arguments{
-\item{prefix}{}
+\item{proj_dir}{path to project directory}
+
+\item{prefix}{default "unfiltered"}
 }
 \description{
 Read in Gene and Transcript Seurat Objects

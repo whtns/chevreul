@@ -70,7 +70,7 @@ integration_workflow <- function(batches, excluded_cells = NULL, resolution = se
 #' @param feature_seus list of seurat objects named according to feature of interest ("gene" or "transcript")
 #' @param excluded_cells named list of cells to exclude
 #' @param resolution resolution(s) to use for clustering cells
-#' @param organism
+#' @param organism Organism
 #' @param experiment_name
 #' @param ...
 #'
