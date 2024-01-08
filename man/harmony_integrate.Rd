@@ -2,13 +2,13 @@
 % Please edit documentation in R/seurat_integrate.R
 \name{harmony_integrate}
 \alias{harmony_integrate}
-\title{integrate small datasets with harmony}
+\title{Integrate small datasets with harmony}
 \usage{
 harmony_integrate(seu_list)
 }
 \arguments{
-\item{seu_list}{}
+\item{seu_list}{List of two or more seurat objects to integrate}
 }
 \description{
-integrate small datasets with harmony
+Integrate small datasets with harmony
 }

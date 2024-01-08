@@ -3,8 +3,8 @@
 #'
 #' Given a project metadata file located in <proj_dir>/data/<meta_file>, update an existing seurat object with the project data
 #'
-#' @param seu
-#' @param proj_dir
+#' @param seu A seurat object
+#' @param proj_dir Project directory
 #' @param numcols
 #'
 #' @return
@@ -35,8 +35,8 @@ update_seu_meta <- function(seu, proj_dir, numcols) {
 
 #' Reset Seurat Metadata
 #'
-#' @param seu
-#' @param new_meta
+#' @param seu A seurat object
+#' @param new_meta new object
 #'
 #' @return
 #' @export

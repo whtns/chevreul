@@ -12,5 +12,5 @@ SetDefaultAssay(seu, new_assay)
 \item{new_assay}{Assay to set as default assay}
 }
 \description{
-FUnction to reset the default assay of a seurat object
+Function to reset the default assay of a seurat object
 }

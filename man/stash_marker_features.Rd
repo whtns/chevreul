@@ -13,7 +13,15 @@ stash_marker_features(
 )
 }
 \arguments{
-\item{top_n}{}
+\item{metavar}{A metadata variable to group by}
+
+\item{seu}{A seurat object}
+
+\item{seurat_assay}{An assay to use}
+
+\item{top_n}{Use top n genes, Default "200"}
+
+\item{p_val_cutoff}{p value cut-off, Default value is "0.5"}
 }
 \description{
 Marker Genes will be stored in slot \verb{@misc$markers}

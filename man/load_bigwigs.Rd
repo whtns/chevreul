@@ -7,7 +7,9 @@
 load_bigwigs(seu, bigwig_db = "~/.cache/chevreul/bw-files.db")
 }
 \arguments{
-\item{bigwig_db}{}
+\item{seu}{A seurat object}
+
+\item{bigwig_db}{Sqlite database of bigwig files}
 }
 \description{
 Load a tibble of bigwig file paths by cell id

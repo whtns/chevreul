@@ -7,6 +7,10 @@
 seurat_integrate(seu_list, method = "cca", organism = "human", ...)
 }
 \arguments{
+\item{seu_list}{List of two or more seurat objects}
+
+\item{method}{Default "cca"}
+
 \item{...}{}
 }
 \description{

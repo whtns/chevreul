@@ -7,6 +7,8 @@
 plot_cell_cycle_distribution(seu, features)
 }
 \arguments{
+\item{seu}{A seurat object}
+
 \item{features}{Features to plot (gene expression, metrics, PC scores, anything that can be retreived by Seurat::FetchData)}
 }
 \description{

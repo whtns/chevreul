@@ -4,7 +4,7 @@
 
 #' Convert Seurat Objects from Mouse to Human
 #'
-#' @param seu
+#' @param seu Mouse seurat object
 #'
 #' @return
 #' @export
@@ -32,7 +32,7 @@ convert_mouse_seu_to_human <- function(seu) {
 }
 
 #' Convert Seurat Objects from Human to Mouse
-#' @param seu
+#' @param seu Human Seurat object
 #' @param ... to be passed to \code{convert_symbols_by_species}
 #'
 #' @return
@@ -55,8 +55,8 @@ convert_human_seu_to_mouse <- function(seu, ...) {
 
 #' Convert gene symbols between mouse and human
 #'
-#' @param src_genes
-#' @param src_species
+#' @param src_genes Source gene symbol to be converted
+#' @param src_species Source species
 #'
 #' @return
 #' @export
@@ -103,8 +103,8 @@ convert_symbols_by_species <- function(src_genes, src_species) {
 
 #' Integrate Seurat Objects from Mouse to Human
 #'
-#' @param mouse_seu_list
-#' @param human_seu_list
+#' @param mouse_seu_list Mouse Seurat object
+#' @param human_seu_list Human Seurat object
 #'
 #' @return
 #' @export
@@ -146,7 +146,8 @@ cross_species_integrate <- function(mouse_seu_list, human_seu_list, excluded_cel
 
 #' Update human gene symbols in seurat object
 #'
-#' @param seu
+#' @param seu A Seurat object
+#' @param assay Assay to use, Default = "gene"
 #'
 #' @return
 #' @export

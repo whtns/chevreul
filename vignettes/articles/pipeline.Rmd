@@ -1,7 +1,7 @@
 ---
 title: "Pipeline"
 ---
-In this article we will demonstrate different data visualization tools present in Chevreul that allows users to visualize their data. Through this article we will be introducing different visualization functions, their usage, and the resulting plots produced by these functions. 
+In this article we will introduce the pipeline being used for processing the data. Through this article we will be introducing different . 
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(

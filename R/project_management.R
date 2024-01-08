@@ -1,7 +1,8 @@
 #' Create a Table of single Cell Projects
 #'
-#' @param projects_dir
-#' @param sub_dirs
+#' Uses a list of projects to create a matrix of single cell projects
+#'
+#' @param proj_list List of projects
 #'
 #' @return
 #' @export
@@ -36,10 +37,12 @@ create_proj_matrix <- function(proj_list) {
 }
 
 
-#' subset by new metadata
+#' Subset by new metadata
 #'
-#' @param meta_path
-#' @param seu
+#' Subset the seurat object using new metadata
+#'
+#' @param meta_path Path to new metadata
+#' @param seu A seurat obejct
 #'
 #' @return
 #' @export

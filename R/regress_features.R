@@ -1,9 +1,9 @@
 #' Regress Seurat Object by Given Set of Genes
 #'
-#' @param seu_list
-#' @param gene_set as a length 1 list containing a character vector of gene symbols
+#' @param seu A seurat object
+#' @param feature_set
 #' @param set_name as a string
-#' @param ...
+#' @param regress
 #'
 #' @return
 #' @export

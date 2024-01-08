@@ -1,15 +1,15 @@
 #' Run Seurat Integration
 #'
-#' run batch correction, followed by:
+#' Run batch correction, followed by:
 #' 1) stashing of batches in metadata 'batch'
 #' 2) clustering with resolution 0.2 to 2.0 in increments of 0.2
 #' 3) saving to <proj_dir>/output/sce/<feature>_seu_<suffix>.rds
 #'
 #' @param suffix a suffix to be appended to a file save in output dir
-#' @param seu_list
-#' @param resolution
-#' @param algorithm
-#' @param organism
+#' @param seu_list List of seurat objects to be integrated
+#' @param resolution Range of resolution
+#' @param algorithm Algorithm for modularity optimization. Default 1:original Louvain algorithm
+#' @param organism Default "human"
 #' @param ...
 #'
 #' @return

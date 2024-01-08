@@ -14,12 +14,23 @@ seurat_preprocess(
 )
 }
 \arguments{
+\item{assay}{Assay to use}
+
+\item{scale}{Perform linear transformation 'Scaling'}
+
+\item{normalize}{Perform normalization}
+
+\item{features}{Identify highly variable features}
+
+\item{legacy_settings}{Use legacy settings}
+
 \item{...}{}
 }
 \description{
-Preprocess Seurat Object
+Performs standard pre-processing workflow for scRNA-seq data
 }
 \examples{
 
 panc8[["gene"]] <- seurat_preprocess(panc8[["gene"]])
+
 }

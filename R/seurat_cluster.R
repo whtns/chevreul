@@ -1,12 +1,13 @@
 
 #' Preprocess Seurat Object
 #'
-#' @param seu
-#' @param assay
-#' @param scale
-#' @param normalize
-#' @param features
-#' @param legacy_settings
+#' Performs standard pre-processing workflow for scRNA-seq data
+#'
+#' @param assay Assay to use
+#' @param scale Perform linear transformation 'Scaling'
+#' @param normalize Perform normalization
+#' @param features Identify highly variable features
+#' @param legacy_settings Use legacy settings
 #' @param ...
 #'
 #' @return
@@ -15,6 +16,7 @@
 #' @examples
 #'
 #' panc8[["gene"]] <- seurat_preprocess(panc8[["gene"]])
+#'
 seurat_preprocess <- function(assay, scale = TRUE, normalize = TRUE, features = NULL, legacy_settings = FALSE, ...) {
 
   # Normalize data
@@ -45,10 +47,14 @@ seurat_preprocess <- function(assay, scale = TRUE, normalize = TRUE, features = 
   return(assay)
 }
 
-#' Find All Markers at a range of resolutions
+#' Find All Markers
 #'
-#' @param seu
-#' @param metavar
+#' Find all markers at a range of resolutions
+#'
+#' @param seu A seurat object.
+#' @param metavar A metadata variable to group by.
+#' @param seurat_assay Assay to use, Default "gene".
+#' @param ...
 #'
 #' @return
 #' @export
@@ -100,10 +106,11 @@ enframe_markers <- function(marker_table){
 #'
 #' Marker Genes will be stored in slot `@misc$markers`
 #'
-#' @param metavar
-#' @param seu
-#' @param seurat_assay
-#' @param top_n
+#' @param metavar A metadata variable to group by
+#' @param seu A seurat object
+#' @param seurat_assay An assay to use
+#' @param top_n Use top n genes, Default "200"
+#' @param p_val_cutoff p value cut-off, Default value is "0.5"
 #'
 #' @return
 #'

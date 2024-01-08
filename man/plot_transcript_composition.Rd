@@ -13,7 +13,14 @@ plot_transcript_composition(
 )
 }
 \arguments{
-\item{standardize}{}
+\item{seu}{A seurat object}
+
+\item{gene_symbol}{Gene symbol of gene of intrest}
+
+\item{group.by}{Name of one or more metadata columns to annotate columns by
+(for example, orig.ident)}
+
+\item{drop_zero}{Drop zero values}
 }
 \description{
 plot the proportion of reads of a given gene map to each transcript

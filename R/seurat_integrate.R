@@ -17,9 +17,9 @@ old_harmony_integrate <- function (seu_list)
     seu_list.integrated
   }
 
-#' integrate small datasets with harmony
+#' Integrate small datasets with harmony
 #'
-#' @param seu_list
+#' @param seu_list List of two or more seurat objects to integrate
 #'
 #' @return
 #' @export
@@ -39,7 +39,7 @@ harmony_integrate <- function(seu_list){
 
 #' Merge Small Seurat Objects
 #'
-#' @param seu_list
+#' @param seu_list List of two or more seurat objects
 #'
 #' @return
 #' @export
@@ -62,8 +62,8 @@ merge_small_seus <- function(seu_list, k.filter = 50) {
 
 #' Batch Correct Multiple Seurat Objects
 #'
-#' @param seu_list
-#' @param method
+#' @param seu_list List of two or more seurat objects
+#' @param method Default "cca"
 #' @param ...
 #'
 #' @return
@@ -139,10 +139,10 @@ seurat_integrate <- function(seu_list, method = "cca", organism = "human", ...) 
 
 #' Run Louvain Clustering at Multiple Resolutions
 #'
-#' @param seu
-#' @param resolution
+#' @param seu A seurat object
+#' @param resolution Clustering resolution
 #' @param custom_clust
-#' @param reduction
+#' @param reduction Set dimensional reduction object
 #' @param ...
 #'
 #' @return
@@ -182,8 +182,8 @@ seurat_cluster <- function(seu = seu, resolution = 0.6, custom_clust = NULL, red
 
 #' Read in Gene and Transcript Seurat Objects
 #'
-#' @param proj_dir
-#' @param prefix
+#' @param proj_dir path to project directory
+#' @param prefix default "unfiltered"
 #'
 #' @return
 #' @export
@@ -231,7 +231,7 @@ load_seurat_from_proj <- function(proj_dir, ...) {
 #' @param seu A Seurat object
 #' @param assay Assay of interest to be run on the seurat object
 #' @param reduction Set dimensional reduction object
-#' @param legacy_settings
+#' @param legacy_settings Use legacy settings
 #' @param ... Extra parameters passed to seurat_reduce_dimensions
 #'
 #' @return
@@ -291,7 +291,7 @@ rename_seurat <- function(seu, new_name) {
 
 #' Reset default assay
 #'
-#' FUnction to reset the default assay of a seurat object
+#' Function to reset the default assay of a seurat object
 #'
 #' @param seu A seurat object
 #' @param new_assay Assay to set as default assay
@@ -327,7 +327,7 @@ filter_merged_seus <- function(seus, filter_var, filter_val, .drop = F) {
 
 #' Filter a Single Seurat Object
 #'
-#' @param seu
+#' @param seu A seurat object
 #' @param filter_var
 #' @param filter_val
 #' @param .drop
@@ -354,7 +354,7 @@ filter_merged_seu <- function(seu, filter_var, filter_val, .drop = .drop) {
 #' 2) integrate
 #' 3) run integration pipeline and save
 #'
-#' @param seu
+#' @param seu A seurat object
 #' @param suffix to be appended to file saved in output dir
 #' @param reduction to use default is pca
 #'

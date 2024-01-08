@@ -14,6 +14,12 @@ seurat_cluster(
 )
 }
 \arguments{
+\item{seu}{A seurat object}
+
+\item{resolution}{Clustering resolution}
+
+\item{reduction}{Set dimensional reduction object}
+
 \item{...}{}
 }
 \description{

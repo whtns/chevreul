@@ -19,6 +19,8 @@ seurat_reduce_dimensions(
 
 \item{reduction}{Set dimensional reduction object}
 
+\item{legacy_settings}{Use legacy settings}
+
 \item{...}{Extra parameters passed to seurat_reduce_dimensions}
 }
 \description{

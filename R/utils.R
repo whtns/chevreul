@@ -1,13 +1,16 @@
 
-#' Title
+#' Add Seurat Object Metadata
 #'
-#' @param seu
-#' @param datapath
+#' Adds data to the seurat object to produce a seurat object with metadata added.
+#'
+#' @param seu A seurat object
+#' @param datapath Path to file containing metadata
 #'
 #' @return
 #' @export
 #'
 #' @examples
+#'
 format_new_metadata <- function(seu, datapath) {
   new_meta <- read_csv(datapath) %>%
     dplyr::mutate(across(contains("snn"), as.factor))
@@ -28,10 +31,11 @@ format_new_metadata <- function(seu, datapath) {
 
 #' Reformat Seurat Object Metadata
 #'
+#' Reformat Seurat Object Metadata by Coalesced Columns
 #'
-#' @param seu
-#' @param cols
-#' @param new_col
+#' @param seu A Seurat object
+#' @param cols Columns
+#' @param new_col New columns
 #'
 #' @return
 #' @export
@@ -127,15 +131,18 @@ list_plot_types <- function(seu) {
 
 #' Get Transcripts in Seurat Object
 #'
-#' @param seu
-#' @param gene
-#' @param organism
+#' Get transcript ids in Seurat objects for one or more gene of interest
+#'
+#' @param seu A seurat object
+#' @param gene Gene of intrest
+#' @param organism Organism
 #'
 #' @return
 #' @export
 #'
 #' @examples
 #' RXRG_transcripts <- get_transcripts_from_seu(human_gene_transcript_seu, "RXRG")
+#'
 get_transcripts_from_seu <- function(seu, gene, organism = "human") {
   transcripts <- genes_to_transcripts(gene, organism)
 
@@ -182,16 +189,9 @@ prep_plot_genes_in_pseudotime <- function(cds, mygenes, resolution, partition = 
 
 #' Record Experiment Metadata
 #'
-#' @param object
+#' @param object A seurat objet
 #' @param experiment_name
 #' @param organism
-#' @param column_sample
-#' @param column_cluster
-#' @param column_nUMI
-#' @param column_nGene
-#' @param column_cell_cycle_seurat
-#' @param column_cell_cycle_cyclone
-#' @param add_all_meta_data
 #'
 #' @return
 #' @export
@@ -251,7 +251,7 @@ record_experiment_data <- function(object, experiment_name = "default_experiment
 
 #' Update a chevreul Object
 #'
-#' @param seu_path
+#' @param seu_path Path to a seurat object
 #' @param feature
 #' @param resolution
 #' @param ...
@@ -343,10 +343,11 @@ update_chevreul_object <- function(seu_path, feature, resolution = seq(0.2, 2.0,
 
 
 #' Calculate Read Count Metrics for a Seurat object
-#' recalculate counts/features per cell for a seurat object
 #'
-#' @param seu
-#' @param assay
+#' Recalculate counts/features per cell for a seurat object
+#'
+#' @param seu A seurat object
+#' @param assay Assay to use, Default = "gene"
 #' @param slot
 #'
 #' @return
@@ -390,8 +391,10 @@ propagate_spreadsheet_changes <- function(updated_table, seu) {
 
 #' Create a database of chevreul projects
 #'
-#' @param cache_location
-#' @param sqlite_db
+#' Create a database containing chevreul projects
+#'
+#' @param cache_location Path to cache "~/.cache/chevreul"
+#' @param sqlite_db Database to be created
 #' @param verbose
 #'
 #' @return
@@ -432,9 +435,11 @@ create_project_db <- function(cache_location = "~/.cache/chevreul",
 
 #' Update a database of chevreul projects
 #'
-#' @param projects_dir
-#' @param cache_location
-#' @param sqlite_db
+#' Add new/update existing projects to the database by recursing fully
+#'
+#' @param projects_dir The project directory to be updated
+#' @param cache_location Path to cache "~/.cache/chevreul"
+#' @param sqlite_db sqlite db
 #' @param verbose
 #'
 #' @return
@@ -474,10 +479,14 @@ update_project_db <- function(projects_dir = NULL,
 
 #' Update a database of chevreul projects
 #'
+#' Append projects to datatbase
+#'
+#' @param new_project_path
 #' @param projects_dir
-#' @param cache_location
-#' @param sqlite_db
+#' @param cache_location Path to cache "~/.cache/chevreul"
+#' @param sqlite_db sqlite db
 #' @param verbose
+#'
 #'
 #' @return
 #' @export
@@ -515,9 +524,11 @@ append_to_project_db <- function(new_project_path, projects_dir = NULL,
 
 #' Read a database of chevreul projects
 #'
+#' Reads database of chevreul projects to a data frame
+#'
 #' @param projects_dir
-#' @param cache_location
-#' @param sqlite_db
+#' @param cache_location Path to cache "~/.cache/chevreul"
+#' @param sqlite_db sqlite db
 #' @param verbose
 #'
 #' @return
@@ -544,8 +555,10 @@ read_project_db <- function(projects_dir = NULL,
 
 #' Make Bigwig Database
 #'
-#' @param cache_location
-#' @param sqlite_db
+#'
+#' @param new_project Project directory
+#' @param cache_location Path to cache "~/.cache/chevreul"
+#' @param sqlite_db sqlite db containing bw files
 #'
 #' @return
 #' @export
@@ -574,8 +587,8 @@ make_bigwig_db <- function(new_project = NULL, cache_location = "~/.cache/chevre
 #' Retrieve Metadata from Batch
 #'
 #' @param batch
-#' @param projects_dir
-#' @param db_path
+#' @param projects_dir path to project dir
+#' @param db_path path to .db file
 #'
 #' @return
 #'
@@ -658,9 +671,11 @@ convert_seu_list_to_multimodal <- function(seu_list) {
   return(multimodal_seu)
 }
 
-#' Title
+#' Clean Vector of Chevreul Names
 #'
-#' @param myvec
+#' Cleans names of seurat objects provided in a vector form
+#'
+#' @param myvec A vector of seurat object names
 #'
 #' @return
 #' @export
@@ -674,7 +689,9 @@ make_chevreul_clean_names <- function(myvec){
 
 #' Convert seurat object to seurat V5 format
 #'
-#' @param seu_v3 a seurat object
+#' Convert seurat object from v3 to v5 format
+#'
+#' @param seu_v3 a version 3 seurat object
 #'
 #' @return
 #' @export
