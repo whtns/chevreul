@@ -121,9 +121,9 @@ Direct comparison of the contribution of individual transcripts can be achieved 
 ![](images/transcript_composisiont.png)
 
 
-### Pseudotime Analysis by [Monocle 3](https://cole-trapnell-lab.github.io/monocle3/)
+### Pobjectdotime Analysis by [Monocle 3](https://cole-trapnell-lab.github.io/monocle3/)
 
-Pseudotime analysis is broken into several steps, mirroring a typical command-line workflow. 
+Pobjectdotime analysis is broken into several steps, mirroring a typical command-line workflow. 
 1. Users can subset an embedded dataset then calculate a trajectory graph. 
 1. Root cells can be specified and cells ordered in pseudotime with monocle3. 
 2. Features that vary significantly over pseudotime based on autocorrelation can then be determined and grouped into modules that vary similarly over pseudotime. 
@@ -152,19 +152,19 @@ Technical information regarding upstream processing, software version numbers, a
 
 
 ## Server Mode
-If we want work with seurat objects interactively and save the results of our exploratory data analysis we need to operate chevreul in *server mode*. When operating in this manner it is possible to carry out basic project management tasks including:
-* Loading saved seurat objects 
-* Saving seurat objects after making changes in the app such as :
+If we want work with objects interactively and save the results of our exploratory data analysis we need to operate chevreul in *server mode*. When operating in this manner it is possible to carry out basic project management tasks including:
+* Loading saved objects 
+* Saving objects after making changes in the app such as :
   * Reformatting metadata 
   * Subsetting to remove cells
   * Regressing feature expression as well as
-* Integrating multiple saved seurat objects 
+* Integrating multiple saved objects 
 
 Finally, server mode is necessary for some expanded functionality including:
 * Coverage plotting
 * RNA velocity
 
-*server mode* requires access to a few sqlite databases with file path details stored in `~/.cache/chevreul`. `single_cell_projects.db` and `bigwig_files.db` allowing dynamic loading of seurat objects and bigwig (.bw) sample coverage files for each cell. These are initialized upon package installation using the `creat_project_db` function.
+*server mode* requires access to a few sqlite databases with file path details stored in `~/.cache/chevreul`. `single_cell_projects.db` and `bigwig_files.db` allowing dynamic loading of objects and bigwig (.bw) sample coverage files for each cell. These are initialized upon package installation using the `creat_project_db` function.
 
 The following sections will give details on this expanded functionality.
 

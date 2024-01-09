@@ -1,6 +1,6 @@
-#' add census assay to a seurat object
+#' add census assay to a object
 #'
-#' @param seu
+#' @param object
 #' @param assay
 #' @param slot
 #'
@@ -8,12 +8,12 @@
 #' @export
 #'
 #' @examples
-add_census_slot <- function(seu, assay = "gene", slot = "counts") {
-  data <- Seurat::GetAssayData(seu, assay = assay, slot = slot)
+add_census_slot <- function(object, assay = "gene", slot = "counts") {
+  data <- Seurat::GetAssayData(object, assay = assay, slot = slot)
 
   data <- floor(data)
 
-  pd <- new("AnnotatedDataFrame", data = seu@meta.data)
+  pd <- new("AnnotatedDataFrame", data = pull_metadata(object))
 
   fData <- data.frame(gene_short_name = row.names(data), row.names = row.names(data))
   fd <- new("AnnotatedDataFrame", data = fData)
@@ -37,33 +37,33 @@ add_census_slot <- function(seu, assay = "gene", slot = "counts") {
     expressionFamily = VGAM::negbinomial.size()
   )
 
-  attributes(seu)$census <- Biobase::exprs(monocle_cds)
+  attributes(object)$census <- Biobase::exprs(monocle_cds)
 
-  seu[["census"]] <- seu[["gene"]]
-  seu <- SetAssayData(seu, slot = "data", new.data = Biobase::exprs(monocle_cds), assay = "census")
+  object[["census"]] <- object[["gene"]]
+  object <- SetAssayData(object, slot = "data", new.data = Biobase::exprs(monocle_cds), assay = "census")
 
-  return(seu)
+  return(object)
 }
 
 #' Convert a Seurat V3 object to a Monocle v2 object
 #'
-#' @param seu
+#' @param object
 #'
 #' @return
 #' @export
 #'
 #' @examples
-convert_seuv3_to_monoclev2 <- function(seu, assay = "gene", slot = "data", return_census = FALSE, sig_slice = 1000) {
+convert_objectv3_to_monoclev2 <- function(object, assay = "gene", slot = "data", return_census = FALSE, sig_slice = 1000) {
 
   # Load Seurat object
   # Extract data, phenotype data, and feature data from the SeuratObject
-  # data <- as(as.matrix(seu@assays[["gene"]]@counts), "sparseMatrix")
+  # data <- as(as.matrix(object@assays[["gene"]]@counts), "sparseMatrix")
 
-  data <- Seurat::GetAssayData(seu, assay = assay, slot = slot)
+  data <- Seurat::GetAssayData(object, assay = assay, slot = slot)
 
   data <- floor(data)
 
-  pd <- new("AnnotatedDataFrame", data = seu@meta.data)
+  pd <- new("AnnotatedDataFrame", data = pull_metadata(object))
 
   fData <- data.frame(gene_short_name = row.names(data), row.names = row.names(data))
   fd <- new("AnnotatedDataFrame", data = fData)
@@ -207,23 +207,23 @@ convert_seuv3_to_monoclev2 <- function(seu, assay = "gene", slot = "data", retur
 
 #' Convert a Seurat V3 object to a Monocle v2 object
 #'
-#' @param seu
+#' @param object
 #'
 #' @return
 #' @export
 #'
 #' @examples
-convert_monoclev2_to_seuv3 <- function(seu, assay = "gene", slot = "data", return_census = FALSE, sig_slice = 1000) {
+convert_monoclev2_to_objectv3 <- function(object, assay = "gene", slot = "data", return_census = FALSE, sig_slice = 1000) {
 
   # Load Seurat object
   # Extract data, phenotype data, and feature data from the SeuratObject
-  # data <- as(as.matrix(seu@assays[["gene"]]@counts), "sparseMatrix")
+  # data <- as(as.matrix(object@assays[["gene"]]@counts), "sparseMatrix")
 
-  data <- Seurat::GetAssayData(seu, assay = assay, slot = slot)
+  data <- Seurat::GetAssayData(object, assay = assay, slot = slot)
 
   data <- floor(data)
 
-  pd <- new("AnnotatedDataFrame", data = seu@meta.data)
+  pd <- new("AnnotatedDataFrame", data = pull_metadata(object))
 
   fData <- data.frame(gene_short_name = row.names(data), row.names = row.names(data))
   fd <- new("AnnotatedDataFrame", data = fData)
@@ -370,16 +370,16 @@ convert_monoclev2_to_seuv3 <- function(seu, assay = "gene", slot = "data", retur
 #' @export
 #'
 #' @examples
-process_monocle_child <- function(ptime, monocle_cds, trend_formula = "~sm.ns(Pseudotime, df=3)") {
+process_monocle_child <- function(ptime, monocle_cds, trend_formula = "~sm.ns(Pobjectdotime, df=3)") {
   monocle_cds <- monocle_cds[, colnames(monocle_cds) %in% ptime$sample_id]
 
   ptime <- ptime[ptime$sample_id %in% colnames(monocle_cds), ]
 
-  old_ptime <- phenoData(monocle_cds)$Pseudotime
+  old_ptime <- phenoData(monocle_cds)$Pobjectdotime
 
   ptime$ptime <- scales::rescale(ptime$ptime, range(old_ptime))
 
-  phenoData(monocle_cds)$Pseudotime <- ptime$ptime
+  phenoData(monocle_cds)$Pobjectdotime <- ptime$ptime
 
   monocle_cds_expressed_genes <- rownames(subset(Biobase::featureData(monocle_cds), Biobase::featureData(monocle_cds)$num_cells_expressed >= 10))
 
@@ -443,7 +443,7 @@ plot_all_ptimes <- function(monocle_list, query_name, sig_slice = 1000, ...) {
       show_rownames = F,
       return_heatmap = TRUE,
       cluster_rows = F,
-      trend_formula = "~sm.ns(Pseudotime, df=1)",
+      trend_formula = "~sm.ns(Pobjectdotime, df=1)",
       ...
     ))
   }
@@ -623,7 +623,7 @@ arrange_ptime_heatmaps <- function(cds_list, cds_name) {
   return(heatmaplist)
 }
 
-#' Plot Expression of a Given Feature of a set of Pseudotimes
+#' Plot Expression of a Given Feature of a set of Pobjectdotimes
 #'
 #' @param cds_list
 #' @param selected_cds
@@ -653,7 +653,7 @@ plot_feature_in_ref_query_ptime <- function(cds_list, selected_cds, features = c
 
   sub_cds_list <- purrr::map(sub_cds_list, string_NA_meta)
 
-  trend_formula <- paste0("~sm.ns(Pseudotime, df=", trend_df, ")")
+  trend_formula <- paste0("~sm.ns(Pobjectdotime, df=", trend_df, ")")
 
   feature_plots_in_ptime <- purrr::map(sub_cds_list, monocle::plot_genes_in_pseudotime, trend_formula = trend_formula, color_by = color_by, relative_expr = relative_expr, min_expr = min_expr)
 
@@ -706,15 +706,15 @@ run_BEAM <- function(HSMM, branch_point, branches, pt_param, pt_paramval, colorv
 
 #' Monocle2 differential expression
 #'
-#' @param seu
+#' @param object
 #'
 #' @return
 #' @export
 #'
 #' @examples
-Monocle2_diffex <- function(seu) {
+Monocle2_diffex <- function(object) {
   diff_test_res <- monocle::differentialGeneTest(cds_subset,
-    fullModelFormulaStr = "~sm.ns(Pseudotime)"
+    fullModelFormulaStr = "~sm.ns(Pobjectdotime)"
   )
 }
 
@@ -814,14 +814,14 @@ calc_pseudotime_heatmap <- function(cds_subset, cluster_rows = TRUE, dend_k = 6,
                                     num_clusters = 6, hmcols = NULL, add_annotation_row = NULL,
                                     add_annotation_col = NULL, show_rownames = FALSE, use_gene_short_name = TRUE,
                                     norm_method = c("log", "vstExprs"), scale_max = 3, scale_min = -3,
-                                    trend_formula = "~sm.ns(Pseudotime, df=3)", return_heatmap = FALSE,
+                                    trend_formula = "~sm.ns(Pobjectdotime, df=3)", return_heatmap = FALSE,
                                     cores = 1, ...) {
   Biobase::fData(cds_subset) <- data.frame(row.names = rownames(cds_subset), gene_short_name = rownames(cds_subset))
 
   num_clusters <- min(num_clusters, nrow(cds_subset))
-  pseudocount <- 1
-  newdata <- data.frame(Pseudotime = seq(min(Biobase::pData(cds_subset)$Pseudotime),
-    max(Biobase::pData(cds_subset)$Pseudotime),
+  pobjectdocount <- 1
+  newdata <- data.frame(Pobjectdotime = seq(min(Biobase::pData(cds_subset)$Pobjectdotime),
+    max(Biobase::pData(cds_subset)$Pobjectdotime),
     length.out = 100
   ))
   m <- monocle::genSmoothCurves(cds_subset,
@@ -835,7 +835,7 @@ calc_pseudotime_heatmap <- function(cds_subset, cluster_rows = TRUE, dend_k = 6,
     m <- vstExprs(cds_subset, expr_matrix = m)
   }
   else if (norm_method == "log") {
-    m <- log10(m + pseudocount)
+    m <- log10(m + pobjectdocount)
   }
 
   # drop every row (gene) that has a standard deviation of zero

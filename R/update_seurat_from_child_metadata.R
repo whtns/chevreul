@@ -1,9 +1,9 @@
 
 #' Update Seurat Metadata from Project
 #'
-#' Given a project metadata file located in <proj_dir>/data/<meta_file>, update an existing seurat object with the project data
+#' Given a project metadata file located in <proj_dir>/data/<meta_file>, update an existing object with the project data
 #'
-#' @param seu A seurat object
+#' @param object A object
 #' @param proj_dir Project directory
 #' @param numcols
 #'
@@ -11,22 +11,22 @@
 #' @export
 #'
 #' @examples
-update_seu_meta <- function(seu, proj_dir, numcols) {
-  seu_meta <- as.data.frame(seu[[]])
+update_object_meta <- function(object, proj_dir, numcols) {
+  object_meta <- as.data.frame(pull_metadata(object))
 
   project_meta <- readr::read_csv(get_meta(proj_dir))
 
-  common_cols <- intersect(colnames(seu_meta), colnames(project_meta))
-  seu_meta <- mutate_at(seu_meta, .vars = vars(one_of(numcols)), .funs = funs(as.numeric))
-  updated_seu_meta <- dplyr::left_join(seu_meta, project_meta, by = "sample_id")
+  common_cols <- intersect(colnames(object_meta), colnames(project_meta))
+  object_meta <- mutate_at(object_meta, .vars = vars(one_of(numcols)), .funs = funs(as.numeric))
+  updated_object_meta <- dplyr::left_join(object_meta, project_meta, by = "sample_id")
 
   left_side_common <- paste0(common_cols, ".y")
   right_side_common <- paste0(common_cols, ".x")
 
-  left_side_columns <- dplyr::select(updated_seu_meta, one_of(left_side_common))
+  left_side_columns <- dplyr::select(updated_object_meta, one_of(left_side_common))
   colnames(left_side_columns) <- gsub("\\.y$", "", colnames(left_side_columns))
 
-  updated_seu_meta <- cbind(updated_seu_meta, left_side_columns) %>%
+  updated_object_meta <- cbind(updated_object_meta, left_side_columns) %>%
     dplyr::select(-one_of(right_side_common)) %>%
     dplyr::select(-one_of(left_side_common)) %>%
     dplyr::select(Sample_ID, everything())
@@ -35,14 +35,14 @@ update_seu_meta <- function(seu, proj_dir, numcols) {
 
 #' Reset Seurat Metadata
 #'
-#' @param seu A seurat object
+#' @param object A object
 #' @param new_meta new object
 #'
 #' @return
 #' @export
 #'
 #' @examples
-reset_seu_meta <- function(seu, new_meta) {
-  seu@meta.data <- as.data.frame(new_meta, row.names = new_meta$sample_id)
-  return(seu)
+reset_object_meta <- function(object, new_meta) {
+  object@meta.data <- as.data.frame(new_meta, row.names = new_meta$sample_id)
+  return(object)
 }

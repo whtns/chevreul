@@ -90,7 +90,7 @@ load_meta <- function(proj_dir) {
 }
 
 
-#' Create a seurat object from output of  \href{http://bioconductor.org/packages/release/bioc/html/tximport.html}{tximport} and a table of cell metadata
+#' Create a object from output of  \href{http://bioconductor.org/packages/release/bioc/html/tximport.html}{tximport} and a table of cell metadata
 #'
 #' @param txi output from load_counts_by_tximport
 #' @param meta_tbl a tibble of cell metadata with cell ids as the first column
@@ -101,7 +101,7 @@ load_meta <- function(proj_dir) {
 #' @export
 #'
 #' @examples
-seu_from_tximport <- function(txi, meta_tbl, ...) {
+object_from_tximport <- function(txi, meta_tbl, ...) {
 
   gene_expression <- as.matrix(txi$gene$counts)
   expid <- gsub("-[0-9]*", "", colnames(gene_expression))
@@ -116,19 +116,19 @@ seu_from_tximport <- function(txi, meta_tbl, ...) {
   meta_tbl <- meta_tbl[colnames(gene_expression), ]
 
   # create gene assay
-  seu <- Seurat::CreateSeuratObject(counts = gene_expression, project = expid, assay = "gene", meta.data = meta_tbl)
-  seu@assays[["gene"]] <- AddMetaData(seu@assays[["gene"]], featuredata)
+  object <- Seurat::CreateSeuratObject(counts = gene_expression, project = expid, assay = "gene", meta.data = meta_tbl)
+  object@assays[["gene"]] <- AddMetaData(object@assays[["gene"]], featuredata)
 
   if ("transcript" %in% names(txi)){
     #create transcript assay
     transcript_expression <- as.matrix(txi$transcript$counts)
-    seu[["transcript"]] <- CreateAssayObject(transcript_expression)
+    object[["transcript"]] <- CreateAssayObject(transcript_expression)
   }
 
   # add default batch if missing
-  seu$batch <- seu@project.name
+  object$batch <- object@project.name
 
-  return(seu)
+  return(object)
 }
 
 
@@ -143,7 +143,7 @@ seu_from_tximport <- function(txi, meta_tbl, ...) {
 #' @export
 #'
 #' @examples
-seu_from_tibbles <- function(exp_tbl, feature, meta_tbl, ...) {
+object_from_tibbles <- function(exp_tbl, feature, meta_tbl, ...) {
   expid <- gsub("-.*", "", colnames(exp_tbl))
 
   featuredata <- data.frame(rownames(exp_tbl))
@@ -158,12 +158,12 @@ seu_from_tibbles <- function(exp_tbl, feature, meta_tbl, ...) {
 
   meta_tbl <- meta_tbl[colnames(exp_tbl), ]
 
-  seu <- Seurat::CreateSeuratObject(counts = exp_tbl, project = expid, assay = "gene", meta.data = meta_tbl)
+  object <- Seurat::CreateSeuratObject(counts = exp_tbl, project = expid, assay = "gene", meta.data = meta_tbl)
 
   # add default batch if missing
-  seu$batch <- seu@project.name
+  object$batch <- object@project.name
 
-  return(seu)
+  return(object)
 }
 
 
@@ -172,15 +172,15 @@ seu_from_tibbles <- function(exp_tbl, feature, meta_tbl, ...) {
 
 #' Filter our Cells from Seurat below read count threshold
 #'
-#' @param seu A seurat object
+#' @param object A object
 #' @param read_thresh
 #'
 #' @return
 #' @export
 #'
 #' @examples
-filter_low_rc_cells <- function(seu, read_thresh = 1e5) {
-  counts <- as.matrix(seu@assays[["gene"]]@counts)
+filter_low_rc_cells <- function(object, read_thresh = 1e5) {
+  counts <- as.matrix(object@assays[["gene"]]@counts)
 
   counts <- colSums(counts)
 
@@ -189,12 +189,12 @@ filter_low_rc_cells <- function(seu, read_thresh = 1e5) {
   removed_cells <- counts[counts <= read_thresh]
   print(removed_cells)
 
-  seu <- subset(seu, cells = names(keep_cells))
+  object <- subset(object, cells = names(keep_cells))
 }
 
-#' Save seurat object to <project>/output/sce/<feature>_seu.rds
+#' Save object to <project>/output/sce/<feature>_object.rds
 #'
-#' @param ... named arguments specifying seurat objects list of seurat objects; default "gene" and "transcript"
+#' @param ... named arguments specifying objects list of objects; default "gene" and "transcript"
 #' @param prefix
 #' @param proj_dir
 #'
@@ -203,20 +203,20 @@ filter_low_rc_cells <- function(seu, read_thresh = 1e5) {
 #'
 #' @examples
 #' \dontrun{
-#' save_seurat(gene = feature_seus$gene, transcript = feature_seus$transcript, proj_dir = proj_dir)
+#' save_object(gene = feature_objects$gene, transcript = feature_objects$transcript, proj_dir = proj_dir)
 #'
-#' save_seurat(gene = feature_seus$gene, transcript = feature_seus$transcript, prefix = "remove_nonPRs", proj_dir = proj_dir)
+#' save_object(gene = feature_objects$gene, transcript = feature_objects$transcript, prefix = "remove_nonPRs", proj_dir = proj_dir)
 #' }
-save_seurat <- function(seu, prefix = "unfiltered", proj_dir = getwd()) {
+save_object <- function(object, prefix = "unfiltered", proj_dir = getwd()) {
 
-  seurat_dir <- fs::path(proj_dir, "output", "seurat")
+  object_dir <- fs::path(proj_dir, "output", "seurat")
 
-  fs::dir_create(seurat_dir)
+  fs::dir_create(object_dir)
 
-  seu_path <- fs::path(seurat_dir, paste0(prefix, "_seu.rds"))
+  object_path <- fs::path(object_dir, paste0(prefix, "_object.rds"))
 
   # if (interactive()) {
-  #   message(paste0("Do you want to save to ", fs::path_file(seu_path)))
+  #   message(paste0("Do you want to save to ", fs::path_file(object_path)))
   #   confirm_save <- (menu(c("Yes", "No")) == 1)
   # } else {
   #   confirm_save <- TRUE
@@ -226,11 +226,11 @@ save_seurat <- function(seu, prefix = "unfiltered", proj_dir = getwd()) {
   #   stop("aborting project save")
   # }
 
-  message(paste0("saving to ", seu_path))
-  saveRDS(seu, seu_path)
+  message(paste0("saving to ", object_path))
+  saveRDS(object, object_path)
   # if(prefix == "unfiltered"){
-  #   Sys.chmod(seu_path, "775")
+  #   Sys.chmod(object_path, "775")
   # }
 
-  return(seu)
+  return(object)
 }

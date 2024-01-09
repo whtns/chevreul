@@ -15,9 +15,9 @@
 #'
 #' @examples
 #'
-#' panc8[["gene"]] <- seurat_preprocess(panc8[["gene"]])
+#' panc8[["gene"]] <- object_preprocess(panc8[["gene"]])
 #'
-seurat_preprocess <- function(assay, scale = TRUE, normalize = TRUE, features = NULL, legacy_settings = FALSE, ...) {
+object_preprocess <- function(assay, scale = TRUE, normalize = TRUE, features = NULL, legacy_settings = FALSE, ...) {
 
   # Normalize data
 
@@ -51,31 +51,31 @@ seurat_preprocess <- function(assay, scale = TRUE, normalize = TRUE, features = 
 #'
 #' Find all markers at a range of resolutions
 #'
-#' @param seu A seurat object.
+#' @param object A object.
 #' @param metavar A metadata variable to group by.
-#' @param seurat_assay Assay to use, Default "gene".
+#' @param object_assay Assay to use, Default "gene".
 #' @param ...
 #'
 #' @return
 #' @export
 #'
 #' @examples
-#' markers_stashed_seu <- find_all_markers(panc8)
-#' marker_genes <- Misc(markers_stashed_seu, "markers")
+#' markers_stashed_object <- find_all_markers(panc8)
+#' marker_genes <- Misc(markers_stashed_object, "markers")
 #' str(marker_genes)
-find_all_markers <- function(seu, metavar = NULL, seurat_assay = "gene", ...) {
+find_all_markers <- function(object, metavar = NULL, object_assay = "gene", ...) {
 
   if (is.null(metavar)) {
-    resolutions <- colnames(seu[[]])[grepl(paste0(seurat_assay, "_snn_res."), colnames(seu[[]]))]
+    resolutions <- colnames(pull_metadata(object))[grepl(paste0(object_assay, "_snn_res."), colnames(pull_metadata(object)))]
 
-    cluster_index <- grepl(paste0(seurat_assay, "_snn_res."), colnames(seu[[]]))
+    cluster_index <- grepl(paste0(object_assay, "_snn_res."), colnames(pull_metadata(object)))
 
     if (!any(cluster_index)) {
-      warning("no clusters found in metadata. runnings seurat_cluster")
-      seu <- seurat_cluster(seu, resolution = seq(0.2, 2.0, by = 0.2))
+      warning("no clusters found in metadata. runnings object_cluster")
+      object <- object_cluster(object, resolution = seq(0.2, 2.0, by = 0.2))
     }
 
-    clusters <- seu[[]][, cluster_index]
+    clusters <- pull_metadata(object)[, cluster_index]
 
     cluster_levels <- purrr::map_int(clusters, ~ length(unique(.x)))
     cluster_levels <- cluster_levels[cluster_levels > 1]
@@ -84,14 +84,14 @@ find_all_markers <- function(seu, metavar = NULL, seurat_assay = "gene", ...) {
     metavar <- names(clusters)
   }
 
-  new_markers <- purrr::map(metavar, stash_marker_features, seu, seurat_assay = seurat_assay, ...)
+  new_markers <- purrr::map(metavar, stash_marker_features, object, object_assay = object_assay, ...)
   names(new_markers) <- metavar
 
-  old_markers <- seu@misc$markers[!names(seu@misc$markers) %in% names(new_markers)]
+  old_markers <- object@misc$markers[!names(object@misc$markers) %in% names(new_markers)]
 
-  seu@misc$markers <- c(old_markers, new_markers)
+  object@misc$markers <- c(old_markers, new_markers)
 
-  return(seu)
+  return(object)
 }
 
 enframe_markers <- function(marker_table){
@@ -107,8 +107,8 @@ enframe_markers <- function(marker_table){
 #' Marker Genes will be stored in slot `@misc$markers`
 #'
 #' @param metavar A metadata variable to group by
-#' @param seu A seurat object
-#' @param seurat_assay An assay to use
+#' @param object A object
+#' @param object_assay An assay to use
 #' @param top_n Use top n genes, Default "200"
 #' @param p_val_cutoff p value cut-off, Default value is "0.5"
 #'
@@ -116,15 +116,15 @@ enframe_markers <- function(marker_table){
 #'
 #' @examples
 #'
-#' seu <- stash_marker_features(metavar = "batch", seu, seurat_assay = "gene")
+#' object <- stash_marker_features(metavar = "batch", object, object_assay = "gene")
 #'
-stash_marker_features <- function(metavar, seu, seurat_assay, top_n = 200, p_val_cutoff = 0.5) {
+stash_marker_features <- function(metavar, object, object_assay, top_n = 200, p_val_cutoff = 0.5) {
 
   message(paste0("stashing presto markers for ", metavar))
 
   markers <- list()
   markers$presto <-
-    presto::wilcoxauc(seu, metavar, seurat_assay = seurat_assay) %>%
+    presto::wilcoxauc(object, metavar, object_assay = object_assay) %>%
     dplyr::group_by(group) %>%
     dplyr::filter(padj < p_val_cutoff) %>%
     dplyr::top_n(n = top_n, wt = logFC) %>%
@@ -136,8 +136,8 @@ stash_marker_features <- function(metavar, seu, seurat_assay, top_n = 200, p_val
   # markers$genesorteR <- tryCatch(
   #   {
   #     gs <- genesorteR::sortGenes(
-  #       Seurat::GetAssayData(seu, assay = seurat_assay, slot = "data"),
-  #       tidyr::replace_na(seu[[]][[metavar]], "NA")
+  #       Seurat::GetAssayData(object, assay = object_assay, slot = "data"),
+  #       tidyr::replace_na(pull_metadata(object)[[metavar]], "NA")
   #     )
   #
   #     pp <- genesorteR::getPValues(gs)

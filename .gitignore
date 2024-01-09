@@ -8,3 +8,6 @@ inst/doc
 velocity_embedding.png
 velocity_expression.png
 *.Rproj
+dev/
+euler/
+figures/

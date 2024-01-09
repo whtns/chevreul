@@ -2,7 +2,7 @@
 #'
 #' Annotate Cell Cycle for Gene and Transcript Seurat Objects
 #'
-#' @param seu A seurat object
+#' @param object A object
 #' @param organism organism. Default "human"
 #'
 #' @return
@@ -11,11 +11,11 @@
 #' @examples
 #' annotate_cell_cycle(panc8, organism = "human")
 #' annotate_cell_cycle(baron2016singlecell, organism = "mouse")
-annotate_cell_cycle <- function(seu, organism = "human", ...) {
+annotate_cell_cycle <- function(object, organism = "human", ...) {
 
 
   # setdefaultassay to "gene"
-  # Seurat::DefaultAssay(seu) <- "gene"
+  # Seurat::DefaultAssay(object) <- "gene"
 
   s_genes <- cc.genes$s.genes
   g2m_genes <- cc.genes$g2m.genes
@@ -30,7 +30,7 @@ annotate_cell_cycle <- function(seu, organism = "human", ...) {
       dplyr::pull(MGI.symbol)
   }
 
-  seu <- CellCycleScoring(seu, s.features = s_genes, g2m.features = g2m_genes, set.ident = FALSE)
+  object <- CellCycleScoring(object, s.features = s_genes, g2m.features = g2m_genes, set.ident = FALSE)
 }
 
 #' Gene Symbols to Ensembl Transcript Ids
@@ -99,18 +99,18 @@ transcripts_to_genes <- function(transcripts, organism = "human") {
 #'
 #' Add a Read Count Categorical Variable to Seurat Object (based on nCount_RNA)
 #'
-#' @param seu A seurat object
+#' @param object A object
 #' @param thresh Set a threshold for low read count
 #'
 #' @return
 #' @export
 #'
 #' @examples
-add_read_count_col <- function(seu, thresh = 1e5) {
-  rc <- seu[["nCount_gene"]] < thresh
+add_read_count_col <- function(object, thresh = 1e5) {
+  rc <- object[["nCount_gene"]] < thresh
 
-  seu <- Seurat::AddMetaData(
-    object = seu,
+  object <- Seurat::AddMetaData(
+    object = object,
     metadata = rc,
     col.name = "low_read_count"
   )
@@ -120,9 +120,9 @@ add_read_count_col <- function(seu, thresh = 1e5) {
 #'
 #'  Add a Read Count Categorical Variable to Seurat Object (based on nCount_RNA)
 #'
-#' @param seu A seurat object
+#' @param object A object
 #' @param organism mouse
-#' @param seurat_assay gene
+#' @param object_assay gene
 #'
 #' @return
 #' @export
@@ -130,21 +130,21 @@ add_read_count_col <- function(seu, thresh = 1e5) {
 #' @examples
 #' add_percent_mito(panc8)
 #' add_percent_mito(baron2016singlecell, organism = "mouse")
-add_percent_mito <- function(seu, organism = "human", seurat_assay = "gene") {
+add_percent_mito <- function(object, organism = "human", object_assay = "gene") {
 
   mito_features <- mito_features[[organism]][["gene"]]
 
-  mito_features <- mito_features[mito_features %in% rownames(seu[[seurat_assay]])]
+  mito_features <- mito_features[mito_features %in% rownames(object[[object_assay]])]
 
-  seu[["percent.mt"]] <- PercentageFeatureSet(seu, features = mito_features)
+  object[["percent.mt"]] <- PercentageFeatureSet(object, features = mito_features)
 
-  return(seu)
+  return(object)
 }
 
 
 #' Annotate Exclusion Criteria
 #'
-#' @param seu A seurat object
+#' @param object A object
 #' @param excluded_cells a named list of cells to be excluded of the form list(set1 = c(cell1, celll2), set2 = c(cell3, cell4))
 #' all other cells will be marked NA in a column titled "excluded_because"
 #'
@@ -152,7 +152,7 @@ add_percent_mito <- function(seu, organism = "human", seurat_assay = "gene") {
 #' @export
 #'
 #' @examples
-annotate_excluded <- function(seu, ...) {
+annotate_excluded <- function(object, ...) {
   # consider replacing
   # mutate(coalesce_var = coalesce(!!! syms(vars_select(names(.), dplyr::starts_with("my")))))
 
@@ -163,7 +163,7 @@ annotate_excluded <- function(seu, ...) {
     purrr::set_names(unlist(excluded_cells)) %>%
     tibble::enframe("sample_id", "excluded_because")
 
-  excluded_because <- tibble::as_tibble(seu[["nCount_RNA"]], rownames = "sample_id") %>%
+  excluded_because <- tibble::as_tibble(object[["nCount_RNA"]], rownames = "sample_id") %>%
     dplyr::full_join(excluded_cells, by = "sample_id")
 
   if ("excluded_because.x" %in% colnames(excluded_because)) {
@@ -177,11 +177,11 @@ annotate_excluded <- function(seu, ...) {
       identity()
   }
 
-  seu <- Seurat::AddMetaData(
-    object = seu,
+  object <- Seurat::AddMetaData(
+    object = object,
     metadata = excluded_because,
     col.name = "excluded_because"
   )
 
-  return(seu)
+  return(object)
 }

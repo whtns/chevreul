@@ -1,8 +1,8 @@
 #' scvelo_assay
 #'
-#' run scvelo on a gene or transcript level seurat object
+#' run scvelo on a gene or transcript level object
 #'
-#' @param seu a seurat object
+#' @param object a object
 #' @param loom_path path to matching loom file
 #' @param fit.quantile
 #' @param ...
@@ -11,11 +11,11 @@
 #' @export
 #'
 #' @examples
-run_scvelo <- function(seu, loom_path, assay = "gene", fit.quantile = 0.05, check_loom = FALSE, ...) {
+run_scvelo <- function(object, loom_path, assay = "gene", fit.quantile = 0.05, check_loom = FALSE, ...) {
 
-  # if(DefaultAssay(seu) == "SCT"){
-  #   seu <-
-  #     seu %>%
+  # if(DefaultAssay(object) == "SCT"){
+  #   object <-
+  #     object %>%
   #     Seurat::FindVariableFeatures(nfeatures= 3000)
   # }
 
@@ -27,36 +27,36 @@ run_scvelo <- function(seu, loom_path, assay = "gene", fit.quantile = 0.05, chec
   }
 
   bm <- Seurat::as.Seurat(x = ldat)
-  bm <- bm[rownames(bm) %in% rownames(seu),]
+  bm <- bm[rownames(bm) %in% rownames(object),]
 
   bm[[assay]] <- bm[["spliced"]]
 
-  # subset bm by seurat object.size
-  bm <- bm[, colnames(bm) %in% colnames(seu)]
+  # subset bm by object.size
+  bm <- bm[, colnames(bm) %in% colnames(object)]
 
-  # subset seurat object by ldat
-  sub_seu <- seu[, colnames(seu) %in% colnames(bm)]
+  # subset object by ldat
+  sub_object <- object[, colnames(object) %in% colnames(bm)]
 
-  sub_seu@assays[names(bm@assays)] <- bm@assays
-  DefaultAssay(sub_seu) <- assay
-  sub_seu@misc$vel <- NULL
-  sub_seu@misc[names(sub_seu@misc) == "experiment"] <- NULL
+  sub_object@assays[names(bm@assays)] <- bm@assays
+  DefaultAssay(sub_object) <- assay
+  sub_object@misc$vel <- NULL
+  sub_object@misc[names(sub_object@misc) == "experiment"] <- NULL
 
-  # sub_seu <- SeuratObject::RenameAssays(sub_seu, gene = "RNA")
+  # sub_object <- SeuratObject::RenameAssays(sub_object, gene = "RNA")
 
   h5ad_path <- stringr::str_replace(loom_path, ".loom", ".h5ad")
 
-  # sceasy::convertFormat(sub_seu, from="seurat", to="anndata",
+  # sceasy::convertFormat(sub_object, from="seurat", to="anndata",
   #                       outFile=fs::path_expand(h5ad_path))
 
-  convert_to_h5ad(sub_seu, file_path = loom_path)
+  convert_to_h5ad(sub_object, file_path = loom_path)
 
-  return(sub_seu)
+  return(sub_object)
 }
 
-#' convert a seurat object to an on-disk anndata object
+#' convert a object to an on-disk anndata object
 #'
-#' @param seu A seurat object
+#' @param object A object
 #' @param file_path Path to file
 #'
 #' @return
@@ -64,24 +64,24 @@ run_scvelo <- function(seu, loom_path, assay = "gene", fit.quantile = 0.05, chec
 #'
 #' @examples
 #'
-#' convert_to_h5ad(human_gene_transcript_seu, "inst/extdata/seu.rds")
+#' convert_to_h5ad(human_gene_transcript_object, "inst/extdata/object.rds")
 #'
-convert_to_h5ad <- function(seu, file_path) {
-  h5seurat_path <- fs::path_ext_set(file_path, ".h5Seurat")
-  message(h5seurat_path)
-  SeuratDisk::SaveH5Seurat(seu, filename = h5seurat_path, overwrite = TRUE)
+convert_to_h5ad <- function(object, file_path) {
+  h5object_path <- fs::path_ext_set(file_path, ".h5Seurat")
+  message(h5object_path)
+  SeuratDisk::SaveH5Seurat(object, filename = h5object_path, overwrite = TRUE)
 
   h5ad_path <- fs::path_ext_set(file_path, ".h5ad")
 
   message(h5ad_path)
-  SeuratDisk::Convert(h5seurat_path, dest = h5ad_path, overwrite = TRUE)
+  SeuratDisk::Convert(h5object_path, dest = h5ad_path, overwrite = TRUE)
 }
 
 #' scvelo_assay
 #'
-#' run scvelo on a gene or transcript level seurat object
+#' run scvelo on a gene or transcript level object
 #'
-#' @param seu a seurat object
+#' @param object a object
 #' @param loom_path path to matching loom file
 #' @param group.by metadata to color plot
 #' @param plot_method plotting method to use from scvelo
@@ -94,22 +94,22 @@ convert_to_h5ad <- function(seu, file_path) {
 #'
 #'
 #'
-prep_scvelo <- function(seu, loom_path, velocity_mode = c("deterministic", "stochastic", "dynamical"), ...) {
+prep_scvelo <- function(object, loom_path, velocity_mode = c("deterministic", "stochastic", "dynamical"), ...) {
 
   h5ad_path <- fs::path_ext_set(loom_path, ".h5ad")
   message(h5ad_path)
-  adata_matches_seu <- function(seu, adata) {
-    identical(sort(adata$obs_names$values), sort(colnames(seu)))
+  adata_matches_object <- function(object, adata) {
+    identical(sort(adata$obs_names$values), sort(colnames(object)))
   }
 
   if (fs::file_exists(h5ad_path)) {
     adata <- scvelo$read(fs::path_expand(h5ad_path))
 
-    if (!adata_matches_seu(seu, adata)) {
-      seu <- run_scvelo(seu, loom_path, ...)
+    if (!adata_matches_object(object, adata)) {
+      object <- run_scvelo(object, loom_path, ...)
     }
   } else {
-    seu <- run_scvelo(seu, loom_path, ...)
+    object <- run_scvelo(object, loom_path, ...)
   }
 
   adata <- scvelo$read(fs::path_expand(h5ad_path))

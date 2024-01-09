@@ -4,53 +4,53 @@
 
 #' Convert Seurat Objects from Mouse to Human
 #'
-#' @param seu Mouse seurat object
+#' @param object Mouse object
 #'
 #' @return
 #' @export
 #'
 #' @examples
 #'
-#' convert_mouse_seu_to_human(baron2016singlecell)
-convert_mouse_seu_to_human <- function(seu) {
+#' convert_mouse_object_to_human(baron2016singlecell)
+convert_mouse_object_to_human <- function(object) {
 
   # transfer default species expression data to a species-specific assay
-  seu[["mouse"]] <- seu[["gene"]]
+  object[["mouse"]] <- object[["gene"]]
 
-  new_rownames <- convert_symbols_by_species(src_genes = rownames(seu), src_species = "mouse")
+  new_rownames <- convert_symbols_by_species(src_genes = rownames(object), src_species = "mouse")
 
-  seu_slots <- c("counts", "data", "scale.data", "meta.features")
+  object_slots <- c("counts", "data", "scale.data", "meta.features")
 
-  for (i in seu_slots) {
-    current_slot <- slot(seu@assays[["gene"]], i)
+  for (i in object_slots) {
+    current_slot <- slot(object@assays[["gene"]], i)
     if (!(dim(current_slot) == c(0, 0))) {
-      rownames(slot(seu@assays[["gene"]], i)) <- new_rownames
+      rownames(slot(object@assays[["gene"]], i)) <- new_rownames
     }
   }
 
-  return(seu)
+  return(object)
 }
 
 #' Convert Seurat Objects from Human to Mouse
-#' @param seu Human Seurat object
+#' @param object Human Seurat object
 #' @param ... to be passed to \code{convert_symbols_by_species}
 #'
 #' @return
 #' @export
 #'
 #' @examples
-convert_human_seu_to_mouse <- function(seu, ...) {
-  new_rownames <- convert_symbols_by_species(src_genes = rownames(seu), src_species = "human")
+convert_human_object_to_mouse <- function(object, ...) {
+  new_rownames <- convert_symbols_by_species(src_genes = rownames(object), src_species = "human")
 
-  seu_slots <- c("counts", "data", "scale.data", "meta.features")
+  object_slots <- c("counts", "data", "scale.data", "meta.features")
 
 
 
-  for (i in seu_slots) {
-    rownames(slot(seu@assays[["gene"]], i)) <- new_rownames
+  for (i in object_slots) {
+    rownames(slot(object@assays[["gene"]], i)) <- new_rownames
   }
 
-  return(seu)
+  return(object)
 }
 
 #' Convert gene symbols between mouse and human
@@ -103,8 +103,8 @@ convert_symbols_by_species <- function(src_genes, src_species) {
 
 #' Integrate Seurat Objects from Mouse to Human
 #'
-#' @param mouse_seu_list Mouse Seurat object
-#' @param human_seu_list Human Seurat object
+#' @param mouse_object_list Mouse Seurat object
+#' @param human_object_list Human Seurat object
 #'
 #' @return
 #' @export
@@ -113,52 +113,52 @@ convert_symbols_by_species <- function(src_genes, src_species) {
 #'
 #' cross_species_integrate(list(baron2016singlecell = baron2016singlecell), list(panc8 = panc8))
 #'
-cross_species_integrate <- function(mouse_seu_list, human_seu_list, excluded_cells = NULL, ...) {
-  mouse_seu_list <- purrr::map(mouse_seu_list, convert_mouse_seu_to_human)
+cross_species_integrate <- function(mouse_object_list, human_object_list, excluded_cells = NULL, ...) {
+  mouse_object_list <- purrr::map(mouse_object_list, convert_mouse_object_to_human)
 
-  seu_list <- c(mouse_seu_list, human_seu_list)
+  object_list <- c(mouse_object_list, human_object_list)
 
 
-  integrated_seu <- seurat_integrate(seu_list)
+  integrated_object <- object_integrate(object_list)
 
-  # cluster merged seurat objects
-  integrated_seu <- seurat_cluster(integrated_seu, resolution = seq(0.2, 2.0, by = 0.2))
+  # cluster merged objects
+  integrated_object <- object_cluster(integrated_object, resolution = seq(0.2, 2.0, by = 0.2))
 
   # add read count column
-  integrated_seu <- add_read_count_col(integrated_seu)
+  integrated_object <- add_read_count_col(integrated_object)
 
-  # annotate cell cycle scoring to seurat objects
+  # annotate cell cycle scoring to objects
 
-  integrated_seu <- annotate_cell_cycle(integrated_seu, feature = "gene")
+  integrated_object <- annotate_cell_cycle(integrated_object, feature = "gene")
 
   # annotate excluded cells
 
   if (!is.null(excluded_cells)) {
-    integrated_seu <- annotate_excluded(integrated_seu, excluded_cells)
+    integrated_object <- annotate_excluded(integrated_object, excluded_cells)
   }
 
-  # add marker genes to seurat objects
+  # add marker genes to objects
 
-  integrated_seu <- find_all_markers(integrated_seu)
+  integrated_object <- find_all_markers(integrated_object)
 
-  return(integrated_seu)
+  return(integrated_object)
 }
 
-#' Update human gene symbols in seurat object
+#' Update human gene symbols in object
 #'
-#' @param seu A Seurat object
+#' @param object A Seurat object
 #' @param assay Assay to use, Default = "gene"
 #'
 #' @return
 #' @export
 #'
 #' @examples
-update_human_gene_symbols <- function(seu, assay = "gene") {
+update_human_gene_symbols <- function(object, assay = "gene") {
   # browser()
 
   ensdb <- EnsDb.Hsapiens.v86::EnsDb.Hsapiens.v86
 
-  symbols <- rownames(seu[[assay]])
+  symbols <- rownames(object[[assay]])
 
   new_rownames <-
     AnnotationDbi::mapIds(ensdb, symbols, keytype = "SYMBOL", columns = c("SYMBOL", "GENEID")) %>%
@@ -166,7 +166,7 @@ update_human_gene_symbols <- function(seu, assay = "gene") {
 
   rownames(new_rownames) <- new_rownames$old_symbol
 
-  seu[[assay]] <- Seurat::AddMetaData(seu[[assay]], new_rownames)
+  object[[assay]] <- Seurat::AddMetaData(object[[assay]], new_rownames)
 
   new_rownames <-
     new_rownames %>%
@@ -178,23 +178,23 @@ update_human_gene_symbols <- function(seu, assay = "gene") {
     # dplyr::pull(symbol) %>%
     identity()
 
-  seu_slots <- c("counts", "data", "scale.data", "meta.features")
+  object_slots <- c("counts", "data", "scale.data", "meta.features")
 
-  for (i in seu_slots) {
-    if (length(slot(seu@assays[[assay]], i)) > 0) {
-      rownames(slot(seu@assays[[assay]], i)) <- make.unique(new_rownames$symbol)
+  for (i in object_slots) {
+    if (length(slot(object@assays[[assay]], i)) > 0) {
+      rownames(slot(object@assays[[assay]], i)) <- make.unique(new_rownames$symbol)
     }
   }
 
-  variable_features <- VariableFeatures(seu[[assay]])
+  variable_features <- VariableFeatures(object[[assay]])
   if(length(variable_features) > 1){
     new_variable_features <-
       dplyr::filter(new_rownames, old_symbol %in% variable_features) %>%
       dplyr::pull(symbol)
 
-    VariableFeatures(seu[[assay]]) <- new_variable_features
+    VariableFeatures(object[[assay]]) <- new_variable_features
 
   }
 
-  return(seu)
+  return(object)
 }
