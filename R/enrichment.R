@@ -84,13 +84,13 @@
 #' @importFrom rlang .data
 #' @author Roman Hillje, modified by Kevin Stachelek
 #' @examples
-#' pbmc <- readRDS(system.file("extdata/v1.2/seurat_pbmc.rds",
+#' pbmc <- readRDS(system.file("extdata/v1.2/object_pbmc.rds",
 #'   package = "cerebroApp"
 #' ))
 #' pbmc <- getEnrichedPathways(
 #'   object = pbmc,
 #'   column_sample = "sample",
-#'   column_cluster = "seurat_clusters",
+#'   column_cluster = "object_clusters",
 #'   databases = c("GO_Biological_Process_2018", "GO_Cellular_Component_2018"),
 #'   adj_p_cutoff = 0.01,
 #'   max_terms = 100,

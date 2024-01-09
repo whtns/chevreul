@@ -22,7 +22,7 @@ reformatMetadataDRui <- function(id) {
       ),
       actionButton(ns("updateMetadata"), "Update Metadata"),
       radioButtons(ns("updateMethod"), "Update By:", choices = c("table (below)" = "spreadsheet", "uploaded file" = "file"), inline = TRUE),
-      # rhandsontable::rHandsontableOutput(ns("seuTable")),
+      # rhandsontable::rHandsontableOutput(ns("objectTable")),
       width = 12,
       dataSelectUI(ns("select1")),
       dataFilterUI(ns("filter1")),
@@ -41,14 +41,14 @@ reformatMetadataDRui <- function(id) {
 #' @param input
 #' @param output
 #' @param sessionk
-#' @param seu
+#' @param object
 #'
 #' @return
 #' @export
 #'
 #' @examples
 #' @importFrom DataEditR dataSelectServer dataFilterServer dataOutputServer dataEditServer
-reformatMetadataDR <- function(input, output, session, seu, featureType = "gene",
+reformatMetadataDR <- function(input, output, session, object, featureType = "gene",
                                col_bind = NULL,
                                col_edit = TRUE,
                                col_options = NULL,
@@ -79,7 +79,7 @@ reformatMetadataDR <- function(input, output, session, seu, featureType = "gene"
   # meta <- reactiveValues()
   #
   # observe({
-  #   meta$old <- seu()@meta.data
+  #   meta$old <- pull_metadata(object())
   # })
   #
   # observeEvent(input$updateMetadata, {
@@ -92,16 +92,16 @@ reformatMetadataDR <- function(input, output, session, seu, featureType = "gene"
   #       return(NULL)
   #     }
   #
-  #     for (i in names(seu)){
+  #     for (i in names(object)){
   #       print(i)
-  #       seu[[i]] <- format_new_metadata(seu[[i]], inFile$datapath)
+  #       object[[i]] <- format_new_metadata(object[[i]], inFile$datapath)
   #     }
   #
   #   } else if (input$updateMethod == "spreadsheet"){
-  #     meta$new <- propagate_spreadsheet_changes(input$seuTable)
+  #     meta$new <- propagate_spreadsheet_changes(input$objectTable)
   #   }
   #
-  #   meta$new <- seu[[featureType()]]@meta.data
+  #   meta$new <- object[[featureType()]]@meta.data
   #
   # })
   #
@@ -113,9 +113,9 @@ reformatMetadataDR <- function(input, output, session, seu, featureType = "gene"
   # new section ------------------------------
 
   table_out <- reactive({
-    req(seu())
-    seu()@meta.data
-    # seu$gene@meta.data
+    req(object())
+    pull_metadata(object())
+    # object$gene@meta.data
     # mtcars
   })
 
@@ -185,11 +185,11 @@ reformatMetadataDR <- function(input, output, session, seu, featureType = "gene"
         return(NULL)
       }
 
-      reformatted_seu <- format_new_metadata(seu(), inFile$datapath)
-      seu(reformatted_seu)
+      reformatted_object <- format_new_metadata(object(), inFile$datapath)
+      object(reformatted_object)
     } else if (input$updateMethod == "spreadsheet") {
-      reformatted_seu <- propagate_spreadsheet_changes(values$data_active, seu())
-      seu(reformatted_seu)
+      reformatted_object <- propagate_spreadsheet_changes(values$data_active, object())
+      object(reformatted_object)
     }
   })
 
@@ -257,5 +257,5 @@ reformatMetadataDR <- function(input, output, session, seu, featureType = "gene"
     }
   })
 
-  return(seu)
+  return(object)
 }

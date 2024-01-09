@@ -22,31 +22,31 @@ plotClustree_UI <- function(id) {
 #' @param input
 #' @param output
 #' @param session
-#' @param seu
+#' @param object
 #'
 #' @return
 #' @export
 #'
 #' @examples
-plotClustree <- function(input, output, session, seu) {
+plotClustree <- function(input, output, session, object) {
 
 
   # set appropriate assay
   # assay = reactive({
-  #   ifelse("integrated" %in% names(seu()@assays), "integrated", "gene")
+  #   ifelse("integrated" %in% names(object()@assays), "integrated", "gene")
   # })
 
   output$checkSeu <- renderText({
-    req(seu())
+    req(object())
     "test"
   })
 
   output$clustree <- renderPlot({
-    req(seu())
+    req(object())
 
-    assay <- ifelse("integrated" %in% names(seu()@assays), "integrated", "gene")
-    # DefaultAssay(seu()) <- assay
-    clustree::clustree(seu(), assay = assay)
+    assay <- ifelse("integrated" %in% names(object()@assays), "integrated", "gene")
+    # DefaultAssay(object()) <- assay
+    clustree::clustree(object(), assay = assay)
   })
 }
 
@@ -85,7 +85,7 @@ plotViolinui <- function(id) {
 #' @param input
 #' @param output
 #' @param session
-#' @param seu Seurat object
+#' @param object Seurat object
 #' @param featureType Gene or Transcript
 #' @param organism_type Organism
 #'
@@ -93,7 +93,7 @@ plotViolinui <- function(id) {
 #' @export
 #'
 #' @examples
-plotViolin <- function(input, output, session, seu, featureType, organism_type) {
+plotViolin <- function(input, output, session, object, featureType, organism_type) {
   ns <- session$ns
   prefill_feature <- reactive({
     req(featureType())
@@ -116,17 +116,17 @@ plotViolin <- function(input, output, session, seu, featureType, organism_type) 
   })
   observe({
     req(prefill_feature())
-    req(seu())
+    req(object())
     updateSelectizeInput(session, "customFeature",
-      choices = rownames(seu()@assays[["gene"]]),
+      choices = rownames(object()@assays[["gene"]]),
       selected = prefill_feature(), server = TRUE
     )
   })
 
   output$vln_group <- renderUI({
-    req(seu())
+    req(object())
     selectizeInput(ns("vlnGroup"), "Grouping variable",
-      choices = colnames(seu()[[]]), selected = "batch"
+      choices = colnames(object()[[]]), selected = "batch"
     )
   })
 
@@ -135,7 +135,7 @@ plotViolin <- function(input, output, session, seu, featureType, organism_type) 
     req(input$vlnGroup)
 
     vln_plot <-
-      plot_violin(seu(), plot_var = input$vlnGroup, features = input$customFeature, slot = input$slot)
+      plot_violin(object(), plot_var = input$vlnGroup, features = input$customFeature, slot = input$slot)
   })
 
   output$downloadPlot <- downloadHandler(
@@ -148,9 +148,9 @@ plotViolin <- function(input, output, session, seu, featureType, organism_type) 
   )
 
   output$vplot <- plotly::renderPlotly({
-    req(seu())
+    req(object())
     req(input$vlnGroup)
-    exclude_trace_number <- length(unique(seu()[[]][[input$vlnGroup]])) * 2
+    exclude_trace_number <- length(unique(object()[[]][[input$vlnGroup]])) * 2
 
     vln_plot <- plotly::ggplotly(vln_plot(), height = 700) %>%
       plotly::style(opacity = 0.5) %>%
@@ -195,7 +195,7 @@ plotHeatmapui <- function(id) {
 #' @param input
 #' @param output
 #' @param session
-#' @param seu
+#' @param object
 #' @param featureType
 #' @param organism_type
 #'
@@ -203,7 +203,7 @@ plotHeatmapui <- function(id) {
 #' @export
 #'
 #' @examples
-plotHeatmap <- function(input, output, session, seu, featureType, organism_type) {
+plotHeatmap <- function(input, output, session, object, featureType, organism_type) {
   ns <- session$ns
 
   w <- waiter::Waiter$new(ns("heatmap"),
@@ -212,25 +212,25 @@ plotHeatmap <- function(input, output, session, seu, featureType, organism_type)
   )
 
   observe({
-    req(seu())
-    if ("integrated" %in% names(seu()@assays)) {
+    req(object())
+    if ("integrated" %in% names(object()@assays)) {
       assay <- "integrated"
     } else {
       assay <- "gene"
     }
 
-    preset_features <- VariableFeatures(seu(), assay = assay)[1:50]
+    preset_features <- VariableFeatures(object(), assay = assay)[1:50]
 
     updateSelectizeInput(session, "customFeature",
-      choices = rownames(seu()@assays[["gene"]]),
+      choices = rownames(object()@assays[["gene"]]),
       selected = preset_features, server = TRUE
     )
   })
 
   output$colAnnoVarui <- renderUI({
-    req(seu())
+    req(object())
 
-    formatted_col_names <- colnames(seu()@meta.data) %>%
+    formatted_col_names <- colnames(pull_metadata(object)) %>%
       make_chevreul_clean_names()
 
     selectizeInput(ns("colAnnoVar"), "Column Annotation(s)",
@@ -239,24 +239,24 @@ plotHeatmap <- function(input, output, session, seu, featureType, organism_type)
   })
 
   observe({
-    req(seu())
+    req(object())
 
     hclust_methods <- c("Ward" = "ward.D2", "single", "complete", "average")
 
-    updateSelectizeInput(session, "dendroSelect", choices = c(hclust_methods, colnames(seu()[[]])), selected = "ward.D2")
+    updateSelectizeInput(session, "dendroSelect", choices = c(hclust_methods, colnames(object()[[]])), selected = "ward.D2")
   })
 
   heatmap_plot <- eventReactive(input$actionHeatmap, {
     req(input$customFeature)
     req(input$colAnnoVar)
 
-    if ("integrated" %in% names(seu()@assays)) {
+    if ("integrated" %in% names(object()@assays)) {
       assay <- "integrated"
     } else {
       assay <- "gene"
     }
 
-    hm <- seu_complex_heatmap(seu(), features = input$customFeature, assay = assay, group.by = input$colAnnoVar, slot = input$slot, col_arrangement = input$dendroSelect)
+    hm <- object_complex_heatmap(object(), features = input$customFeature, assay = assay, group.by = input$colAnnoVar, slot = input$slot, col_arrangement = input$dendroSelect)
 
     hm = ComplexHeatmap::draw(hm)
     return(hm)
@@ -315,7 +315,7 @@ integrateProjui <- function(id) {
 #' @export
 #'
 #' @examples
-integrateProj <- function(input, output, session, proj_matrices, seu, proj_dir, con) {
+integrateProj <- function(input, output, session, proj_matrices, object, proj_dir, con) {
   ns <- session$ns
 
   proj_matrix <- reactive({
@@ -352,7 +352,7 @@ integrateProj <- function(input, output, session, proj_matrices, seu, proj_dir, 
         shinyjs::html("integrationMessages", "")
         message("Beginning")
         message(selectedProjects())
-        batches <- fs::path(selectedProjects(), "output", "seurat", "unfiltered_seu.rds") %>%
+        batches <- fs::path(selectedProjects(), "output", "seurat", "unfiltered_object.rds") %>%
           purrr::map(readRDS)
 
         names(batches) <- names(selectedProjects())
@@ -374,7 +374,7 @@ integrateProj <- function(input, output, session, proj_matrices, seu, proj_dir, 
     # print(names(mergedSeus()))
     #
     # for (i in names(mergedSeus())) {
-    #   seu[[i]] <- mergedSeus()[[i]]
+    #   object[[i]] <- mergedSeus()[[i]]
     # }
     #
 
@@ -427,7 +427,7 @@ integrateProj <- function(input, output, session, proj_matrices, seu, proj_dir, 
         {
           # Sys.sleep(6)
           shiny::incProgress(2 / 10)
-          save_seurat(mergedSeus(), proj_dir = integratedProjectSavePath())
+          save_object(mergedSeus(), proj_dir = integratedProjectSavePath())
           set_permissions_call <- paste0("chmod -R 775 ", integratedProjectSavePath())
           system(set_permissions_call)
           writeLines(character(), fs::path(integratedProjectSavePath(), ".here"))
@@ -481,18 +481,18 @@ changeEmbedParamsui <- function(id) {
 #' @param input
 #' @param output
 #' @param session
-#' @param seu
+#' @param object
 #'
 #' @return
 #' @export
 #'
 #' @examples
-changeEmbedParams <- function(input, output, session, seu) {
+changeEmbedParams <- function(input, output, session, object) {
   ns <- session$ns
 
-  seu <- RunUMAP(seu(), dims = as.numeric(input$dims), reduction = "pca", min.dist = input$minDist, negative.sample.rate = input$negativeSampleRate)
+  object <- RunUMAP(object(), dims = as.numeric(input$dims), reduction = "pca", min.dist = input$minDist, negative.sample.rate = input$negativeSampleRate)
 
-  return(seu)
+  return(object)
 }
 
 #' Plot Dimensional Reduduction UI
@@ -526,7 +526,7 @@ plotDimRedui <- function(id) {
 #' @param input
 #' @param output
 #' @param session
-#' @param seu
+#' @param object
 #' @param plot_types
 #' @param featureType
 #' @param organism_type
@@ -536,7 +536,7 @@ plotDimRedui <- function(id) {
 #' @export
 #'
 #' @examples
-plotDimRed <- function(input, output, session, seu, plot_types, featureType,
+plotDimRed <- function(input, output, session, object, plot_types, featureType,
                        organism_type, reductions) {
   ns <- session$ns
 
@@ -556,7 +556,7 @@ plotDimRed <- function(input, output, session, seu, plot_types, featureType,
   })
 
   observe({
-    req(seu())
+    req(object())
     updateSelectizeInput(session, "embedding",
       choices = reductions(),
       selected = rev(reductions())[1], server = TRUE
@@ -565,7 +565,7 @@ plotDimRed <- function(input, output, session, seu, plot_types, featureType,
 
   selected_plot <- reactiveVal()
   observe({
-    req(seu())
+    req(object())
     # selected_plot <- ifelse(is.null(selected_plot()), "louvain",
     #                         selected_plot())
     updateSelectizeInput(session, "plottype",
@@ -594,26 +594,26 @@ plotDimRed <- function(input, output, session, seu, plot_types, featureType,
   })
   observe({
     req(prefill_feature())
-    req(seu())
+    req(object())
     updateSelectizeInput(session, "customFeature",
-      choices = rownames(seu()@assays[["gene"]]),
+      choices = rownames(object()@assays[["gene"]]),
       selected = prefill_feature(), server = TRUE
     )
   })
 
   output$dplot <- plotly::renderPlotly({
     req(input$plottype)
-    req(seu())
+    req(object())
     req(input$embedding)
     if (length(input$plottype) > 1) {
-      cross_plot_seu <- unite_metadata(seu(), input$plottype)
+      cross_plot_object <- unite_metadata(object(), input$plottype)
 
       newcolname <- paste(input$plottype, collapse = "_")
-      cross_plot_seu[[newcolname]] <- Idents(cross_plot_seu)
+      cross_plot_object[[newcolname]] <- Idents(cross_plot_object)
 
       selected_plot(newcolname)
 
-      plot_var(cross_plot_seu,
+      plot_var(cross_plot_object,
         dims = c(input$dim1, input$dim2),
         embedding = input$embedding, group = NULL, pt.size = input$dotSize,
         return_plotly = TRUE
@@ -621,7 +621,7 @@ plotDimRed <- function(input, output, session, seu, plot_types, featureType,
     }
     else {
       if (input$plottype == "feature") {
-        plot_feature(seu(),
+        plot_feature(object(),
           dims = c(
             input$dim1,
             input$dim2
@@ -631,7 +631,7 @@ plotDimRed <- function(input, output, session, seu, plot_types, featureType,
         )
       }
       else if (input$plottype %in% plot_types()$continuous_vars) {
-        plot_feature(seu(),
+        plot_feature(object(),
           dims = c(
             input$dim1,
             input$dim2
@@ -641,7 +641,7 @@ plotDimRed <- function(input, output, session, seu, plot_types, featureType,
         )
       }
       else if (input$plottype %in% plot_types()$category_vars) {
-        plot_var(seu(),
+        plot_var(object(),
           dims = c(input$dim1, input$dim2),
           embedding = input$embedding, group = input$plottype, pt.size = input$dotSize,
           return_plotly = TRUE
@@ -670,31 +670,31 @@ tableSelectedui <- function(id) {
 #' @param input
 #' @param output
 #' @param session
-#' @param seu
+#' @param object
 #'
 #' @return
 #' @export
 #'
 #' @examples
-tableSelected <- function(input, output, session, seu) {
+tableSelected <- function(input, output, session, object) {
   ns <- session$ns
   brush <- reactive({
-    req(seu())
+    req(object())
     d <- plotly::event_data("plotly_selected")
     if (is.null(d)) {
       msg <- "Click and drag events (i.e. select/lasso) appear here (double-click to clear)"
       return(d)
     }
     else {
-      # selected_cells <- colnames(seu())[as.numeric(d$key)]
+      # selected_cells <- colnames(object())[as.numeric(d$key)]
       d$key
     }
   })
 
   output$brushtable <- DT::renderDT({
-    req(seu())
+    req(object())
     req(brush())
-    selected_meta <- data.frame(seu()[[]][brush(), ])
+    selected_meta <- data.frame(object()[[]][brush(), ])
 
     # selection = list(mode = 'multiple', selected = c(1, 3, 8), target = 'row'),
     DT::datatable(selected_meta,
@@ -706,7 +706,7 @@ tableSelected <- function(input, output, session, seu) {
 
   selected_cells <- reactive({
     selected_rows <- input$brushtable_rows_selected
-    rownames(seu()[[]][brush(), ])[selected_rows]
+    rownames(object()[[]][brush(), ])[selected_rows]
   })
 
   return(selected_cells)
@@ -735,7 +735,7 @@ diffexui <- function(id) {
       conditionalPanel(
         ns = ns,
         condition = "input.diffex_scheme == 'louvain'",
-        sliderInput(ns("seuratResolution"), "Resolution of clustering algorithm (affects number of clusters)",
+        sliderInput(ns("objectResolution"), "Resolution of clustering algorithm (affects number of clusters)",
                     min = 0.2, max = 2, step = 0.2, value = 0.6
         ),
         numericInput(ns("cluster1"),
@@ -830,7 +830,7 @@ cells_selected <- function(input) {
 #' @param input
 #' @param output
 #' @param session
-#' @param seu
+#' @param object
 #' @param featureType
 #' @param selected_cells
 #' @param tests
@@ -839,12 +839,12 @@ cells_selected <- function(input) {
 #' @export
 #'
 #' @examples
-diffex <- function(input, output, session, seu, featureType, selected_cells, tests = c("t-test" = "t", "wilcoxon rank-sum test" = "wilcox", "Likelihood-ratio test (bimodal)" = "bimod", "MAST" = "MAST")) {
+diffex <- function(input, output, session, object, featureType, selected_cells, tests = c("t-test" = "t", "wilcoxon rank-sum test" = "wilcox", "Likelihood-ratio test (bimodal)" = "bimod", "MAST" = "MAST")) {
   ns <- session$ns
 
   assay <- reactive({
-    req(seu())
-    if ("integrated" %in% names(seu()@assays)) {
+    req(object())
+    if ("integrated" %in% names(object()@assays)) {
       assay <- "integrated"
     } else {
       assay <- "gene"
@@ -860,14 +860,14 @@ diffex <- function(input, output, session, seu, featureType, selected_cells, tes
   )
 
   brush <- reactive({
-    req(seu())
+    req(object())
     d <- plotly::event_data("plotly_selected")
     if (is.null(d)) {
       msg <- "Click and drag events (i.e. select/lasso) appear here (double-click to clear)"
       return(d)
     }
     else {
-      # selected_cells <- colnames(seu())[as.numeric(d$key)]
+      # selected_cells <- colnames(object())[as.numeric(d$key)]
       d$key
     }
   })
@@ -886,7 +886,7 @@ diffex <- function(input, output, session, seu, featureType, selected_cells, tes
 
   output$cc1 <- DT::renderDT({
     req(custom_cluster1())
-    selected_meta <- data.frame(seu()[[]][custom_cluster1(), ])
+    selected_meta <- data.frame(object()[[]][custom_cluster1(), ])
     DT::datatable(selected_meta,
       extensions = "Buttons",
       options = list(dom = "Bft", buttons = c(
@@ -897,7 +897,7 @@ diffex <- function(input, output, session, seu, featureType, selected_cells, tes
   })
   output$cc2 <- DT::renderDT({
     req(custom_cluster2())
-    selected_meta <- data.frame(seu()[[]][custom_cluster2(), ])
+    selected_meta <- data.frame(object()[[]][custom_cluster2(), ])
     DT::datatable(selected_meta,
       extensions = "Buttons",
       options = list(dom = "Bft", buttons = c(
@@ -909,8 +909,8 @@ diffex <- function(input, output, session, seu, featureType, selected_cells, tes
 
   de_results <- eventReactive(input$diffex, {
     if (input$diffex_scheme == "louvain") {
-      run_seurat_de(seu(), input$cluster1, input$cluster2,
-        resolution = input$seuratResolution, diffex_scheme = "louvain", input$featureType, tests = input$diffex_method
+      run_object_de(object(), input$cluster1, input$cluster2,
+        resolution = input$objectResolution, diffex_scheme = "louvain", input$featureType, tests = input$diffex_method
       )
     }
 
@@ -925,7 +925,7 @@ diffex <- function(input, output, session, seu, featureType, selected_cells, tes
         custom_cluster2(),
         " "
       ))
-      run_seurat_de(seu(), cluster1, cluster2,
+      run_object_de(object(), cluster1, cluster2,
         input$customResolution,
         diffex_scheme = "feature", input$featureType, tests = input$diffex_method
       )
@@ -966,9 +966,9 @@ diffex <- function(input, output, session, seu, featureType, selected_cells, tes
 
   cluster_list <- reactive({
     if (input$diffex_scheme == "louvain") {
-      seu_meta <- seu()[[paste0(DefaultAssay(seu()), "_snn_res.", input$seuratResolution)]]
-      cluster1_cells <- rownames(seu_meta[seu_meta == input$cluster1, , drop = FALSE])
-      cluster2_cells <- rownames(seu_meta[seu_meta == input$cluster2, , drop = FALSE])
+      object_meta <- object()[[paste0(DefaultAssay(object()), "_snn_res.", input$objectResolution)]]
+      cluster1_cells <- rownames(object_meta[object_meta == input$cluster1, , drop = FALSE])
+      cluster2_cells <- rownames(object_meta[object_meta == input$cluster2, , drop = FALSE])
       list(cluster1 = cluster1_cells, cluster2 = cluster2_cells)
     } else if (input$diffex_scheme == "feature") {
       list(cluster1 = custom_cluster1(), cluster2 = custom_cluster2())
@@ -1002,7 +1002,7 @@ findMarkersui <- function(id) {
       actionButton(ns("plotDots"), "Plot Markers!"),
       downloadButton(ns("downloadMarkerTable"), "Download Markers!"),
       checkboxInput(ns("uniqueMarkers"), "Make Markers Unique", value = FALSE),
-      checkboxInput(ns("hidePseudo"), "Hide Pseudogenes", value = TRUE),
+      checkboxInput(ns("hidePobjectdo"), "Hide Pobjectdogenes", value = TRUE),
       plotly::plotlyOutput(ns("markerplot"), height = 800),
       width = 6
     )
@@ -1015,23 +1015,23 @@ findMarkersui <- function(id) {
 #' @param input
 #' @param output
 #' @param session
-#' @param seu
+#' @param object
 #'
 #' @return
 #' @export
 #'
 #' @examples
 #'
-findMarkers <- function(input, output, session, seu, plot_types, featureType) {
+findMarkers <- function(input, output, session, object, plot_types, featureType) {
   ns <- session$ns
 
   observe({
-    req(seu())
-    updateSelectizeInput(session, "dotFeature", choices = names(seu()@assays), selected = "gene", server = TRUE)
+    req(object())
+    updateSelectizeInput(session, "dotFeature", choices = names(object()@assays), selected = "gene", server = TRUE)
   })
 
   output$dplottype <- renderUI({
-    req(seu())
+    req(object())
     # selected_plot <- ifelse(is.null(selected_plot()), "louvain",
     #                         selected_plot())
     selectizeInput(ns("plottype"), "Variable to Plot",
@@ -1041,8 +1041,8 @@ findMarkers <- function(input, output, session, seu, plot_types, featureType) {
   })
 
   assay <- reactive({
-    req(seu())
-    if ("integrated" %in% names(seu()@assays)) {
+    req(object())
+    if ("integrated" %in% names(object()@assays)) {
       assay <- "integrated"
     } else {
       assay <- "gene"
@@ -1060,21 +1060,21 @@ findMarkers <- function(input, output, session, seu, plot_types, featureType) {
   })
 
   output$valueSelect <- renderUI({
-    req(seu())
+    req(object())
     req(metavar())
 
-    choices <- levels(seu()[[]][[metavar()]])
+    choices <- levels(object()[[]][[metavar()]])
 
     selectizeInput(ns("displayValues"), "Values to display", multiple = TRUE, choices = choices)
   })
 
   # observe({
   #   req(assay())
-  #   Seurat::DefaultAssay(seu()) <- "gene"
+  #   Seurat::DefaultAssay(object()) <- "gene"
   # })
 
   marker_plot_return <- eventReactive(input$plotDots, {
-    plot_markers(seu(), metavar = metavar(), num_markers = input$num_markers, selected_values = input$displayValues, marker_method = input$markerMethod, seurat_assay = input$dotFeature, featureType = featureType(), hide_pseudo = input$hidePseudo, unique_markers = input$uniqueMarkers, p_val_cutoff = input$pValCutoff, return_plotly = TRUE)
+    plot_markers(object(), metavar = metavar(), num_markers = input$num_markers, selected_values = input$displayValues, marker_method = input$markerMethod, object_assay = input$dotFeature, featureType = featureType(), hide_pobjectdo = input$hidePobjectdo, unique_markers = input$uniqueMarkers, p_val_cutoff = input$pValCutoff, return_plotly = TRUE)
   })
 
   output$markerplot <- plotly::renderPlotly({
@@ -1121,46 +1121,46 @@ plotReadCountui <- function(id) {
 #' @param input
 #' @param output
 #' @param session
-#' @param seu
+#' @param object
 #' @param plot_types
 #'
 #' @return
 #' @export
 #'
 #' @examples
-plotReadCount <- function(input, output, session, seu, plot_types) {
+plotReadCount <- function(input, output, session, object, plot_types) {
   ns <- session$ns
 
   output$colorbyui <- renderUI({
-    req(seu())
+    req(object())
     shiny::selectInput(ns("colorby"), "Variable to Color the Plot by",
       choices = purrr::flatten_chr(plot_types()), selected = c("louvain"), multiple = FALSE
     )
   })
 
   output$metavarui <- renderUI({
-    req(seu())
+    req(object())
     shiny::selectInput(ns("metavar"), "Variable for x-axis",
       choices = purrr::flatten_chr(plot_types()), selected = c("nCount_RNA"), multiple = FALSE
     )
   })
 
   output$rcplot <- plotly::renderPlotly({
-    req(seu())
+    req(object())
     req(input$colorby)
 
     if (input$colorby == "louvain") {
-      if ("integrated" %in% names(seu()@assays)) {
+      if ("integrated" %in% names(object()@assays)) {
         assay <- "integrated"
       } else {
         assay <- "gene"
       }
 
       louvain_resolution <- paste0(assay, "_snn_res.", input$resolution)
-      plot_readcount(seu(), metavar = input$metavar, color.by = louvain_resolution, yscale = input$yScale, return_plotly = TRUE)
+      plot_readcount(object(), metavar = input$metavar, color.by = louvain_resolution, yscale = input$yScale, return_plotly = TRUE)
     }
     else if (input$colorby %in% purrr::flatten_chr(plot_types())) {
-      plot_readcount(seu(), metavar = input$metavar, color.by = input$colorby, yscale = input$yScale, return_plotly = TRUE)
+      plot_readcount(object(), metavar = input$metavar, color.by = input$colorby, yscale = input$yScale, return_plotly = TRUE)
     }
   })
 }
@@ -1191,8 +1191,8 @@ ccScoreui <- function(id) {
 ccScore <- function(input, output, session) {
   ns <- session$ns
   output$rplot1 <- renderPlot({
-    req(seu())
-    plot_ridge(seu(), features = input$feature)
+    req(object())
+    plot_ridge(object(), features = input$feature)
   })
   plotOutput("rplot1", height = 750)
 }
@@ -1243,44 +1243,44 @@ allTranscriptsui <- function(id) {
 #' @param input
 #' @param output
 #' @param session
-#' @param seu
+#' @param object
 #' @param featureType
 #'
 #' @return
 #' @export
 #'
 #' @examples
-allTranscripts <- function(input, output, session, seu,
+allTranscripts <- function(input, output, session, object,
                            featureType, organism_type) {
   ns <- session$ns
 
   observe({
-    req(seu())
-    updateSelectizeInput(session, "compositionGene", choices = rownames(seu()[["gene"]]), selected = "RXRG", server = TRUE)
-    updateSelectizeInput(session, "embeddingGene", choices = rownames(seu()[["gene"]]), selected = "RXRG", server = TRUE)
+    req(object())
+    updateSelectizeInput(session, "compositionGene", choices = rownames(object()[["gene"]]), selected = "RXRG", server = TRUE)
+    updateSelectizeInput(session, "embeddingGene", choices = rownames(object()[["gene"]]), selected = "RXRG", server = TRUE)
 
-    formatted_col_names <- colnames(seu()@meta.data) %>%
+    formatted_col_names <- colnames(pull_metadata(object)) %>%
       make_chevreul_clean_names()
 
     updateSelectizeInput(session, "groupby", choices = formatted_col_names, selected = "batch", server = TRUE)
   })
 
   transcripts <- reactive({
-    req(seu())
-    if("transcript" %in% names(seu()@assays)){
-      get_transcripts_from_seu(seu(), input$embeddingGene, organism = organism_type())
+    req(object())
+    if("transcript" %in% names(object()@assays)){
+      get_transcripts_from_object(object(), input$embeddingGene, organism = organism_type())
     }
   })
 
   observe({
-    req(seu())
+    req(object())
     req(transcripts())
     updateSelectizeInput(session, "embedding", choices = c("pca", "tsne", "umap"), selected = "umap", server = TRUE)
     updateSelectizeInput(session, "transcriptSelect", choices = transcripts(), server = TRUE)
   })
 
   composition_plot <- eventReactive(input$plotComposition, {
-    plot_transcript_composition(seu(), gene_symbol = input$compositionGene, group.by = input$groupby, standardize = input$standardizeExpression, drop_zero = input$dropZero)
+    plot_transcript_composition(object(), gene_symbol = input$compositionGene, group.by = input$groupby, standardize = input$standardizeExpression, drop_zero = input$dropZero)
   })
 
   output$compositionPlot <- plotly::renderPlotly({
@@ -1304,7 +1304,7 @@ allTranscripts <- function(input, output, session, seu,
 
   pList <- reactive({
     req(transcripts())
-    pList <- plot_all_transcripts(seu(), transcripts(), input$embedding, from_gene = FALSE, combine = FALSE)
+    pList <- plot_all_transcripts(object(), transcripts(), input$embedding, from_gene = FALSE, combine = FALSE)
   })
 
   output$transcriptPlot <- plotly::renderPlotly({
@@ -1376,22 +1376,22 @@ plotVelocityui <- function(id) {
 #' @param input
 #' @param output
 #' @param session
-#' @param seu
+#' @param object
 #' @param loom_path
 #'
 #' @return
 #' @export
 #'
 #' @examples
-plotVelocity <- function(input, output, session, seu, loom_path) {
+plotVelocity <- function(input, output, session, object, loom_path) {
   ns <- session$ns
 
   print("running scvelo")
 
   observe({
-    req(seu())
-    updateSelectizeInput(session, "varSelect", choices = colnames(seu()[[]]), selected = "batch", server = TRUE)
-    updateSelectizeInput(session, "geneSelect", choices = rownames(seu()[["gene"]]), selected = "RXRG", server = TRUE)
+    req(object())
+    updateSelectizeInput(session, "varSelect", choices = colnames(object()[[]]), selected = "batch", server = TRUE)
+    updateSelectizeInput(session, "geneSelect", choices = rownames(object()[["gene"]]), selected = "RXRG", server = TRUE)
   })
 
   # reactive val adata ------------------------------
@@ -1399,19 +1399,19 @@ plotVelocity <- function(input, output, session, seu, loom_path) {
   adata <- reactiveVal()
 
   observeEvent(input$calc_velocity, {
-    req(seu())
+    req(object())
     withCallingHandlers(
       {
         shinyjs::html("scveloMessages", "")
         message("Beginning")
 
-        if ("integrated" %in% names(seu()@assays)) {
+        if ("integrated" %in% names(object()@assays)) {
           assay <- "integrated"
         } else {
           assay <- "gene"
         }
 
-        adata <- prep_scvelo(seu(), loom_path, velocity_mode = input$velocityMode)
+        adata <- prep_scvelo(object(), loom_path, velocity_mode = input$velocityMode)
 
         adata(adata)
         message("scvelo Complete!")
@@ -1436,7 +1436,7 @@ plotVelocity <- function(input, output, session, seu, loom_path) {
   observe({
     req(adata())
 
-    if ("integrated" %in% names(seu()@assays)) {
+    if ("integrated" %in% names(object()@assays)) {
       assay <- "integrated"
     } else {
       assay <- "gene"
@@ -1454,7 +1454,7 @@ plotVelocity <- function(input, output, session, seu, loom_path) {
     req(adata())
     req(input$geneSelect)
 
-    if ("integrated" %in% names(seu()@assays)) {
+    if ("integrated" %in% names(object()@assays)) {
       assay <- "integrated"
     } else {
       assay <- "gene"
@@ -1546,22 +1546,22 @@ monocleui <- function(id) {
     fluidRow(
       chevreulBox(
         title = "Seurat Data",
-        plotly::plotlyOutput(ns("seudimplot"), height = 500),
+        plotly::plotlyOutput(ns("objectdimplot"), height = 500),
         width = 6
         # plotDimRedui(ns("plotdimred")
       ),
       chevreulBox(
-        title = "Pseudotime Settings",
-        actionButton(ns("subsetSeurat"), "Subset Seurat before Pseudotime Calculation"),
-        actionButton(ns("calcCDS"), "Calculate Pseudotime"),
+        title = "Pobjectdotime Settings",
+        actionButton(ns("subsetSeurat"), "Subset Seurat before Pobjectdotime Calculation"),
+        actionButton(ns("calcCDS"), "Calculate Pobjectdotime"),
         sliderInput(ns("cdsResolution"), "Resolution of clustering algorithm (affects number of clusters)",
           min = 0.2, max = 2, step = 0.2, value = 0.6
         ),
-        actionButton(ns("subsetCells"), "Subset Monocle Object After Pseudotime Calculation"),
+        actionButton(ns("subsetCells"), "Subset Monocle Object After Pobjectdotime Calculation"),
         uiOutput(ns("rootCellsui")),
-        actionButton(ns("plotPseudotime"), "Calculate Pseudotime With Root Cells"),
-        downloadButton(ns("downloadPT"), "Export Pseudotime"),
-        checkboxInput(ns("flipPtime"), "Invert Pseudotime", value = TRUE),
+        actionButton(ns("plotPobjectdotime"), "Calculate Pobjectdotime With Root Cells"),
+        downloadButton(ns("downloadPT"), "Export Pobjectdotime"),
+        checkboxInput(ns("flipPtime"), "Invert Pobjectdotime", value = TRUE),
         width = 6
       )
     ),
@@ -1589,7 +1589,7 @@ monocleui <- function(id) {
       chevreulBox(
         title = "calculate pseudotime",
         radioButtons(ns("diffexFeature"), "Feature for differential expression", choices = c("gene", "transcript")),
-        actionButton(ns("calcPtimeGenes"), "Find Pseudotime Correlated Genes"),
+        actionButton(ns("calcPtimeGenes"), "Find Pobjectdotime Correlated Genes"),
         sliderInput(ns("qvalThreshold"), "Set q value threshold for module calculation", min = 0.01, 0.1, value = 0.05, step = 0.01),
         textOutput("pseudotimeMessages"),
         uiOutput(ns("partitionSelect")),
@@ -1600,7 +1600,7 @@ monocleui <- function(id) {
         width = 6
       ),
       chevreulBox(
-        title = "Plot Feature Expression over Pseudotime",
+        title = "Plot Feature Expression over Pobjectdotime",
         plotly::plotlyOutput(ns("ptimeGenesLinePlot")),
         width = 6,
         height = 650
@@ -1628,7 +1628,7 @@ monocleui <- function(id) {
 #' @param output
 #' @param session
 #' @param cds
-#' @param seu
+#' @param object
 #' @param plot_types
 #' @param resolution
 #'
@@ -1637,7 +1637,7 @@ monocleui <- function(id) {
 #'
 #' @examples
 #'
-monocle <- function(input, output, session, seu, plot_types, featureType,
+monocle <- function(input, output, session, object, plot_types, featureType,
                     organism_type, reductions) {
   ns <- session$ns
 
@@ -1648,30 +1648,30 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
   )
 
   output$colAnnoVarui <- renderUI({
-    req(seu())
+    req(object())
 
     selectizeInput(ns("colAnnoVar"), "Column Annotation(s)",
-      choices = colnames(seu()[[]]), selected = "batch", multiple = TRUE
+      choices = colnames(object()[[]]), selected = "batch", multiple = TRUE
     )
   })
 
   cds_rvs <- reactiveValues(selected = c(traj = TRUE, ptime = FALSE, diff_features = FALSE))
-  cds_plot_types <- reactiveVal(c(Pseudotime = "pseudotime", Module = "module"))
+  cds_plot_types <- reactiveVal(c(Pobjectdotime = "pseudotime", Module = "module"))
   myplot_types <- reactive({
     c(purrr::flatten_chr(plot_types()), cds_plot_types())
   })
 
-  # to be able to subset, create a new copy of the seurat object
+  # to be able to subset, create a new copy of the object
 
-  seu_monocle <- reactiveVal()
+  object_monocle <- reactiveVal()
 
   observe({
-    req(seu())
-    seu_monocle(seu())
+    req(object())
+    object_monocle(object())
   })
 
   louvain_resolution <- reactive({
-    if ("integrated" %in% names(seu()@assays)) {
+    if ("integrated" %in% names(object()@assays)) {
       assay <- "integrated"
     }
     else {
@@ -1681,22 +1681,22 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
     paste0(assay, "_snn_res.", input$cdsResolution)
   })
 
-  seudimplot <- reactive({
-    req(seu_monocle())
+  objectdimplot <- reactive({
+    req(object_monocle())
 
-    plot_var(seu_monocle(), embedding = "umap", group = louvain_resolution(), return_plotly = TRUE)
+    plot_var(object_monocle(), embedding = "umap", group = louvain_resolution(), return_plotly = TRUE)
   })
 
-  output$seudimplot <- plotly::renderPlotly({
-    seudimplot()
+  output$objectdimplot <- plotly::renderPlotly({
+    objectdimplot()
   })
 
-  # callModule(plotDimRed, "plotdimred", seu, plot_types, featureType,
+  # callModule(plotDimRed, "plotdimred", object, plot_types, featureType,
   #            organism_type, reductions)
 
 
   observeEvent(input$subsetSeurat, {
-    req(seu_monocle())
+    req(object_monocle())
 
     d <- plotly::event_data("plotly_selected", priority = "event")
     if (is.null(d)) {
@@ -1706,21 +1706,21 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
     else {
       print(d$key)
       print(d)
-      subset_monocle <- seu_monocle()[, d$key]
-      seu_monocle(subset_monocle)
+      subset_monocle <- object_monocle()[, d$key]
+      object_monocle(subset_monocle)
     }
   })
 
   observeEvent(input$calcCDS, {
-    req(seu_monocle())
+    req(object_monocle())
     cds_rvs$selected <- c(traj = TRUE, ptime = FALSE, diff_features = FALSE)
-    cds <- convert_seu_to_cds(seu(), resolution = input$cdsResolution)
-    # cds <- convert_seu_to_cds(seu_monocle(), resolution = input$cdsResolution)
-    cds <- cds[, colnames(cds) %in% colnames(seu_monocle())]
+    cds <- convert_object_to_cds(object(), resolution = input$cdsResolution)
+    # cds <- convert_object_to_cds(object_monocle(), resolution = input$cdsResolution)
+    cds <- cds[, colnames(cds) %in% colnames(object_monocle())]
 
-    cds <- threshold_monocle_genes(seu_monocle(), cds)
+    cds <- threshold_monocle_genes(object_monocle(), cds)
 
-    cds <- learn_graph_by_resolution(cds, seu_monocle(),
+    cds <- learn_graph_by_resolution(cds, object_monocle(),
       resolution = input$cdsResolution
     )
     updateSelectizeInput(session, "plottype1", selected = "louvain", choices = myplot_types())
@@ -1818,7 +1818,7 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
 
   exported_pseudotime <- reactiveVal()
 
-  observeEvent(input$plotPseudotime, {
+  observeEvent(input$plotPobjectdotime, {
     req(cds_rvs$traj)
     req(input$rootCells)
     cds_rvs$traj <- monocle3::order_cells(cds_rvs$traj, root_cells = input$rootCells)
@@ -1857,7 +1857,7 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
       # cds_rvs$traj  <- swap_counts_from_feature(cds_rvs$traj, input$diffexFeature)
 
       showModal(modalDialog(
-        title = "Calculating Pseudotime Correlated Features",
+        title = "Calculating Pobjectdotime Correlated Features",
         "This may take a few minutes!"
       ))
       cds_rvs$traj@metadata[["diff_features"]] <- monocle3::graph_test(cds_rvs$traj, neighbor_graph = "principal_graph", cores = 4, expression_family = "negbinom")
@@ -1883,7 +1883,7 @@ monocle <- function(input, output, session, seu, plot_types, featureType,
     req(cds_pr_test_res())
     if (req(cds_rvs$selected["diff_features"])) {
       output$genePlotQuery2 <- renderUI({
-        selectizeInput(ns("genePlotQuery1"), "Pick Gene to Plot on Pseudotime", choices = rownames(cds_pr_test_res()), multiple = TRUE, selected = rownames(cds_pr_test_res())[1])
+        selectizeInput(ns("genePlotQuery1"), "Pick Gene to Plot on Pobjectdotime", choices = rownames(cds_pr_test_res()), multiple = TRUE, selected = rownames(cds_pr_test_res())[1])
       })
 
       output$partitionSelect <- renderUI({
@@ -2023,7 +2023,7 @@ pathwayEnrichmentui <- function(id) {
 #' @export
 #'
 #' @examples
-pathwayEnrichment <- function(input, output, session, seu, featureType) {
+pathwayEnrichment <- function(input, output, session, object, featureType) {
   ns <- session$ns
 
   ## ----------------------------------------------------------------------------##
@@ -2035,21 +2035,21 @@ pathwayEnrichment <- function(input, output, session, seu, featureType) {
   ## ----------------------------------------------------------------------------##
 
   enriched_pathways <- eventReactive(input$calcPathwayEnrichment, {
-    req(seu())
+    req(object())
     if (featureType() == "gene") {
-      enriched_seu <- tryCatch(getEnrichedPathways(seu()), error = function(e) e)
-      enrichr_available <- !any(class(enriched_seu) == "error")
+      enriched_object <- tryCatch(getEnrichedPathways(object()), error = function(e) e)
+      enrichr_available <- !any(class(enriched_object) == "error")
       if (enrichr_available) {
-        seu <- enriched_seu
+        object <- enriched_object
       }
     }
 
-    seu()@misc$enriched_pathways
+    object()@misc$enriched_pathways
   })
 
   # UI element: choose source for pathway enrichement results (currently Enrichr or GSVA)
   output$enriched_pathways_by_cluster_select_source_UI <- renderUI({
-    req(seu())
+    req(object())
     if (is.null(enriched_pathways())) {
       textOutput(ns("enriched_pathways_by_cluster_table_missing"))
     } else {
@@ -2063,7 +2063,7 @@ pathwayEnrichment <- function(input, output, session, seu, featureType) {
 
   # UI element: display results or alternative text
   output$enriched_pathways_by_cluster_UI <- renderUI({
-    req(seu())
+    req(object())
     req(input$enriched_pathways_by_cluster_select_source)
     if (input$enriched_pathways_by_cluster_select_source == "enrichr") {
       if (!is.null(enriched_pathways()$enrichr$by_cluster)) {
@@ -2093,7 +2093,7 @@ pathwayEnrichment <- function(input, output, session, seu, featureType) {
 
   # UI element: choose cluster
   output$enriched_pathways_by_cluster_select_cluster_UI <- renderUI({
-    req(seu())
+    req(object())
     req(input$enriched_pathways_by_cluster_select_source)
     if (input$enriched_pathways_by_cluster_select_source == "enrichr") {
       choices <- levels(enriched_pathways()$enrichr$by_cluster$cluster) %>%
@@ -2200,21 +2200,21 @@ techInfoui <- function(id) {
 #' @param input
 #' @param output
 #' @param session
-#' @param seu
+#' @param object
 #'
 #' @return
 #' @export
 #'
 #' @examples
-techInfo <- function(input, output, session, seu) {
+techInfo <- function(input, output, session, object) {
   ns <- session$ns
   ## ----------------------------------------------------------------------------##
   ## Tab: Analysis info.
   ## ----------------------------------------------------------------------------##
 
   misc <- reactive({
-    req(seu())
-    Seurat::Misc(seu())
+    req(object())
+    Seurat::Misc(object())
   })
 
   observe({
@@ -2305,7 +2305,7 @@ techInfo <- function(input, output, session, seu) {
         "<li><strong>chevreul version:</strong> ",
         misc()$experiment$technical_info$chevreul_version,
         "<li><strong>Seurat version:</strong> ",
-        misc()$technical_info$seurat_version,
+        misc()$technical_info$object_version,
         "<li><strong>Session info:</strong> ",
         "</ul>",
         "<pre>",
@@ -2366,7 +2366,7 @@ plotCoverage_UI <- function(id) {
 #' @param input
 #' @param output
 #' @param session
-#' @param seu
+#' @param object
 #' @param plot_types
 #' @param bigwig_dir
 #' @param organism_type
@@ -2376,7 +2376,7 @@ plotCoverage_UI <- function(id) {
 #'
 #' @examples
 #'
-plotCoverage <- function(input, output, session, seu, plot_types, proj_dir, organism_type = "human", bigwig_db = "~/.cache/chevreul/bw-files.db") {
+plotCoverage <- function(input, output, session, object, plot_types, proj_dir, organism_type = "human", bigwig_db = "~/.cache/chevreul/bw-files.db") {
   ns <- session$ns
 
   w <- waiter::Waiter$new(ns("coveragePlot"),
@@ -2385,10 +2385,10 @@ plotCoverage <- function(input, output, session, seu, plot_types, proj_dir, orga
   )
 
   observe({
-    req(seu())
-    updateSelectizeInput(session, "geneSelect", choices = rownames(seu()[["gene"]]), server = TRUE)
+    req(object())
+    updateSelectizeInput(session, "geneSelect", choices = rownames(object()[["gene"]]), server = TRUE)
 
-    formatted_col_names <- colnames(seu()@meta.data) %>%
+    formatted_col_names <- colnames(pull_metadata(object)) %>%
       make_chevreul_clean_names()
 
     updateSelectizeInput(session, "varSelect", choices = formatted_col_names, selected = "batch")
@@ -2396,8 +2396,8 @@ plotCoverage <- function(input, output, session, seu, plot_types, proj_dir, orga
 
   displayvalues <- reactive({
     req(input$varSelect)
-    req(seu())
-    unique(seu()[][[input$varSelect]])
+    req(object())
+    unique(object()[][[input$varSelect]])
   })
 
   output$displayvaluesui <- renderUI({
@@ -2406,21 +2406,21 @@ plotCoverage <- function(input, output, session, seu, plot_types, proj_dir, orga
   })
 
   bigwig_tbl <- reactive({
-    load_bigwigs(seu(), bigwig_db)
+    load_bigwigs(object(), bigwig_db)
   })
 
   coverage_return <- eventReactive(input$plotCoverage, {
-    req(seu())
+    req(object())
     req(bigwig_tbl())
 
     plot_gene_coverage_by_var(
       genes_of_interest = input$geneSelect,
-      cell_metadata = seu()@meta.data,
+      cell_metadata = pull_metadata(object),
       bigwig_tbl = bigwig_tbl(),
       var_of_interest = input$varSelect,
       values_of_interest = input$displayvalues,
 
-      organism = seu()@misc$experiment$organism,
+      organism = object()@misc$experiment$organism,
       mean_only = input$meanCoverage,
       rescale_introns = input$collapseIntrons,
       scale_y = input$yScale,

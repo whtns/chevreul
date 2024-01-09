@@ -1,21 +1,21 @@
 #' Convert a Seurat Object to a Monocle Cell Data Set
 #'
-#' @param seu
+#' @param object
 #'
 #' @return
 #' @export
 #'
 #' @examples
-#' processed_seu <- clustering_workflow(human_gene_transcript_seu)
-#' cds <- convert_seu_to_cds(processed_seu)
-convert_seu_to_cds <- function(seu, resolution = 1, min_expression = 0.05){
+#' processed_object <- clustering_workflow(human_gene_transcript_object)
+#' cds <- convert_object_to_cds(processed_object)
+convert_object_to_cds <- function(object, resolution = 1, min_expression = 0.05){
 
   print(resolution)
 
   # # drop sample_name metadata column as that is reserved by monocle3
-  # seu$sample_name <- NULL
+  # object$sample_name <- NULL
   #
-  # cds <- SeuratWrappers::as.cell_data_set(seu) %>%
+  # cds <- SeuratWrappers::as.cell_data_set(object) %>%
   #   monocle3::estimate_size_factors()
   #
   # rowData(cds)$gene_short_name <- rownames(cds)
@@ -26,17 +26,17 @@ convert_seu_to_cds <- function(seu, resolution = 1, min_expression = 0.05){
 
   # part two, counts sparse matrix
 
-  if ("integrated" %in% names(seu@assays)) {
+  if ("integrated" %in% names(object@assays)) {
     default_assay <- "integrated"
   } else {
     default_assay <- "gene"
   }
 
-  DefaultAssay(seu) <- default_assay
+  DefaultAssay(object) <- default_assay
 
-  expression_matrix <- Seurat::GetAssayData(seu, slot = "data", assay = "gene")
+  expression_matrix <- Seurat::GetAssayData(object, slot = "data", assay = "gene")
 
-  count_matrix <- Seurat::GetAssayData(seu, slot = "counts", assay = "gene")
+  count_matrix <- Seurat::GetAssayData(object, slot = "counts", assay = "gene")
 
   count_matrix <- count_matrix[row.names(expression_matrix), ]
   count_matrix <- count_matrix[, Matrix::colSums(count_matrix) != 0]
@@ -49,53 +49,53 @@ convert_seu_to_cds <- function(seu, resolution = 1, min_expression = 0.05){
   )
 
   # part one, cell information
-  cell_metadata <- seu[[]][colnames(count_matrix), ]
+  cell_metadata <- pull_metadata(object)[colnames(count_matrix), ]
 
   # drop metadata column 'sample_name' for monocle plotting functions if present
   if (any(stringr::str_detect(colnames(cell_metadata), "sample_name"))) {
     cell_metadata <- subset(cell_metadata, select = -sample_name)
   }
 
-  seu <- seu[, colnames(count_matrix)]
+  object <- object[, colnames(count_matrix)]
 
   ### Construct the basic cds object
-  cds_from_seurat <- monocle3::new_cell_data_set(
+  cds_from_object <- monocle3::new_cell_data_set(
     expression_data = count_matrix,
     cell_metadata = cell_metadata,
     gene_metadata = gene_annotation
   )
 
-  cds_from_seurat <- cds_from_seurat[, colnames(seu)]
+  cds_from_object <- cds_from_object[, colnames(object)]
 
   # estimate size factors
-  cds_from_seurat <- cds_from_seurat[, colSums(as.matrix(monocle3::exprs(cds_from_seurat))) != 0]
-  cds_from_seurat <- monocle3::estimate_size_factors(cds_from_seurat)
+  cds_from_object <- cds_from_object[, colSums(as.matrix(monocle3::exprs(cds_from_object))) != 0]
+  cds_from_object <- monocle3::estimate_size_factors(cds_from_object)
 
 
   ### Construct and assign the made up partition
 
-  recreate.partition <- c(rep(1, length(cds_from_seurat@colData@rownames)))
-  names(recreate.partition) <- cds_from_seurat@colData@rownames
+  recreate.partition <- c(rep(1, length(cds_from_object@colData@rownames)))
+  names(recreate.partition) <- cds_from_object@colData@rownames
   recreate.partition <- as.factor(recreate.partition)
 
-  cds_from_seurat@clusters@listData[["UMAP"]][["partitions"]] <- recreate.partition
+  cds_from_object@clusters@listData[["UMAP"]][["partitions"]] <- recreate.partition
 
   ### Could be a space-holder, but essentially fills out louvain parameters
-  cds_from_seurat@clusters@listData[["UMAP"]][["louvain_res"]] <- "NA"
+  cds_from_object@clusters@listData[["UMAP"]][["louvain_res"]] <- "NA"
 
 
-  cds_from_seurat <- monocle3::preprocess_cds(cds_from_seurat, method = "PCA", norm_method = "none")
-  cds_from_seurat <- monocle3::reduce_dimension(cds_from_seurat, reduction_method = "UMAP")
+  cds_from_object <- monocle3::preprocess_cds(cds_from_object, method = "PCA", norm_method = "none")
+  cds_from_object <- monocle3::reduce_dimension(cds_from_object, reduction_method = "UMAP")
 
-  # # reducedDim(cds_from_seurat, "PCA") <- Embeddings(seu, "pca")
-  reducedDim(cds_from_seurat, "UMAP") <- Embeddings(seu, "umap")
-  # # cds_from_seurat@reducedDims@listData[["UMAP"]] <- Embeddings(seu, "umap")
-  # # cds_from_seurat@reducedDims@listData[["PCA"]] <- Embeddings(seu, "pca")
-  cds_from_seurat@preprocess_aux$gene_loadings <- Loadings(seu, "pca")
+  # # reducedDim(cds_from_object, "PCA") <- Embeddings(object, "pca")
+  reducedDim(cds_from_object, "UMAP") <- Embeddings(object, "umap")
+  # # cds_from_object@reducedDims@listData[["UMAP"]] <- Embeddings(object, "umap")
+  # # cds_from_object@reducedDims@listData[["PCA"]] <- Embeddings(object, "pca")
+  cds_from_object@preprocess_aux$gene_loadings <- Loadings(object, "pca")
 
-  # cds_from_seurat <- learn_graph_by_resolution(cds_from_seurat, seu, resolution = resolution)
+  # cds_from_object <- learn_graph_by_resolution(cds_from_object, object, resolution = resolution)
 
-  return(cds_from_seurat)
+  return(cds_from_object)
 }
 
 #' Assign Clusters to CDS
@@ -125,7 +125,7 @@ assign_clusters_to_cds <- function(cds, clusters) {
 #' @export
 #'
 #' @examples
-learn_graph_by_resolution <- function(cds, seu, resolution = 1) {
+learn_graph_by_resolution <- function(cds, object, resolution = 1) {
 
   ### Assign the cluster info
   if (any(grepl("integrated", names(cds@colData)))) {
@@ -136,7 +136,7 @@ learn_graph_by_resolution <- function(cds, seu, resolution = 1) {
 
   cds <- monocle3::cluster_cells(cds)
 
-  clusters <- seu[[paste0(default_assay, "_snn_res.", resolution)]]
+  clusters <- object[[paste0(default_assay, "_snn_res.", resolution)]]
 
   clusters <- purrr::set_names(clusters[[1]], rownames(clusters))
 
@@ -865,7 +865,7 @@ plot_cells <- function(cds, x = 1, y = 2, reduction_method = c(
 
 #' Threshold monocle genes
 #'
-#' @param seu
+#' @param object
 #' @param cds
 #' @param min_expression
 #'
@@ -873,10 +873,10 @@ plot_cells <- function(cds, x = 1, y = 2, reduction_method = c(
 #' @export
 #'
 #' @examples
-threshold_monocle_genes <- function(seu, cds, min_expression = 0.05){
+threshold_monocle_genes <- function(object, cds, min_expression = 0.05){
 
   # browser()
-  agg_mat <- Seurat::GetAssayData(seu, assay = "gene") %>%
+  agg_mat <- Seurat::GetAssayData(object, assay = "gene") %>%
     as.matrix()
 
   lgl_agg_mat <- agg_mat > min_expression
@@ -894,7 +894,7 @@ threshold_monocle_genes <- function(seu, cds, min_expression = 0.05){
 #' @param cds
 #' @param cells
 #' @param pr_deg_ids
-#' @param seu_resolution
+#' @param object_resolution
 #' @param collapse_rows
 #' @param collapse_cols
 #' @param resolution
@@ -910,7 +910,7 @@ threshold_monocle_genes <- function(seu, cds, min_expression = 0.05){
 #' @export
 #'
 #' @examples
-monocle_module_heatmap <- function(cds, pr_deg_ids, seu_resolution, cells = NULL, collapse_rows = TRUE,
+monocle_module_heatmap <- function(cds, pr_deg_ids, object_resolution, cells = NULL, collapse_rows = TRUE,
                                    resolution = 10^seq(-6, -1), group.by = "batch", group.bar.height = 0.01,
                                    cluster_columns = FALSE, cluster_rows = TRUE,
                                    column_split = NULL, col_dendrogram = "ward.D2", mm_col_dend = 30, min_percent = 0.05, ...) {
@@ -925,7 +925,7 @@ monocle_module_heatmap <- function(cds, pr_deg_ids, seu_resolution, cells = NULL
     default_assay <- "gene"
   }
 
-  seu_resolution <- paste0(default_assay, "_snn_res.", seu_resolution)
+  object_resolution <- paste0(default_assay, "_snn_res.", object_resolution)
 
   cds <- cds[pr_deg_ids,]
 
@@ -949,7 +949,7 @@ monocle_module_heatmap <- function(cds, pr_deg_ids, seu_resolution, cells = NULL
 
   cell_group_df <- tibble::tibble(
     cell = row.names(colData(cds)),
-    cell_group = colData(cds)[[seu_resolution]]
+    cell_group = colData(cds)[[object_resolution]]
   ) %>%
     dplyr::mutate(cell_group = cell)
 
@@ -1046,7 +1046,7 @@ monocle_module_heatmap <- function(cds, pr_deg_ids, seu_resolution, cells = NULL
   return(list(module_table = gene_module_df, module_heatmap = module_heatmap, agg_mat = agg_mat))
 }
 
-#' Flip Pseudotime
+#' Flip Pobjectdotime
 #'
 #' @param cds
 #'

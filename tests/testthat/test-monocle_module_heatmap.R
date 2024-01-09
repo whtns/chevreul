@@ -11,20 +11,21 @@ test_that("heatmap is ordered by pseudotime", {
   devtools::load_all()
   library(Seurat)
 
-  seu <- readRDS("~/single_cell_projects/integrated_projects/7_seq_04142020/output/seurat/unfiltered_seu.rds")
 
-  # debug(convert_seu_to_cds)
+  object <- readRDS("~/single_cell_projects/integrated_projects/7_seq_04142020/output/seurat/unfiltered_object.rds")
+
+  # debug(convert_object_to_cds)
   # debug(monocle3::preprocess_cds)
   # debug(monocle_module_heatmap)
 
   resolution <- 1.6
 
-  cds <- convert_seu_to_cds(seu$gene, resolution = resolution)
+  cds <- convert_object_to_cds(object$gene, resolution = resolution)
 
-  # cds <- convert_seu_to_cds(seu$transcript, resolution = resolution)
+  # cds <- convert_object_to_cds(object$transcript, resolution = resolution)
 
   cds <- learn_graph_by_resolution(cds,
-    seu$gene,
+    object$gene,
     resolution = resolution
   )
 

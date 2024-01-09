@@ -2,7 +2,7 @@
 #'
 #'
 #'
-#' @param seu
+#' @param object
 #' @param cluster1
 #' @param cluster2
 #' @param resolution
@@ -12,30 +12,30 @@
 #' @export
 #'
 #' @examples
-run_seurat_de <- function(seu, cluster1, cluster2, resolution, diffex_scheme = "louvain", featureType, tests = c("t", "wilcox", "bimod")) {
+run_object_de <- function(object, cluster1, cluster2, resolution, diffex_scheme = "louvain", featureType, tests = c("t", "wilcox", "bimod")) {
 
   match.arg(tests)
 
   if (diffex_scheme == "louvain") {
-    if ("integrated" %in% names(seu@assays)) {
+    if ("integrated" %in% names(object@assays)) {
       active_assay <- "integrated"
     } else {
       active_assay <- "gene"
     }
 
 
-    Idents(seu) <- paste0(active_assay, "_snn_res.", resolution)
-    seu <- subset(seu, idents = c(cluster1, cluster2))
+    Idents(object) <- paste0(active_assay, "_snn_res.", resolution)
+    object <- subset(object, idents = c(cluster1, cluster2))
   } else if (diffex_scheme == "feature") {
     # subset by supplied cell ids
     #
-    seu <- seu[, c(cluster1, cluster2)]
+    object <- object[, c(cluster1, cluster2)]
 
     keep_cells <- c(cluster1, cluster2)
     new_idents <- c(rep(1, length(cluster1)), rep(2, length(cluster2)))
     names(new_idents) <- keep_cells
-    new_idents <- new_idents[colnames(seu)]
-    Idents(seu) <- new_idents
+    new_idents <- new_idents[colnames(object)]
+    Idents(object) <- new_idents
     cluster1 <- 1
     cluster2 <- 2
   }
@@ -44,7 +44,7 @@ run_seurat_de <- function(seu, cluster1, cluster2, resolution, diffex_scheme = "
 
   for (test in tests) {
     print(test)
-    de <- FindMarkers(seu,
+    de <- FindMarkers(object,
                       assay = featureType,
                       ident.1 = cluster1,
                       ident.2 = cluster2,
@@ -91,7 +91,7 @@ run_seurat_de <- function(seu, cluster1, cluster2, resolution, diffex_scheme = "
 
 #' Run Enrichment Browser on Differentially Expressed Genes
 #'
-#' @param seu
+#' @param object
 #' @param enrichment_method
 #' @param ...
 #' @param cluster_list
@@ -101,7 +101,7 @@ run_seurat_de <- function(seu, cluster1, cluster2, resolution, diffex_scheme = "
 #' @export
 #'
 #' @examples
-run_enrichmentbrowser <- function(seu, cluster_list, de_results, enrichment_method = c("ora"), ...) {
+run_enrichmentbrowser <- function(object, cluster_list, de_results, enrichment_method = c("ora"), ...) {
   cluster1_cells <- cluster_list$cluster1
   cluster2_cells <- cluster_list$cluster2
 
@@ -114,35 +114,35 @@ run_enrichmentbrowser <- function(seu, cluster_list, de_results, enrichment_meth
 
   # subset by supplied cell ids
   #
-  seu <- seu[, c(cluster1_cells, cluster2_cells)]
-  seu <- seu[rownames(seu) %in% de_results$t$symbol, ]
+  object <- object[, c(cluster1_cells, cluster2_cells)]
+  object <- object[rownames(object) %in% de_results$t$symbol, ]
 
-  seu[["gene"]]@meta.features <- test_diffex_results
+  object[["gene"]]@meta.features <- test_diffex_results
 
   keep_cells <- c(cluster1_cells, cluster2_cells)
   new_idents <- c(rep(0, length(cluster1_cells)), rep(1, length(cluster2_cells)))
   names(new_idents) <- keep_cells
-  new_idents <- new_idents[colnames(seu)]
-  Idents(seu) <- new_idents
+  new_idents <- new_idents[colnames(object)]
+  Idents(object) <- new_idents
 
-  counts <- GetAssayData(seu, assay = "gene", slot = "counts")
+  counts <- GetAssayData(object, assay = "gene", slot = "counts")
   counts <- as.matrix(counts)
   mode(counts) <- "integer"
 
   rowData <- data.frame(
-    FC = seu[["gene"]][[]]$FC,
-    ADJ.PVAL = seu[["gene"]][[]]$ADJ.PVAL,
-    row.names = rownames(seu@assays[["gene"]])
+    FC = object[["gene"]][[]]$FC,
+    ADJ.PVAL = object[["gene"]][[]]$ADJ.PVAL,
+    row.names = rownames(object@assays[["gene"]])
   )
 
-  colData <- as.data.frame(seu[[]])
+  colData <- as.data.frame(pull_metadata(object))
 
   se <- SummarizedExperiment::SummarizedExperiment(
     assays = list(counts = counts),
     rowData = rowData, colData = colData
   )
 
-  se$GROUP <- forcats::fct_inseq(Idents(seu))
+  se$GROUP <- forcats::fct_inseq(Idents(object))
 
   # se <- EnrichmentBrowser::deAna(se, grp = se$GROUP, de.method = "edgeR")
   se <- EnrichmentBrowser::idMap(se, org = "hsa", from = "SYMBOL", to = "ENTREZID")
@@ -227,7 +227,7 @@ prep_slider_values <- function(default_val) {
 #' @export
 #'
 #' @examples
-seuratApp <- function(preset_project, appTitle = "chevreul", organism_type = "human", db_path = "~/.cache/chevreul/single-cell-projects.db", futureMb = 13000) {
+objectApp <- function(preset_project, appTitle = "chevreul", organism_type = "human", db_path = "~/.cache/chevreul/single-cell-projects.db", futureMb = 13000) {
 
   print(packageVersion("chevreul"))
   future::plan(strategy = "multicore", workers = 6)
@@ -250,7 +250,7 @@ seuratApp <- function(preset_project, appTitle = "chevreul", organism_type = "hu
       inline = TRUE,
       "Organism", choices = c("human", "mouse"), selected = organism_type
     ),
-    shinyFiles::shinyFilesButton("seuratUpload", "Load a Seurat Dataset",
+    shinyFiles::shinyFilesButton("objectUpload", "Load a Seurat Dataset",
       "Please select a .rds file",
       multiple = FALSE
     ),
@@ -350,8 +350,8 @@ seuratApp <- function(preset_project, appTitle = "chevreul", organism_type = "hu
         chevreulBox(
           title = "Subset Settings",
           checkboxInput("legacySettingsSubset", "Use Legacy Settings", value = FALSE),
-          actionButton("subsetAction", "subset seurat by selected cells"),
-          actionButton("subsetCsv", "subset seurat by uploaded csv"),
+          actionButton("subsetAction", "subset object by selected cells"),
+          actionButton("subsetCsv", "subset object by uploaded csv"),
           fileInput("uploadCsv",
             "Upload .csv file with cells to include",
             accept = c(".csv")
@@ -505,7 +505,7 @@ seuratApp <- function(preset_project, appTitle = "chevreul", organism_type = "hu
       create_proj_matrix(projList())
     })
 
-    seu <- reactiveVal()
+    object <- reactiveVal()
     proj_dir <- reactiveVal()
     uploadSeuratPath <- reactiveVal()
 
@@ -516,7 +516,7 @@ seuratApp <- function(preset_project, appTitle = "chevreul", organism_type = "hu
       input$organism_type
     })
     plot_types <- reactive({
-      list_plot_types(seu())
+      list_plot_types(object())
     })
     observeEvent(input$loadProject, {
       proj_dir(input$setProject)
@@ -537,16 +537,16 @@ seuratApp <- function(preset_project, appTitle = "chevreul", organism_type = "hu
     })
     observe({
       req(dataset_volumes())
-      shinyFiles::shinyFileChoose(input, "seuratUpload",
+      shinyFiles::shinyFileChoose(input, "objectUpload",
         roots = dataset_volumes(), session = session
       )
     })
-    observeEvent(input$seuratUpload, {
+    observeEvent(input$objectUpload, {
       req(dataset_volumes())
 
       file <- shinyFiles::parseFilePaths(
         dataset_volumes(),
-        input$seuratUpload
+        input$objectUpload
       )
       print(file)
       uploadSeuratPath(file$datapath)
@@ -561,8 +561,8 @@ seuratApp <- function(preset_project, appTitle = "chevreul", organism_type = "hu
         {
           shiny::incProgress(2 / 10)
           print(uploadSeuratPath())
-          updated_seu <- update_chevreul_object(seu_path = uploadSeuratPath(), organism = organism)
-          seu(updated_seu)
+          updated_object <- update_chevreul_object(object_path = uploadSeuratPath(), organism = organism)
+          object(updated_object)
           shiny::incProgress(6 / 10)
 
           organism <- case_when(
@@ -571,7 +571,7 @@ seuratApp <- function(preset_project, appTitle = "chevreul", organism_type = "hu
           )
 
           print(uploadSeuratPath())
-          print(names(seu))
+          print(names(object))
           shiny::incProgress(8 / 10)
         }
       )
@@ -594,7 +594,7 @@ seuratApp <- function(preset_project, appTitle = "chevreul", organism_type = "hu
       )
     })
     subSeuratPath <- eventReactive(input$saveSeurat, {
-      req(seu())
+      req(object())
       savefile <- shinyFiles::parseSavePath(
         dataset_volumes(),
         input$saveSeurat
@@ -602,7 +602,7 @@ seuratApp <- function(preset_project, appTitle = "chevreul", organism_type = "hu
       return(savefile$datapath)
     })
     observeEvent(input$saveSeurat, {
-      req(seu())
+      req(object())
       req(subSeuratPath())
 
       shiny::withProgress(
@@ -612,7 +612,7 @@ seuratApp <- function(preset_project, appTitle = "chevreul", organism_type = "hu
           Sys.sleep(6)
           shiny::incProgress(2 / 10)
           saveRDS(
-            seu(),
+            object(),
             subSeuratPath()
           )
           shiny::incProgress(10 / 10)
@@ -621,7 +621,7 @@ seuratApp <- function(preset_project, appTitle = "chevreul", organism_type = "hu
     })
     integrationResults <- callModule(
       integrateProj, "integrateproj",
-      proj_matrices, seu, proj_dir, con()
+      proj_matrices, object, proj_dir, con()
     )
     newprojList <- reactive({
       req(integrationResults())
@@ -643,62 +643,62 @@ seuratApp <- function(preset_project, appTitle = "chevreul", organism_type = "hu
     })
 
     observe({
-      reformatted_seu <- callModule(reformatMetadataDR, "reformatMetadataDR", seu, featureType)
-      seu(reformatted_seu())
+      reformatted_object <- callModule(reformatMetadataDR, "reformatMetadataDR", object, featureType)
+      object(reformatted_object())
     })
 
     reductions <- reactive({
-      req(seu())
-      names(seu()@reductions)
+      req(object())
+      names(object()@reductions)
       # c("pca", "tsne", "umap")
     })
 
     observe({
-      req(seu())
+      req(object())
 
-      callModule(plotDimRed, "plotdimred1", seu, plot_types, featureType,
+      callModule(plotDimRed, "plotdimred1", object, plot_types, featureType,
         organism_type = organism_type, reductions
       )
-      callModule(plotDimRed, "plotdimred2", seu, plot_types, featureType,
+      callModule(plotDimRed, "plotdimred2", object, plot_types, featureType,
         organism_type = organism_type, reductions
       )
-      callModule(plotDimRed, "diffex", seu, plot_types, featureType,
+      callModule(plotDimRed, "diffex", object, plot_types, featureType,
         organism_type = organism_type, reductions
       )
-      callModule(plotDimRed, "subset", seu, plot_types, featureType,
+      callModule(plotDimRed, "subset", object, plot_types, featureType,
         organism_type = organism_type, reductions
       )
-      callModule(plotDimRed, "markerScatter", seu, plot_types, featureType,
+      callModule(plotDimRed, "markerScatter", object, plot_types, featureType,
         organism_type = organism_type, reductions
       )
     })
 
-    callModule(plotReadCount, "plotreadcount1", seu, plot_types)
-    callModule(plotReadCount, "plotreadcount2", seu, plot_types)
+    callModule(plotReadCount, "plotreadcount1", object, plot_types)
+    callModule(plotReadCount, "plotreadcount2", object, plot_types)
     callModule(
-      plotViolin, "violinPlot", seu, featureType,
+      plotViolin, "violinPlot", object, featureType,
       organism_type
     )
     callModule(
-      plotHeatmap, "heatMap", seu, featureType,
+      plotHeatmap, "heatMap", object, featureType,
       organism_type
     )
 
     callModule(
-      plotCoverage, "coverageplots", seu, plot_types, proj_dir, organism_type
+      plotCoverage, "coverageplots", object, plot_types, proj_dir, organism_type
     )
-    callModule(plotClustree, "clustreePlot", seu)
-    callModule(tableSelected, "tableselected", seu)
+    callModule(plotClustree, "clustreePlot", object)
+    callModule(tableSelected, "tableselected", object)
     diffex_selected_cells <- callModule(
       tableSelected, "diffex",
-      seu
+      object
     )
 
-    callModule(pathwayEnrichment, "pathwayEnrichment", seu, featureType)
+    callModule(pathwayEnrichment, "pathwayEnrichment", object, featureType)
 
     subset_selected_cells <- callModule(
       tableSelected, "subset",
-      seu
+      object
     )
     observeEvent(input$subsetAction, {
       req(subset_selected_cells())
@@ -707,20 +707,20 @@ seuratApp <- function(preset_project, appTitle = "chevreul", organism_type = "hu
           shinyjs::html("subsetMessages", "")
           message("Beginning")
 
-          subset_seu <- seu()[, colnames(seu()) %in% subset_selected_cells()]
-          seu(subset_seu)
-          if (length(unique(seu()[[]]$batch)) > 1) {
+          subset_object <- object()[, colnames(object()) %in% subset_selected_cells()]
+          object(subset_object)
+          if (length(unique(object()[["batch"]])) > 1) {
             message(paste0("reintegrating gene expression"))
-            reintegrated_seu <- reintegrate_seu(seu(),
+            reintegrated_object <- reintegrate_object(object(),
               resolution = seq(0.2, 2, by = 0.2),
               legacy_settings = input$legacySettingsSubset,
-              organism = seu()@misc$experiment$organism
+              organism = object()@misc$experiment$organism
             )
-            seu(reintegrated_seu)
+            object(reintegrated_object)
           }
           else {
-            subset_seu <- seurat_pipeline(seu(), resolution = seq(0.2, 2, by = 0.2), legacy_settings = input$legacySettingsSubset) # markermarker
-            seu(subset_seu)
+            subset_object <- object_pipeline(object(), resolution = seq(0.2, 2, by = 0.2), legacy_settings = input$legacySettingsSubset) # markermarker
+            object(subset_object)
           }
           message("Complete!")
         },
@@ -739,29 +739,29 @@ seuratApp <- function(preset_project, appTitle = "chevreul", organism_type = "hu
         {
           shinyjs::html("subsetMessages", "")
           message("Beginning")
-          subset_seu <- subset_by_meta(
+          subset_object <- subset_by_meta(
             input$uploadCsv$datapath,
-            seu()
+            object()
           )
-          seu(subset_seu)
-          if (length(unique(seu()[[]]$batch)) > 1) {
+          object(subset_object)
+          if (length(unique(object()[["batch"]])) > 1) {
             message(paste0("reintegrating gene expression"))
-            reintegrated_seu <- reintegrate_seu(seu(),
+            reintegrated_object <- reintegrate_object(object(),
               resolution = seq(0.2, 2, by = 0.2),
               legacy_settings = input$legacySettingsSubset,
-              organism = seu()@misc$experiment$organism
+              organism = object()@misc$experiment$organism
             )
-            seu(reintegrated_seu)
+            object(reintegrated_object)
           }
           else {
-            subset_seu <- seurat_pipeline(seu(),
+            subset_object <- object_pipeline(object(),
               resolution = seq(0.2,
                 2,
                 by = 0.2
               ),
               legacy_settings = input$legacySettingsSubset
             )
-            seu(subset_seu)
+            object(subset_object)
           }
           message("Complete!")
         },
@@ -778,34 +778,34 @@ seuratApp <- function(preset_project, appTitle = "chevreul", organism_type = "hu
         title = "Recalculating Embedding",
         "This process may take a minute or two!"
       ))
-      seu <- callModule(
+      object <- callModule(
         changeEmbedParams, "changeembed",
-        seu
+        object
       )
       removeModal()
     })
-    callModule(findMarkers, "findmarkers", seu, plot_types, featureType)
+    callModule(findMarkers, "findmarkers", object, plot_types, featureType)
     diffex_results <- callModule(
-      diffex, "diffex", seu, featureType,
+      diffex, "diffex", object, featureType,
       diffex_selected_cells
     )
 
     observe({
       req(featureType())
-      req(seu())
+      req(object())
       callModule(
-        allTranscripts, "alltranscripts1", seu, featureType,
+        allTranscripts, "alltranscripts1", object, featureType,
         organism_type
       )
 
-      callModule(plotDimRed, "alltranscripts2", seu, plot_types, featureType,
+      callModule(plotDimRed, "alltranscripts2", object, plot_types, featureType,
         organism_type = organism_type, reductions
       )
     })
 
     prior_gene_set <- reactive({
       # req(input$priorGeneSet)
-      req(seu())
+      req(object())
 
       if (is.null(input$priorGeneSet)) {
         ""
@@ -815,7 +815,7 @@ seuratApp <- function(preset_project, appTitle = "chevreul", organism_type = "hu
           "BCL2", "MCL1"
         )
 
-        marker_genes[marker_genes %in% rownames(seu())]
+        marker_genes[marker_genes %in% rownames(object())]
       }
       else if (input$priorGeneSet == "Cell Cycle") {
         marker_genes <- c(
@@ -830,43 +830,43 @@ seuratApp <- function(preset_project, appTitle = "chevreul", organism_type = "hu
           "E2F8"
         )
 
-        marker_genes[marker_genes %in% rownames(seu())]
+        marker_genes[marker_genes %in% rownames(object())]
       } else if (input$priorGeneSet == "Mitochondrial") {
         marker_genes <- mito_features[[organism_type()]][["gene"]]
 
-        marker_genes[marker_genes %in% rownames(seu())]
+        marker_genes[marker_genes %in% rownames(object())]
       } else if (input$priorGeneSet == "Ribosomal") {
         marker_genes <- ribo_features[[organism_type()]][["gene"]]
 
-        marker_genes[marker_genes %in% rownames(seu())]
+        marker_genes[marker_genes %in% rownames(object())]
       }
     })
 
     observe({
       updateSelectizeInput(session, "geneSet",
-        choices = rownames(seu()),
+        choices = rownames(object()),
         selected = prior_gene_set(),
         server = TRUE
       )
     })
     observeEvent(input$regressAction, {
-      req(seu())
+      req(object())
       showModal(modalDialog(
         title = "Regressing out provided list of features",
         "This process may take a minute or two!"
       ))
-      regressed_seu <- chevreul::regress_by_features(seu(),
+      regressed_object <- chevreul::regress_by_features(object(),
         feature_set = list(input$geneSet), set_name = janitor::make_clean_names(input$geneSetName),
         regress = input$runRegression
       )
-      seu(regressed_seu)
+      object(regressed_object)
       removeModal()
     })
 
     observe({
       req(reductions())
       callModule(
-        monocle, "monocle", seu, plot_types, featureType,
+        monocle, "monocle", object, plot_types, featureType,
         organism_type, reductions
       )
     })
@@ -874,7 +874,7 @@ seuratApp <- function(preset_project, appTitle = "chevreul", organism_type = "hu
 
     observe({
       req(uploadSeuratPath())
-      req(seu())
+      req(object())
 
       proj_path <- stringr::str_replace(uploadSeuratPath(), "output.*", "")
 
@@ -885,10 +885,10 @@ seuratApp <- function(preset_project, appTitle = "chevreul", organism_type = "hu
       print(loom_path)
       # need to check if this file exists
 
-      callModule(plotVelocity, "plotvelocity", seu, loom_path)
+      callModule(plotVelocity, "plotvelocity", object, loom_path)
     })
 
-    callModule(techInfo, "techInfo", seu)
+    callModule(techInfo, "techInfo", object)
 
     sessionId <- as.integer(runif(1, 1, 100000))
     output$sessionId <- renderText(paste0("Session id: ", sessionId))

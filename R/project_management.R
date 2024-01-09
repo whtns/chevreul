@@ -39,16 +39,16 @@ create_proj_matrix <- function(proj_list) {
 
 #' Subset by new metadata
 #'
-#' Subset the seurat object using new metadata
+#' Subset the object using new metadata
 #'
 #' @param meta_path Path to new metadata
-#' @param seu A seurat obejct
+#' @param object A object
 #'
 #' @return
 #' @export
 #'
 #' @examples
-subset_by_meta <- function(meta_path, seu) {
+subset_by_meta <- function(meta_path, object) {
 
   upload_meta <- readr::read_csv(meta_path, col_names = "sample_id") %>%
     dplyr::filter(!is.na(sample_id) & !sample_id == "sample_id") %>%
@@ -58,11 +58,11 @@ subset_by_meta <- function(meta_path, seu) {
 
   upload_cells <- rownames(upload_meta)
 
-  seu <- seu[, colnames(seu) %in% upload_cells]
+  object <- object[, colnames(object) %in% upload_cells]
 
-  seu <- Seurat::AddMetaData(seu, upload_meta)
+  object <- Seurat::AddMetaData(object, upload_meta)
 
-  return(seu)
+  return(object)
 }
 
 #' Combine Loom Files

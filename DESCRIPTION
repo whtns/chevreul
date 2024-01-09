@@ -42,6 +42,7 @@ Imports:
     janitor,
     magrittr,
     megadepth,
+    methods,
     Nebulosa,
     patchwork,
     plotly,

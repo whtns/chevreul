@@ -11,7 +11,7 @@ rename_from_x_notation <- function(cell_ids, batch_id) {
   cell_ids <- paste0(batch_id, stringr::str_pad(cell_ids, width = max(nchar(cell_ids)), pad = "0"))
 }
 
-#' Reorganize seurat objects to a multimodal format
+#' Reorganize objects to a multimodal format
 #'
 #' @param proj_dir
 #'
@@ -19,7 +19,7 @@ rename_from_x_notation <- function(cell_ids, batch_id) {
 #' @export
 #'
 #' @examples
-reorg_seurat_files <- function(projects_db = "~/.cache/chevreul/single-cell-projects.db") {
+reorg_object_files <- function(projects_db = "~/.cache/chevreul/single-cell-projects.db") {
   conn <- DBI::dbConnect(RSQLite::SQLite(), projects_db)
 
   project_paths <- tbl(conn, "projects_tbl") %>%
@@ -30,23 +30,23 @@ reorg_seurat_files <- function(projects_db = "~/.cache/chevreul/single-cell-proj
 
   DBI::dbDisconnect(conn)
 
-  seurat_dirs <- map(project_paths, fs::path, "output", "seurat")
+  object_dirs <- map(project_paths, fs::path, "output", "seurat")
 
-  get_seurat_objects <- function(seurat_dir) {
-    rds_files <- fs::dir_ls(seurat_dir) %>%
+  get_object_objects <- function(object_dir) {
+    rds_files <- fs::dir_ls(object_dir) %>%
       fs::path_filter("*.rds")
   }
 
-  seurat_objects <- map(seurat_dirs, possibly(get_seurat_objects, NA))
+  object_objects <- map(object_dirs, possibly(get_object_objects, NA))
 
-  seurat_objects <- seurat_objects[!is.na(seurat_objects)]
+  object_objects <- object_objects[!is.na(object_objects)]
 
-  seurat_objects <- seurat_objects[lapply(seurat_objects, length) > 0]
+  object_objects <- object_objects[lapply(object_objects, length) > 0]
 
-  seurat_objects <- seurat_objects[!names(seurat_objects) %in% c("20170407-SHL-FACS-Hs_proj", "20171031-SHL-FACS-Hs_proj")]
+  object_objects <- object_objects[!names(object_objects) %in% c("20170407-SHL-FACS-Hs_proj", "20171031-SHL-FACS-Hs_proj")]
 
-  # # seurat objects before conversion
-  # seurat_objects <- tibble::enframe(seurat_objects) %>%
+  # # objects before conversion
+  # object_objects <- tibble::enframe(object_objects) %>%
   #   tidyr::unnest() %>%
   #   dplyr::filter(!stringr::str_detect(value, "_multimodal.rds")) %>%
   #   dplyr::mutate(multi_copy = stringr::str_replace(value, ".rds", "_multimodal.rds")) %>%
@@ -59,8 +59,8 @@ reorg_seurat_files <- function(projects_db = "~/.cache/chevreul/single-cell-proj
   #   tibble::deframe() %>%
   #   identity()
 
-  # seurat objects after conversion
-  new_seurat_objects <- tibble::enframe(seurat_objects) %>%
+  # objects after conversion
+  new_object_objects <- tibble::enframe(object_objects) %>%
     tidyr::unnest() %>%
     dplyr::filter(!stringr::str_detect(value, "_multimodal.rds")) %>%
     dplyr::mutate(multi_copy = stringr::str_replace(value, ".rds", "_multimodal.rds")) %>%
@@ -77,7 +77,7 @@ reorg_seurat_files <- function(projects_db = "~/.cache/chevreul/single-cell-proj
 
   safe_update <- purrr::safely(update_chevreul_object)
 
-  map(seurat_objects, safe_update, return_seu = FALSE)
+  map(object_objects, safe_update, return_object = FALSE)
 
   # message(paste0("deleting old files: ", old_files))
   # fs::file_delete(old_files)
@@ -116,8 +116,8 @@ pad_sample_files <- function(proj_dir) {
 #'
 #' @examples
 prep_armor_meta <- function(proj_dir) {
-  seu <- load_seurat_from_proj(proj_dir)
-  meta <- seu[[1]]@meta.data %>%
+  object <- load_object_from_proj(proj_dir)
+  meta <- pull_metadata(object) %>%
     dplyr::mutate(names = sample_id) %>%
     dplyr::mutate(type = "PE")
 

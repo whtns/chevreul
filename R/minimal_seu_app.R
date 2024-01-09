@@ -1,11 +1,10 @@
-#' Create a obect app on a shinyproxy docker instance
+#' Create a minimal object app
 #'
-#' @param object a obect object
+#' @param object a single cell object
 #' @param loom_path path to a loom file
 #' @param appTitle
-#' @param organism_type
+#' @param organism_type Organism
 #' @param futureMb
-#' #' @param bigwigb  path to sqlite database listing bigwig files for cells in the obect object
 #'
 #' @return
 #' @export
@@ -13,10 +12,10 @@
 #' @examples
 #'
 #' /dontrun{
-#' dockerSeuratApp(panc8)
+#' minimalSeuratApp(panc8)
 #' }
 #'
-dockerSeuratApp <- function(object = panc8, loom_path = NULL, appTitle = NULL,
+minimalSeuratApp <- function(object = panc8, loom_path = NULL, appTitle = NULL,
                              organism_type = "human", futureMb = 13000, bigwig_db = "~/.cache/chevreul/bw-files.db") {
   future::plan(strategy = "multicore", workers = 6)
   future_size <- futureMb * 1024^2
@@ -33,33 +32,33 @@ dockerSeuratApp <- function(object = panc8, loom_path = NULL, appTitle = NULL,
     uiOutput("featureType"),
     shinydashboard::sidebarMenu(
       shinydashboard::menuItem("Reformat Metadata",
-                               tabName = "reformatMetadata", icon = icon("columns")
+        tabName = "reformatMetadata", icon = icon("columns")
       ), shinydashboard::menuItem("Plot Data",
-                                  tabName = "comparePlots", icon = icon("chart-bar"), selected = TRUE
+        tabName = "comparePlots", icon = icon("chart-bar"), selected = TRUE
       ), shinydashboard::menuItem("Heatmap/Violin Plots",
-                                  tabName = "violinPlots", icon = icon("sort")
-      ), shinydashboard::menuItem("Coverage Plots",
-                                    tabName = "coveragePlots", icon = icon("mountain")
+        tabName = "violinPlots", icon = icon("sort")
+       # ), shinydashboard::menuItem("Coverage Plots",
+       #   tabName = "coveragePlots", icon = icon("mountain")
       ), shinydashboard::menuItem("Differential Expression",
-                                  tabName = "diffex", icon = icon("magnet")
-                                  # ), shinydashboard::menuItem("Pathway Enrichment Analysis",
-                                  #   tabName = "pathwayEnrichment", icon = icon("sitemap")
+        tabName = "diffex", icon = icon("magnet")
+      # ), shinydashboard::menuItem("Pathway Enrichment Analysis",
+      #   tabName = "pathwayEnrichment", icon = icon("sitemap")
       ), shinydashboard::menuItem("Find Markers",
-                                  tabName = "findMarkers", icon = icon("bullhorn")
+        tabName = "findMarkers", icon = icon("bullhorn")
       ), shinydashboard::menuItem("Subset Seurat Input",
-                                  tabName = "subsetSeurat", icon = icon("filter")
+        tabName = "subsetSeurat", icon = icon("filter")
       ), shinydashboard::menuItem("All Transcripts",
-                                  tabName = "allTranscripts", icon = icon("sliders-h")
+        tabName = "allTranscripts", icon = icon("sliders-h")
       ), shinydashboard::menuItem("Monocle",
-                                  tabName = "monocle", icon = icon("bullseye")
+        tabName = "monocle", icon = icon("bullseye")
       ), shinydashboard::menuItem("Regress Features",
-                                  tabName = "regressFeatures", icon = icon("eraser")
+        tabName = "regressFeatures", icon = icon("eraser")
       ), shinydashboard::menuItem("Technical Information",
-                                  tabName = "techInfo", icon = icon("cogs")
+        tabName = "techInfo", icon = icon("cogs")
       )
     ),
     actionButton("changeEmbedAction",
-                 label = "Change Embedding Parameters"
+      label = "Change Embedding Parameters"
     ),
     changeEmbedParamsui("changeembed"),
     width = 250
@@ -111,11 +110,11 @@ dockerSeuratApp <- function(object = panc8, loom_path = NULL, appTitle = NULL,
         chevreulBox(
           title = "Subset Settings",
           checkboxInput("legacySettingsSubset", "Use Legacy Settings", value = FALSE),
-          actionButton("subsetAction", "subset obect by selected cells"),
-          actionButton("subsetCsv", "subset obect by uploaded csv"),
+          actionButton("subsetAction", "subset object by selected cells"),
+          actionButton("subsetCsv", "subset object by uploaded csv"),
           fileInput("uploadCsv",
-                    "Upload .csv file with cells to include",
-                    accept = c(".csv")
+            "Upload .csv file with cells to include",
+            accept = c(".csv")
           ),
           shinyjs::useShinyjs(),
           # shinyjs::runcodeUI(code = "shinyjs::alert('Hello!')"),
@@ -161,19 +160,19 @@ dockerSeuratApp <- function(object = panc8, loom_path = NULL, appTitle = NULL,
               "Regress Seurat Objects By Genes"
             ),
             checkboxInput("runRegression",
-                          "Run Regression?",
-                          value = FALSE
+              "Run Regression?",
+              value = FALSE
             ), radioButtons("priorGeneSet",
-                            "Choose a marker gene set:",
-                            choices = c(
-                              "Apoptosis",
-                              "Cell Cycle",
-                              "Mitochondrial",
-                              "Ribosomal"
-                            )
+              "Choose a marker gene set:",
+              choices = c(
+                "Apoptosis",
+                "Cell Cycle",
+                "Mitochondrial",
+                "Ribosomal"
+              )
             ), selectizeInput("geneSet",
-                              "List of genes",
-                              choices = NULL, multiple = TRUE
+              "List of genes",
+              choices = NULL, multiple = TRUE
             ),
             textInput("geneSetName", "Name for Gene Set"),
             width = 12
@@ -249,19 +248,19 @@ dockerSeuratApp <- function(object = panc8, loom_path = NULL, appTitle = NULL,
       req(object())
 
       callModule(plotDimRed, "plotdimred1", object, plot_types, featureType,
-                 organism_type = organism_type, reductions
+        organism_type = organism_type, reductions
       )
       callModule(plotDimRed, "plotdimred2", object, plot_types, featureType,
-                 organism_type = organism_type, reductions
+        organism_type = organism_type, reductions
       )
       callModule(plotDimRed, "diffex", object, plot_types, featureType,
-                 organism_type = organism_type, reductions
+        organism_type = organism_type, reductions
       )
       callModule(plotDimRed, "subset", object, plot_types, featureType,
-                 organism_type = organism_type, reductions
+        organism_type = organism_type, reductions
       )
       callModule(plotDimRed, "markerScatter", object, plot_types, featureType,
-                 organism_type = organism_type, reductions
+        organism_type = organism_type, reductions
       )
     })
 
@@ -277,7 +276,7 @@ dockerSeuratApp <- function(object = panc8, loom_path = NULL, appTitle = NULL,
       organism_type
     )
     callModule(
-      plotCoverage, "coverageplots", object, plot_types, proj_dir, organism_type, bigwig_db
+      plotCoverage, "coverageplots", object, plot_types, proj_dir, organism_type
     )
     callModule(plotClustree, "clustreePlot", object)
     callModule(tableSelected, "tableselected", object)
@@ -317,7 +316,7 @@ dockerSeuratApp <- function(object = panc8, loom_path = NULL, appTitle = NULL,
         )
 
         callModule(plotDimRed, "alltranscripts2", object, plot_types, featureType,
-                   organism_type = organism_type, reductions
+          organism_type = organism_type, reductions
         )
       }
     })
@@ -338,13 +337,13 @@ dockerSeuratApp <- function(object = panc8, loom_path = NULL, appTitle = NULL,
           if (length(unique(object()$batch)) > 1) {
             message(paste0("reintegrating gene expression"))
             reintegrated_object <- reintegrate_object(object(),
-                                                resolution = seq(0.2, 2, by = 0.2),
-                                                organism = object()@misc$experiment$organism
+              resolution = seq(0.2, 2, by = 0.2),
+              organism = object()@misc$experiment$organism
             )
             object(reintegrated_object)
           }
           else {
-            processed_object <- obect_pipeline(object(), resolution = seq(0.2, 2, by = 0.2))
+            processed_object <- object_pipeline(object(), resolution = seq(0.2, 2, by = 0.2))
             object(processed_object)
           }
           message("Complete!")
@@ -373,13 +372,13 @@ dockerSeuratApp <- function(object = panc8, loom_path = NULL, appTitle = NULL,
           if (length(unique(object()[["batch"]])) > 1) {
             message(paste0("reintegrating gene expression"))
             reintegrated_object <- reintegrate_object(object(),
-                                                resolution = seq(0.2, 2, by = 0.2),
-                                                organism = object()@misc$experiment$organism
+              resolution = seq(0.2, 2, by = 0.2),
+              organism = object()@misc$experiment$organism
             )
             object(reintegrated_object)
           }
           else {
-            processed_object <- obect_pipeline(object(), resolution = seq(0.2, 2, by = 0.2))
+            processed_object <- object_pipeline(object(), resolution = seq(0.2, 2, by = 0.2))
             object(processed_object)
           }
           message("Complete!")
@@ -435,9 +434,9 @@ dockerSeuratApp <- function(object = panc8, loom_path = NULL, appTitle = NULL,
     observe({
       req(object())
       updateSelectizeInput(session, "geneSet",
-                           choices = rownames(object()),
-                           selected = prior_gene_set(),
-                           server = TRUE
+        choices = rownames(object()),
+        selected = prior_gene_set(),
+        server = TRUE
       )
     })
     observeEvent(input$regressAction, {
@@ -447,8 +446,8 @@ dockerSeuratApp <- function(object = panc8, loom_path = NULL, appTitle = NULL,
         "This process may take a minute or two!"
       ))
       regressed_object <- chevreul::regress_by_features(object(),
-                                                     feature_set = list(input$geneSet), set_name = janitor::make_clean_names(input$geneSetName),
-                                                     regress = input$runRegression
+        feature_set = list(input$geneSet), set_name = janitor::make_clean_names(input$geneSetName),
+        regress = input$runRegression
       )
       object(regressed_object)
       removeModal()

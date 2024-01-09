@@ -1,6 +1,6 @@
-#' Create a minimal seurat app
+#' Create a minimal object app
 #'
-#' @param object a seurat object
+#' @param object a singlecell object
 #' @param loom_path path to a loom file
 #' @param appTitle
 #' @param organism_type Organism
@@ -12,10 +12,10 @@
 #' @examples
 #'
 #' /dontrun{
-#' minimalSeuratApp(panc8)
+#' minimalSceApp(panc8)
 #' }
 #'
-minimalSeuratApp <- function(object = panc8, loom_path = NULL, appTitle = NULL,
+minimalSceApp <- function(input_object = panc8, loom_path = NULL, appTitle = NULL,
                              organism_type = "human", futureMb = 13000, bigwig_db = "~/.cache/chevreul/bw-files.db") {
   future::plan(strategy = "multicore", workers = 6)
   future_size <- futureMb * 1024^2
@@ -32,33 +32,33 @@ minimalSeuratApp <- function(object = panc8, loom_path = NULL, appTitle = NULL,
     uiOutput("featureType"),
     shinydashboard::sidebarMenu(
       shinydashboard::menuItem("Reformat Metadata",
-        tabName = "reformatMetadata", icon = icon("columns")
+                               tabName = "reformatMetadata", icon = icon("columns")
       ), shinydashboard::menuItem("Plot Data",
-        tabName = "comparePlots", icon = icon("chart-bar"), selected = TRUE
+                                  tabName = "comparePlots", icon = icon("chart-bar"), selected = TRUE
       ), shinydashboard::menuItem("Heatmap/Violin Plots",
-        tabName = "violinPlots", icon = icon("sort")
-       # ), shinydashboard::menuItem("Coverage Plots",
-       #   tabName = "coveragePlots", icon = icon("mountain")
+                                  tabName = "violinPlots", icon = icon("sort")
+                                  # ), shinydashboard::menuItem("Coverage Plots",
+                                  #   tabName = "coveragePlots", icon = icon("mountain")
       ), shinydashboard::menuItem("Differential Expression",
-        tabName = "diffex", icon = icon("magnet")
-      # ), shinydashboard::menuItem("Pathway Enrichment Analysis",
-      #   tabName = "pathwayEnrichment", icon = icon("sitemap")
+                                  tabName = "diffex", icon = icon("magnet")
+                                  # ), shinydashboard::menuItem("Pathway Enrichment Analysis",
+                                  #   tabName = "pathwayEnrichment", icon = icon("sitemap")
       ), shinydashboard::menuItem("Find Markers",
-        tabName = "findMarkers", icon = icon("bullhorn")
-      ), shinydashboard::menuItem("Subset Seurat Input",
-        tabName = "subsetSeurat", icon = icon("filter")
+                                  tabName = "findMarkers", icon = icon("bullhorn")
+      ), shinydashboard::menuItem("Subset Object Input",
+                                  tabName = "subsetObject", icon = icon("filter")
       ), shinydashboard::menuItem("All Transcripts",
-        tabName = "allTranscripts", icon = icon("sliders-h")
+                                  tabName = "allTranscripts", icon = icon("sliders-h")
       ), shinydashboard::menuItem("Monocle",
-        tabName = "monocle", icon = icon("bullseye")
+                                  tabName = "monocle", icon = icon("bullseye")
       ), shinydashboard::menuItem("Regress Features",
-        tabName = "regressFeatures", icon = icon("eraser")
+                                  tabName = "regressFeatures", icon = icon("eraser")
       ), shinydashboard::menuItem("Technical Information",
-        tabName = "techInfo", icon = icon("cogs")
+                                  tabName = "techInfo", icon = icon("cogs")
       )
     ),
     actionButton("changeEmbedAction",
-      label = "Change Embedding Parameters"
+                 label = "Change Embedding Parameters"
     ),
     changeEmbedParamsui("changeembed"),
     width = 250
@@ -103,18 +103,18 @@ minimalSeuratApp <- function(object = panc8, loom_path = NULL, appTitle = NULL,
         )
       ),
       shinydashboard::tabItem(
-        tabName = "subsetSeurat",
-        h2("Subset Seurat Input") %>%
-          default_helper(type = "markdown", content = "subsetSeurat"),
+        tabName = "subsetObject",
+        h2("Subset Object Input") %>%
+          default_helper(type = "markdown", content = "subsetObject"),
         plotDimRedui("subset"),
         chevreulBox(
           title = "Subset Settings",
           checkboxInput("legacySettingsSubset", "Use Legacy Settings", value = FALSE),
-          actionButton("subsetAction", "subset seurat by selected cells"),
-          actionButton("subsetCsv", "subset seurat by uploaded csv"),
+          actionButton("subsetAction", "subset object by selected cells"),
+          actionButton("subsetCsv", "subset object by uploaded csv"),
           fileInput("uploadCsv",
-            "Upload .csv file with cells to include",
-            accept = c(".csv")
+                    "Upload .csv file with cells to include",
+                    accept = c(".csv")
           ),
           shinyjs::useShinyjs(),
           # shinyjs::runcodeUI(code = "shinyjs::alert('Hello!')"),
@@ -157,22 +157,22 @@ minimalSeuratApp <- function(object = panc8, loom_path = NULL, appTitle = NULL,
             title = "Regress Features",
             actionButton(
               "regressAction",
-              "Regress Seurat Objects By Genes"
+              "Regress Objects By Genes"
             ),
             checkboxInput("runRegression",
-              "Run Regression?",
-              value = FALSE
+                          "Run Regression?",
+                          value = FALSE
             ), radioButtons("priorGeneSet",
-              "Choose a marker gene set:",
-              choices = c(
-                "Apoptosis",
-                "Cell Cycle",
-                "Mitochondrial",
-                "Ribosomal"
-              )
+                            "Choose a marker gene set:",
+                            choices = c(
+                              "Apoptosis",
+                              "Cell Cycle",
+                              "Mitochondrial",
+                              "Ribosomal"
+                            )
             ), selectizeInput("geneSet",
-              "List of genes",
-              choices = NULL, multiple = TRUE
+                              "List of genes",
+                              choices = NULL, multiple = TRUE
             ),
             textInput("geneSetName", "Name for Gene Set"),
             width = 12
@@ -205,9 +205,9 @@ minimalSeuratApp <- function(object = panc8, loom_path = NULL, appTitle = NULL,
     # shinylogs::track_usage(storage_mode = shinylogs::store_json(path = "logs/"))
     # projects_db <- "/dataVolume/storage/single_cell_projects/single_cell_projects.db"
 
-    seu <- reactiveVal(NULL)
+    object <- reactiveVal(NULL)
     observe({
-      seu(object)
+      object(input_object)
     })
 
     organism_type <- reactive({
@@ -219,8 +219,8 @@ minimalSeuratApp <- function(object = panc8, loom_path = NULL, appTitle = NULL,
     })
 
     plot_types <- reactive({
-      req(seu())
-      list_plot_types(seu())
+      req(object())
+      list_plot_types(object())
     })
 
     featureType <- reactive({
@@ -230,59 +230,63 @@ minimalSeuratApp <- function(object = panc8, loom_path = NULL, appTitle = NULL,
 
 
     observe({
-      reformatted_seu <- callModule(reformatMetadataDR, "reformatMetadataDR", seu, featureType)
-      seu(reformatted_seu())
+      reformatted_object <- callModule(reformatMetadataDR, "reformatMetadataDR", object, featureType)
+      object(reformatted_object())
     })
 
     reductions <- reactive({
-      req(seu())
-      names(seu()@reductions)
-      # c("pca", "tsne", "umap")
+      req(object())
+
+      if(class(object) == "Seurat"){
+        names(object()@reductions)
+      } else if(class(object) == "SingleCellExperiment"){
+        SingleCellExperiment::reducedDimNames(object)
+      }
     })
 
     observe({
-      req(seu())
+      req(object())
 
-      callModule(plotDimRed, "plotdimred1", seu, plot_types, featureType,
-        organism_type = organism_type, reductions
+      callModule(plotDimRed, "plotdimred1", object, plot_types, featureType,
+                 organism_type = organism_type, reductions
       )
-      callModule(plotDimRed, "plotdimred2", seu, plot_types, featureType,
-        organism_type = organism_type, reductions
+      callModule(plotDimRed, "plotdimred2", object, plot_types, featureType,
+                 organism_type = organism_type, reductions
       )
-      callModule(plotDimRed, "diffex", seu, plot_types, featureType,
-        organism_type = organism_type, reductions
+      callModule(plotDimRed, "diffex", object, plot_types, featureType,
+                 organism_type = organism_type, reductions
       )
-      callModule(plotDimRed, "subset", seu, plot_types, featureType,
-        organism_type = organism_type, reductions
+      callModule(plotDimRed, "subset", object, plot_types, featureType,
+                 organism_type = organism_type, reductions
       )
-      callModule(plotDimRed, "markerScatter", seu, plot_types, featureType,
-        organism_type = organism_type, reductions
+      callModule(plotDimRed, "markerScatter", object, plot_types, featureType,
+                 organism_type = organism_type, reductions
       )
     })
 
-    callModule(plotReadCount, "plotreadcount1", seu, plot_types)
-    callModule(plotReadCount, "plotreadcount2", seu, plot_types)
+    callModule(plotReadCount, "plotreadcount1", object, plot_types)
+    callModule(plotReadCount, "plotreadcount2", object, plot_types)
 
     callModule(
-      plotViolin, "violinPlot", seu, featureType,
+      plotViolin, "violinPlot", object, featureType,
       organism_type
     )
     callModule(
-      plotHeatmap, "heatMap", seu, featureType,
+      plotHeatmap, "heatMap", object, featureType,
       organism_type
     )
     callModule(
-      plotCoverage, "coverageplots", seu, plot_types, proj_dir, organism_type
+      plotCoverage, "coverageplots", object, plot_types, proj_dir, organism_type
     )
-    callModule(plotClustree, "clustreePlot", seu)
-    callModule(tableSelected, "tableselected", seu)
+    callModule(plotClustree, "clustreePlot", object)
+    callModule(tableSelected, "tableselected", object)
     diffex_selected_cells <- callModule(
       tableSelected, "diffex",
-      seu
+      object
     )
     subset_selected_cells <- callModule(
       tableSelected, "subset",
-      seu
+      object
     )
 
     observeEvent(input$changeEmbedAction, {
@@ -290,35 +294,35 @@ minimalSeuratApp <- function(object = panc8, loom_path = NULL, appTitle = NULL,
         title = "Recalculating Embedding",
         "This process may take a minute or two!"
       ))
-      seu <- callModule(
+      object <- callModule(
         changeEmbedParams, "changeembed",
-        seu
+        object
       )
       removeModal()
     })
 
-    callModule(findMarkers, "findmarkers", seu, plot_types, featureType)
+    callModule(findMarkers, "findmarkers", object, plot_types, featureType)
 
-    callModule(pathwayEnrichment, "pathwayEnrichment", seu)
+    callModule(pathwayEnrichment, "pathwayEnrichment", object)
 
     # plot all transcripts
     observe({
       req(featureType())
-      req(seu())
-      if ("transcript" %in% names(seu()@assays)) {
+      req(object())
+      if ("transcript" %in% names(object()@assays)) {
         callModule(
-          allTranscripts, "alltranscripts1", seu, featureType,
+          allTranscripts, "alltranscripts1", object, featureType,
           organism_type
         )
 
-        callModule(plotDimRed, "alltranscripts2", seu, plot_types, featureType,
-          organism_type = organism_type, reductions
+        callModule(plotDimRed, "alltranscripts2", object, plot_types, featureType,
+                   organism_type = organism_type, reductions
         )
       }
     })
 
     diffex_results <- callModule(
-      diffex, "diffex", seu, featureType,
+      diffex, "diffex", object, featureType,
       diffex_selected_cells
     )
     observeEvent(input$subsetAction, {
@@ -328,25 +332,25 @@ minimalSeuratApp <- function(object = panc8, loom_path = NULL, appTitle = NULL,
         {
           shinyjs::html("subsetMessages", "")
           message("Beginning")
-          subset_seu <- seu()[, colnames(seu()) %in% subset_selected_cells()]
-          seu(subset_seu)
-          if (length(unique(seu()$batch)) > 1) {
+          subset_object <- object()[, colnames(object()) %in% subset_selected_cells()]
+          object(subset_object)
+          if (length(unique(object()$batch)) > 1) {
             message(paste0("reintegrating gene expression"))
-            reintegrated_seu <- reintegrate_seu(seu(),
-              resolution = seq(0.2, 2, by = 0.2),
-              organism = seu()@misc$experiment$organism
+            reintegrated_object <- reintegrate_object(object(),
+                                                resolution = seq(0.2, 2, by = 0.2),
+                                                organism = object()@misc$experiment$organism
             )
-            seu(reintegrated_seu)
+            object(reintegrated_object)
           }
           else {
-            processed_seu <- seurat_pipeline(seu(), resolution = seq(0.2, 2, by = 0.2))
-            seu(processed_seu)
+            processed_object <- object_pipeline(object(), resolution = seq(0.2, 2, by = 0.2))
+            object(processed_object)
           }
           message("Complete!")
         },
         message = function(m) {
           shinyjs::html(id = "subsetMessages", html = paste0(
-            "Subsetting Seurat Object: ",
+            "Subsetting Object: ",
             m$message
           ), add = FALSE)
         }
@@ -359,29 +363,29 @@ minimalSeuratApp <- function(object = panc8, loom_path = NULL, appTitle = NULL,
         {
           shinyjs::html("subsetMessages", "")
           message("Beginning")
-          subset_seu <- subset_by_meta(
+          subset_object <- subset_by_meta(
             input$uploadCsv$datapath,
-            seu()
+            object()
           )
-          seu(subset_seu)
+          object(subset_object)
 
-          if (length(unique(seu()[[]]$batch)) > 1) {
+          if (length(unique(object()[["batch"]])) > 1) {
             message(paste0("reintegrating gene expression"))
-            reintegrated_seu <- reintegrate_seu(seu(),
-              resolution = seq(0.2, 2, by = 0.2),
-              organism = seu()@misc$experiment$organism
+            reintegrated_object <- reintegrate_object(object(),
+                                                resolution = seq(0.2, 2, by = 0.2),
+                                                organism = object()@misc$experiment$organism
             )
-            seu(reintegrated_seu)
+            object(reintegrated_object)
           }
           else {
-            processed_seu <- seurat_pipeline(seu(), resolution = seq(0.2, 2, by = 0.2))
-            seu(processed_seu)
+            processed_object <- object_pipeline(object(), resolution = seq(0.2, 2, by = 0.2))
+            object(processed_object)
           }
           message("Complete!")
         },
         message = function(m) {
           shinyjs::html(id = "subsetMessages", html = paste0(
-            "Subsetting Seurat Object: ",
+            "Subsetting Object: ",
             m$message
           ), add = FALSE)
         }
@@ -390,7 +394,7 @@ minimalSeuratApp <- function(object = panc8, loom_path = NULL, appTitle = NULL,
 
     prior_gene_set <- reactive({
       # req(input$priorGeneSet)
-      req(seu())
+      req(object())
 
       if (is.null(input$priorGeneSet)) {
         ""
@@ -400,7 +404,7 @@ minimalSeuratApp <- function(object = panc8, loom_path = NULL, appTitle = NULL,
           "BCL2", "MCL1"
         )
 
-        marker_genes[marker_genes %in% rownames(seu())]
+        marker_genes[marker_genes %in% rownames(object())]
       }
       else if (input$priorGeneSet == "Cell Cycle") {
         marker_genes <- c(
@@ -415,49 +419,49 @@ minimalSeuratApp <- function(object = panc8, loom_path = NULL, appTitle = NULL,
           "E2F8"
         )
 
-        marker_genes[marker_genes %in% rownames(seu())]
+        marker_genes[marker_genes %in% rownames(object())]
       } else if (input$priorGeneSet == "Mitochondrial") {
         marker_genes <- mito_features[[organism_type()]][["gene"]]
 
-        marker_genes[marker_genes %in% rownames(seu())]
+        marker_genes[marker_genes %in% rownames(object())]
       } else if (input$priorGeneSet == "Ribosomal") {
         marker_genes <- ribo_features[[organism_type()]][["gene"]]
 
-        marker_genes[marker_genes %in% rownames(seu())]
+        marker_genes[marker_genes %in% rownames(object())]
       }
     })
 
     observe({
-      req(seu())
+      req(object())
       updateSelectizeInput(session, "geneSet",
-        choices = rownames(seu()),
-        selected = prior_gene_set(),
-        server = TRUE
+                           choices = rownames(object()),
+                           selected = prior_gene_set(),
+                           server = TRUE
       )
     })
     observeEvent(input$regressAction, {
-      req(seu())
+      req(object())
       showModal(modalDialog(
         title = "Regressing out provided list of features",
         "This process may take a minute or two!"
       ))
-      regressed_seu <- chevreul::regress_by_features(seu(),
-        feature_set = list(input$geneSet), set_name = janitor::make_clean_names(input$geneSetName),
-        regress = input$runRegression
+      regressed_object <- chevreul::regress_by_features(object(),
+                                                     feature_set = list(input$geneSet), set_name = janitor::make_clean_names(input$geneSetName),
+                                                     regress = input$runRegression
       )
-      seu(regressed_seu)
+      object(regressed_object)
       removeModal()
     })
 
     observe({
       req(reductions())
       callModule(
-        monocle, "monocle", seu, plot_types, featureType,
+        monocle, "monocle", object, plot_types, featureType,
         organism_type, reductions
       )
     })
 
-    callModule(techInfo, "techInfo", seu)
+    callModule(techInfo, "techInfo", object)
 
   }
   shinyApp(ui, server, enableBookmarking = "server")

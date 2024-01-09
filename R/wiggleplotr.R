@@ -1,6 +1,6 @@
 #' Create a database of bigwigfiles
 #'
-#' Create a sqlite database of bigwig files matching cell ids in seurat objects
+#' Create a sqlite database of bigwig files matching cell ids in objects
 #'
 #' @param bam_files
 #' @param bigwig_db
@@ -31,30 +31,30 @@ build_bigwig_db <- function(bam_files, bigwig_db = "~/.cache/chevreul/bw-files.d
 #'
 #' Load a tibble of bigwig file paths by cell id
 #'
-#' @param seu A seurat object
+#' @param object A object
 #' @param bigwig_db Sqlite database of bigwig files
 #'
 #' @return
 #' @export
 #'
 #' @examples
-load_bigwigs <- function(seu, bigwig_db = "~/.cache/chevreul/bw-files.db") {
+load_bigwigs <- function(object, bigwig_db = "~/.cache/chevreul/bw-files.db") {
   con <- DBI::dbConnect(RSQLite::SQLite(), dbname = bigwig_db)
 
   bigwigfiles <- DBI::dbReadTable(con, "bigwigfiles") %>%
-    dplyr::filter(sample_id %in% colnames(seu)) %>%
+    dplyr::filter(sample_id %in% colnames(object)) %>%
     identity()
 
-  missing_bigwigs <- colnames(seu)[!(colnames(seu) %in% bigwigfiles$sample_id)] %>%
+  missing_bigwigs <- colnames(object)[!(colnames(object) %in% bigwigfiles$sample_id)] %>%
     paste(collapse = ", ")
 
-  warning(paste0("Sample coverage files ", missing_bigwigs, "(.bw) do not match samples in seurat object (check file names)"))
+  warning(paste0("Sample coverage files ", missing_bigwigs, "(.bw) do not match samples in object (check file names)"))
 
   DBI::dbDisconnect(con)
 
   bigwigfiles <-
     bigwigfiles %>%
-    dplyr::filter(sample_id %in% colnames(seu))
+    dplyr::filter(sample_id %in% colnames(object))
 
   return(bigwigfiles)
 }
@@ -64,7 +64,7 @@ load_bigwigs <- function(seu, bigwig_db = "~/.cache/chevreul/bw-files.db") {
 #' Plot BigWig coverage for genes of interest colored by a given variable
 #'
 #' @param genes_of_interest Gene of interest
-#' @param cell_metadata a dataframe with cell metadata from seurat
+#' @param cell_metadata a dataframe with cell metadata from object
 #' @param bigwig_tbl a tibble with colnames "name", "bigWig", and "sample_id" matching the filename, absolute path, and sample name of each cell in the cell_metadata
 #' @param var_of_interest Variable to color by
 #' @param values_of_interest
@@ -142,7 +142,7 @@ plot_gene_coverage_by_var <- function(genes_of_interest = "RXRG",
   if (scale_y == "log10") {
     coverage_plot_list$coverage_plot <-
       coverage_plot_list$coverage_plot +
-      scale_y_continuous(trans = scales::pseudo_log_trans(base = 10), breaks = 10^(0:4)) +
+      scale_y_continuous(trans = scales::pobjectdo_log_trans(base = 10), breaks = 10^(0:4)) +
       NULL
   }
 
