@@ -52,7 +52,6 @@ setMethod("format_new_metadata", "SingleCellExperiment",
           }
           )
 
-
 #' Reformat object Metadata
 #'
 #' Reformat object Metadata by Coalesced Columns
@@ -65,26 +64,43 @@ setMethod("format_new_metadata", "SingleCellExperiment",
 #' @export
 #'
 #' @examples
-combine_cols <- function(object, cols, new_col) {
-  new_col <- janitor::make_clean_names(new_col)
+setGeneric("combine_cols", function(object, cols, new_col) {
+  standardGeneric("combine_cols")
+})
 
-  # ensure that new colname will not be dropped
-  drop_cols <- cols[!cols == new_col]
+setMethod(
+  "combine_cols", "Seurat",
+  function(object, cols, new_col) {
+    new_col <- janitor::make_clean_names(new_col)
+    drop_cols <- cols[!cols == new_col]
+    na_cols <- purrr::map_lgl(cols, ~ all(is.na(object[[.x]])))
+    cols <- cols[!na_cols]
+    meta <- tibble::rownames_to_column(pull_metadata(object)) %>%
+      dplyr::mutate_at(vars(one_of(cols)), as.character) %>%
+      dplyr::mutate(`:=`(!!new_col, dplyr::coalesce(!!!syms(cols)))) %>%
+      dplyr::select(-drop_cols) %>%
+      tibble::column_to_rownames(var = "rowname") %>%
+      identity()
+  }
+)
 
-  # make sure that none of the columns to be coalesced are entirely NA
-  na_cols <- purrr::map_lgl(cols, ~ all(is.na(object[[.x]])))
-  cols <- cols[!na_cols]
+setMethod(
+  "combine_cols", "SingleCellExperiment",
+  function(object, cols, new_col) {
+    new_col <- janitor::make_clean_names(new_col)
+    drop_cols <- cols[!cols == new_col]
+    na_cols <- purrr::map_lgl(cols, ~ all(is.na(object[[.x]])))
+    cols <- cols[!na_cols]
+    meta <- tibble::rownames_to_column(pull_metadata(object)) %>%
+      dplyr::mutate_at(vars(one_of(cols)), as.character) %>%
+      dplyr::mutate(`:=`(!!new_col, dplyr::coalesce(!!!syms(cols)))) %>%
+      dplyr::select(-drop_cols) %>%
+      tibble::column_to_rownames(var = "rowname") %>%
+      identity()
+  }
+)
 
-  # check class of cols to be coalesced
 
-
-  meta <- tibble::rownames_to_column(pull_metadata(object)) %>%
-    dplyr::mutate_at(vars(one_of(cols)), as.character) %>%
-    dplyr::mutate(!!new_col := dplyr::coalesce(!!!syms(cols))) %>%
-    dplyr::select(-drop_cols) %>%
-    tibble::column_to_rownames(var = "rowname") %>%
-    identity()
-}
 
 #' Filter Rows to Top
 #'
