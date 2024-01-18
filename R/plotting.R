@@ -527,19 +527,27 @@ setMethod("plot_feature", "SingleCellExperiment",
 #' @export
 #'
 #' @examples
-plot_cell_cycle_distribution <- function(object, features){
+setGeneric("plot_cell_cycle_distribution", function(seu, features) standardGeneric("plot_cell_cycle_distribution"))
 
-  cc_genes_path <- "~/single_cell_projects/resources/regev_lab_cell_cycle_genes.txt"
-  cc.genes <- readLines(con = cc_genes_path)
-  s.genes <- cc.genes[1:43]
-  g2m.genes <- cc.genes[44:97]
+setMethod(
+  "plot_cell_cycle_distribution", "Seurat",
+  function(seu, features) {
+    s.genes <- cc.genes[["s.genes"]]
+    g2m.genes <- cc.genes[["g2m.genes"]]
+    seu <- CellCycleScoring(object = seu, s.genes, g2m.genes, set.ident = TRUE)
+    RidgePlot(object = seu, features = features)
+  }
+)
 
-  object <- CellCycleScoring(object = object, s.genes, g2m.genes,
-                          set.ident = TRUE)
-
-  RidgePlot(object = object, features = features)
-
-}
+setMethod(
+  "plot_cell_cycle_distribution", "SingleCellExperiment",
+  function(seu, features) {
+    s.genes <- cc.genes[["s.genes"]]
+    g2m.genes <- cc.genes[["g2m.genes"]]
+    seu <- CellCycleScoring(object = seu, s.genes, g2m.genes, set.ident = TRUE)
+    RidgePlot(object = seu, features = features)
+  }
+)
 
 
 #' Plot Cluster Marker Genes
@@ -569,107 +577,154 @@ plot_cell_cycle_distribution <- function(object, features){
 #' # static mode using "presto"
 #' plot_markers(human_gene_transcript_object, metavar = "tech", marker_method = "genesorteR", return_plotly = FALSE)
 #'
-plot_markers <- function(object, metavar = "batch", num_markers = 5, selected_values = NULL, return_plotly = FALSE, marker_method = "presto", object_assay = "gene", hide_technical = NULL, unique_markers = FALSE, p_val_cutoff = 1, ...){
+setGeneric("plot_markers", function(object, metavar = "batch", num_markers = 5, selected_values = NULL, return_plotly = FALSE, marker_method = "presto", object_assay = "gene", hide_technical = NULL, unique_markers = FALSE, p_val_cutoff = 1, ...) standardGeneric("plot_markers"))
 
-  Idents(object) <- pull_metadata(object)[[metavar]]
-
-  # by default only resolution markers are calculated in pre-processing
-  object <- find_all_markers(object, metavar, object_assay = object_assay, p_val_cutoff = p_val_cutoff)
-
-  marker_table <- object@misc$markers[[metavar]][[marker_method]]
-
-  markers <-
-    marker_table %>%
-    enframe_markers() %>%
-    dplyr::mutate(dplyr::across(.fns = as.character))
-
-  if(!is.null(hide_technical)){
-
-    markers <- purrr::map(markers, c)
-
-    if(hide_technical == "pobjectdo"){
-      markers <- purrr::map(markers, ~.x[!.x %in% pobjectdogenes[[object_assay]]])
-    } else if(hide_technical == "mito_ribo"){
-      markers <- purrr::map(markers, ~.x[!str_detect(.x, "^MT-")])
-      markers <- purrr::map(markers, ~.x[!str_detect(.x, "^RPS")])
-      markers <- purrr::map(markers, ~.x[!str_detect(.x, "^RPL")])
-    } else if(hide_technical == "all"){
-      markers <- purrr::map(markers, ~.x[!.x %in% pobjectdogenes[[object_assay]]])
-      markers <- purrr::map(markers, ~.x[!str_detect(.x, "^MT-")])
-      markers <- purrr::map(markers, ~.x[!str_detect(.x, "^RPS")])
-      markers <- purrr::map(markers, ~.x[!str_detect(.x, "^RPL")])
+setMethod(
+  "plot_markers", "Seurat",
+  function(object, metavar = "batch", num_markers = 5, selected_values = NULL, return_plotly = FALSE, marker_method = "presto", object_assay = "gene", hide_technical = NULL, unique_markers = FALSE, p_val_cutoff = 1, ...) {
+    Idents(object) <- pull_metadata(object)[[metavar]]
+    object <- find_all_markers(object, metavar, object_assay = object_assay, p_val_cutoff = p_val_cutoff)
+    marker_table <- Misc(object)$markers[[metavar]][[marker_method]]
+    markers <- marker_table %>%
+      enframe_markers() %>%
+      dplyr::mutate(dplyr::across(.fns = as.character))
+    if (!is.null(hide_technical)) {
+      markers <- purrr::map(markers, c)
+      if (hide_technical == "pobjectdo") {
+        markers <- purrr::map(markers, ~ .x[!.x %in% pobjectdogenes[[object_assay]]])
+      } else if (hide_technical == "mito_ribo") {
+        markers <- purrr::map(markers, ~ .x[!str_detect(.x, "^MT-")])
+        markers <- purrr::map(markers, ~ .x[!str_detect(.x, "^RPS")])
+        markers <- purrr::map(markers, ~ .x[!str_detect(.x, "^RPL")])
+      } else if (hide_technical == "all") {
+        markers <- purrr::map(markers, ~ .x[!.x %in% pobjectdogenes[[object_assay]]])
+        markers <- purrr::map(markers, ~ .x[!str_detect(.x, "^MT-")])
+        markers <- purrr::map(markers, ~ .x[!str_detect(.x, "^RPS")])
+        markers <- purrr::map(markers, ~ .x[!str_detect(.x, "^RPL")])
+      }
+      min_length <- min(purrr::map_int(markers, length))
+      markers <- purrr::map(markers, head, min_length) %>% dplyr::bind_cols()
     }
+    if (unique_markers) {
+      markers <- markers %>%
+        dplyr::mutate(precedence = row_number()) %>%
+        pivot_longer(-precedence, names_to = "group", values_to = "markers") %>%
+        dplyr::arrange(markers, precedence) %>%
+        dplyr::group_by(markers) %>%
+        dplyr::filter(row_number() == 1) %>%
+        dplyr::arrange(group, precedence) %>%
+        tidyr::drop_na() %>%
+        dplyr::group_by(group) %>%
+        dplyr::mutate(precedence = row_number()) %>%
+        tidyr::pivot_wider(names_from = "group", values_from = "markers") %>%
+        dplyr::select(-precedence)
+    }
+    sliced_markers <- markers %>%
+      dplyr::slice_head(n = num_markers) %>%
+      tidyr::pivot_longer(everything(), names_to = "group", values_to = "feature") %>%
+      dplyr::arrange(group) %>%
+      dplyr::distinct(feature, .keep_all = TRUE) %>%
+      identity()
+    if (!is.null(selected_values)) {
+      object <- object[, Idents(object) %in% selected_values]
+      sliced_markers <- sliced_markers %>%
+        dplyr::filter(group %in% selected_values) %>%
+        dplyr::distinct(feature, .keep_all = TRUE)
+    }
+    vline_coords <- head(cumsum(table(sliced_markers$group)) + 0.5, -1)
+    sliced_markers <- dplyr::pull(sliced_markers, feature)
+    object[[metavar]][is.na(object[[metavar]])] <- "NA"
+    Idents(object) <- metavar
 
-    min_length <- min(purrr::map_int(markers, length))
+    markerplot <- DotPlot(object, assay = "gene", features = sliced_markers, group.by = metavar, dot.scale = 3) + ggplot2::theme(axis.text.x = ggplot2::element_text(size = 10, angle = 45, vjust = 1, hjust = 1), axis.text.y = ggplot2::element_text(size = 10)) + ggplot2::scale_y_discrete(position = "left") + ggplot2::scale_x_discrete(limits = sliced_markers) + ggplot2::geom_vline(xintercept = vline_coords, linetype = 2) + ggplot2::coord_flip() + NULL
 
-    markers <- purrr::map(markers, head, min_length) %>%
-      dplyr::bind_cols()
-
+    if (return_plotly == FALSE) {
+      return(markerplot)
+    }
+    plot_height <- (150 * num_markers)
+    plot_width <- (100 * length(levels(Idents(object))))
+    markerplot <- plotly::ggplotly(markerplot, height = plot_height, width = plot_width) %>%
+      plotly_settings() %>%
+      plotly::toWebGL() %>%
+      identity()
+    return(list(plot = markerplot, markers = marker_table))
   }
+)
 
-  if(unique_markers){
-    markers <-
-      markers %>%
-      dplyr::mutate(precedence = row_number()) %>%
-      pivot_longer(-precedence, names_to = "group", values_to = "markers") %>%
-      dplyr::arrange(markers, precedence) %>%
-      dplyr::group_by(markers) %>%
-      dplyr::filter(row_number() == 1) %>%
-      dplyr::arrange(group, precedence) %>%
-      tidyr::drop_na() %>%
-      dplyr::group_by(group) %>%
-      dplyr::mutate(precedence = row_number()) %>%
-      tidyr::pivot_wider(names_from = "group", values_from = "markers") %>%
-      dplyr::select(-precedence)
+setMethod(
+  "plot_markers", "SingleCellExperiment",
+  function(object, metavar = "batch", num_markers = 5, selected_values = NULL, return_plotly = FALSE, marker_method = "presto", object_assay = "gene", hide_technical = NULL, unique_markers = FALSE, p_val_cutoff = 1, ...) {
+    # Idents(object) <- pull_metadata(object)[[metavar]]
+    object <- find_all_markers(object, metavar, object_assay = object_assay, p_val_cutoff = p_val_cutoff)
+    marker_table <- metadata(object)$markers[[metavar]][[marker_method]]
+    markers <- marker_table %>%
+      enframe_markers() %>%
+      dplyr::mutate(dplyr::across(.fns = as.character))
+    if (!is.null(hide_technical)) {
+      markers <- purrr::map(markers, c)
+      if (hide_technical == "pobjectdo") {
+        markers <- purrr::map(markers, ~ .x[!.x %in% pobjectdogenes[[object_assay]]])
+      } else if (hide_technical == "mito_ribo") {
+        markers <- purrr::map(markers, ~ .x[!str_detect(.x, "^MT-")])
+        markers <- purrr::map(markers, ~ .x[!str_detect(.x, "^RPS")])
+        markers <- purrr::map(markers, ~ .x[!str_detect(.x, "^RPL")])
+      } else if (hide_technical == "all") {
+        markers <- purrr::map(markers, ~ .x[!.x %in% pobjectdogenes[[object_assay]]])
+        markers <- purrr::map(markers, ~ .x[!str_detect(.x, "^MT-")])
+        markers <- purrr::map(markers, ~ .x[!str_detect(.x, "^RPS")])
+        markers <- purrr::map(markers, ~ .x[!str_detect(.x, "^RPL")])
+      }
+      min_length <- min(purrr::map_int(markers, length))
+      markers <- purrr::map(markers, head, min_length) %>% dplyr::bind_cols()
+    }
+    if (unique_markers) {
+      markers <- markers %>%
+        dplyr::mutate(precedence = row_number()) %>%
+        pivot_longer(-precedence, names_to = "group", values_to = "markers") %>%
+        dplyr::arrange(markers, precedence) %>%
+        dplyr::group_by(markers) %>%
+        dplyr::filter(row_number() == 1) %>%
+        dplyr::arrange(group, precedence) %>%
+        tidyr::drop_na() %>%
+        dplyr::group_by(group) %>%
+        dplyr::mutate(precedence = row_number()) %>%
+        tidyr::pivot_wider(names_from = "group", values_from = "markers") %>%
+        dplyr::select(-precedence)
+    }
+    sliced_markers <- markers %>%
+      dplyr::slice_head(n = num_markers) %>%
+      tidyr::pivot_longer(everything(), names_to = "group", values_to = "feature") %>%
+      dplyr::arrange(group) %>%
+      dplyr::distinct(feature, .keep_all = TRUE) %>%
+      identity()
+    if (!is.null(selected_values)) {
+      object <- object[, Idents(object) %in% selected_values]
+      sliced_markers <- sliced_markers %>%
+        dplyr::filter(group %in% selected_values) %>%
+        dplyr::distinct(feature, .keep_all = TRUE)
+    }
+    vline_coords <- head(cumsum(table(sliced_markers$group)) + 0.5, -1)
+    sliced_markers <- dplyr::pull(sliced_markers, feature)
+    object[[metavar]][is.na(object[[metavar]])] <- "NA"
+    markerplot <- scater::plotDots(object, features = sliced_markers, group = metavar) +
+      ggplot2::theme(axis.text.x = ggplot2::element_text(size = 10, angle = 45, vjust = 1, hjust = 1), axis.text.y = ggplot2::element_text(size = 10)) +
+      # ggplot2::scale_y_discrete(position = "left") +
+      # ggplot2::scale_x_discrete(limits = sliced_markers) +
+      ggplot2::geom_hline(yintercept = vline_coords, linetype = 2) +
+      NULL
+    if (return_plotly == FALSE) {
+      return(markerplot)
+    }
+    plot_height <- (150 * num_markers)
+    plot_width <- (100 * length(levels(Idents(object))))
+    markerplot <- plotly::ggplotly(markerplot, height = plot_height, width = plot_width) %>%
+      plotly_settings() %>%
+      plotly::toWebGL() %>%
+      identity()
+    return(list(plot = markerplot, markers = marker_table))
   }
+)
 
-  sliced_markers <-
-    markers %>%
-    dplyr::slice_head(n = num_markers) %>%
-    tidyr::pivot_longer(everything(), names_to = "group", values_to = "feature") %>%
-    dplyr::arrange(group) %>%
-    dplyr::distinct(feature, .keep_all = TRUE) %>%
-    # dplyr::top_n(n = num_markers, wt = logFC) %>%
-    identity()
-
-  if(!is.null(selected_values)){
-    object <- object[,Idents(object) %in% selected_values]
-    sliced_markers <- sliced_markers %>%
-      dplyr::filter(group %in% selected_values) %>%
-      dplyr::distinct(feature, .keep_all = TRUE)
-  }
-  # browser()
-  vline_coords = head(cumsum(table(sliced_markers$group))+0.5, -1)
-
-  sliced_markers <- dplyr::pull(sliced_markers, feature)
-
-  object[[metavar]][is.na(object[[metavar]])] <- "NA"
-  Idents(object) <- metavar
-
-  markerplot <- DotPlot(object, assay = "gene", features = sliced_markers, group.by = metavar, dot.scale = 3) +
-    ggplot2::theme(axis.text.x = ggplot2::element_text(size = 10, angle = 45, vjust = 1, hjust=1),
-          axis.text.y = ggplot2::element_text(size = 10)) +
-    ggplot2::scale_y_discrete(position = "left") +
-    ggplot2::scale_x_discrete(limits = sliced_markers) +
-    ggplot2::geom_vline(xintercept = vline_coords, linetype = 2) +
-    ggplot2::coord_flip() +
-    NULL
-
-
-  if (return_plotly == FALSE) return(markerplot)
-
-  plot_height = (150*num_markers)
-  plot_width = (100*length(levels(Idents(object))))
-
-  markerplot <- plotly::ggplotly(markerplot, height = plot_height, width = plot_width) %>%
-    plotly_settings() %>%
-    plotly::toWebGL() %>%
-    # plotly::partial_bundle() %>%
-    identity()
-
-  return(list(plot = markerplot, markers = marker_table))
-
-}
 
 #' Plot Read Count
 #'

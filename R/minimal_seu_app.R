@@ -338,7 +338,7 @@ minimalSeuratApp <- function(object = panc8, loom_path = NULL, appTitle = NULL,
             message(paste0("reintegrating gene expression"))
             reintegrated_object <- reintegrate_object(object(),
               resolution = seq(0.2, 2, by = 0.2),
-              organism = object()@misc$experiment$organism
+              organism = Misc(object())$experiment$organism
             )
             object(reintegrated_object)
           }
@@ -373,7 +373,7 @@ minimalSeuratApp <- function(object = panc8, loom_path = NULL, appTitle = NULL,
             message(paste0("reintegrating gene expression"))
             reintegrated_object <- reintegrate_object(object(),
               resolution = seq(0.2, 2, by = 0.2),
-              organism = object()@misc$experiment$organism
+              organism = Misc(object())$experiment$organism
             )
             object(reintegrated_object)
           }

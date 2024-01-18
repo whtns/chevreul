@@ -39,8 +39,8 @@ run_scvelo <- function(object, loom_path, assay = "gene", fit.quantile = 0.05, c
 
   sub_object@assays[names(bm@assays)] <- bm@assays
   DefaultAssay(sub_object) <- assay
-  sub_object@misc$vel <- NULL
-  sub_object@misc[names(sub_object@misc) == "experiment"] <- NULL
+  Misc(sub_object)$vel <- NULL
+  Misc(sub_object)[names(Misc(sub_object)) == "experiment"] <- NULL
 
   # sub_object <- SeuratObject::RenameAssays(sub_object, gene = "RNA")
 

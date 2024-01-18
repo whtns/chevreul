@@ -79,7 +79,7 @@
 #' 'http://amp.pharm.mssm.edu/Enrichr/enrich'.
 #' @export
 #' @return Seurat object with Enrichr results for samples and clusters stored in
-#' object@misc$enriched_pathways$enrichr
+#' Misc(object)$enriched_pathways$enrichr
 #' @import dplyr
 #' @importFrom rlang .data
 #' @author Roman Hillje, modified by Kevin Stachelek
@@ -124,7 +124,7 @@ getEnrichedPathways <- function(
   ## --------------------------------------------------------------------------##
   ## check if marker genes are present and stop if they aren't
   ## --------------------------------------------------------------------------##
-  if (is.null(object@misc$markers)) {
+  if (is.null(Misc(object)$markers)) {
     stop(
       "No marker genes found. Please run 'getMarkerGenes()' first.",
       call. = FALSE
@@ -141,8 +141,8 @@ getEnrichedPathways <- function(
   ## - try up to three times to run enrichR annotation (fails sometimes)
   ## - filter results
   ## --------------------------------------------------------------------------##
-  if (!is.null(object@misc$markers[[1]]$presto)) {
-    if (is.data.frame(object@misc$markers[[1]]$presto)) {
+  if (!is.null(Misc(object)$markers[[1]]$presto)) {
+    if (is.data.frame(Misc(object)$markers[[1]]$presto)) {
       message(
         paste0(
           "[", format(Sys.time(), "%H:%M:%S"),
@@ -151,7 +151,7 @@ getEnrichedPathways <- function(
       )
 
       ## remove clusters for which no marker genes were found
-      markers_by_cluster <- object@misc$markers[[1]]$presto %>%
+      markers_by_cluster <- Misc(object)$markers[[1]]$presto %>%
         # dplyr::filter(padj < 0.05) %>%
         identity()
 
@@ -231,7 +231,7 @@ getEnrichedPathways <- function(
           " pathways passed the thresholds across all clusters and databases."
         )
       )
-    } else if (object@misc$markers == "no_markers_found") {
+    } else if (Misc(object)$markers == "no_markers_found") {
       message(
         paste0(
           "[", format(Sys.time(), "%H:%M:%S"),
@@ -267,7 +267,7 @@ getEnrichedPathways <- function(
       max_terms = max_terms
     )
   )
-  object@misc$enriched_pathways$enrichr <- results
+  Misc(object)$enriched_pathways$enrichr <- results
 
   ## --------------------------------------------------------------------------##
   ## return Seurat object
