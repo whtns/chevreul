@@ -13,15 +13,21 @@ is available
 
 There are also convenient functions for:
 
--   Clustering and Dimensional Reduction of Raw Sequencing Data.
--   <a href="https://satijalab.org/seurat/archive/v3.0/integration.html" target="_blank" rel="noopener noreferrer">Integration
-    and Label Transfer</a>
--   Louvain Clustering at a Range of Resolutions
--   Cell cycle state regression and labeling
--   RNA velocity calculation with
-    <a href="https://velocyto.org/" target="_blank" rel="noopener noreferrer">Velocyto.R</a>
-    and
-    <a href="https://scvelo.readthedocs.io/" target="_blank" rel="noopener noreferrer">scvelo</a>
+- Clustering and Dimensional Reduction of Raw Sequencing Data.
+- <a href="https://satijalab.org/seurat/archive/v3.0/integration.html" target="_blank" rel="noopener noreferrer">Integration
+  and Label Transfer</a>
+- Louvain Clustering at a Range of Resolutions
+- Cell cycle state regression and labeling
+- RNA velocity calculation with
+  <a href="https://velocyto.org/" target="_blank" rel="noopener noreferrer">Velocyto.R</a>
+  and
+  <a href="https://scvelo.readthedocs.io/" target="_blank" rel="noopener noreferrer">scvelo</a>
+
+> \[!WARNING\] Chevreul was designed for full-length smart-seq based
+> single cell data. Default settings may not be appropriate for droplet
+> (10x) data, though most can be adjusted. Keep in mind [best
+> practices](https://satijalab.org/seurat/articles/pbmc3k_tutorial)
+> regarding normalization, dimensional reduction, etc. when using.
 
 ## Installation
 
@@ -43,7 +49,7 @@ You can also customize the location of the app using these steps:
 
 ``` r
 devtools::install_github("whtns/chevreul")
-chevreul::create_project_db(destdir='/your/path/to/app')
+chevreul::create_project_db(destdir = "/your/path/to/app")
 ```
 
 ## Getting Started
@@ -61,12 +67,12 @@ library(ggraph)
 
 Chevreul provides a single command to:
 
--   construct a Seurat object
+- construct a Seurat object
 
--   filter genes by minimum expression and ubiquity
+- filter genes by minimum expression and ubiquity
 
--   normalize and scale expression by any of several methods packaged in
-    Seurat
+- normalize and scale expression by any of several methods packaged in
+  Seurat
 
 ## Run clustering on a single seurat object
 
@@ -75,15 +81,16 @@ By default clustering will be run at ten different resolutions between
 argument as a numeric vector.
 
 ``` r
-clustered_seu <- clustering_workflow(human_gene_transcript_seu, 
-                                     experiment_name = "seurat_hu_trans", 
-                                     organism = "human")
+clustered_seu <- clustering_workflow(human_gene_transcript_seu,
+    experiment_name = "seurat_hu_trans",
+    organism = "human"
+)
 ```
 
 ## Get a first look at a processed dataset using an interactive shiny app
 
 ``` r
-minimalSeuratApp(clustered_seu)
+minimalSeuratApp(human_gene_transcript_seu)
 ```
 
 ## Set up a seurat object
@@ -125,7 +132,7 @@ tSNE, and UMAP. The default assay the dimension reduction is being run
 on is “gene”.
 
 ``` r
-myseu <- seurat_reduce_dimensions(myseu, assay = "RNA") 
+myseu <- seurat_reduce_dimensions(myseu, assay = "RNA")
 ```
 
 ## Community detection by clustering
@@ -135,7 +142,7 @@ algorithms available in Seurat. Clustering is performed at a range of
 resolutions with default value ranging from 0.2 to 2 and pca reduction
 
 ``` r
- seu <- seurat_cluster(seu = Dim_Red_seu, resolution = seq(0.2, 2, by = 0.2) )
+seu <- seurat_cluster(seu = Dim_Red_seu, resolution = seq(0.2, 2, by = 0.2))
 ```
 
 This function produces clustering analysis via two steps performed using
@@ -148,7 +155,7 @@ splitting the dataset into subsets based on a single attribute indicated
 by the split.by argument
 
 ``` r
-split_human<- SplitObject(human_gene_transcript_seu, split.by = "dataset")
+split_human <- SplitObject(human_gene_transcript_seu, split.by = "dataset")
 ```
 
 In this example the `split_human` object consists of a list of subsetted
@@ -167,7 +174,7 @@ integrated_seu <- integration_workflow(split_human)
 ## View analysis details
 
 ``` r
-Misc(integrated_seu, "experiment") %>% 
-  tibble::enframe() %>% 
-  knitr::kable()
+Misc(integrated_seu, "experiment") %>%
+    tibble::enframe() %>%
+    knitr::kable()
 ```

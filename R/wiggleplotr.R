@@ -9,22 +9,20 @@
 #' @export
 #'
 #' @examples
-build_bigwig_db <- function(bam_files, bigwig_db = "~/.cache/chevreul/bw-files.db"){
+build_bigwig_db <- function(bam_files, bigwig_db = "~/.cache/chevreul/bw-files.db") {
+    bam_files <- fs::path_abs(bam_files)
 
-  bam_files <- fs::path_abs(bam_files)
+    bigwigfiles <- purrr::map_chr(bam_files, ~ megadepth::bam_to_bigwig(.x, prefix = fs::path_ext_remove(.x), overwrite = TRUE)) %>%
+        purrr::set_names(fs::path_file) %>%
+        tibble::enframe("name", "bigWig") %>%
+        dplyr::mutate(sample_id = stringr::str_remove(name, "_Aligned.sortedByCoord.out.bw")) %>%
+        identity()
 
-  bigwigfiles <- purrr::map_chr(bam_files, ~megadepth::bam_to_bigwig(.x, prefix = fs::path_ext_remove(.x), overwrite = TRUE)) %>%
-    purrr::set_names(fs::path_file) %>%
-    tibble::enframe("name", "bigWig") %>%
-    dplyr::mutate(sample_id = stringr::str_remove(name, "_Aligned.sortedByCoord.out.bw")) %>%
-    identity()
+    con <- DBI::dbConnect(RSQLite::SQLite(), dbname = bigwig_db)
 
-  con <- DBI::dbConnect(RSQLite::SQLite(), dbname = bigwig_db)
+    DBI::dbWriteTable(con, "bigwigfiles", bigwigfiles, append = TRUE)
 
-  DBI::dbWriteTable(con, "bigwigfiles", bigwigfiles, append = TRUE)
-
-  DBI::dbDisconnect(con)
-
+    DBI::dbDisconnect(con)
 }
 
 #' Load Bigwigs
@@ -39,24 +37,24 @@ build_bigwig_db <- function(bam_files, bigwig_db = "~/.cache/chevreul/bw-files.d
 #'
 #' @examples
 load_bigwigs <- function(seu, bigwig_db = "~/.cache/chevreul/bw-files.db") {
-  con <- DBI::dbConnect(RSQLite::SQLite(), dbname = bigwig_db)
+    con <- DBI::dbConnect(RSQLite::SQLite(), dbname = bigwig_db)
 
-  bigwigfiles <- DBI::dbReadTable(con, "bigwigfiles") %>%
-    dplyr::filter(sample_id %in% colnames(seu)) %>%
-    identity()
+    bigwigfiles <- DBI::dbReadTable(con, "bigwigfiles") %>%
+        dplyr::filter(sample_id %in% colnames(seu)) %>%
+        identity()
 
-  missing_bigwigs <- colnames(seu)[!(colnames(seu) %in% bigwigfiles$sample_id)] %>%
-    paste(collapse = ", ")
+    missing_bigwigs <- colnames(seu)[!(colnames(seu) %in% bigwigfiles$sample_id)] %>%
+        paste(collapse = ", ")
 
-  warning(paste0("Sample coverage files ", missing_bigwigs, "(.bw) do not match samples in seurat object (check file names)"))
+    warning(paste0("Sample coverage files ", missing_bigwigs, "(.bw) do not match samples in seurat object (check file names)"))
 
-  DBI::dbDisconnect(con)
+    DBI::dbDisconnect(con)
 
-  bigwigfiles <-
-    bigwigfiles %>%
-    dplyr::filter(sample_id %in% colnames(seu))
+    bigwigfiles <-
+        bigwigfiles %>%
+        dplyr::filter(sample_id %in% colnames(seu))
 
-  return(bigwigfiles)
+    return(bigwigfiles)
 }
 
 #' Plot BigWig Coverage for Genes of Interest by a Given Variable
@@ -78,110 +76,110 @@ load_bigwigs <- function(seu, bigwig_db = "~/.cache/chevreul/bw-files.db") {
 #'
 #' @examples
 plot_gene_coverage_by_var <- function(genes_of_interest = "RXRG",
-                                      cell_metadata,
-                                      bigwig_tbl,
-                                      var_of_interest = "batch",
-                                      values_of_interest = NULL,
-                                      organism = "human",
-                                      edb = NULL,
-                                      heights = c(3, 1),
-                                      scale_y = "log10",
-                                      reverse_x = FALSE,
-                                      start = NULL,
-                                      end = NULL,
-                                      summarize_transcripts = FALSE,
-                                      ...) {
-  if (organism == "mouse") {
-    edb <- EnsDb.Mmusculus.v79::EnsDb.Mmusculus.v79
-  } else {
-    edb <- EnsDb.Hsapiens.v86::EnsDb.Hsapiens.v86
-  }
+    cell_metadata,
+    bigwig_tbl,
+    var_of_interest = "batch",
+    values_of_interest = NULL,
+    organism = "human",
+    edb = NULL,
+    heights = c(3, 1),
+    scale_y = "log10",
+    reverse_x = FALSE,
+    start = NULL,
+    end = NULL,
+    summarize_transcripts = FALSE,
+    ...) {
+    if (organism == "mouse") {
+        edb <- EnsDb.Mmusculus.v79::EnsDb.Mmusculus.v79
+    } else {
+        edb <- EnsDb.Hsapiens.v86::EnsDb.Hsapiens.v86
+    }
 
-  cell_metadata["sample_id"] <- NULL
+    cell_metadata["sample_id"] <- NULL
 
 
-  new_track_data <-
-    cell_metadata %>%
-    tibble::rownames_to_column("sample_id") %>%
-    dplyr::select(sample_id,
-      condition = {{ var_of_interest }},
-      track_id = {{ var_of_interest }},
-      colour_group = {{ var_of_interest }},
-      everything()
-    ) %>%
-    dplyr::mutate(scaling_factor = 1) %>% # scales::rescale(nCount_RNA)
-    dplyr::mutate(condition = as.factor(condition), colour_group = as.factor(colour_group)) %>%
-    dplyr::left_join(bigwig_tbl, by = "sample_id") %>%
-    dplyr::filter(!is.na(bigWig)) %>%
-    identity()
-
-  if (!is.null(values_of_interest)) {
     new_track_data <-
-      new_track_data %>%
-      dplyr::filter(condition %in% values_of_interest)
-  }
+        cell_metadata %>%
+        tibble::rownames_to_column("sample_id") %>%
+        dplyr::select(sample_id,
+            condition = {{ var_of_interest }},
+            track_id = {{ var_of_interest }},
+            colour_group = {{ var_of_interest }},
+            everything()
+        ) %>%
+        dplyr::mutate(scaling_factor = 1) %>% # scales::rescale(nCount_RNA)
+        dplyr::mutate(condition = as.factor(condition), colour_group = as.factor(colour_group)) %>%
+        dplyr::left_join(bigwig_tbl, by = "sample_id") %>%
+        dplyr::filter(!is.na(bigWig)) %>%
+        identity()
 
-  if (is.null(start) | is.null(end) | list(...)$rescale_introns == TRUE) {
-    region_coords <- NULL
-  } else {
-    region_coords <- c(start, end)
-  }
+    if (!is.null(values_of_interest)) {
+        new_track_data <-
+            new_track_data %>%
+            dplyr::filter(condition %in% values_of_interest)
+    }
 
-  coverage_plot_list <- wiggleplotr::plotCoverageFromEnsembldb(
-    ensembldb = edb,
-    gene_names = genes_of_interest,
-    track_data = new_track_data,
-    heights = heights,
-    alpha = 0.5,
-    fill_palette = scales::hue_pal()(length(levels(new_track_data$colour_group))),
-    return_subplots_list = TRUE,
-    region_coords = region_coords,
-    ...
-  )
+    if (is.null(start) | is.null(end) | list(...)$rescale_introns == TRUE) {
+        region_coords <- NULL
+    } else {
+        region_coords <- c(start, end)
+    }
 
-  if (scale_y == "log10") {
-    coverage_plot_list$coverage_plot <-
-      coverage_plot_list$coverage_plot +
-      scale_y_continuous(trans = scales::pseudo_log_trans(base = 10), breaks = 10^(0:4)) +
-      NULL
-  }
+    coverage_plot_list <- wiggleplotr::plotCoverageFromEnsembldb(
+        ensembldb = edb,
+        gene_names = genes_of_interest,
+        track_data = new_track_data,
+        heights = heights,
+        alpha = 0.5,
+        fill_palette = scales::hue_pal()(length(levels(new_track_data$colour_group))),
+        return_subplots_list = TRUE,
+        region_coords = region_coords,
+        ...
+    )
 
-  if (reverse_x) {
-    transformed_x_lim <- ggplot2::ggplot_build(coverage_plot_list$coverage_plot)$layout$panel_params[[1]]$x.range
-    # transformed_x_lim[1] <- transformed_x_lim[1] - diff(transformed_x_lim)*0.2
+    if (scale_y == "log10") {
+        coverage_plot_list$coverage_plot <-
+            coverage_plot_list$coverage_plot +
+            scale_y_continuous(trans = scales::pseudo_log_trans(base = 10), breaks = 10^(0:4)) +
+            NULL
+    }
 
-    coverage_plot_list$coverage_plot <-
-      coverage_plot_list$coverage_plot +
-      coord_cartesian(
-        xlim = rev(transformed_x_lim),
-        expand = FALSE
-      ) +
-      NULL
+    if (reverse_x) {
+        transformed_x_lim <- ggplot2::ggplot_build(coverage_plot_list$coverage_plot)$layout$panel_params[[1]]$x.range
+        # transformed_x_lim[1] <- transformed_x_lim[1] - diff(transformed_x_lim)*0.2
 
-    transformed_x_lim <- ggplot2::ggplot_build(coverage_plot_list$tx_structure)$layout$panel_params[[1]]$x.range
-    # transformed_x_lim[1] <- transformed_x_lim[1] - diff(transformed_x_lim)*0.2
+        coverage_plot_list$coverage_plot <-
+            coverage_plot_list$coverage_plot +
+            coord_cartesian(
+                xlim = rev(transformed_x_lim),
+                expand = FALSE
+            ) +
+            NULL
 
-    coverage_plot_list$tx_structure <-
-      coverage_plot_list$tx_structure +
-      scale_x_reverse() +
-      coord_cartesian(
-        xlim = rev(transformed_x_lim),
-        expand = FALSE
-      ) +
-      NULL
-  }
+        transformed_x_lim <- ggplot2::ggplot_build(coverage_plot_list$tx_structure)$layout$panel_params[[1]]$x.range
+        # transformed_x_lim[1] <- transformed_x_lim[1] - diff(transformed_x_lim)*0.2
 
-  x_lim <- ggplot2::ggplot_build(coverage_plot_list$coverage_plot)$layout$panel_params[[1]]$x.range
+        coverage_plot_list$tx_structure <-
+            coverage_plot_list$tx_structure +
+            scale_x_reverse() +
+            coord_cartesian(
+                xlim = rev(transformed_x_lim),
+                expand = FALSE
+            ) +
+            NULL
+    }
 
-  base_coverage <- coverage_plot_list$coverage_plot$data %>%
-    dplyr::filter(!is.na(coverage)) %>%
-    # tidyr::drop_na() %>%
-    dplyr::group_by(sample_id, colour_group) %>%
-    dplyr::summarize(sum = signif(sum(coverage), 4)) %>%
-    dplyr::mutate(sum = sum / diff(x_lim)) %>%
-    identity()
+    x_lim <- ggplot2::ggplot_build(coverage_plot_list$coverage_plot)$layout$panel_params[[1]]$x.range
 
-  coverage_plot <- patchwork::wrap_plots(coverage_plot_list, heights = heights, ncol = 1)
+    base_coverage <- coverage_plot_list$coverage_plot$data %>%
+        dplyr::filter(!is.na(coverage)) %>%
+        # tidyr::drop_na() %>%
+        dplyr::group_by(sample_id, colour_group) %>%
+        dplyr::summarize(sum = signif(sum(coverage), 4)) %>%
+        dplyr::mutate(sum = sum / diff(x_lim)) %>%
+        identity()
 
-  return(list(plot = coverage_plot, table = base_coverage))
+    coverage_plot <- patchwork::wrap_plots(coverage_plot_list, heights = heights, ncol = 1)
+
+    return(list(plot = coverage_plot, table = base_coverage))
 }

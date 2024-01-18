@@ -9,40 +9,40 @@
 #'
 #' @examples
 add_census_slot <- function(seu, assay = "gene", slot = "counts") {
-  data <- Seurat::GetAssayData(seu, assay = assay, slot = slot)
+    data <- Seurat::GetAssayData(seu, assay = assay, slot = slot)
 
-  data <- floor(data)
+    data <- floor(data)
 
-  pd <- new("AnnotatedDataFrame", data = seu@meta.data)
+    pd <- new("AnnotatedDataFrame", data = seu@meta.data)
 
-  fData <- data.frame(gene_short_name = row.names(data), row.names = row.names(data))
-  fd <- new("AnnotatedDataFrame", data = fData)
+    fData <- data.frame(gene_short_name = row.names(data), row.names = row.names(data))
+    fd <- new("AnnotatedDataFrame", data = fData)
 
-  # Construct monocle cds
-  monocle_cds <- monocle::newCellDataSet(data,
-    phenoData = pd,
-    featureData = fd,
-    lowerDetectionLimit = 0.5,
-    expressionFamily = VGAM::negbinomial.size()
-  )
+    # Construct monocle cds
+    monocle_cds <- monocle::newCellDataSet(data,
+        phenoData = pd,
+        featureData = fd,
+        lowerDetectionLimit = 0.5,
+        expressionFamily = VGAM::negbinomial.size()
+    )
 
-  rpc_matrix <- monocle::relative2abs(monocle_cds, method = "num_genes")
+    rpc_matrix <- monocle::relative2abs(monocle_cds, method = "num_genes")
 
-  rpc_matrix[is.na(rpc_matrix)] <- 0
+    rpc_matrix[is.na(rpc_matrix)] <- 0
 
-  monocle_cds <- monocle::newCellDataSet(as(rpc_matrix, "sparseMatrix"),
-    phenoData = pd,
-    featureData = fd,
-    lowerDetectionLimit = 0.5,
-    expressionFamily = VGAM::negbinomial.size()
-  )
+    monocle_cds <- monocle::newCellDataSet(as(rpc_matrix, "sparseMatrix"),
+        phenoData = pd,
+        featureData = fd,
+        lowerDetectionLimit = 0.5,
+        expressionFamily = VGAM::negbinomial.size()
+    )
 
-  attributes(seu)$census <- Biobase::exprs(monocle_cds)
+    attributes(seu)$census <- Biobase::exprs(monocle_cds)
 
-  seu[["census"]] <- seu[["gene"]]
-  seu <- SetAssayData(seu, slot = "data", new.data = Biobase::exprs(monocle_cds), assay = "census")
+    seu[["census"]] <- seu[["gene"]]
+    seu <- SetAssayData(seu, slot = "data", new.data = Biobase::exprs(monocle_cds), assay = "census")
 
-  return(seu)
+    return(seu)
 }
 
 #' Convert a Seurat V3 object to a Monocle v2 object
@@ -54,155 +54,154 @@ add_census_slot <- function(seu, assay = "gene", slot = "counts") {
 #'
 #' @examples
 convert_seuv3_to_monoclev2 <- function(seu, assay = "gene", slot = "data", return_census = FALSE, sig_slice = 1000) {
+    # Load Seurat object
+    # Extract data, phenotype data, and feature data from the SeuratObject
+    # data <- as(as.matrix(seu@assays[["gene"]]@counts), "sparseMatrix")
 
-  # Load Seurat object
-  # Extract data, phenotype data, and feature data from the SeuratObject
-  # data <- as(as.matrix(seu@assays[["gene"]]@counts), "sparseMatrix")
+    data <- Seurat::GetAssayData(seu, assay = assay, slot = slot)
 
-  data <- Seurat::GetAssayData(seu, assay = assay, slot = slot)
+    data <- floor(data)
 
-  data <- floor(data)
+    pd <- new("AnnotatedDataFrame", data = seu@meta.data)
 
-  pd <- new("AnnotatedDataFrame", data = seu@meta.data)
+    fData <- data.frame(gene_short_name = row.names(data), row.names = row.names(data))
+    fd <- new("AnnotatedDataFrame", data = fData)
 
-  fData <- data.frame(gene_short_name = row.names(data), row.names = row.names(data))
-  fd <- new("AnnotatedDataFrame", data = fData)
-
-  # Construct monocle cds
-  monocle_cds <- monocle::newCellDataSet(data,
-    phenoData = pd,
-    featureData = fd,
-    lowerDetectionLimit = 0.5,
-    expressionFamily = VGAM::negbinomial.size()
-  )
-
-  if (return_census) {
-    rpc_matrix <- monocle::relative2abs(monocle_cds, method = "num_genes")
-
-    rpc_matrix[is.na(rpc_matrix)] <- 0
-
-    monocle_cds <- monocle::newCellDataSet(as(rpc_matrix, "sparseMatrix"),
-      phenoData = pd,
-      featureData = fd,
-      lowerDetectionLimit = 0.5,
-      expressionFamily = VGAM::negbinomial.size()
+    # Construct monocle cds
+    monocle_cds <- monocle::newCellDataSet(data,
+        phenoData = pd,
+        featureData = fd,
+        lowerDetectionLimit = 0.5,
+        expressionFamily = VGAM::negbinomial.size()
     )
 
-    return(monocle_cds)
-  }
+    if (return_census) {
+        rpc_matrix <- monocle::relative2abs(monocle_cds, method = "num_genes")
+
+        rpc_matrix[is.na(rpc_matrix)] <- 0
+
+        monocle_cds <- monocle::newCellDataSet(as(rpc_matrix, "sparseMatrix"),
+            phenoData = pd,
+            featureData = fd,
+            lowerDetectionLimit = 0.5,
+            expressionFamily = VGAM::negbinomial.size()
+        )
+
+        return(monocle_cds)
+    }
 
 
-  # filter by gene expression
-  # # keep genes that are expressed in at least 5 cells
-  # min_expression <- 0.1
-  # monocle_cds <- detectGenes(monocle_cds, min_expr=min_expression)
-  # expressed_genes <- row.names(subset(featureData(monocle_cds), num_cells_expressed >= 5))
+    # filter by gene expression
+    # # keep genes that are expressed in at least 5 cells
+    # min_expression <- 0.1
+    # monocle_cds <- detectGenes(monocle_cds, min_expr=min_expression)
+    # expressed_genes <- row.names(subset(featureData(monocle_cds), num_cells_expressed >= 5))
 
-  # filter by gene expression (default monocle settings)
-  monocle_cds <- detectGenes(monocle_cds, min_expr = 0.1)
+    # filter by gene expression (default monocle settings)
+    monocle_cds <- detectGenes(monocle_cds, min_expr = 0.1)
 
-  expressed_genes <- row.names(subset(
-    Biobase::featureData(monocle_cds)@data,
-    num_cells_expressed >= 10
-  ))
+    expressed_genes <- row.names(subset(
+        Biobase::featureData(monocle_cds)@data,
+        num_cells_expressed >= 10
+    ))
 
-  # look at distribution of mRNA totals across cells
-  phenoData(monocle_cds)$Total_mRNAs <- Matrix::colSums(Biobase::exprs(monocle_cds))
+    # look at distribution of mRNA totals across cells
+    phenoData(monocle_cds)$Total_mRNAs <- Matrix::colSums(Biobase::exprs(monocle_cds))
 
-  # monocle_cds <- monocle_cds[, phenoData(monocle_cds)$Total_mRNAs < 1e6]
+    # monocle_cds <- monocle_cds[, phenoData(monocle_cds)$Total_mRNAs < 1e6]
 
-  upper_bound <- 10^(mean(log10(phenoData(monocle_cds)$Total_mRNAs)) +
-    2 * sd(log10(phenoData(monocle_cds)$Total_mRNAs)))
-  lower_bound <- 10^(mean(log10(phenoData(monocle_cds)$Total_mRNAs)) -
-    2 * sd(log10(phenoData(monocle_cds)$Total_mRNAs)))
+    upper_bound <- 10^(mean(log10(phenoData(monocle_cds)$Total_mRNAs)) +
+        2 * sd(log10(phenoData(monocle_cds)$Total_mRNAs)))
+    lower_bound <- 10^(mean(log10(phenoData(monocle_cds)$Total_mRNAs)) -
+        2 * sd(log10(phenoData(monocle_cds)$Total_mRNAs)))
 
-  # remove cells outside safe range of plot ---------------------------------
+    # remove cells outside safe range of plot ---------------------------------
 
-  monocle_cds <- monocle_cds[, phenoData(monocle_cds)$Total_mRNAs > lower_bound &
-    phenoData(monocle_cds)$Total_mRNAs < upper_bound]
-  monocle_cds <- detectGenes(monocle_cds, min_expr = 0.1)
+    monocle_cds <- monocle_cds[, phenoData(monocle_cds)$Total_mRNAs > lower_bound &
+        phenoData(monocle_cds)$Total_mRNAs < upper_bound]
+    monocle_cds <- detectGenes(monocle_cds, min_expr = 0.1)
 
-  monocle_cds <- estimateSizeFactors(monocle_cds)
-  monocle_cds <- estimateDispersions(monocle_cds)
+    monocle_cds <- estimateSizeFactors(monocle_cds)
+    monocle_cds <- estimateDispersions(monocle_cds)
 
-  # verify lognormal distribution of expression values ----------------------
+    # verify lognormal distribution of expression values ----------------------
 
-  # Log-transform each value in the expression matrix.
-  L <- log(Biobase::exprs(monocle_cds[expressed_genes, ]))
+    # Log-transform each value in the expression matrix.
+    L <- log(Biobase::exprs(monocle_cds[expressed_genes, ]))
 
-  # Standardize each gene, so that they are all on the same scale,
-  # Then melt the data with plyr so we can plot it easily
-  # melted_dens_df <- melt(Matrix::t(scale(Matrix::t(L))))
-
-
-  # use dpFeature -----------------------------------------------------------
-
-  monocle_cds <- detectGenes(monocle_cds, min_expr = 0.1)
-  Biobase::featureData(monocle_cds)$use_for_ordering <- Biobase::featureData(monocle_cds)$num_cells_expressed > 0.05 * ncol(monocle_cds)
-
-  # print(plot_pc_variance_explained(monocle_cds, return_all = F))
-
-  monocle_cds_red <- reduceDimension(monocle_cds,
-    max_components = 2,
-    norm_method = "log",
-    num_dim = 3,
-    reduction_method = "tSNE",
-    verbose = T
-  )
-
-  monocle_cds_red <- clusterCells(monocle_cds_red, verbose = F)
-
-  # check clustering results
-  print(plot_cell_clusters(monocle_cds_red, color_by = "as.factor(Cluster)"))
-
-  # for (i in colorval){
-  #   print(plot_cell_clusters(monocle_cds_red, color_by = paste0('as.factor(', i, ')')))
-  # }
+    # Standardize each gene, so that they are all on the same scale,
+    # Then melt the data with plyr so we can plot it easily
+    # melted_dens_df <- melt(Matrix::t(scale(Matrix::t(L))))
 
 
-  # provide decision plot
-  print(plot_rho_delta(monocle_cds_red, rho_threshold = 2, delta_threshold = 4))
+    # use dpFeature -----------------------------------------------------------
 
-  # rerun based on user-defined threshold
-  monocle_cds_red <- clusterCells(monocle_cds_red,
-    rho_threshold = 2,
-    delta_threshold = 4,
-    skip_rho_sigma = T,
-    verbose = F
-  )
+    monocle_cds <- detectGenes(monocle_cds, min_expr = 0.1)
+    Biobase::featureData(monocle_cds)$use_for_ordering <- Biobase::featureData(monocle_cds)$num_cells_expressed > 0.05 * ncol(monocle_cds)
 
-  # check final clustering
-  print(plot_cell_clusters(monocle_cds_red, color_by = "as.factor(Cluster)"))
-  #
-  # for (i in colorval){
-  #   print(plot_cell_clusters(monocle_cds_red, color_by = paste0('as.factor(', i, ')')))
-  # }
+    # print(plot_pc_variance_explained(monocle_cds, return_all = F))
 
+    monocle_cds_red <- reduceDimension(monocle_cds,
+        max_components = 2,
+        norm_method = "log",
+        num_dim = 3,
+        reduction_method = "tSNE",
+        verbose = T
+    )
 
+    monocle_cds_red <- clusterCells(monocle_cds_red, verbose = F)
 
-  # perform differential expression -----------------------------------------
+    # check clustering results
+    print(plot_cell_clusters(monocle_cds_red, color_by = "as.factor(Cluster)"))
 
-  # find expressed genes
-  monocle_cds_expressed_genes <- rownames(subset(Biobase::featureData(monocle_cds), Biobase::featureData(monocle_cds)$num_cells_expressed >= 10))
-
-  print("running differential expression test")
-  tictoc::tic("finished differential expression with")
-
-  diff_test_res <- differentialGeneTest(monocle_cds_red[monocle_cds_expressed_genes, ],
-    fullModelFormulaStr = "~Cluster",
-    cores = 6
-  )
-  tictoc::toc()
+    # for (i in colorval){
+    #   print(plot_cell_clusters(monocle_cds_red, color_by = paste0('as.factor(', i, ')')))
+    # }
 
 
-  # select top 1000 signif. genes
-  ordering_genes <- row.names(diff_test_res)[order(diff_test_res$qval)][1:sig_slice]
+    # provide decision plot
+    print(plot_rho_delta(monocle_cds_red, rho_threshold = 2, delta_threshold = 4))
 
-  monocle_cds <- setOrderingFilter(monocle_cds, ordering_genes = ordering_genes)
+    # rerun based on user-defined threshold
+    monocle_cds_red <- clusterCells(monocle_cds_red,
+        rho_threshold = 2,
+        delta_threshold = 4,
+        skip_rho_sigma = T,
+        verbose = F
+    )
 
-  monocle_cds <- reduceDimension(monocle_cds, method = "DDRTree")
+    # check final clustering
+    print(plot_cell_clusters(monocle_cds_red, color_by = "as.factor(Cluster)"))
+    #
+    # for (i in colorval){
+    #   print(plot_cell_clusters(monocle_cds_red, color_by = paste0('as.factor(', i, ')')))
+    # }
 
-  monocle_cds <- orderCells(monocle_cds)
+
+
+    # perform differential expression -----------------------------------------
+
+    # find expressed genes
+    monocle_cds_expressed_genes <- rownames(subset(Biobase::featureData(monocle_cds), Biobase::featureData(monocle_cds)$num_cells_expressed >= 10))
+
+    print("running differential expression test")
+    tictoc::tic("finished differential expression with")
+
+    diff_test_res <- differentialGeneTest(monocle_cds_red[monocle_cds_expressed_genes, ],
+        fullModelFormulaStr = "~Cluster",
+        cores = 6
+    )
+    tictoc::toc()
+
+
+    # select top 1000 signif. genes
+    ordering_genes <- row.names(diff_test_res)[order(diff_test_res$qval)][1:sig_slice]
+
+    monocle_cds <- setOrderingFilter(monocle_cds, ordering_genes = ordering_genes)
+
+    monocle_cds <- reduceDimension(monocle_cds, method = "DDRTree")
+
+    monocle_cds <- orderCells(monocle_cds)
 }
 
 #' Convert a Seurat V3 object to a Monocle v2 object
@@ -214,151 +213,150 @@ convert_seuv3_to_monoclev2 <- function(seu, assay = "gene", slot = "data", retur
 #'
 #' @examples
 convert_monoclev2_to_seuv3 <- function(seu, assay = "gene", slot = "data", return_census = FALSE, sig_slice = 1000) {
+    # Load Seurat object
+    # Extract data, phenotype data, and feature data from the SeuratObject
+    # data <- as(as.matrix(seu@assays[["gene"]]@counts), "sparseMatrix")
 
-  # Load Seurat object
-  # Extract data, phenotype data, and feature data from the SeuratObject
-  # data <- as(as.matrix(seu@assays[["gene"]]@counts), "sparseMatrix")
+    data <- Seurat::GetAssayData(seu, assay = assay, slot = slot)
 
-  data <- Seurat::GetAssayData(seu, assay = assay, slot = slot)
+    data <- floor(data)
 
-  data <- floor(data)
+    pd <- new("AnnotatedDataFrame", data = seu@meta.data)
 
-  pd <- new("AnnotatedDataFrame", data = seu@meta.data)
+    fData <- data.frame(gene_short_name = row.names(data), row.names = row.names(data))
+    fd <- new("AnnotatedDataFrame", data = fData)
 
-  fData <- data.frame(gene_short_name = row.names(data), row.names = row.names(data))
-  fd <- new("AnnotatedDataFrame", data = fData)
-
-  # Construct monocle cds
-  monocle_cds <- monocle::newCellDataSet(data,
-    phenoData = pd,
-    featureData = fd,
-    lowerDetectionLimit = 0.5,
-    expressionFamily = VGAM::negbinomial.size()
-  )
-
-  if (return_census) {
-    rpc_matrix <- monocle::relative2abs(monocle_cds, method = "num_genes")
-
-    monocle_cds <- monocle::newCellDataSet(as(rpc_matrix, "sparseMatrix"),
-      phenoData = pd,
-      featureData = fd,
-      lowerDetectionLimit = 0.5,
-      expressionFamily = VGAM::negbinomial.size()
+    # Construct monocle cds
+    monocle_cds <- monocle::newCellDataSet(data,
+        phenoData = pd,
+        featureData = fd,
+        lowerDetectionLimit = 0.5,
+        expressionFamily = VGAM::negbinomial.size()
     )
-  }
+
+    if (return_census) {
+        rpc_matrix <- monocle::relative2abs(monocle_cds, method = "num_genes")
+
+        monocle_cds <- monocle::newCellDataSet(as(rpc_matrix, "sparseMatrix"),
+            phenoData = pd,
+            featureData = fd,
+            lowerDetectionLimit = 0.5,
+            expressionFamily = VGAM::negbinomial.size()
+        )
+    }
 
 
-  # filter by gene expression
-  # # keep genes that are expressed in at least 5 cells
-  # min_expression <- 0.1
-  # monocle_cds <- detectGenes(monocle_cds, min_expr=min_expression)
-  # expressed_genes <- row.names(subset(featureData(monocle_cds), num_cells_expressed >= 5))
+    # filter by gene expression
+    # # keep genes that are expressed in at least 5 cells
+    # min_expression <- 0.1
+    # monocle_cds <- detectGenes(monocle_cds, min_expr=min_expression)
+    # expressed_genes <- row.names(subset(featureData(monocle_cds), num_cells_expressed >= 5))
 
-  # filter by gene expression (default monocle settings)
-  monocle_cds <- detectGenes(monocle_cds, min_expr = 0.1)
+    # filter by gene expression (default monocle settings)
+    monocle_cds <- detectGenes(monocle_cds, min_expr = 0.1)
 
-  expressed_genes <- row.names(subset(
-    Biobase::featureData(monocle_cds)@data,
-    num_cells_expressed >= 10
-  ))
+    expressed_genes <- row.names(subset(
+        Biobase::featureData(monocle_cds)@data,
+        num_cells_expressed >= 10
+    ))
 
-  # look at distribution of mRNA totals across cells
-  phenoData(monocle_cds)$Total_mRNAs <- Matrix::colSums(Biobase::exprs(monocle_cds))
+    # look at distribution of mRNA totals across cells
+    phenoData(monocle_cds)$Total_mRNAs <- Matrix::colSums(Biobase::exprs(monocle_cds))
 
-  # monocle_cds <- monocle_cds[, phenoData(monocle_cds)$Total_mRNAs < 1e6]
+    # monocle_cds <- monocle_cds[, phenoData(monocle_cds)$Total_mRNAs < 1e6]
 
-  upper_bound <- 10^(mean(log10(phenoData(monocle_cds)$Total_mRNAs)) +
-    2 * sd(log10(phenoData(monocle_cds)$Total_mRNAs)))
-  lower_bound <- 10^(mean(log10(phenoData(monocle_cds)$Total_mRNAs)) -
-    2 * sd(log10(phenoData(monocle_cds)$Total_mRNAs)))
+    upper_bound <- 10^(mean(log10(phenoData(monocle_cds)$Total_mRNAs)) +
+        2 * sd(log10(phenoData(monocle_cds)$Total_mRNAs)))
+    lower_bound <- 10^(mean(log10(phenoData(monocle_cds)$Total_mRNAs)) -
+        2 * sd(log10(phenoData(monocle_cds)$Total_mRNAs)))
 
-  # remove cells outside safe range of plot ---------------------------------
+    # remove cells outside safe range of plot ---------------------------------
 
-  monocle_cds <- monocle_cds[, phenoData(monocle_cds)$Total_mRNAs > lower_bound &
-    phenoData(monocle_cds)$Total_mRNAs < upper_bound]
-  monocle_cds <- detectGenes(monocle_cds, min_expr = 0.1)
+    monocle_cds <- monocle_cds[, phenoData(monocle_cds)$Total_mRNAs > lower_bound &
+        phenoData(monocle_cds)$Total_mRNAs < upper_bound]
+    monocle_cds <- detectGenes(monocle_cds, min_expr = 0.1)
 
-  monocle_cds <- estimateSizeFactors(monocle_cds)
-  monocle_cds <- estimateDispersions(monocle_cds)
+    monocle_cds <- estimateSizeFactors(monocle_cds)
+    monocle_cds <- estimateDispersions(monocle_cds)
 
-  # verify lognormal distribution of expression values ----------------------
+    # verify lognormal distribution of expression values ----------------------
 
-  # Log-transform each value in the expression matrix.
-  L <- log(Biobase::exprs(monocle_cds[expressed_genes, ]))
+    # Log-transform each value in the expression matrix.
+    L <- log(Biobase::exprs(monocle_cds[expressed_genes, ]))
 
-  # Standardize each gene, so that they are all on the same scale,
-  # Then melt the data with plyr so we can plot it easily
-  # melted_dens_df <- melt(Matrix::t(scale(Matrix::t(L))))
-
-
-  # use dpFeature -----------------------------------------------------------
-
-  monocle_cds <- detectGenes(monocle_cds, min_expr = 0.1)
-  Biobase::featureData(monocle_cds)$use_for_ordering <- Biobase::featureData(monocle_cds)$num_cells_expressed > 0.05 * ncol(monocle_cds)
-
-  # print(plot_pc_variance_explained(monocle_cds, return_all = F))
-
-  monocle_cds_red <- reduceDimension(monocle_cds,
-    max_components = 2,
-    norm_method = "log",
-    num_dim = 3,
-    reduction_method = "tSNE",
-    verbose = T
-  )
-
-  monocle_cds_red <- clusterCells(monocle_cds_red, verbose = F)
-
-  # check clustering results
-  print(plot_cell_clusters(monocle_cds_red, color_by = "as.factor(Cluster)"))
-
-  # for (i in colorval){
-  #   print(plot_cell_clusters(monocle_cds_red, color_by = paste0('as.factor(', i, ')')))
-  # }
+    # Standardize each gene, so that they are all on the same scale,
+    # Then melt the data with plyr so we can plot it easily
+    # melted_dens_df <- melt(Matrix::t(scale(Matrix::t(L))))
 
 
-  # provide decision plot
-  print(plot_rho_delta(monocle_cds_red, rho_threshold = 2, delta_threshold = 4))
+    # use dpFeature -----------------------------------------------------------
 
-  # rerun based on user-defined threshold
-  monocle_cds_red <- clusterCells(monocle_cds_red,
-    rho_threshold = 2,
-    delta_threshold = 4,
-    skip_rho_sigma = T,
-    verbose = F
-  )
+    monocle_cds <- detectGenes(monocle_cds, min_expr = 0.1)
+    Biobase::featureData(monocle_cds)$use_for_ordering <- Biobase::featureData(monocle_cds)$num_cells_expressed > 0.05 * ncol(monocle_cds)
 
-  # check final clustering
-  print(plot_cell_clusters(monocle_cds_red, color_by = "as.factor(Cluster)"))
-  #
-  # for (i in colorval){
-  #   print(plot_cell_clusters(monocle_cds_red, color_by = paste0('as.factor(', i, ')')))
-  # }
+    # print(plot_pc_variance_explained(monocle_cds, return_all = F))
 
+    monocle_cds_red <- reduceDimension(monocle_cds,
+        max_components = 2,
+        norm_method = "log",
+        num_dim = 3,
+        reduction_method = "tSNE",
+        verbose = T
+    )
 
+    monocle_cds_red <- clusterCells(monocle_cds_red, verbose = F)
 
-  # perform differential expression -----------------------------------------
+    # check clustering results
+    print(plot_cell_clusters(monocle_cds_red, color_by = "as.factor(Cluster)"))
 
-  # find expressed genes
-  monocle_cds_expressed_genes <- rownames(subset(Biobase::featureData(monocle_cds), Biobase::featureData(monocle_cds)$num_cells_expressed >= 10))
-
-  print("running differential expression test")
-  tictoc::tic("finished differential expression with")
-
-  diff_test_res <- differentialGeneTest(monocle_cds_red[monocle_cds_expressed_genes, ],
-    fullModelFormulaStr = "~Cluster",
-    cores = 6
-  )
-  tictoc::toc()
+    # for (i in colorval){
+    #   print(plot_cell_clusters(monocle_cds_red, color_by = paste0('as.factor(', i, ')')))
+    # }
 
 
-  # select top 1000 signif. genes
-  ordering_genes <- row.names(diff_test_res)[order(diff_test_res$qval)][1:sig_slice]
+    # provide decision plot
+    print(plot_rho_delta(monocle_cds_red, rho_threshold = 2, delta_threshold = 4))
 
-  monocle_cds <- setOrderingFilter(monocle_cds, ordering_genes = ordering_genes)
+    # rerun based on user-defined threshold
+    monocle_cds_red <- clusterCells(monocle_cds_red,
+        rho_threshold = 2,
+        delta_threshold = 4,
+        skip_rho_sigma = T,
+        verbose = F
+    )
 
-  monocle_cds <- reduceDimension(monocle_cds, method = "DDRTree")
+    # check final clustering
+    print(plot_cell_clusters(monocle_cds_red, color_by = "as.factor(Cluster)"))
+    #
+    # for (i in colorval){
+    #   print(plot_cell_clusters(monocle_cds_red, color_by = paste0('as.factor(', i, ')')))
+    # }
 
-  monocle_cds <- orderCells(monocle_cds)
+
+
+    # perform differential expression -----------------------------------------
+
+    # find expressed genes
+    monocle_cds_expressed_genes <- rownames(subset(Biobase::featureData(monocle_cds), Biobase::featureData(monocle_cds)$num_cells_expressed >= 10))
+
+    print("running differential expression test")
+    tictoc::tic("finished differential expression with")
+
+    diff_test_res <- differentialGeneTest(monocle_cds_red[monocle_cds_expressed_genes, ],
+        fullModelFormulaStr = "~Cluster",
+        cores = 6
+    )
+    tictoc::toc()
+
+
+    # select top 1000 signif. genes
+    ordering_genes <- row.names(diff_test_res)[order(diff_test_res$qval)][1:sig_slice]
+
+    monocle_cds <- setOrderingFilter(monocle_cds, ordering_genes = ordering_genes)
+
+    monocle_cds <- reduceDimension(monocle_cds, method = "DDRTree")
+
+    monocle_cds <- orderCells(monocle_cds)
 }
 
 #' Preprocess a Monocle v2 object for heatmap based on provided pseudotime
@@ -371,29 +369,29 @@ convert_monoclev2_to_seuv3 <- function(seu, assay = "gene", slot = "data", retur
 #'
 #' @examples
 process_monocle_child <- function(ptime, monocle_cds, trend_formula = "~sm.ns(Pseudotime, df=3)") {
-  monocle_cds <- monocle_cds[, colnames(monocle_cds) %in% ptime$sample_id]
+    monocle_cds <- monocle_cds[, colnames(monocle_cds) %in% ptime$sample_id]
 
-  ptime <- ptime[ptime$sample_id %in% colnames(monocle_cds), ]
+    ptime <- ptime[ptime$sample_id %in% colnames(monocle_cds), ]
 
-  old_ptime <- phenoData(monocle_cds)$Pseudotime
+    old_ptime <- phenoData(monocle_cds)$Pseudotime
 
-  ptime$ptime <- scales::rescale(ptime$ptime, range(old_ptime))
+    ptime$ptime <- scales::rescale(ptime$ptime, range(old_ptime))
 
-  phenoData(monocle_cds)$Pseudotime <- ptime$ptime
+    phenoData(monocle_cds)$Pseudotime <- ptime$ptime
 
-  monocle_cds_expressed_genes <- rownames(subset(Biobase::featureData(monocle_cds), Biobase::featureData(monocle_cds)$num_cells_expressed >= 10))
+    monocle_cds_expressed_genes <- rownames(subset(Biobase::featureData(monocle_cds), Biobase::featureData(monocle_cds)$num_cells_expressed >= 10))
 
-  print("running differential expression test")
-  tictoc::tic("finished differentiial expression with")
+    print("running differential expression test")
+    tictoc::tic("finished differentiial expression with")
 
-  diff_test_res <- differentialGeneTest(monocle_cds,
-    fullModelFormulaStr = trend_formula,
-    cores = 6
-  )
+    diff_test_res <- differentialGeneTest(monocle_cds,
+        fullModelFormulaStr = trend_formula,
+        cores = 6
+    )
 
-  tictoc::toc()
+    tictoc::toc()
 
-  return(list(monocle_cds = monocle_cds, diff_test_res = diff_test_res))
+    return(list(monocle_cds = monocle_cds, diff_test_res = diff_test_res))
 }
 
 #' Plot a Set of Heatmaps Based on a provided pseudotime
@@ -408,51 +406,51 @@ process_monocle_child <- function(ptime, monocle_cds, trend_formula = "~sm.ns(Ps
 #'
 #' @examples
 plot_all_ptimes <- function(monocle_list, query_name, sig_slice = 1000, ...) {
-  sig_gene_names <- dplyr::filter(monocle_list[[query_name]]$diff_test_res, pval < 0.05) %>%
-    dplyr::arrange(pval) %>%
-    dplyr::slice(1:sig_slice) %>%
-    dplyr::pull(gene_short_name) %>%
-    identity()
+    sig_gene_names <- dplyr::filter(monocle_list[[query_name]]$diff_test_res, pval < 0.05) %>%
+        dplyr::arrange(pval) %>%
+        dplyr::slice(1:sig_slice) %>%
+        dplyr::pull(gene_short_name) %>%
+        identity()
 
-  # sig_gene_names <- sig_gene_names[1:100]
-  monocle_list[[query_name]]$monocle_cds <- monocle_list[[query_name]]$monocle_cds[sig_gene_names, ]
+    # sig_gene_names <- sig_gene_names[1:100]
+    monocle_list[[query_name]]$monocle_cds <- monocle_list[[query_name]]$monocle_cds[sig_gene_names, ]
 
-  message("creating main heatmap")
-  monocle_list[[query_name]]$heatmap_matrix <- suppressWarnings(calc_pseudotime_heatmap(monocle_list[[query_name]]$monocle_cds,
-    sig_gene_names = sig_gene_names,
-    cores = 1,
-    show_rownames = T,
-    return_heatmap = TRUE,
-    ...
-  ))
-
-  # # retrieve order of gene names in first heatmap
-  heatmap_gene_order <- rownames(monocle_list[[query_name]]$heatmap_matrix)
-
-  monocle_list[[query_name]]$monocle_cds <- monocle_list[[query_name]]$monocle_cds[heatmap_gene_order, ]
-
-  reference_names <- names(monocle_list)[names(monocle_list) != query_name]
-
-
-  for (i in reference_names) {
-    monocle_list[[i]]$monocle_cds <- monocle_list[[i]]$monocle_cds[heatmap_gene_order, ]
-
-    message(paste0("creating reference heatmap ", i))
-    monocle_list[[i]]$heatmap_matrix <- suppressWarnings(calc_pseudotime_heatmap(monocle_list[[i]]$monocle_cds,
-      cores = 1,
-      show_rownames = F,
-      return_heatmap = TRUE,
-      cluster_rows = F,
-      trend_formula = "~sm.ns(Pseudotime, df=1)",
-      ...
+    message("creating main heatmap")
+    monocle_list[[query_name]]$heatmap_matrix <- suppressWarnings(calc_pseudotime_heatmap(monocle_list[[query_name]]$monocle_cds,
+        sig_gene_names = sig_gene_names,
+        cores = 1,
+        show_rownames = T,
+        return_heatmap = TRUE,
+        ...
     ))
-  }
 
-  monocle_list <- cross_check_heatmaps(monocle_list, query_name)
+    # # retrieve order of gene names in first heatmap
+    heatmap_gene_order <- rownames(monocle_list[[query_name]]$heatmap_matrix)
 
-  monocle_list <- calc_cor_across_heatmaps(monocle_list, query_name)
+    monocle_list[[query_name]]$monocle_cds <- monocle_list[[query_name]]$monocle_cds[heatmap_gene_order, ]
 
-  return(monocle_list)
+    reference_names <- names(monocle_list)[names(monocle_list) != query_name]
+
+
+    for (i in reference_names) {
+        monocle_list[[i]]$monocle_cds <- monocle_list[[i]]$monocle_cds[heatmap_gene_order, ]
+
+        message(paste0("creating reference heatmap ", i))
+        monocle_list[[i]]$heatmap_matrix <- suppressWarnings(calc_pseudotime_heatmap(monocle_list[[i]]$monocle_cds,
+            cores = 1,
+            show_rownames = F,
+            return_heatmap = TRUE,
+            cluster_rows = F,
+            trend_formula = "~sm.ns(Pseudotime, df=1)",
+            ...
+        ))
+    }
+
+    monocle_list <- cross_check_heatmaps(monocle_list, query_name)
+
+    monocle_list <- calc_cor_across_heatmaps(monocle_list, query_name)
+
+    return(monocle_list)
 }
 
 #' Title
@@ -468,68 +466,66 @@ plot_all_ptimes <- function(monocle_list, query_name, sig_slice = 1000, ...) {
 #'
 #' @examples
 cross_check_heatmaps <- function(monocle_list, query_name, set_row_order = NULL, cluster_rows = T, ...) {
-  reference_names <- names(monocle_list)[!names(monocle_list) == query_name]
+    reference_names <- names(monocle_list)[!names(monocle_list) == query_name]
 
-  if (length(set_row_order) > 0) {
-    set_row_order <- set_row_order[set_row_order != ""]
+    if (length(set_row_order) > 0) {
+        set_row_order <- set_row_order[set_row_order != ""]
 
-    heatmap_matrix <- monocle_list[[query_name]]$heatmap_matrix
+        heatmap_matrix <- monocle_list[[query_name]]$heatmap_matrix
 
-    monocle_list[[query_name]]$heatmap_matrix <- heatmap_matrix[rownames(heatmap_matrix) %in% set_row_order, ]
-  }
+        monocle_list[[query_name]]$heatmap_matrix <- heatmap_matrix[rownames(heatmap_matrix) %in% set_row_order, ]
+    }
 
-  common_genes <- purrr::map(monocle_list, ~ rownames(purrr::pluck(.x, "heatmap_matrix"))) %>%
-    purrr::reduce(intersect)
+    common_genes <- purrr::map(monocle_list, ~ rownames(purrr::pluck(.x, "heatmap_matrix"))) %>%
+        purrr::reduce(intersect)
 
-  if (length(set_row_order) > 0) {
-    common_genes <- common_genes[match(set_row_order, common_genes)]
-    common_genes <- common_genes[!is.na(common_genes)]
+    if (length(set_row_order) > 0) {
+        common_genes <- common_genes[match(set_row_order, common_genes)]
+        common_genes <- common_genes[!is.na(common_genes)]
 
-    cluster_rows <- F
-  }
+        cluster_rows <- F
+    }
 
 
-  monocle_list[[query_name]]$heatmap_matrix <- monocle_list[[query_name]]$heatmap_matrix[common_genes, ]
-  query_results <- plot_pseudotime_heatmap(monocle_list[[query_name]]$heatmap_matrix, query_name, cluster_rows = cluster_rows, heatmap_width = 12, ...)
+    monocle_list[[query_name]]$heatmap_matrix <- monocle_list[[query_name]]$heatmap_matrix[common_genes, ]
+    query_results <- plot_pseudotime_heatmap(monocle_list[[query_name]]$heatmap_matrix, query_name, cluster_rows = cluster_rows, heatmap_width = 12, ...)
 
-  monocle_list[[query_name]]$heatmap <- query_results$heatmap
+    monocle_list[[query_name]]$heatmap <- query_results$heatmap
 
-  for (i in reference_names) {
-    monocle_list[[i]]$heatmap_matrix <- monocle_list[[i]]$heatmap_matrix[common_genes, ]
-    monocle_list[[i]]$heatmap <- plot_pseudotime_heatmap(monocle_list[[i]]$heatmap_matrix, i, cluster_rows = F, query_set = F, ...)
-  }
+    for (i in reference_names) {
+        monocle_list[[i]]$heatmap_matrix <- monocle_list[[i]]$heatmap_matrix[common_genes, ]
+        monocle_list[[i]]$heatmap <- plot_pseudotime_heatmap(monocle_list[[i]]$heatmap_matrix, i, cluster_rows = F, query_set = F, ...)
+    }
 
-  heatmap_gene_order <- rownames(monocle_list[[query_name]]$heatmap_matrix)
-  #
-  mod_diff_test_res <- filter_rows_to_top(monocle_list[[query_name]]$diff_test_res, "gene_short_name", heatmap_gene_order)
-  #
-  annotation_row <- tibble::tibble(feature = heatmap_gene_order)
-  #
-  mod_diff_test_res <- dplyr::left_join(mod_diff_test_res, annotation_row, by = c("gene_short_name" = "feature"))
-  #
-  monocle_list[[query_name]]$diff_test_res <- mod_diff_test_res
+    heatmap_gene_order <- rownames(monocle_list[[query_name]]$heatmap_matrix)
+    #
+    mod_diff_test_res <- filter_rows_to_top(monocle_list[[query_name]]$diff_test_res, "gene_short_name", heatmap_gene_order)
+    #
+    annotation_row <- tibble::tibble(feature = heatmap_gene_order)
+    #
+    mod_diff_test_res <- dplyr::left_join(mod_diff_test_res, annotation_row, by = c("gene_short_name" = "feature"))
+    #
+    monocle_list[[query_name]]$diff_test_res <- mod_diff_test_res
 
-  if (length(set_row_order) > 0) {
+    if (length(set_row_order) > 0) {
+        labels <- tibble::enframe(rownames(monocle_list[[query_name]]$heatmap_matrix), "order", "gene_short_name")
+    } else {
+        clusters <- dendextend::cutree(query_results$row_dend, k = 6) %>%
+            tibble::enframe("gene_short_name", "cluster")
 
-    labels <- tibble::enframe(rownames(monocle_list[[query_name]]$heatmap_matrix), "order", "gene_short_name")
+        labels <- labels(query_results$row_dend) %>%
+            tibble::enframe("order", "gene_short_name") %>%
+            dplyr::left_join(clusters, by = "gene_short_name")
+    }
 
-  } else {
-    clusters <- dendextend::cutree(query_results$row_dend, k = 6) %>%
-      tibble::enframe("gene_short_name", "cluster")
+    ordered_diff_test_res <- dplyr::left_join(labels, mod_diff_test_res, by = "gene_short_name")
 
-    labels <- labels(query_results$row_dend) %>%
-      tibble::enframe("order", "gene_short_name") %>%
-      dplyr::left_join(clusters, by = "gene_short_name")
-  }
-
-  ordered_diff_test_res <- dplyr::left_join(labels, mod_diff_test_res, by = "gene_short_name")
-
-  monocle_list[[query_name]]$ordered_diff_test_res <- ordered_diff_test_res
+    monocle_list[[query_name]]$ordered_diff_test_res <- ordered_diff_test_res
 
 
 
 
-  return(monocle_list)
+    return(monocle_list)
 }
 
 
@@ -543,37 +539,36 @@ cross_check_heatmaps <- function(monocle_list, query_name, set_row_order = NULL,
 #' @export
 #'
 #' @examples
-calc_cor_across_heatmaps <- function(cds_set, cds_set_name){
-  # browser()
-  heatmap_matrices  <- map(cds_set, pluck, "heatmap_matrix")
+calc_cor_across_heatmaps <- function(cds_set, cds_set_name) {
+    # browser()
+    heatmap_matrices <- map(cds_set, pluck, "heatmap_matrix")
 
-  main_heatmap <- heatmap_matrices[[cds_set_name]]
+    main_heatmap <- heatmap_matrices[[cds_set_name]]
 
-  reference_heatmaps <- heatmap_matrices[!names(heatmap_matrices) == cds_set_name]
+    reference_heatmaps <- heatmap_matrices[!names(heatmap_matrices) == cds_set_name]
 
-  correlations <- vector(mode='list', length= length(reference_heatmaps))
-  for (i in seq_along(reference_heatmaps)){
-    correlations[[i]] <- by_row_corr_between_pt_heatmaps(main_heatmap, reference_heatmaps[[i]])
-  }
+    correlations <- vector(mode = "list", length = length(reference_heatmaps))
+    for (i in seq_along(reference_heatmaps)) {
+        correlations[[i]] <- by_row_corr_between_pt_heatmaps(main_heatmap, reference_heatmaps[[i]])
+    }
 
-  names(correlations) <- paste0(names(reference_heatmaps), "_correlation")
+    names(correlations) <- paste0(names(reference_heatmaps), "_correlation")
 
-  gene_names <- names(correlations[[1]])
+    gene_names <- names(correlations[[1]])
 
-  correlations <- correlations %>%
-    dplyr::bind_cols()
+    correlations <- correlations %>%
+        dplyr::bind_cols()
 
-  rownames(correlations) <- gene_names
+    rownames(correlations) <- gene_names
 
-  correlations <- correlations %>%
-    tibble::rownames_to_column("gene_short_name")
+    correlations <- correlations %>%
+        tibble::rownames_to_column("gene_short_name")
 
-  cds_set[[cds_set_name]][["ordered_diff_test_res"]] <-
-    cds_set[[cds_set_name]][["ordered_diff_test_res"]] %>%
-    dplyr::left_join(correlations, by = "gene_short_name")
+    cds_set[[cds_set_name]][["ordered_diff_test_res"]] <-
+        cds_set[[cds_set_name]][["ordered_diff_test_res"]] %>%
+        dplyr::left_join(correlations, by = "gene_short_name")
 
-  return(cds_set)
-
+    return(cds_set)
 }
 
 #' calculate row-wise correlation between two dataframes
@@ -585,18 +580,17 @@ calc_cor_across_heatmaps <- function(cds_set, cds_set_name){
 #' @export
 #'
 #' @examples
-by_row_corr_between_pt_heatmaps <- function(df1, df2){
-  # browser()
-  correlations <- vector(length = nrow(df1))
-  for (i in seq_len(nrow(df1))){
-    # print(i)
-    correlations[i] = cor(df1[i,], df2[i,], method = "pearson")
-  }
+by_row_corr_between_pt_heatmaps <- function(df1, df2) {
+    # browser()
+    correlations <- vector(length = nrow(df1))
+    for (i in seq_len(nrow(df1))) {
+        # print(i)
+        correlations[i] <- cor(df1[i, ], df2[i, ], method = "pearson")
+    }
 
-  names(correlations) <- rownames(df1)
+    names(correlations) <- rownames(df1)
 
-  return(correlations)
-
+    return(correlations)
 }
 
 
@@ -612,15 +606,15 @@ by_row_corr_between_pt_heatmaps <- function(df1, df2){
 #'
 #' @examples
 arrange_ptime_heatmaps <- function(cds_list, cds_name) {
-  cds_heatmaps <- purrr::map(cds_list, ~ purrr::pluck(.x, "heatmap"))
+    cds_heatmaps <- purrr::map(cds_list, ~ purrr::pluck(.x, "heatmap"))
 
-  query_heatmap <- cds_heatmaps[[cds_name]]
+    query_heatmap <- cds_heatmaps[[cds_name]]
 
-  reference_heatmaps <- cds_heatmaps[!names(cds_heatmaps) == cds_name]
+    reference_heatmaps <- cds_heatmaps[!names(cds_heatmaps) == cds_name]
 
-  heatmaplist <- query_heatmap + purrr::reduce(reference_heatmaps, `+`)
+    heatmaplist <- query_heatmap + purrr::reduce(reference_heatmaps, `+`)
 
-  return(heatmaplist)
+    return(heatmaplist)
 }
 
 #' Plot Expression of a Given Feature of a set of Pseudotimes
@@ -638,30 +632,30 @@ arrange_ptime_heatmaps <- function(cds_list, cds_name) {
 #'
 #' @examples
 plot_feature_in_ref_query_ptime <- function(cds_list, selected_cds, features = c("RXRG"), color_by = "State", relative_expr = FALSE, min_expr = 0.5, trend_df = 3, ...) {
-  sub_cds_list <- purrr::map(cds_list, ~ .x$monocle_cds[features, ])
+    sub_cds_list <- purrr::map(cds_list, ~ .x$monocle_cds[features, ])
 
-  string_NA_meta <- function(cds) {
-    # fix metadata with only NA
-    metadata <- Biobase::pData(cds)
+    string_NA_meta <- function(cds) {
+        # fix metadata with only NA
+        metadata <- Biobase::pData(cds)
 
-    metadata[is.na(metadata)] <- "NA"
+        metadata[is.na(metadata)] <- "NA"
 
-    Biobase::pData(Biobase:::phenoData(cds)) <- metadata
+        Biobase::pData(Biobase:::phenoData(cds)) <- metadata
 
-    cds
-  }
+        cds
+    }
 
-  sub_cds_list <- purrr::map(sub_cds_list, string_NA_meta)
+    sub_cds_list <- purrr::map(sub_cds_list, string_NA_meta)
 
-  trend_formula <- paste0("~sm.ns(Pseudotime, df=", trend_df, ")")
+    trend_formula <- paste0("~sm.ns(Pseudotime, df=", trend_df, ")")
 
-  feature_plots_in_ptime <- purrr::map(sub_cds_list, monocle::plot_genes_in_pseudotime, trend_formula = trend_formula, color_by = color_by, relative_expr = relative_expr, min_expr = min_expr)
+    feature_plots_in_ptime <- purrr::map(sub_cds_list, monocle::plot_genes_in_pseudotime, trend_formula = trend_formula, color_by = color_by, relative_expr = relative_expr, min_expr = min_expr)
 
-  feature_plots_in_ptime[selected_cds]
+    feature_plots_in_ptime[selected_cds]
 
-  # refquery_ptime_plot <- cowplot::plot_grid(plotlist = feature_plots_in_ptime, ncol = 2, labels = names(feature_plots_in_ptime))
-  #
-  # plot(refquery_ptime_plot)
+    # refquery_ptime_plot <- cowplot::plot_grid(plotlist = feature_plots_in_ptime, ncol = 2, labels = names(feature_plots_in_ptime))
+    #
+    # plot(refquery_ptime_plot)
 }
 
 #' Run BEAM from Monocle2
@@ -681,27 +675,27 @@ plot_feature_in_ref_query_ptime <- function(cds_list, selected_cds, features = c
 #'
 #' @examples
 run_BEAM <- function(HSMM, branch_point, branches, pt_param, pt_paramval, colorval, top_genes) {
-  if (grepl(",", colorval)) {
-    colorval <- unlist(strsplit(colorval, ","))
-  }
+    if (grepl(",", colorval)) {
+        colorval <- unlist(strsplit(colorval, ","))
+    }
 
-  # check if branches present in HSMM
+    # check if branches present in HSMM
 
-  root_branch <- GM_state(HSMM, pt_param, pt_paramval, branches)
-  branch_states <- branches[which(branches != root_branch)]
+    root_branch <- GM_state(HSMM, pt_param, pt_paramval, branches)
+    branch_states <- branches[which(branches != root_branch)]
 
-  # test <- buildBranchCellDataSet(HSMM, progenitor_method = "sequential_split", branch_point = 2,
-  #                                branch_labels = NULL, stretch = TRUE)
-  #
-  # test <- buildBranchCellDataSet(HSMM, progenitor_method = "duplicate", branch_point = 2,
-  #                                branch_labels = NULL, stretch = TRUE)
+    # test <- buildBranchCellDataSet(HSMM, progenitor_method = "sequential_split", branch_point = 2,
+    #                                branch_labels = NULL, stretch = TRUE)
+    #
+    # test <- buildBranchCellDataSet(HSMM, progenitor_method = "duplicate", branch_point = 2,
+    #                                branch_labels = NULL, stretch = TRUE)
 
-  BEAM_res <- BEAM(HSMM, branch_point = branch_point, cores = 6, progenitor_method = "sequential_split")
+    BEAM_res <- BEAM(HSMM, branch_point = branch_point, cores = 6, progenitor_method = "sequential_split")
 
-  BEAM_res <- BEAM_res[order(BEAM_res$qval), ]
-  BEAM_res <- BEAM_res[, c("pval", "qval")]
+    BEAM_res <- BEAM_res[order(BEAM_res$qval), ]
+    BEAM_res <- BEAM_res[, c("pval", "qval")]
 
-  return(BEAM_res)
+    return(BEAM_res)
 }
 
 #' Monocle2 differential expression
@@ -713,9 +707,9 @@ run_BEAM <- function(HSMM, branch_point, branches, pt_param, pt_paramval, colorv
 #'
 #' @examples
 Monocle2_diffex <- function(seu) {
-  diff_test_res <- monocle::differentialGeneTest(cds_subset,
-    fullModelFormulaStr = "~sm.ns(Pseudotime)"
-  )
+    diff_test_res <- monocle::differentialGeneTest(cds_subset,
+        fullModelFormulaStr = "~sm.ns(Pseudotime)"
+    )
 }
 
 #' Run heatmap from Monocle2
@@ -736,54 +730,54 @@ Monocle2_diffex <- function(seu) {
 #'
 #' @examples
 run_hmap <- function(HSMM, BEAM_res, branches, pt_param, pt_paramval, colorval, top_genes, out_pdf) {
-  beam_pdf <- gsub(".pdf", "_beam.pdf", out_pdf)
-  pdf(beam_pdf, height = 10)
+    beam_pdf <- gsub(".pdf", "_beam.pdf", out_pdf)
+    pdf(beam_pdf, height = 10)
 
-  plotted_trx <- row.names(subset(BEAM_res, qval < 1e-4))
-  gene_df <- data.frame(row.names = plotted_trx, gene_symbol = lookup_genes(plotted_trx))
+    plotted_trx <- row.names(subset(BEAM_res, qval < 1e-4))
+    gene_df <- data.frame(row.names = plotted_trx, gene_symbol = lookup_genes(plotted_trx))
 
-  png(file = "test.png")
-  mult_hmap <- plot_multiple_branches_heatmap(HSMM[plotted_trx, ],
-    branches = branches,
-    num_clusters = 2,
-    cores = 6,
-    use_gene_short_name = F,
-    show_rownames = T, return_heatmap = TRUE
-  )
-  dev.off()
+    png(file = "test.png")
+    mult_hmap <- plot_multiple_branches_heatmap(HSMM[plotted_trx, ],
+        branches = branches,
+        num_clusters = 2,
+        cores = 6,
+        use_gene_short_name = F,
+        show_rownames = T, return_heatmap = TRUE
+    )
+    dev.off()
 
-  mult_hmap$gtable$grobs[[3]]$gp$fontsize <- 4
+    mult_hmap$gtable$grobs[[3]]$gp$fontsize <- 4
 
-  return_trx <- mult_hmap$gtable$grobs[[3]]$label
-  return_genes <- lookup_genes(return_trx)
+    return_trx <- mult_hmap$gtable$grobs[[3]]$label
+    return_genes <- lookup_genes(return_trx)
 
-  hmap_genes <- data.frame("ensembl_transcript_id" = return_trx, "gene_symbol" = return_genes, "pval" = BEAM_res[return_trx, ]$pval, "qval" = BEAM_res[return_trx, ]$qval)
-  hmap_genes_csv <- gsub(".pdf", paste0("_beam_heatmap_genes.csv"), out_pdf)
-  write.csv(hmap_genes, hmap_genes_csv)
+    hmap_genes <- data.frame("ensembl_transcript_id" = return_trx, "gene_symbol" = return_genes, "pval" = BEAM_res[return_trx, ]$pval, "qval" = BEAM_res[return_trx, ]$qval)
+    hmap_genes_csv <- gsub(".pdf", paste0("_beam_heatmap_genes.csv"), out_pdf)
+    write.csv(hmap_genes, hmap_genes_csv)
 
-  hmap_genes <- dplyr::mutate(hmap_genes, new_labels = paste(ensembl_transcript_id, gene_symbol, sep = "\t"))
+    hmap_genes <- dplyr::mutate(hmap_genes, new_labels = paste(ensembl_transcript_id, gene_symbol, sep = "\t"))
 
-  mult_hmap$gtable$grobs[[3]]$label <- hmap_genes$new_labels
+    mult_hmap$gtable$grobs[[3]]$label <- hmap_genes$new_labels
 
-  gridExtra::grid.arrange(mult_hmap[[4]])
-
-
-  root_branch <- GM_state(HSMM, pt_param, pt_paramval)
-  branch_states <- branches[-root_branch]
-
-  # plot individual genes ---------------------------------------------------
-  # top_BEAM <- BEAM_res[1:top_genes,]
-  top_BEAM <- BEAM_res[return_trx, ]
-  top_genes <- length(return_trx)
+    gridExtra::grid.arrange(mult_hmap[[4]])
 
 
+    root_branch <- GM_state(HSMM, pt_param, pt_paramval)
+    branch_states <- branches[-root_branch]
 
-  batch_plot_multiple_branches_pseudotime(colorval, top_BEAM, top_genes, branches, HSMM)
-  #
-  # batch_plot_genes_branched_pseudotime(colorval, top_BEAM, top_genes, branch_states, HSMM)
+    # plot individual genes ---------------------------------------------------
+    # top_BEAM <- BEAM_res[1:top_genes,]
+    top_BEAM <- BEAM_res[return_trx, ]
+    top_genes <- length(return_trx)
 
-  dev.off()
-  return(mult_hmap)
+
+
+    batch_plot_multiple_branches_pseudotime(colorval, top_BEAM, top_genes, branches, HSMM)
+    #
+    # batch_plot_genes_branched_pseudotime(colorval, top_BEAM, top_genes, branch_states, HSMM)
+
+    dev.off()
+    return(mult_hmap)
 }
 
 #' calculate pseudotime heatmaps
@@ -811,43 +805,42 @@ run_hmap <- function(HSMM, BEAM_res, branches, pt_param, pt_paramval, colorval, 
 #'
 #' @examples
 calc_pseudotime_heatmap <- function(cds_subset, cluster_rows = TRUE, dend_k = 6, hclust_method = "ward.D2",
-                                    num_clusters = 6, hmcols = NULL, add_annotation_row = NULL,
-                                    add_annotation_col = NULL, show_rownames = FALSE, use_gene_short_name = TRUE,
-                                    norm_method = c("log", "vstExprs"), scale_max = 3, scale_min = -3,
-                                    trend_formula = "~sm.ns(Pseudotime, df=3)", return_heatmap = FALSE,
-                                    cores = 1, ...) {
-  Biobase::fData(cds_subset) <- data.frame(row.names = rownames(cds_subset), gene_short_name = rownames(cds_subset))
+    num_clusters = 6, hmcols = NULL, add_annotation_row = NULL,
+    add_annotation_col = NULL, show_rownames = FALSE, use_gene_short_name = TRUE,
+    norm_method = c("log", "vstExprs"), scale_max = 3, scale_min = -3,
+    trend_formula = "~sm.ns(Pseudotime, df=3)", return_heatmap = FALSE,
+    cores = 1, ...) {
+    Biobase::fData(cds_subset) <- data.frame(row.names = rownames(cds_subset), gene_short_name = rownames(cds_subset))
 
-  num_clusters <- min(num_clusters, nrow(cds_subset))
-  pseudocount <- 1
-  newdata <- data.frame(Pseudotime = seq(min(Biobase::pData(cds_subset)$Pseudotime),
-    max(Biobase::pData(cds_subset)$Pseudotime),
-    length.out = 100
-  ))
-  m <- monocle::genSmoothCurves(cds_subset,
-    cores = cores, trend_formula = trend_formula,
-    relative_expr = T, new_data = newdata
-  )
-  m <- m[!apply(m, 1, sum) == 0, ]
-  norm_method <- match.arg(norm_method)
-  if (norm_method == "vstExprs" && is.null(cds_subset@dispFitInfo[["blind"]]$disp_func) ==
-    FALSE) {
-    m <- vstExprs(cds_subset, expr_matrix = m)
-  }
-  else if (norm_method == "log") {
-    m <- log10(m + pseudocount)
-  }
+    num_clusters <- min(num_clusters, nrow(cds_subset))
+    pseudocount <- 1
+    newdata <- data.frame(Pseudotime = seq(min(Biobase::pData(cds_subset)$Pseudotime),
+        max(Biobase::pData(cds_subset)$Pseudotime),
+        length.out = 100
+    ))
+    m <- monocle::genSmoothCurves(cds_subset,
+        cores = cores, trend_formula = trend_formula,
+        relative_expr = T, new_data = newdata
+    )
+    m <- m[!apply(m, 1, sum) == 0, ]
+    norm_method <- match.arg(norm_method)
+    if (norm_method == "vstExprs" && is.null(cds_subset@dispFitInfo[["blind"]]$disp_func) ==
+        FALSE) {
+        m <- vstExprs(cds_subset, expr_matrix = m)
+    } else if (norm_method == "log") {
+        m <- log10(m + pseudocount)
+    }
 
-  # drop every row (gene) that has a standard deviation of zero
-  # m = m[!apply(m, 1, sd) == 0, ]
-  m <- Matrix::t(scale(Matrix::t(m), center = TRUE))
-  m <- m[is.na(row.names(m)) == FALSE, ]
-  m[is.nan(m)] <- 0
-  m[m > scale_max] <- scale_max
-  m[m < scale_min] <- scale_min
-  heatmap_matrix <- m
+    # drop every row (gene) that has a standard deviation of zero
+    # m = m[!apply(m, 1, sd) == 0, ]
+    m <- Matrix::t(scale(Matrix::t(m), center = TRUE))
+    m <- m[is.na(row.names(m)) == FALSE, ]
+    m[is.nan(m)] <- 0
+    m[m > scale_max] <- scale_max
+    m[m < scale_min] <- scale_min
+    heatmap_matrix <- m
 
-  return(heatmap_matrix)
+    return(heatmap_matrix)
 }
 
 #' plot pseudotime heatmap
@@ -868,65 +861,64 @@ calc_pseudotime_heatmap <- function(cds_subset, cluster_rows = TRUE, dend_k = 6,
 #'
 #' @examples
 plot_pseudotime_heatmap <- function(heatmap_matrix, heatmap_title, dend_k = 6, cluster_rows = T, query_set = T, hmcols = NULL, seriation = F, row_font = 4, heatmap_height = 96, heatmap_width = 8) {
-  row_dist <- as.dist((1 - cor(Matrix::t(heatmap_matrix))) / 2)
-  row_dist[is.na(row_dist)] <- 1
+    row_dist <- as.dist((1 - cor(Matrix::t(heatmap_matrix))) / 2)
+    row_dist[is.na(row_dist)] <- 1
 
-  if (is.null(hmcols)) {
-    bks <- seq(-3.1, 3.1, by = 0.1)
-    hmcols <- colorRamps::blue2green2red(length(bks) - 1)
-  }
-  else {
-    bks <- seq(-3.1, 3.1, length.out = length(hmcols))
-  }
+    if (is.null(hmcols)) {
+        bks <- seq(-3.1, 3.1, by = 0.1)
+        hmcols <- colorRamps::blue2green2red(length(bks) - 1)
+    } else {
+        bks <- seq(-3.1, 3.1, length.out = length(hmcols))
+    }
 
-  if (seriation) {
-    o1 <- seriation::seriate(row_dist, method = "GW")
-    row_dend <- as.dendrogram(o1[[1]])
-  } else {
-    row_dend <- hclust(row_dist, method = "ward.D2")
-    row_dend <- dendextend::color_branches(row_dend, k = dend_k)
-  }
+    if (seriation) {
+        o1 <- seriation::seriate(row_dist, method = "GW")
+        row_dend <- as.dendrogram(o1[[1]])
+    } else {
+        row_dend <- hclust(row_dist, method = "ward.D2")
+        row_dend <- dendextend::color_branches(row_dend, k = dend_k)
+    }
 
-  if (cluster_rows) {
-    row_split <- dend_k
-    show_row_dend <- TRUE
-    cluster_rows <- row_dend
-  } else {
-    row_split <- NULL
-    # row_dend <- dendextend::rotate(row_dend, rownames(heatmap_matrix))
-    cluster_rows <- FALSE
-    show_row_dend = FALSE
-  }
+    if (cluster_rows) {
+        row_split <- dend_k
+        show_row_dend <- TRUE
+        cluster_rows <- row_dend
+    } else {
+        row_split <- NULL
+        # row_dend <- dendextend::rotate(row_dend, rownames(heatmap_matrix))
+        cluster_rows <- FALSE
+        show_row_dend <- FALSE
+    }
 
-  ph_res <- ComplexHeatmap::Heatmap(heatmap_matrix,
-    # Remove name from fill legend
-    name = NULL,
-    # Keep original row/col order
-    row_order = rownames(heatmap_matrix),
-    column_order = colnames(heatmap_matrix),
-    # Add left annotation (legend with tumor/normal)
-    # right_annotation = gene_ann,
-    # ACTUAL SPLIT by sample group
-    row_split = row_split,
-    show_row_names = TRUE,
-    show_column_names = FALSE,
-    show_column_dend = FALSE,
-    row_title = NULL,
-    cluster_rows = cluster_rows,
-    show_row_dend = show_row_dend,
-    row_names_gp = grid::gpar(fontsize = c(row_font)),
-    heatmap_height = unit(heatmap_height, "cm"),
-    heatmap_width = unit(heatmap_width, "cm"),
-    column_title = heatmap_title,
-    row_dend_width = unit(4, "cm")
-  )
+    ph_res <- ComplexHeatmap::Heatmap(heatmap_matrix,
+        # Remove name from fill legend
+        name = NULL,
+        # Keep original row/col order
+        row_order = rownames(heatmap_matrix),
+        column_order = colnames(heatmap_matrix),
+        # Add left annotation (legend with tumor/normal)
+        # right_annotation = gene_ann,
+        # ACTUAL SPLIT by sample group
+        row_split = row_split,
+        show_row_names = TRUE,
+        show_column_names = FALSE,
+        show_column_dend = FALSE,
+        row_title = NULL,
+        cluster_rows = cluster_rows,
+        show_row_dend = show_row_dend,
+        row_names_gp = grid::gpar(fontsize = c(row_font)),
+        heatmap_height = unit(heatmap_height, "cm"),
+        heatmap_width = unit(heatmap_width, "cm"),
+        column_title = heatmap_title,
+        row_dend_width = unit(4, "cm")
+    )
 
-  if (query_set) {
-    query_results <- list(heatmap = ph_res, row_dend = row_dend)
-    return(query_results)
-  } else {
-    return(ph_res)
-  }
+    if (query_set) {
+        query_results <- list(heatmap = ph_res, row_dend = row_dend)
+        return(query_results)
+    } else {
+        return(ph_res)
+    }
 }
 
 #' Create Single Cell Experiment from Tibbles
@@ -940,17 +932,17 @@ plot_pseudotime_heatmap <- function(heatmap_matrix, heatmap_title, dend_k = 6, c
 #'
 #' @examples
 sce_from_tibbles <- function(counts, colData, experimentdata = NULL) {
-  featuredata <- data.frame(rownames(counts), row.names = rownames(counts))
+    featuredata <- data.frame(rownames(counts), row.names = rownames(counts))
 
-  counts <- data.frame(counts)
-  counts <- as.matrix(counts)
+    counts <- data.frame(counts)
+    counts <- as.matrix(counts)
 
-  colData <- data.frame(colData)
-  rownames(colData) <- gsub("-", ".", colData$sample_id)
-  colData <- colData[colnames(counts), ]
-  sce <- SingleCellExperiment::SingleCellExperiment(assays = list(counts = counts), colData = colData, rowData = featuredata, metadata = experimentdata)
+    colData <- data.frame(colData)
+    rownames(colData) <- gsub("-", ".", colData$sample_id)
+    colData <- colData[colnames(counts), ]
+    sce <- SingleCellExperiment::SingleCellExperiment(assays = list(counts = counts), colData = colData, rowData = featuredata, metadata = experimentdata)
 
-  return(sce)
+    return(sce)
 }
 
 #' Run Census
@@ -963,27 +955,26 @@ sce_from_tibbles <- function(counts, colData, experimentdata = NULL) {
 #'
 #' @examples
 run_census <- function(sce, census_output_file) {
+    # create new celldataset
+    pd <- new("AnnotatedDataFrame", data = data.frame(colData(sce)))
+    fd <- new("AnnotatedDataFrame", data = data.frame(rowData(sce)))
 
-  # create new celldataset
-  pd <- new("AnnotatedDataFrame", data = data.frame(colData(sce)))
-  fd <- new("AnnotatedDataFrame", data = data.frame(rowData(sce)))
+    HSMM <- monocle::newCellDataSet(counts(sce),
+        phenoData = pd,
+        featureData = fd,
+        lowerDetectionLimit = 0.1,
+        expressionFamily = tobit(Lower = 0.1)
+    )
 
-  HSMM <- monocle::newCellDataSet(counts(sce),
-    phenoData = pd,
-    featureData = fd,
-    lowerDetectionLimit = 0.1,
-    expressionFamily = tobit(Lower = 0.1)
-  )
+    rpc_matrix <- monocle::relative2abs(HSMM, method = "num_genes")
 
-  rpc_matrix <- monocle::relative2abs(HSMM, method = "num_genes")
+    # Now, make a new CellDataSet using the RNA counts
+    HSMM <- monocle::newCellDataSet(as(rpc_matrix, "sparseMatrix"),
+        phenoData = pd,
+        featureData = fd,
+        lowerDetectionLimit = 1,
+        expressionFamily = negbinomial.size()
+    )
 
-  # Now, make a new CellDataSet using the RNA counts
-  HSMM <- monocle::newCellDataSet(as(rpc_matrix, "sparseMatrix"),
-    phenoData = pd,
-    featureData = fd,
-    lowerDetectionLimit = 1,
-    expressionFamily = negbinomial.size()
-  )
-
-  return(as.matrix(Biobase::exprs(HSMM)))
+    return(as.matrix(Biobase::exprs(HSMM)))
 }

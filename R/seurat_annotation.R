@@ -12,25 +12,23 @@
 #' annotate_cell_cycle(panc8, organism = "human")
 #' annotate_cell_cycle(baron2016singlecell, organism = "mouse")
 annotate_cell_cycle <- function(seu, organism = "human", ...) {
+    # setdefaultassay to "gene"
+    # Seurat::DefaultAssay(seu) <- "gene"
 
+    s_genes <- cc.genes$s.genes
+    g2m_genes <- cc.genes$g2m.genes
 
-  # setdefaultassay to "gene"
-  # Seurat::DefaultAssay(seu) <- "gene"
+    if (organism == "mouse") {
+        s_genes <-
+            dplyr::filter(human_to_mouse_homologs, HGNC.symbol %in% s_genes) %>%
+            dplyr::pull(MGI.symbol)
 
-  s_genes <- cc.genes$s.genes
-  g2m_genes <- cc.genes$g2m.genes
+        g2m_genes <-
+            dplyr::filter(human_to_mouse_homologs, HGNC.symbol %in% g2m_genes) %>%
+            dplyr::pull(MGI.symbol)
+    }
 
-  if (organism == "mouse") {
-    s_genes <-
-      dplyr::filter(human_to_mouse_homologs, HGNC.symbol %in% s_genes) %>%
-      dplyr::pull(MGI.symbol)
-
-    g2m_genes <-
-      dplyr::filter(human_to_mouse_homologs, HGNC.symbol %in% g2m_genes) %>%
-      dplyr::pull(MGI.symbol)
-  }
-
-  seu <- CellCycleScoring(seu, s.features = s_genes, g2m.features = g2m_genes, set.ident = FALSE)
+    seu <- CellCycleScoring(seu, s.features = s_genes, g2m.features = g2m_genes, set.ident = FALSE)
 }
 
 #' Gene Symbols to Ensembl Transcript Ids
@@ -47,21 +45,22 @@ annotate_cell_cycle <- function(seu, organism = "human", ...) {
 #' genes_to_transcripts("RXRG")
 #'
 genes_to_transcripts <- function(genes, organism = "human") {
-  if (organism == "human") {
-    feature_table <- ensembldb::transcripts(EnsDb.Hsapiens.v86::EnsDb.Hsapiens.v86,
-                                            columns = c("gene_name", "gene_biotype", "gene_id"),
-                                            return.type="DataFrame")
-  } else if (organism == "mouse") {
-    feature_table <- ensembldb::transcripts(EnsDb.Mmusculus.v79::EnsDb.Mmusculus.v79,
-                                            columns = c("gene_name", "gene_biotype", "gene_id"),
-                                            return.type="DataFrame")
-  }
+    if (organism == "human") {
+        feature_table <- ensembldb::transcripts(EnsDb.Hsapiens.v86::EnsDb.Hsapiens.v86,
+            columns = c("gene_name", "gene_biotype", "gene_id"),
+            return.type = "DataFrame"
+        )
+    } else if (organism == "mouse") {
+        feature_table <- ensembldb::transcripts(EnsDb.Mmusculus.v79::EnsDb.Mmusculus.v79,
+            columns = c("gene_name", "gene_biotype", "gene_id"),
+            return.type = "DataFrame"
+        )
+    }
 
-  feature_table %>%
-    as_tibble() %>%
-    dplyr::filter(gene_name %in% genes) %>%
-    dplyr::pull(tx_id)
-
+    feature_table %>%
+        as_tibble() %>%
+        dplyr::filter(gene_name %in% genes) %>%
+        dplyr::pull(tx_id)
 }
 
 #' Ensembl Transcript Ids to Gene Symbols
@@ -80,19 +79,19 @@ genes_to_transcripts <- function(genes, organism = "human") {
 #' transcripts_to_genes(transcripts = RXRG_transcripts_hs)
 #'
 transcripts_to_genes <- function(transcripts, organism = "human") {
-  if (organism == "human") {
-    gene_table <- annotables::grch38
-    transcript_table <- annotables::grch38_tx2gene
-  } else if (organism == "mouse") {
-    gene_table <- annotables::grcm38
-    transcript_table <- annotables::grcm38_tx2gene
-  }
+    if (organism == "human") {
+        gene_table <- annotables::grch38
+        transcript_table <- annotables::grch38_tx2gene
+    } else if (organism == "mouse") {
+        gene_table <- annotables::grcm38
+        transcript_table <- annotables::grcm38_tx2gene
+    }
 
-  tibble::tibble(enstxp = transcripts) %>%
-    dplyr::left_join(transcript_table, by = "enstxp") %>%
-    dplyr::left_join(gene_table, by = "ensgene") %>%
-    dplyr::pull("symbol") %>%
-    identity()
+    tibble::tibble(enstxp = transcripts) %>%
+        dplyr::left_join(transcript_table, by = "enstxp") %>%
+        dplyr::left_join(gene_table, by = "ensgene") %>%
+        dplyr::pull("symbol") %>%
+        identity()
 }
 
 #' Annotate Low Read Count Category
@@ -107,13 +106,13 @@ transcripts_to_genes <- function(transcripts, organism = "human") {
 #'
 #' @examples
 add_read_count_col <- function(seu, thresh = 1e5) {
-  rc <- seu[["nCount_gene"]] < thresh
+    rc <- seu[["nCount_gene"]] < thresh
 
-  seu <- Seurat::AddMetaData(
-    object = seu,
-    metadata = rc,
-    col.name = "low_read_count"
-  )
+    seu <- Seurat::AddMetaData(
+        object = seu,
+        metadata = rc,
+        col.name = "low_read_count"
+    )
 }
 
 #' Annotate percent mitochondrial reads per cell
@@ -131,14 +130,13 @@ add_read_count_col <- function(seu, thresh = 1e5) {
 #' add_percent_mito(panc8)
 #' add_percent_mito(baron2016singlecell, organism = "mouse")
 add_percent_mito <- function(seu, organism = "human", seurat_assay = "gene") {
+    mito_features <- mito_features[[organism]][["gene"]]
 
-  mito_features <- mito_features[[organism]][["gene"]]
+    mito_features <- mito_features[mito_features %in% rownames(seu[[seurat_assay]])]
 
-  mito_features <- mito_features[mito_features %in% rownames(seu[[seurat_assay]])]
+    seu[["percent.mt"]] <- PercentageFeatureSet(seu, features = mito_features)
 
-  seu[["percent.mt"]] <- PercentageFeatureSet(seu, features = mito_features)
-
-  return(seu)
+    return(seu)
 }
 
 
@@ -153,35 +151,35 @@ add_percent_mito <- function(seu, organism = "human", seurat_assay = "gene") {
 #'
 #' @examples
 annotate_excluded <- function(seu, ...) {
-  # consider replacing
-  # mutate(coalesce_var = coalesce(!!! syms(vars_select(names(.), dplyr::starts_with("my")))))
+    # consider replacing
+    # mutate(coalesce_var = coalesce(!!! syms(vars_select(names(.), dplyr::starts_with("my")))))
 
-  excluded_cells <- list(...)
+    excluded_cells <- list(...)
 
-  excluded_cells <- purrr::map2(excluded_cells, names(excluded_cells), ~ rep(.y, length(.x))) %>%
-    unlist() %>%
-    purrr::set_names(unlist(excluded_cells)) %>%
-    tibble::enframe("sample_id", "excluded_because")
+    excluded_cells <- purrr::map2(excluded_cells, names(excluded_cells), ~ rep(.y, length(.x))) %>%
+        unlist() %>%
+        purrr::set_names(unlist(excluded_cells)) %>%
+        tibble::enframe("sample_id", "excluded_because")
 
-  excluded_because <- tibble::as_tibble(seu[["nCount_RNA"]], rownames = "sample_id") %>%
-    dplyr::full_join(excluded_cells, by = "sample_id")
+    excluded_because <- tibble::as_tibble(seu[["nCount_RNA"]], rownames = "sample_id") %>%
+        dplyr::full_join(excluded_cells, by = "sample_id")
 
-  if ("excluded_because.x" %in% colnames(excluded_because)) {
-    excluded_because <- dplyr::coalesce(excluded_because, excluded_because.x, excluded_because.y) %>%
-      dplyr::select(-nCount_RNA) %>%
-      tibble::deframe() %>%
-      identity()
-  } else {
-    excluded_because <- select(excluded_because, -nCount_RNA) %>%
-      tibble::deframe() %>%
-      identity()
-  }
+    if ("excluded_because.x" %in% colnames(excluded_because)) {
+        excluded_because <- dplyr::coalesce(excluded_because, excluded_because.x, excluded_because.y) %>%
+            dplyr::select(-nCount_RNA) %>%
+            tibble::deframe() %>%
+            identity()
+    } else {
+        excluded_because <- select(excluded_because, -nCount_RNA) %>%
+            tibble::deframe() %>%
+            identity()
+    }
 
-  seu <- Seurat::AddMetaData(
-    object = seu,
-    metadata = excluded_because,
-    col.name = "excluded_because"
-  )
+    seu <- Seurat::AddMetaData(
+        object = seu,
+        metadata = excluded_because,
+        col.name = "excluded_because"
+    )
 
-  return(seu)
+    return(seu)
 }
