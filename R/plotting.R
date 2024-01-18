@@ -395,22 +395,36 @@ plotly_settings <- function(plotly_plot, width = 600, height = 700){
 #'
 #' plot_violin(human_gene_transcript_object, plot_var = "batch", features = c("NRL", "GNAT2"))
 #'
-plot_violin <- function(object, plot_var = "batch", plot_vals = NULL, features = "RXRG", assay = "gene", ...){
+setGeneric("plot_violin", function(object, plot_var = "batch", plot_vals = NULL, features = "RXRG", assay = "gene", ...) {
+  standardGeneric("plot_violin")
+})
 
-  if (is.null(plot_vals)) {
-    plot_vals = unique(pull_metadata(object)[[plot_var]])
-    plot_vals <- plot_vals[!is.na(plot_vals)]
+setMethod(
+  "plot_violin", "Seurat",
+  function(object, plot_var = "batch", plot_vals = NULL, features = "RXRG", assay = "gene", ...) {
+    if (is.null(plot_vals)) {
+      plot_vals <- unique(object[[]][[plot_var]])
+      plot_vals <- plot_vals[!is.na(plot_vals)]
+    }
+    object <- object[, object[[]][[plot_var]] %in% plot_vals]
+    vln_plot <- Seurat::VlnPlot(object, features = features, group.by = plot_var, assay = assay, pt.size = 1, ...) + geom_boxplot(width = 0.2) + NULL
+    print(vln_plot)
   }
-  object <- object[, pull_metadata(object)[[plot_var]] %in% plot_vals]
-  vln_plot <- Seurat::VlnPlot(object, features = features, group.by = plot_var, assay = assay, pt.size = 1, ...) +
-    geom_boxplot(width = 0.2) +
-    # labs(title = "Expression Values for each cell are normalized by that cell's total expression then multiplied by 10,000 and natural-log transformed") +
-    # stat_summary(fun.y = mean, geom = "line", size = 4, colour = "black") +
-    NULL
+)
 
-  print(vln_plot)
+setMethod(
+  "plot_violin", "SingleCellExperiment",
+  function(object, plot_var = "batch", plot_vals = NULL, features = "RXRG", assay = "gene", ...) {
+    if (is.null(plot_vals)) {
+      plot_vals <- unique(pull_metadata(object)[[plot_var]])
+      plot_vals <- plot_vals[!is.na(plot_vals)]
+    }
+    object <- object[, pull_metadata(object)[[plot_var]] %in% plot_vals]
+    vln_plot <- scater::plotExpression(object, features = features, x = plot_var, color_by = plot_var, ...) + geom_boxplot(width = 0.2) + NULL
+    print(vln_plot)
+  }
+)
 
-}
 
 
 #' Plot Feature
