@@ -103,7 +103,7 @@ list_plot_types <- function(seu) {
     dplyr::filter(!grepl("_snn_res", vars)) %>%
     dplyr::mutate(meta_type = dplyr::case_when(
       var_type %in% c("int", "dbl") ~ "continuous",
-      var_type %in% c("chr", "fct", "ord", "lgl") ~ "category"
+      var_type %in% c("chr", "fct", "ord", "lgl", "glue") ~ "category"
     )) %>%
     dplyr::mutate(meta_type = ifelse(meta_type == "continuous" & num_levels < 30, "category", meta_type)) %>%
     dplyr::filter(num_levels > 1) %>%

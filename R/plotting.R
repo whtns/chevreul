@@ -17,7 +17,8 @@ unite_metadata <- function(seu, metavars) {
   newcolname = paste(metavars, collapse = "_by_")
 
   newdata <- seu[[metavars]] %>%
-    tidyr::unite(!!newcolname, metavars)
+    tidyr::unite(!!newcolname, metavars) %>%
+    tibble::deframe()
 
   Idents(seu) <- newdata
 
@@ -272,10 +273,6 @@ plot_multiple_branches_heatmap <- function(cds,
 plot_var <- function(seu, group = "batch", embedding = "umap", dims = c(1,2), highlight = NULL, pt.size = 1.0, return_plotly = FALSE, ...){
 
   Seurat::DefaultAssay(seu) <- "gene"
-
-  # metadata <- tibble::as_tibble(seu[[]][Seurat::Cells(seu),], rownames = "sID")
-  # cellid <- metadata[["sID"]]
-  # key <- rownames(metadata)
 
   metadata <- seu[[]][Seurat::Cells(seu),]
   key <- rownames(metadata)

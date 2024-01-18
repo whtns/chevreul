@@ -8,3 +8,7 @@ inst/doc
 velocity_embedding.png
 velocity_expression.png
 *.Rproj
+dev/
+figures/
+euler/
+convert_function_to_method.R
