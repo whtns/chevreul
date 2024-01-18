@@ -714,7 +714,7 @@ objectApp <- function(preset_project, appTitle = "chevreul", organism_type = "hu
             reintegrated_object <- reintegrate_object(object(),
               resolution = seq(0.2, 2, by = 0.2),
               legacy_settings = input$legacySettingsSubset,
-              organism = object()@misc$experiment$organism
+              organism = Misc(object())$experiment$organism
             )
             object(reintegrated_object)
           }
@@ -749,7 +749,7 @@ objectApp <- function(preset_project, appTitle = "chevreul", organism_type = "hu
             reintegrated_object <- reintegrate_object(object(),
               resolution = seq(0.2, 2, by = 0.2),
               legacy_settings = input$legacySettingsSubset,
-              organism = object()@misc$experiment$organism
+              organism = Misc(object())$experiment$organism
             )
             object(reintegrated_object)
           }

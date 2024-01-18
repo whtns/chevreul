@@ -16,6 +16,8 @@ BugReports: https://github.com/cobriniklab/chevreul/issues
 Depends: 
     R (>= 2.10),
     Seurat,
+    SingleCellExperiment,
+    scater,
     shiny (>= 1.6.0),
     shinydashboard
 Imports: 

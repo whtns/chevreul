@@ -46,17 +46,17 @@ setMethod("integration_workflow", "Seurat",
 
             if (all(batch_organisms == "mouse")) {
               merged_batches <- purrr::imap(batches, object_integration_pipeline, resolution = resolution, organism = "mouse", ...)
-              merged_batches@misc$batches <- names(batches)
+              Misc(merged_batches)$batches <- names(batches)
 
             } else if (all(batch_organisms == "human")) {
               merged_batches <- object_integration_pipeline(batches, resolution = resolution, organism = "human", ...)
-              merged_batches@misc$batches <- names(batches)
+              Misc(merged_batches)$batches <- names(batches)
 
             } else {
               mouse_object_list <- batches[names(organisms[organisms == "mouse"])]
               human_object_list <- batches[names(organisms[organisms == "human"])]
               merged_batches <- cross_species_integrate(mouse_object_list = mouse_object_list, human_object_list = human_object_list)
-              merged_batches@misc$batches <- names(batches)
+              Misc(merged_batches)$batches <- names(batches)
             }
 
             merged_batches <- record_experiment_data(merged_batches, experiment_name, organism)
@@ -107,17 +107,17 @@ setMethod("integration_workflow", "SingleCellExperiment",
 
             if (all(batch_organisms == "mouse")) {
               merged_batches <- purrr::imap(batches, object_integration_pipeline, resolution = resolution, organism = "mouse", ...)
-              merged_batches@misc$batches <- names(batches)
+              Misc(merged_batches)$batches <- names(batches)
 
             } else if (all(batch_organisms == "human")) {
               merged_batches <- object_integration_pipeline(batches, resolution = resolution, organism = "human", ...)
-              merged_batches@misc$batches <- names(batches)
+              Misc(merged_batches)$batches <- names(batches)
 
             } else {
               mouse_object_list <- batches[names(organisms[organisms == "mouse"])]
               human_object_list <- batches[names(organisms[organisms == "human"])]
               merged_batches <- cross_species_integrate(mouse_object_list = mouse_object_list, human_object_list = human_object_list)
-              merged_batches@misc$batches <- names(batches)
+              Misc(merged_batches)$batches <- names(batches)
             }
 
             merged_batches <- record_experiment_data(merged_batches, experiment_name, organism)

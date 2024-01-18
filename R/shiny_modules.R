@@ -2044,7 +2044,7 @@ pathwayEnrichment <- function(input, output, session, object, featureType) {
       }
     }
 
-    object()@misc$enriched_pathways
+    Misc(object())$enriched_pathways
   })
 
   # UI element: choose source for pathway enrichement results (currently Enrichr or GSVA)
@@ -2420,7 +2420,7 @@ plotCoverage <- function(input, output, session, object, plot_types, proj_dir, o
       var_of_interest = input$varSelect,
       values_of_interest = input$displayvalues,
 
-      organism = object()@misc$experiment$organism,
+      organism = Misc(object())$experiment$organism,
       mean_only = input$meanCoverage,
       rescale_introns = input$collapseIntrons,
       scale_y = input$yScale,

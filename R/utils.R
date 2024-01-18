@@ -243,8 +243,8 @@ setMethod("record_experiment_data", "Seurat",
 
             experiment$chevreul_version <- utils::packageVersion("chevreul")
 
-            object@misc[["experiment"]] <- NULL
-            object@misc[["experiment"]] <- experiment
+            Misc(object)[["experiment"]] <- NULL
+            Misc(object)[["experiment"]] <- experiment
 
             return(object)
           }
@@ -293,8 +293,8 @@ setMethod("record_experiment_data", "SingleCellExperiment",
 
             experiment$chevreul_version <- utils::packageVersion("chevreul")
 
-            object@misc[["experiment"]] <- NULL
-            object@misc[["experiment"]] <- experiment
+            Misc(object)[["experiment"]] <- NULL
+            Misc(object)[["experiment"]] <- experiment
 
             return(object)
           }
@@ -324,7 +324,7 @@ update_chevreul_object <- function(object_path, feature, resolution = seq(0.2, 2
     object <- RenameAssays(object, RNA = "gene")
   }
 
-  seurat_version <- object@misc$experiment$seurat_version
+  seurat_version <- Misc(object)$experiment$seurat_version
 
   if(packageVersion("Seurat") == '5.0.0' & (seurat_version < 5 || is.null(seurat_version))){
     object <- convert_v3_to_v5(object)
@@ -353,7 +353,7 @@ update_chevreul_object <- function(object_path, feature, resolution = seq(0.2, 2
 
   object <- set_metadata(object, new_meta)
 
-  chevreul_version <- object@misc$experiment$chevreul_version
+  chevreul_version <- Misc(object)$experiment$chevreul_version
 
   chevreul_version <- ifelse(is.null(chevreul_version), 0.1, chevreul_version)
 
@@ -711,8 +711,8 @@ convert_object_list_to_multimodal <- function(object_list) {
 
   marker_names <- names(Misc(multimodal_object)[["markers"]])
 
-  if (!is.null(multimodal_object@misc$markers)) {
-    names(multimodal_object@misc$markers) <- gsub("RNA", "gene", marker_names)
+  if (!is.null(Misc(multimodal_object)$markers)) {
+    names(Misc(multimodal_object)$markers) <- gsub("RNA", "gene", marker_names)
   }
 
 
@@ -748,7 +748,7 @@ make_chevreul_clean_names <- function(myvec){
 #' convert_v3_to_v5(human_gene_transcript_seurat)
 convert_v3_to_v5 <- function(seurat_v3){
 
-  seurat_version <- seurat_v3@misc$experiment$seurat_version
+  seurat_version <- Misc(seurat_v3)$experiment$seurat_version
 
   if(seurat_version < 5 || is.null(seurat_version)){
   meta <- seurat_v3@meta.data
@@ -766,11 +766,11 @@ convert_v3_to_v5 <- function(seurat_v3){
   seurat_v5@graphs <- seurat_v3@graphs
   seurat_v5@neighbors <- seurat_v3@neighbors
 
-  seurat_v5@misc <- seurat_v3@misc
+  Misc(seurat_v5) <- Misc(seurat_v3)
 
   Idents(seurat_v5) <- Idents(seurat_v3)
 
-  seurat_v5@misc$experiment$seurat_version <- packageVersion("seurat")
+  Misc(seurat_v5)$experiment$seurat_version <- packageVersion("seurat")
   } else{
    seurat_v5 <- seurat_v3
   }
