@@ -11,3 +11,5 @@ velocity_expression.png
 dev/
 euler/
 figures/
+convert_function_to_method.R
+Rprof.out

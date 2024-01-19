@@ -104,6 +104,8 @@ setMethod(
 
 #' Filter Rows to Top
 #'
+#'Filters the sprcified rows in the given columns to the top
+#'
 #' @param df
 #' @param column
 #' @param values
@@ -112,18 +114,42 @@ setMethod(
 #' @export
 #'
 #' @examples
-filter_rows_to_top <- function(df, column, values) {
-  matched_df <- df[df[[column]] %in% values, ]
+setGeneric("filter_rows_to_top", function(df, column, values) {
+  standardGeneric("filter_rows_to_top")
+})
 
-  matched_df <- matched_df[match(values, matched_df[[column]]), ]
+setMethod(
+  "filter_rows_to_top", "Seurat",
+  function(df, column, values) {
+    matched_df <- df[df[[column]] %in% values, ]
 
-  unmatched_df <- df[!(df[[column]] %in% values), ]
+    matched_df <- matched_df[match(values, matched_df[[column]]), ]
 
-  total_df <- list(matched_df = matched_df, unmatched_df = unmatched_df)
-  total_df <- dplyr::bind_rows(total_df)
+    unmatched_df <- df[!(df[[column]] %in% values), ]
 
-  return(total_df)
-}
+    total_df <- list(matched_df = matched_df, unmatched_df = unmatched_df)
+    total_df <- dplyr::bind_rows(total_df)
+
+    return(total_df)
+  }
+)
+
+setMethod(
+  "filter_rows_to_top", "SingleCellExperiment",
+  function(df, column, values) {
+    matched_df <- df[df[[column]] %in% values, ]
+
+    matched_df <- matched_df[match(values, matched_df[[column]]), ]
+
+    unmatched_df <- df[!(df[[column]] %in% values), ]
+
+    total_df <- list(matched_df = matched_df, unmatched_df = unmatched_df)
+    total_df <- dplyr::bind_rows(total_df)
+
+    return(total_df)
+  }
+)
+
 
 
 #' Get Transcripts in object
@@ -140,11 +166,28 @@ filter_rows_to_top <- function(df, column, values) {
 #' @examples
 #' RXRG_transcripts <- get_transcripts_from_object(human_gene_transcript_object, "RXRG")
 #'
-get_transcripts_from_object <- function(object, gene, organism = "human") {
-  transcripts <- genes_to_transcripts(gene, organism)
+setGeneric("get_transcripts_from_object", function(object, gene, organism = "human") {
+  standardGeneric("get_transcripts_from_object")
+})
 
-  transcripts <- transcripts[transcripts %in% rownames(GetAssay(object, "transcript"))]
-}
+setMethod(
+  "get_transcripts_from_object", "Seurat",
+  function(object, gene, organism = "human") {
+    transcripts <- genes_to_transcripts(gene, organism)
+
+    transcripts <- transcripts[transcripts %in% rownames(GetAssay(object, "transcript"))]
+  }
+)
+
+setMethod(
+  "get_transcripts_from_object", "SingleCellExperiment",
+  function(object, gene, organism = "human") {
+    transcripts <- genes_to_transcripts(gene, organism)
+
+    transcripts <- transcripts[transcripts %in% rownames(GetAssay(object, "transcript"))]
+
+  }
+)
 
 #' Title
 #'
@@ -311,84 +354,171 @@ setMethod("record_experiment_data", "SingleCellExperiment",
 #' @export
 #'
 #' @examples
-update_chevreul_object <- function(object_path, feature, resolution = seq(0.2, 2.0, by = 0.2), return_object = TRUE, ...) {
-  message(object_path)
-  object <- readRDS(object_path)
+setGeneric("update_chevreul_object", function(object_path, feature, resolution = seq(0.2, 2.0, by = 0.2), return_object = TRUE, ...) {
+  standardGeneric("update_chevreul_object")
+})
 
-  if (is.list(object)) {
-    object <- convert_object_list_to_multimodal(object)
-    # object <- object::UpdateobjectObject(object)
-  } else if (all(names(object@assays) == "RNA")) {
-    object <- RenameAssays(object, RNA = "gene")
-  } else if (identical(names(object@assays), c("RNA", "integrated"))) {
-    object <- RenameAssays(object, RNA = "gene")
-  }
+setMethod(
+  "update_chevreul_object", "Seurat",
+  function(object_path, feature, resolution = seq(0.2, 2.0, by = 0.2), return_object = TRUE, ...) {
+    message(object_path)
+    object <- readRDS(object_path)
 
-  seurat_version <- Misc(object)$experiment$seurat_version
-
-  if(packageVersion("Seurat") == '5.0.0' & (seurat_version < 5 || is.null(seurat_version))){
-    object <- convert_v3_to_v5(object)
-  }
-
-  object <- propagate_spreadsheet_changes(pull_metadata(object), object)
-
-  # set appropriate assay
-  if ("integrated" %in% names(object@assays)) {
-    default_assay <- "integrated"
-  } else {
-    default_assay <- "gene"
-  }
-
-  DefaultAssay(object) <- default_assay
-
-  cluster_tag <- glue::glue("{DefaultAssay(object)}_snn_res\\.")
-
-  cluster_names <- str_subset(names(pull_metadata(object)), cluster_tag)
-  new_cluster_names <- str_replace(cluster_names, cluster_tag, "cluster_resolution_")
-
-  new_cluster_cols <- pull_metadata(object)[cluster_names]
-  names(new_cluster_cols) <- new_cluster_names
-
-  new_meta <- cbind(pull_metadata(object), new_cluster_cols)
-
-  object <- set_metadata(object, new_meta)
-
-  chevreul_version <- Misc(object)$experiment$chevreul_version
-
-  chevreul_version <- ifelse(is.null(chevreul_version), 0.1, chevreul_version)
-
-  # update human gene symbols to grch38
-  old_symbol <- "CTC-378H22.2"
-  if (old_symbol %in% rownames(object[["gene"]])){
-    for (i in names(object@assays)[names(object@assays) %in% c("gene", "integrated")]){
-      # object <- update_human_gene_symbols(object, assay = i)
-    }
-  }
-
-  if (chevreul_version < getNamespaceVersion("chevreul")) {
-    message(paste0(object_path, " is out of date! updating..."))
-    if (!any(grepl("_snn_res", colnames(pull_metadata(object))))) {
-      object <- object_cluster(object = object, resolution = resolution, reduction = "pca", ...)
+    if (is.list(object)) {
+      object <- convert_object_list_to_multimodal(object)
+      # object <- object::UpdateobjectObject(object)
+    } else if (all(names(object@assays) == "RNA")) {
+      object <- RenameAssays(object, RNA = "gene")
+    } else if (identical(names(object@assays), c("RNA", "integrated"))) {
+      object <- RenameAssays(object, RNA = "gene")
     }
 
-    for (i in names(object@assays)[names(object@assays) %in% c("gene", "integrated")]){
-      object <- find_all_markers(object, object_assay = i)
+    seurat_version <- Misc(object)$experiment$seurat_version
+
+    if(packageVersion("Seurat") == '5.0.0' & (seurat_version < 5 || is.null(seurat_version))){
+      object <- convert_v3_to_v5(object)
     }
 
-    object <- record_experiment_data(object, ...)
-    object <- object_calcn(object)
+    object <- propagate_spreadsheet_changes(pull_metadata(object), object)
+
+    # set appropriate assay
+    if ("integrated" %in% names(object@assays)) {
+      default_assay <- "integrated"
+    } else {
+      default_assay <- "gene"
+    }
+
+    DefaultAssay(object) <- default_assay
+
+    cluster_tag <- glue::glue("{DefaultAssay(object)}_snn_res\\.")
+
+    cluster_names <- str_subset(names(pull_metadata(object)), cluster_tag)
+    new_cluster_names <- str_replace(cluster_names, cluster_tag, "cluster_resolution_")
+
+    new_cluster_cols <- pull_metadata(object)[cluster_names]
+    names(new_cluster_cols) <- new_cluster_names
+
+    new_meta <- cbind(pull_metadata(object), new_cluster_cols)
+
+    object <- set_metadata(object, new_meta)
+
+    chevreul_version <- Misc(object)$experiment$chevreul_version
+
+    chevreul_version <- ifelse(is.null(chevreul_version), 0.1, chevreul_version)
+
+    # update human gene symbols to grch38
+    old_symbol <- "CTC-378H22.2"
+    if (old_symbol %in% rownames(object[["gene"]])){
+      for (i in names(object@assays)[names(object@assays) %in% c("gene", "integrated")]){
+        # object <- update_human_gene_symbols(object, assay = i)
+      }
+    }
+
+    if (chevreul_version < getNamespaceVersion("chevreul")) {
+      message(paste0(object_path, " is out of date! updating..."))
+      if (!any(grepl("_snn_res", colnames(pull_metadata(object))))) {
+        object <- object_cluster(object = object, resolution = resolution, reduction = "pca", ...)
+      }
+
+      for (i in names(object@assays)[names(object@assays) %in% c("gene", "integrated")]){
+        object <- find_all_markers(object, object_assay = i)
+      }
+
+      object <- record_experiment_data(object, ...)
+      object <- object_calcn(object)
+    }
+
+
+    if (return_object) {
+      return(object)
+    } else {
+      message(paste0("saving ", object_path))
+      # saveRDS(object, gsub(".rds", "_multimodal.rds", object_path))
+      saveRDS(object, object_path)
+    }
   }
+)
+
+setMethod(
+  "update_chevreul_object", "SingleCellExperiment",
+  function(object_path, feature, resolution = seq(0.2, 2.0, by = 0.2), return_object = TRUE, ...) {
+    message(object_path)
+    object <- readRDS(object_path)
+
+    if (is.list(object)) {
+      object <- convert_object_list_to_multimodal(object)
+      # object <- object::UpdateobjectObject(object)
+    } else if (all(names(object@assays) == "RNA")) {
+      object <- RenameAssays(object, RNA = "gene")
+    } else if (identical(names(object@assays), c("RNA", "integrated"))) {
+      object <- RenameAssays(object, RNA = "gene")
+    }
+
+    seurat_version <- Misc(object)$experiment$seurat_version
+
+    if(packageVersion("Seurat") == '5.0.0' & (seurat_version < 5 || is.null(seurat_version))){
+      object <- convert_v3_to_v5(object)
+    }
+
+    object <- propagate_spreadsheet_changes(pull_metadata(object), object)
+
+    # set appropriate assay
+    if ("integrated" %in% names(object@assays)) {
+      default_assay <- "integrated"
+    } else {
+      default_assay <- "gene"
+    }
+
+    DefaultAssay(object) <- default_assay
+
+    cluster_tag <- glue::glue("{DefaultAssay(object)}_snn_res\\.")
+
+    cluster_names <- str_subset(names(pull_metadata(object)), cluster_tag)
+    new_cluster_names <- str_replace(cluster_names, cluster_tag, "cluster_resolution_")
+
+    new_cluster_cols <- pull_metadata(object)[cluster_names]
+    names(new_cluster_cols) <- new_cluster_names
+
+    new_meta <- cbind(pull_metadata(object), new_cluster_cols)
+
+    object <- set_metadata(object, new_meta)
+
+    chevreul_version <- Misc(object)$experiment$chevreul_version
+
+    chevreul_version <- ifelse(is.null(chevreul_version), 0.1, chevreul_version)
+
+    # update human gene symbols to grch38
+    old_symbol <- "CTC-378H22.2"
+    if (old_symbol %in% rownames(object[["gene"]])){
+      for (i in names(object@assays)[names(object@assays) %in% c("gene", "integrated")]){
+        # object <- update_human_gene_symbols(object, assay = i)
+      }
+    }
+
+    if (chevreul_version < getNamespaceVersion("chevreul")) {
+      message(paste0(object_path, " is out of date! updating..."))
+      if (!any(grepl("_snn_res", colnames(pull_metadata(object))))) {
+        object <- object_cluster(object = object, resolution = resolution, reduction = "pca", ...)
+      }
+
+      for (i in names(object@assays)[names(object@assays) %in% c("gene", "integrated")]){
+        object <- find_all_markers(object, object_assay = i)
+      }
+
+      object <- record_experiment_data(object, ...)
+      object <- object_calcn(object)
+    }
 
 
-  if (return_object) {
-    return(object)
-  } else {
-    message(paste0("saving ", object_path))
-    # saveRDS(object, gsub(".rds", "_multimodal.rds", object_path))
-    saveRDS(object, object_path)
+    if (return_object) {
+      return(object)
+    } else {
+      message(paste0("saving ", object_path))
+      # saveRDS(object, gsub(".rds", "_multimodal.rds", object_path))
+      saveRDS(object, object_path)
+    }
   }
-}
-
+)
 
 #' Calculate Read Count Metrics for a object
 #'
@@ -398,19 +528,36 @@ update_chevreul_object <- function(object_path, feature, resolution = seq(0.2, 2
 #' @param assay Assay to use, Default = "gene"
 #' @param slot
 #'
-#' @return
+#' @return a single cell object with nfeatures and ngenes stored in metadata
 #' @export
 #'
 #' @examples
-object_calcn <- function(object, assay = "gene", slot = "counts") {
-  n.calc <- object:::CalcN(object = GetAssay(object, assay))
-  if (!is.null(x = n.calc)) {
-    names(x = n.calc) <- paste(names(x = n.calc), assay, sep = "_")
-    object[[names(x = n.calc)]] <- n.calc
-  }
+setGeneric("object_calcn", function (object, assay = "gene", slot = "counts")  standardGeneric("object_calcn"))
 
-  return(object)
-}
+setMethod("object_calcn", "Seurat",
+          function (object, assay = "gene", slot = "counts")
+          {
+            n.calc <- Seurat:::CalcN(object = GetAssay(object, assay))
+            if (!is.null(x = n.calc)) {
+              names(x = n.calc) <- paste(names(x = n.calc), assay, sep = "_")
+              object[[names(x = n.calc)]] <- n.calc
+            }
+            return(object)
+          }
+)
+
+setMethod("object_calcn", "SingleCellExperiment",
+          function (object, assay = "gene", slot = "counts")
+          {
+            n.calc <- Seurat:::CalcN(object = GetAssay(object, assay))
+            if (!is.null(x = n.calc)) {
+              names(x = n.calc) <- paste(names(x = n.calc), assay, sep = "_")
+              object[[names(x = n.calc)]] <- n.calc
+            }
+            return(object)
+          }
+)
+
 
 #' Propagate Metadata Changes
 #'
@@ -449,38 +596,49 @@ propagate_spreadsheet_changes <- function(updated_table, object) {
 #' @export
 #'
 #' @examples
-create_project_db <- function(cache_location = "~/.cache/chevreul",
-                              sqlite_db = "single-cell-projects.db", verbose = TRUE) {
-  if (!dir.exists(cache_location)) {
-    dir.create(cache_location)
-  }
+setGeneric("create_project_db", function (cache_location = "~/.cache/chevreul", sqlite_db = "single-cell-projects.db", verbose = TRUE)  standardGeneric("create_project_db"))
 
-  con <- DBI::dbConnect(RSQLite::SQLite(), fs::path(cache_location, sqlite_db))
+setMethod("create_project_db", "Seurat",
+          function (cache_location = "~/.cache/chevreul", sqlite_db = "single-cell-projects.db", verbose = TRUE)
+          {
+            if (!dir.exists(cache_location)) {
+              dir.create(cache_location)
+            }
+            con <- DBI::dbConnect(RSQLite::SQLite(), fs::path(cache_location, sqlite_db))
+            projects_tbl <- tibble::tibble(project_name = character(), project_path = character(), project_slug = character(), project_type = character(), )
+            message(paste0("building table of chevreul projects at ", fs::path(cache_location, sqlite_db)))
+            tryCatch({
+              DBI::dbWriteTable(con, "projects_tbl", projects_tbl)
+            }, warning = function(w) {
+              message(sprintf("Warning in %s: %s", deparse(w[["call"]]), w[["message"]]))
+            }, error = function(e) {
+              message("projects db already exists!")
+            }, finally = {
+            })
+            DBI::dbDisconnect(con)
+          }
+)
 
-  projects_tbl <- tibble::tibble(
-    project_name = character(),
-    project_path = character(),
-    project_slug = character(),
-    project_type = character(),
-  )
-
-  message(paste0("building table of chevreul projects at ", fs::path(cache_location, sqlite_db)))
-  # DBI::dbWriteTable(con, "projects_tbl", projects_tbl)
-
-  tryCatch({
-    DBI::dbWriteTable(con, "projects_tbl", projects_tbl)
-  }, warning = function(w) {
-      message(sprintf("Warning in %s: %s", deparse(w[["call"]]), w[["message"]]))
-
-  }, error = function(e) {
-      message("projects db already exists!")
-
-  }, finally = {
-  })
-
-  DBI::dbDisconnect(con)
-}
-
+setMethod("create_project_db", "SingleCellExperiment",
+          function (cache_location = "~/.cache/chevreul", sqlite_db = "single-cell-projects.db", verbose = TRUE)
+          {
+            if (!dir.exists(cache_location)) {
+              dir.create(cache_location)
+            }
+            con <- DBI::dbConnect(RSQLite::SQLite(), fs::path(cache_location, sqlite_db))
+            projects_tbl <- tibble::tibble(project_name = character(), project_path = character(), project_slug = character(), project_type = character(), )
+            message(paste0("building table of chevreul projects at ", fs::path(cache_location, sqlite_db)))
+            tryCatch({
+              DBI::dbWriteTable(con, "projects_tbl", projects_tbl)
+            }, warning = function(w) {
+              message(sprintf("Warning in %s: %s", deparse(w[["call"]]), w[["message"]]))
+            }, error = function(e) {
+              message("projects db already exists!")
+            }, finally = {
+            })
+            DBI::dbDisconnect(con)
+          }
+)
 #' Update a database of chevreul projects
 #'
 #' Add new/update existing projects to the database by recursing fully
