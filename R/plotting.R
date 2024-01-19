@@ -7,23 +7,34 @@
 #' @param object A object
 #' @param metavars A feature or variable to combine
 #'
-#' @return
+#' @return an object with Idents formed from concatenation of metavars
 #' @export
 #'
 #' @examples
 #'
-unite_metadata <- function(object, metavars) {
+setGeneric("unite_metadata", function (object, metavars)  standardGeneric("unite_metadata"))
 
-  newcolname = paste(metavars, collapse = "_by_")
+setMethod("unite_metadata", "Seurat",
+          function (object, metavars)
+          {
+            newcolname = paste(metavars, collapse = "_by_")
+            newdata <- object[[metavars]] %>% tidyr::unite(!!newcolname, metavars) %>% tibble::deframe()
+            Idents(object) <- newdata
+            return(object)
+          }
+)
 
-  newdata <- object[[metavars]] %>%
-    tidyr::unite(!!newcolname, metavars)
-
-  Idents(object) <- newdata
-
-  return(object)
-
-}
+setMethod("unite_metadata", "SingleCellExperiment",
+          function (object, metavars)
+          {
+            newcolname = paste(metavars, collapse = "_by_")
+            newdata <- colData(object)[metavars] %>%
+              as.data.frame() %>%
+              tidyr::unite(!!newcolname, metavars) %>% tibble::deframe()
+            # Idents(object) <- newdata
+            return(object)
+          }
+)
 
 #' Plot monocle pseudotime over multiple branches
 #'
@@ -934,63 +945,57 @@ object_complex_heatmap <- function(object, features = NULL, group.by = "ident", 
 #' @examples
 #' plot_transcript_composition(human_gene_transcript_object, "RXRG", group.by = "gene_snn_res.0.6")
 #'
-plot_transcript_composition <- function(object, gene_symbol, group.by = "batch", standardize = FALSE, drop_zero = FALSE){
+setGeneric("plot_transcript_composition", function (object, gene_symbol, group.by = "batch", standardize = FALSE, drop_zero = FALSE)  standardGeneric("plot_transcript_composition"))
 
+setMethod("plot_transcript_composition", "Seurat",
+          function (object, gene_symbol, group.by = "batch", standardize = FALSE, drop_zero = FALSE)
+          {
+            transcripts <- annotables::grch38 %>% dplyr::filter(symbol == gene_symbol) %>% dplyr::left_join(annotables::grch38_tx2gene, by = "ensgene") %>% dplyr::pull(enstxp)
+            metadata <- object@meta.data
+            metadata$sample_id <- NULL
+            metadata <- metadata %>% tibble::rownames_to_column("sample_id") %>% dplyr::select(sample_id, group.by = {
+              {
+                group.by
+              }
+            })
+            data <- FetchData(object$transcript, vars = transcripts)
+            data <- expm1(as.matrix(data))
+            data <- data %>% as.data.frame() %>% tibble::rownames_to_column("sample_id") %>% tidyr::pivot_longer(cols = starts_with("ENST"), names_to = "transcript", values_to = "expression") %>% dplyr::left_join(metadata, by = "sample_id") %>% dplyr::mutate(group.by = as.factor(group.by), transcript = as.factor(transcript))
+            data <- dplyr::group_by(data, group.by, transcript)
+            if (drop_zero) {
+              data <- dplyr::filter(data, expression != 0)
+            }
+            data <- dplyr::summarize(data, expression = mean(expression))
+            position <- ifelse(standardize, "fill", "stack")
+            p <- ggplot(data = data, aes(x = group.by, y = expression, fill = transcript)) + geom_col(stat = "identity", position = position) + theme_minimal() + theme(axis.title.x = element_blank(), axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1, size = 12)) + labs(title = paste("Mean expression by", group.by, "-", gene_symbol), subtitle = "data scaled by library size then ln transformed") + NULL
+            return(list(plot = p, data = data))
+          }
+)
 
-  transcripts <- annotables::grch38 %>%
-    dplyr::filter(symbol == gene_symbol) %>%
-    dplyr::left_join(annotables::grch38_tx2gene, by = "ensgene") %>%
-    dplyr::pull(enstxp)
-
-  metadata <- object@meta.data
-  metadata$sample_id <- NULL
-  metadata <-
-    metadata %>%
-    tibble::rownames_to_column("sample_id") %>%
-    dplyr::select(sample_id, group.by = {{group.by}})
-
-  data <- FetchData(object$transcript, vars = transcripts)
-
-  data <- expm1(as.matrix(data))
-
-  data <-
-    data %>%
-    as.data.frame() %>%
-    tibble::rownames_to_column("sample_id") %>%
-    tidyr::pivot_longer(cols = starts_with("ENST"),
-                        names_to = "transcript",
-                        values_to = "expression") %>%
-    dplyr::left_join(metadata, by = "sample_id") %>%
-    dplyr::mutate(group.by = as.factor(group.by),
-                  transcript = as.factor(transcript))
-
-  data <- dplyr::group_by(data, group.by, transcript)
-
-  # drop zero values
-
-  if(drop_zero){
-    data <- dplyr::filter(data, expression != 0)
-  }
-
-  data <- dplyr::summarize(data, expression = mean(expression))
-
-  position <- ifelse(standardize, "fill", "stack")
-
-  p <- ggplot(
-    data=data,
-    aes(x = group.by, y= expression, fill = transcript)) +
-    # stat_summary(fun = "mean", geom = "col") +
-    geom_col(stat = "identity", position = position) +
-    theme_minimal() +
-    theme(axis.title.x = element_blank(),
-          axis.text.x = element_text(
-            angle=45, hjust = 1, vjust = 1, size=12)) +
-    labs(title = paste("Mean expression by", group.by, "-", gene_symbol), subtitle = "data scaled by library size then ln transformed") +
-    NULL
-
-  return(list(plot = p, data = data))
-
-}
+setMethod("plot_transcript_composition", "SingleCellExperiment",
+          function (object, gene_symbol, group.by = "batch", standardize = FALSE, drop_zero = FALSE)
+          {
+            transcripts <- annotables::grch38 %>% dplyr::filter(symbol == gene_symbol) %>% dplyr::left_join(annotables::grch38_tx2gene, by = "ensgene") %>% dplyr::pull(enstxp)
+            metadata <- object@meta.data
+            metadata$sample_id <- NULL
+            metadata <- metadata %>% tibble::rownames_to_column("sample_id") %>% dplyr::select(sample_id, group.by = {
+              {
+                group.by
+              }
+            })
+            data <- FetchData(object$transcript, vars = transcripts)
+            data <- expm1(as.matrix(data))
+            data <- data %>% as.data.frame() %>% tibble::rownames_to_column("sample_id") %>% tidyr::pivot_longer(cols = starts_with("ENST"), names_to = "transcript", values_to = "expression") %>% dplyr::left_join(metadata, by = "sample_id") %>% dplyr::mutate(group.by = as.factor(group.by), transcript = as.factor(transcript))
+            data <- dplyr::group_by(data, group.by, transcript)
+            if (drop_zero) {
+              data <- dplyr::filter(data, expression != 0)
+            }
+            data <- dplyr::summarize(data, expression = mean(expression))
+            position <- ifelse(standardize, "fill", "stack")
+            p <- ggplot(data = data, aes(x = group.by, y = expression, fill = transcript)) + geom_col(stat = "identity", position = position) + theme_minimal() + theme(axis.title.x = element_blank(), axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1, size = 12)) + labs(title = paste("Mean expression by", group.by, "-", gene_symbol), subtitle = "data scaled by library size then ln transformed") + NULL
+            return(list(plot = p, data = data))
+          }
+)
 
 #' Plot All Transcripts
 #'
@@ -1010,29 +1015,38 @@ plot_transcript_composition <- function(object, gene_symbol, group.by = "batch",
 #' transcripts_to_plot <- genes_to_transcripts("RXRG")
 #' plot_all_transcripts(processed_object, features = transcripts_to_plot)
 #'
-plot_all_transcripts <- function(object, features, embedding = "umap", from_gene = TRUE, combine = TRUE){
+setGeneric("plot_all_transcripts", function (object, features, embedding = "umap", from_gene = TRUE, combine = TRUE)  standardGeneric("plot_all_transcripts"))
 
-  if(from_gene){
-    features <- genes_to_transcripts(features)
-  }
+setMethod("plot_all_transcripts", "Seurat",
+          function (object, features, embedding = "umap", from_gene = TRUE, combine = TRUE)
+          {
+            if (from_gene) {
+              features <- genes_to_transcripts(features)
+            }
+            features = features[features %in% rownames(object[["transcript"]])]
+            transcript_cols <- FetchData(object, features)
+            object <- AddMetaData(object, transcript_cols)
+            plot_out <- purrr::map(paste0("transcript_", features), ~plot_feature(object, embedding = embedding, features = .x, return_plotly = FALSE)) %>% purrr::set_names(features)
+            if (combine) {
+              plot_out <- wrap_plots(plot_out)
+            }
+            return(plot_out)
+          }
+)
 
-  features = features[features %in% rownames(object[["transcript"]])]
-
-  # transcript_cols <- as.data.frame(t(as.matrix(object[["transcript"]][features,])))
-
-  transcript_cols <- FetchData(object, features)
-
-  object <- AddMetaData(object, transcript_cols)
-
-  plot_out <- purrr::map(paste0("transcript_", features), ~plot_feature(object,
-                                              embedding = embedding,
-                                              features = .x, return_plotly = FALSE)) %>%
-    purrr::set_names(features)
-
-  if(combine){
-    plot_out <- wrap_plots(plot_out)
-  }
-
-  return(plot_out)
-
-}
+setMethod("plot_all_transcripts", "SingleCellExperiment",
+          function (object, features, embedding = "umap", from_gene = TRUE, combine = TRUE)
+          {
+            if (from_gene) {
+              features <- genes_to_transcripts(features)
+            }
+            features = features[features %in% rownames(object[["transcript"]])]
+            transcript_cols <- FetchData(object, features)
+            object <- AddMetaData(object, transcript_cols)
+            plot_out <- purrr::map(paste0("transcript_", features), ~plot_feature(object, embedding = embedding, features = .x, return_plotly = FALSE)) %>% purrr::set_names(features)
+            if (combine) {
+              plot_out <- wrap_plots(plot_out)
+            }
+            return(plot_out)
+          }
+)
