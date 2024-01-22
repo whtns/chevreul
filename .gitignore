@@ -12,3 +12,4 @@ dev/
 figures/
 euler/
 convert_function_to_method.R
+Rprof.out
