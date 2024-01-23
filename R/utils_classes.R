@@ -117,7 +117,8 @@ setMethod("pull_metadata", "Seurat",
 #' @examples
 setMethod("pull_metadata", "SingleCellExperiment",
           function(object) {
-            colData(object)
+            colData(object) %>%
+              as.data.frame()
           })
 
 # set_metadata ------------------------------

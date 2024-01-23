@@ -61,194 +61,110 @@ setMethod("unite_metadata", "SingleCellExperiment",
 #' @return
 #'
 #' @examples
-plot_multiple_branches_heatmap <- function(cds,
-                                           branches,
-                                           branches_name = NULL,
-                                           cluster_rows = TRUE,
-                                           hclust_method = "ward.D2",
-                                           num_clusters = 6,
+setGeneric("plot_multiple_branches_heatmap", function (cds, branches, branches_name = NULL, cluster_rows = TRUE, hclust_method = "ward.D2", num_clusters = 6, hmcols = NULL, add_annotation_row = NULL, add_annotation_col = NULL, show_rownames = FALSE, use_gene_short_name = TRUE, norm_method = c("vstExprs", "log"), scale_max = 3, scale_min = -3, trend_formula = "~sm.ns(Pobjectdotime, df=3)", return_heatmap = FALSE, cores = 1)  standardGeneric("plot_multiple_branches_heatmap"))
 
-                                           hmcols = NULL,
-
-                                           add_annotation_row = NULL,
-                                           add_annotation_col = NULL,
-                                           show_rownames = FALSE,
-                                           use_gene_short_name = TRUE,
-
-                                           norm_method = c("vstExprs", "log"),
-                                           scale_max=3,
-                                           scale_min=-3,
-
-                                           trend_formula = '~sm.ns(Pobjectdotime, df=3)',
-
-                                           return_heatmap=FALSE,
-                                           cores=1){
-  pobjectdocount <- 1
-  if(!(all(branches %in% Biobase::pData(cds)$State)) & length(branches) == 1){
-    stop('This function only allows to make multiple branch plots where branches is included in the pData')
-  }
-
-  branch_label <- branches
-  if(!is.null(branches_name)){
-    if(length(branches) != length(branches_name)){
-      stop('branches_name should have the same length as branches')
-    }
-    branch_label <- branches_name
-  }
-
-  #test whether or not the states passed to branches are true branches (not truncks) or there are terminal cells
-  g <- cds@minSpanningTree
-  m <- NULL
-  # branche_cell_num <- c()
-  for(branch_in in branches) {
-    branches_cells <- row.names(subset(Biobase::pData(cds), State == branch_in))
-    root_state <- subset(Biobase::pData(cds), Pobjectdotime == 0)[, 'State']
-    root_state_cells <- row.names(subset(Biobase::pData(cds), State == root_state))
-
-    if(cds@dim_reduce_type != 'ICA') {
-      root_state_cells <- unique(paste('Y_', cds@auxOrderingData$DDRTree$pr_graph_cell_proj_closest_vertex[root_state_cells, ], sep = ''))
-      branches_cells <- unique(paste('Y_', cds@auxOrderingData$DDRTree$pr_graph_cell_proj_closest_vertex[branches_cells, ], sep = ''))
-    }
-    root_cell <- root_state_cells[which(degree(g, v = root_state_cells) == 1)]
-    tip_cell <- branches_cells[which(degree(g, v = branches_cells) == 1)]
-
-    traverse_res <- traverseTree(g, root_cell, tip_cell)
-    path_cells <- names(traverse_res$shortest_path[[1]])
-
-    if(cds@dim_reduce_type != 'ICA') {
-      pc_ind <- cds@auxOrderingData$DDRTree$pr_graph_cell_proj_closest_vertex
-      path_cells <- row.names(pc_ind)[paste('Y_', pc_ind[, 1], sep = '') %in% path_cells]
-    }
-
-    cds_subset <- cds[, path_cells]
-
-    newdata <- data.frame(Pobjectdotime = seq(0, max(Biobase::pData(cds_subset)$Pobjectdotime),length.out = 100))
-
-    tmp <- genSmoothCurves(cds_subset, cores=cores, trend_formula = trend_formula,
-                           relative_expr = T, new_data = newdata)
-    if(is.null(m))
-      m <- tmp
-    else
-      m <- cbind(m, tmp)
-  }
-
-  #remove genes with no expression in any condition
-  m=m[!apply(m,1,sum)==0,]
-
-  norm_method <- match.arg(norm_method)
-
-  # FIXME: this needs to check that vst values can even be computed. (They can only be if we're using NB as the expressionFamily)
-  if(norm_method == 'vstExprs' && is.null(cds@dispFitInfo[["blind"]]$disp_func) == FALSE) {
-    m = vstExprs(cds, expr_matrix=m)
-  }
-  else if(norm_method == 'log') {
-    m = log10(m+pobjectdocount)
-  }
-
-  # Row-center the data.
-  m=m[!apply(m,1,sd)==0,]
-  m=Matrix::t(scale(Matrix::t(m),center=TRUE))
-  m=m[is.na(row.names(m)) == FALSE,]
-  m[is.nan(m)] = 0
-  m[m>scale_max] = scale_max
-  m[m<scale_min] = scale_min
-
-  heatmap_matrix <- m
-
-  row_dist <- as.dist((1 - cor(Matrix::t(heatmap_matrix)))/2)
-  row_dist[is.na(row_dist)] <- 1
-
-  if(is.null(hmcols)) {
-    bks <- seq(-3.1,3.1, by = 0.1)
-    hmcols <- colorRamps::blue2green2red(length(bks) - 1)
-  }
-  else {
-    bks <- seq(-3.1,3.1, length.out = length(hmcols))
-  }
-
-  ph <- pheatmap(heatmap_matrix,
-                 useRaster = T,
-                 cluster_cols=FALSE,
-                 cluster_rows=T,
-                 show_rownames=F,
-                 show_colnames=F,
-                 clustering_distance_rows=row_dist,
-                 clustering_method = hclust_method,
-                 cutree_rows=num_clusters,
-                 silent=TRUE,
-                 filename=NA,
-                 breaks=bks,
-                 color=hmcols)
-
-  annotation_col <- data.frame(Branch=factor(rep(rep(branch_label, each = 100))))
-  annotation_row <- data.frame(Cluster=factor(cutree(ph$tree_row, num_clusters)))
-  col_gaps_ind <- c(1:(length(branches) - 1)) * 100
-
-  if(!is.null(add_annotation_row)) {
-    old_colnames_length <- ncol(annotation_row)
-    annotation_row <- cbind(annotation_row, add_annotation_row[row.names(annotation_row), ])
-    colnames(annotation_row)[(old_colnames_length+1):ncol(annotation_row)] <- colnames(add_annotation_row)
-    # annotation_row$bif_time <- add_annotation_row[as.character(Biobase::fData(absolute_cds[row.names(annotation_row), ])$gene_short_name), 1]
-  }
-
-
-  if (use_gene_short_name == TRUE) {
-    if (is.null(Biobase::fData(cds)$gene_short_name) == FALSE) {
-      feature_label <- as.character(Biobase::fData(cds)[row.names(heatmap_matrix), 'gene_short_name'])
-      feature_label[is.na(feature_label)] <- row.names(heatmap_matrix)
-
-      row_ann_labels <- as.character(Biobase::fData(cds)[row.names(annotation_row), 'gene_short_name'])
-      row_ann_labels[is.na(row_ann_labels)] <- row.names(annotation_row)
-    }
-    else {
-      feature_label <- row.names(heatmap_matrix)
-      row_ann_labels <- row.names(annotation_row)
-    }
-  }
-  else {
-    feature_label <- row.names(heatmap_matrix)
-    row_ann_labels <- row.names(annotation_row)
-  }
-
-  row.names(heatmap_matrix) <- feature_label
-  row.names(annotation_row) <- row_ann_labels
-
-
-  colnames(heatmap_matrix) <- c(1:ncol(heatmap_matrix))
-
-  if(!(cluster_rows)) {
-    annotation_row <- NA
-  }
-
-  ph_res <- pheatmap(heatmap_matrix[, ], #ph$tree_row$order
-                     useRaster = T,
-                     cluster_cols = FALSE,
-                     cluster_rows = cluster_rows,
-                     show_rownames=show_rownames,
-                     show_colnames=F,
-                     #scale="row",
-                     clustering_distance_rows=row_dist, #row_dist
-                     clustering_method = hclust_method, #ward.D2
-                     cutree_rows=num_clusters,
-                     # cutree_cols = 2,
-                     annotation_row=annotation_row,
-                     annotation_col=annotation_col,
-                     gaps_col = col_gaps_ind,
-                     treeheight_row = 20,
-                     breaks=bks,
-                     fontsize = 12,
-                     color=hmcols,
-                     silent=TRUE,
-                     border_color = NA,
-                     filename=NA
-  )
-
-  grid::grid.rect(gp=grid::gpar("fill", col=NA))
-  grid::grid.draw(ph_res$gtable)
-  if (return_heatmap){
-    return(ph_res)
-  }
-}
+setMethod("plot_multiple_branches_heatmap", "cell_data_set",
+          function (cds, branches, branches_name = NULL, cluster_rows = TRUE, hclust_method = "ward.D2", num_clusters = 6, hmcols = NULL, add_annotation_row = NULL, add_annotation_col = NULL, show_rownames = FALSE, use_gene_short_name = TRUE, norm_method = c("vstExprs", "log"), scale_max = 3, scale_min = -3, trend_formula = "~sm.ns(Pobjectdotime, df=3)", return_heatmap = FALSE, cores = 1)
+          {
+            pobjectdocount <- 1
+            if (!(all(branches %in% Biobase::pData(cds)$State)) & length(branches) == 1) {
+              stop("This function only allows to make multiple branch plots where branches is included in the pData")
+            }
+            branch_label <- branches
+            if (!is.null(branches_name)) {
+              if (length(branches) != length(branches_name)) {
+                stop("branches_name should have the same length as branches")
+              }
+              branch_label <- branches_name
+            }
+            g <- cds@minSpanningTree
+            m <- NULL
+            for (branch_in in branches) {
+              branches_cells <- row.names(subset(Biobase::pData(cds), State == branch_in))
+              root_state <- subset(Biobase::pData(cds), Pobjectdotime == 0)[, "State"]
+              root_state_cells <- row.names(subset(Biobase::pData(cds), State == root_state))
+              if (cds@dim_reduce_type != "ICA") {
+                root_state_cells <- unique(paste("Y_", cds@auxOrderingData$DDRTree$pr_graph_cell_proj_closest_vertex[root_state_cells, ], sep = ""))
+                branches_cells <- unique(paste("Y_", cds@auxOrderingData$DDRTree$pr_graph_cell_proj_closest_vertex[branches_cells, ], sep = ""))
+              }
+              root_cell <- root_state_cells[which(degree(g, v = root_state_cells) == 1)]
+              tip_cell <- branches_cells[which(degree(g, v = branches_cells) == 1)]
+              traverse_res <- traverseTree(g, root_cell, tip_cell)
+              path_cells <- names(traverse_res$shortest_path[[1]])
+              if (cds@dim_reduce_type != "ICA") {
+                pc_ind <- cds@auxOrderingData$DDRTree$pr_graph_cell_proj_closest_vertex
+                path_cells <- row.names(pc_ind)[paste("Y_", pc_ind[, 1], sep = "") %in% path_cells]
+              }
+              cds_subset <- cds[, path_cells]
+              newdata <- data.frame(Pobjectdotime = seq(0, max(Biobase::pData(cds_subset)$Pobjectdotime), length.out = 100))
+              tmp <- genSmoothCurves(cds_subset, cores = cores, trend_formula = trend_formula, relative_expr = T, new_data = newdata)
+              if (is.null(m))
+                m <- tmp
+              else m <- cbind(m, tmp)
+            }
+            m = m[!apply(m, 1, sum) == 0, ]
+            norm_method <- match.arg(norm_method)
+            if (norm_method == "vstExprs" && is.null(cds@dispFitInfo[["blind"]]$disp_func) == FALSE) {
+              m = vstExprs(cds, expr_matrix = m)
+            }
+            else if (norm_method == "log") {
+              m = log10(m + pobjectdocount)
+            }
+            m = m[!apply(m, 1, sd) == 0, ]
+            m = Matrix::t(scale(Matrix::t(m), center = TRUE))
+            m = m[is.na(row.names(m)) == FALSE, ]
+            m[is.nan(m)] = 0
+            m[m > scale_max] = scale_max
+            m[m < scale_min] = scale_min
+            heatmap_matrix <- m
+            row_dist <- as.dist((1 - cor(Matrix::t(heatmap_matrix)))/2)
+            row_dist[is.na(row_dist)] <- 1
+            if (is.null(hmcols)) {
+              bks <- seq(-3.1, 3.1, by = 0.1)
+              hmcols <- colorRamps::blue2green2red(length(bks) - 1)
+            }
+            else {
+              bks <- seq(-3.1, 3.1, length.out = length(hmcols))
+            }
+            ph <- pheatmap(heatmap_matrix, useRaster = T, cluster_cols = FALSE, cluster_rows = T, show_rownames = F, show_colnames = F, clustering_distance_rows = row_dist, clustering_method = hclust_method, cutree_rows = num_clusters, silent = TRUE, filename = NA, breaks = bks, color = hmcols)
+            annotation_col <- data.frame(Branch = factor(rep(rep(branch_label, each = 100))))
+            annotation_row <- data.frame(Cluster = factor(cutree(ph$tree_row, num_clusters)))
+            col_gaps_ind <- c(1:(length(branches) - 1)) * 100
+            if (!is.null(add_annotation_row)) {
+              old_colnames_length <- ncol(annotation_row)
+              annotation_row <- cbind(annotation_row, add_annotation_row[row.names(annotation_row), ])
+              colnames(annotation_row)[(old_colnames_length + 1):ncol(annotation_row)] <- colnames(add_annotation_row)
+            }
+            if (use_gene_short_name == TRUE) {
+              if (is.null(Biobase::fData(cds)$gene_short_name) == FALSE) {
+                feature_label <- as.character(Biobase::fData(cds)[row.names(heatmap_matrix), "gene_short_name"])
+                feature_label[is.na(feature_label)] <- row.names(heatmap_matrix)
+                row_ann_labels <- as.character(Biobase::fData(cds)[row.names(annotation_row), "gene_short_name"])
+                row_ann_labels[is.na(row_ann_labels)] <- row.names(annotation_row)
+              }
+              else {
+                feature_label <- row.names(heatmap_matrix)
+                row_ann_labels <- row.names(annotation_row)
+              }
+            }
+            else {
+              feature_label <- row.names(heatmap_matrix)
+              row_ann_labels <- row.names(annotation_row)
+            }
+            row.names(heatmap_matrix) <- feature_label
+            row.names(annotation_row) <- row_ann_labels
+            colnames(heatmap_matrix) <- c(1:ncol(heatmap_matrix))
+            if (!(cluster_rows)) {
+              annotation_row <- NA
+            }
+            ph_res <- pheatmap(heatmap_matrix[, ], useRaster = T, cluster_cols = FALSE, cluster_rows = cluster_rows, show_rownames = show_rownames, show_colnames = F, clustering_distance_rows = row_dist, clustering_method = hclust_method, cutree_rows = num_clusters, annotation_row = annotation_row, annotation_col = annotation_col, gaps_col = col_gaps_ind, treeheight_row = 20, breaks = bks, fontsize = 12, color = hmcols, silent = TRUE, border_color = NA, filename = NA)
+            grid::grid.rect(gp = grid::gpar("fill", col = NA))
+            grid::grid.draw(ph_res$gtable)
+            if (return_heatmap) {
+              return(ph_res)
+            }
+          }
+)
 
 
 #' Plot Metadata Variables
@@ -373,18 +289,21 @@ setMethod("plot_var", "SingleCellExperiment",
 #' @return
 #'
 #' @examples
-plotly_settings <- function(plotly_plot, width = 600, height = 700){
-  plotly_plot %>%
-    plotly::layout(dragmode = "lasso") %>%
-    plotly::config(
-      toImageButtonOptions = list(
-        format = "svg",
-        filename = "myplot",
-        width = width,
-        height = height
-      )) %>%
-    identity()
-}
+setGeneric("plotly_settings", function (plotly_plot, width = 600, height = 700)  standardGeneric("plotly_settings"))
+
+setMethod("plotly_settings", "Seurat",
+          function (plotly_plot, width = 600, height = 700)
+          {
+            plotly_plot %>% plotly::layout(dragmode = "lasso") %>% plotly::config(toImageButtonOptions = list(format = "svg", filename = "myplot", width = width, height = height)) %>% identity()
+          }
+)
+
+setMethod("plotly_settings", "SingleCellExperiment",
+          function (plotly_plot, width = 600, height = 700)
+          {
+            plotly_plot %>% plotly::layout(dragmode = "lasso") %>% plotly::config(toImageButtonOptions = list(format = "svg", filename = "myplot", width = width, height = height)) %>% identity()
+          }
+)
 
 
 #' Plot Violin plot
@@ -553,7 +472,8 @@ setMethod(
 setMethod(
   "plot_cell_cycle_distribution", "SingleCellExperiment",
   function(seu, features) {
-    s.genes <- cc.genes[["s.genes"]]
+    s.genes <- colData(cc.genes)["s.genes"] %>%
+              as.data.frame()
     g2m.genes <- cc.genes[["g2m.genes"]]
     seu <- CellCycleScoring(object = seu, s.genes, g2m.genes, set.ident = TRUE)
     RidgePlot(object = seu, features = features)
@@ -757,36 +677,33 @@ setMethod(
 #' plot_readcount(human_gene_transcript_object, return_plotly = FALSE)
 #'
 #' @importFrom ggplot2 ggplot aes geom_bar theme labs scale_y_log10
-plot_readcount <- function(object, metavar = "nCount_RNA", color.by = "batch", yscale = "linear", return_plotly = FALSE, ...){
+setGeneric("plot_readcount", function(object, metavar = "nCount_RNA", color.by = "batch", yscale = "linear", return_plotly = FALSE, ...) standardGeneric("plot_readcount"))
 
-  object_tbl <- tibble::rownames_to_column(pull_metadata(object), "SID") %>%
-    dplyr::select(SID, !!as.symbol(metavar), !!as.symbol(color.by))
+setMethod("plot_readcount", "Seurat",
+          function (object, metavar = "nCount_RNA", color.by = "batch", yscale = "linear", return_plotly = FALSE, ...)
+          {
+            object_tbl <- tibble::rownames_to_column(pull_metadata(object), "SID") %>% dplyr::select(SID, !!as.symbol(metavar), !!as.symbol(color.by))
+            rc_plot <- ggplot(object_tbl, aes(x = reorder(SID, -!!as.symbol(metavar)), y = !!as.symbol(metavar), fill = !!as.symbol(color.by))) + geom_bar(position = "identity", stat = "identity") + theme(axis.text.x = element_blank()) + labs(title = metavar, x = "Sample") + NULL
+            if (yscale == "log") {
+              rc_plot <- rc_plot + scale_y_log10()
+            }
+            if (return_plotly == FALSE)
+              return(rc_plot)
+            rc_plot <- plotly::ggplotly(rc_plot, tooltip = "cellid", height = 500) %>% plotly_settings() %>% plotly::toWebGL() %>% identity()
+          })
 
-  rc_plot <-
-    ggplot(object_tbl, aes(x = reorder(SID, -!!as.symbol(metavar)),
-                        y = !!as.symbol(metavar), fill = !!as.symbol(color.by))) +
-    geom_bar(position = "identity", stat = "identity") +
-    theme(axis.text.x = element_blank()) + labs(title = metavar,
-                                                x = "Sample") +
-    NULL
-
-  if(yscale == "log"){
-    rc_plot <-
-      rc_plot +
-      scale_y_log10()
-  }
-
-  if (return_plotly == FALSE) return(rc_plot)
-
-  rc_plot <- plotly::ggplotly(rc_plot, tooltip = "cellid", height  = 500) %>%
-    # htmlwidgets::onRender(javascript) %>%
-    # plotly::highlight(on = "plotly_selected", off = "plotly_relayout") %>%
-    plotly_settings() %>%
-    plotly::toWebGL() %>%
-    # plotly::partial_bundle() %>%
-    identity()
-
-}
+setMethod("plot_readcount", "SingleCellExperiment",
+          function(object, metavar = "nCount_RNA", color.by = "batch", yscale = "linear", return_plotly = FALSE, ...)
+          {
+            object_tbl <- tibble::rownames_to_column(pull_metadata(object), "SID") %>% dplyr::select(SID, !!as.symbol(metavar), !!as.symbol(color.by))
+            rc_plot <- ggplot(object_tbl, aes(x = reorder(SID, -!!as.symbol(metavar)), y = !!as.symbol(metavar), fill = !!as.symbol(color.by))) + geom_bar(position = "identity", stat = "identity") + theme(axis.text.x = element_blank()) + labs(title = metavar, x = "Sample") + NULL
+            if (yscale == "log") {
+              rc_plot <- rc_plot + scale_y_log10()
+            }
+            if (return_plotly == FALSE)
+              return(rc_plot)
+            rc_plot <- plotly::ggplotly(rc_plot, tooltip = "cellid", height = 500) %>% plotly_settings() %>% plotly::toWebGL() %>% identity()
+          })
 
 
 #' Plot Annotated Complexheatmap from Seurat object
@@ -810,9 +727,9 @@ plot_readcount <- function(object, metavar = "nCount_RNA", color.by = "batch", y
 #'
 #' # plot top 50 variable genes
 #' top_50_features <- VariableFeatures(human_gene_transcript_object)[1:50]
-#' object_complex_heatmap(human_gene_transcript_object, features = top_50_features)
+#' make_complex_heatmap(human_gene_transcript_object, features = top_50_features)
 #'
-object_complex_heatmap <- function(object, features = NULL, group.by = "ident", cells = NULL,
+make_complex_heatmap <- function(object, features = NULL, group.by = "ident", cells = NULL,
                                 layer = "scale.data", assay = NULL, group.bar.height = 0.01,
                                 column_split = NULL, col_arrangement = "ward.D2", mm_col_dend = 30, ...)
 {
@@ -976,15 +893,20 @@ setMethod("plot_transcript_composition", "SingleCellExperiment",
           function (object, gene_symbol, group.by = "batch", standardize = FALSE, drop_zero = FALSE)
           {
             transcripts <- annotables::grch38 %>% dplyr::filter(symbol == gene_symbol) %>% dplyr::left_join(annotables::grch38_tx2gene, by = "ensgene") %>% dplyr::pull(enstxp)
-            metadata <- object@meta.data
+            metadata <- pull_metadata(object)
             metadata$sample_id <- NULL
             metadata <- metadata %>% tibble::rownames_to_column("sample_id") %>% dplyr::select(sample_id, group.by = {
               {
                 group.by
               }
             })
-            data <- FetchData(object$transcript, vars = transcripts)
-            data <- expm1(as.matrix(data))
+
+            transcripts = transcripts[transcripts %in% rownames(altExp(object, "transcript"))]
+
+            data <- counts(altExp(object, "transcript"))[transcripts,] %>%
+              as.matrix() %>%
+              t()
+
             data <- data %>% as.data.frame() %>% tibble::rownames_to_column("sample_id") %>% tidyr::pivot_longer(cols = starts_with("ENST"), names_to = "transcript", values_to = "expression") %>% dplyr::left_join(metadata, by = "sample_id") %>% dplyr::mutate(group.by = as.factor(group.by), transcript = as.factor(transcript))
             data <- dplyr::group_by(data, group.by, transcript)
             if (drop_zero) {
@@ -992,7 +914,7 @@ setMethod("plot_transcript_composition", "SingleCellExperiment",
             }
             data <- dplyr::summarize(data, expression = mean(expression))
             position <- ifelse(standardize, "fill", "stack")
-            p <- ggplot(data = data, aes(x = group.by, y = expression, fill = transcript)) + geom_col(stat = "identity", position = position) + theme_minimal() + theme(axis.title.x = element_blank(), axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1, size = 12)) + labs(title = paste("Mean expression by", group.by, "-", gene_symbol), subtitle = "data scaled by library size then ln transformed") + NULL
+            p <- ggplot(data = data, aes(x = group.by, y = expression, fill = transcript)) + geom_col(stat = "identity", position = position) + theme_minimal() + theme(axis.title.x = element_blank(), axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1, size = 12)) + labs(title = paste("Mean expression by", group.by, "-", gene_symbol)) + NULL
             return(list(plot = p, data = data))
           }
 )
@@ -1035,15 +957,16 @@ setMethod("plot_all_transcripts", "Seurat",
 )
 
 setMethod("plot_all_transcripts", "SingleCellExperiment",
-          function (object, features, embedding = "umap", from_gene = TRUE, combine = TRUE)
+          function (object, features, embedding = "UMAP", from_gene = TRUE, combine = TRUE)
           {
             if (from_gene) {
               features <- genes_to_transcripts(features)
             }
-            features = features[features %in% rownames(object[["transcript"]])]
-            transcript_cols <- FetchData(object, features)
-            object <- AddMetaData(object, transcript_cols)
-            plot_out <- purrr::map(paste0("transcript_", features), ~plot_feature(object, embedding = embedding, features = .x, return_plotly = FALSE)) %>% purrr::set_names(features)
+            features = features[features %in% rownames(altExp(object, "transcript"))]
+            transcript_cols <- assay(altExp(object, "transcript"))[features,]
+            colData(object)[features] = t(as.matrix(transcript_cols))
+            # plot_out <- scater::plotReducedDim(altExp(object), features = features, dimred = embedding)
+            plot_out <- purrr::map(paste0(features), ~plot_feature(object, embedding = embedding, features = .x, return_plotly = FALSE)) %>% purrr::set_names(features)
             if (combine) {
               plot_out <- wrap_plots(plot_out)
             }

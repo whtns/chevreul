@@ -256,7 +256,7 @@ plotHeatmap <- function(input, output, session, object, featureType, organism_ty
       assay <- "gene"
     }
 
-    hm <- object_complex_heatmap(object(), features = input$customFeature, assay = assay, group.by = input$colAnnoVar, slot = input$slot, col_arrangement = input$dendroSelect)
+    hm <- make_complex_heatmap(object(), features = input$customFeature, assay = assay, group.by = input$colAnnoVar, slot = input$slot, col_arrangement = input$dendroSelect)
 
     hm = ComplexHeatmap::draw(hm)
     return(hm)
