@@ -98,7 +98,7 @@ list_plot_types <- function(seu) {
     )
 
     meta_types <- meta_types %>%
-        dplyr::filter(!grepl("_snn_res", vars)) %>%
+        # dplyr::filter(!grepl("_snn_res", vars)) %>%
         dplyr::mutate(meta_type = dplyr::case_when(
             var_type %in% c("int", "dbl") ~ "continuous",
             var_type %in% c("chr", "fct", "ord", "lgl", "glue") ~ "category"
