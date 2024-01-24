@@ -451,32 +451,33 @@ setMethod("plot_feature", "SingleCellExperiment",
 #' Plot ridge plots of G1, S, and G2M phases grouped by provided metadata
 #'
 #' @param object A object
-#' @param features  Features to plot (gene expression, metrics, PC scores, anything that can be retreived by Seurat::FetchData)
-#'
 #' @return
 #' @export
 #'
 #' @examples
-setGeneric("plot_cell_cycle_distribution", function(seu, features) standardGeneric("plot_cell_cycle_distribution"))
+setGeneric("plot_cell_cycle_distribution", function(object) standardGeneric("plot_cell_cycle_distribution"))
 
 setMethod(
   "plot_cell_cycle_distribution", "Seurat",
-  function(seu, features) {
+  function(object) {
     s.genes <- cc.genes[["s.genes"]]
     g2m.genes <- cc.genes[["g2m.genes"]]
-    seu <- CellCycleScoring(object = seu, s.genes, g2m.genes, set.ident = TRUE)
-    RidgePlot(object = seu, features = features)
+    object <- CellCycleScoring(object = object, s.genes, g2m.genes, set.ident = TRUE)
+    return(object)
   }
 )
 
 setMethod(
   "plot_cell_cycle_distribution", "SingleCellExperiment",
-  function(seu, features) {
-    s.genes <- colData(cc.genes)["s.genes"] %>%
-              as.data.frame()
-    g2m.genes <- cc.genes[["g2m.genes"]]
-    seu <- CellCycleScoring(object = seu, s.genes, g2m.genes, set.ident = TRUE)
-    RidgePlot(object = seu, features = features)
+  function(object) {
+    #s.genes <- cc.genes[["s.genes"]]
+    #g2m.genes <- cc.genes[["g2m.genes"]]
+    hs_pairs0 <- cc.genes.cyclone
+    assignments <- cyclone(object , hs_pairs0, gene.names=rownames(object))
+    colData(object)[colnames(assignments$scores)] <- assignments$scores
+    colData(object)["phases"] <- assignments$phases
+    return(object)
+
   }
 )
 
