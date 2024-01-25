@@ -269,6 +269,8 @@ seuratApp <- function(preset_project, appTitle = "chevreul", organism_type = "hu
                 tabName = "coveragePlots", icon = icon("mountain")
             ), shinydashboard::menuItem("Differential Expression",
                 tabName = "diffex", icon = icon("magnet")
+            ), shinydashboard::menuItem("Cell Cycle Plots",
+                tabName = "ccPlots", icon = icon("sitemap")
                 # ), shinydashboard::menuItem("Pathway Enrichment Analysis",
                 #   tabName = "pathwayEnrichment", icon = icon("sitemap")
             ), shinydashboard::menuItem("Find Markers",
@@ -325,6 +327,12 @@ seuratApp <- function(preset_project, appTitle = "chevreul", organism_type = "hu
                 fluidRow(
                     plotCoverage_UI("coverageplots")
                 )
+            ),
+            shinydashboard::tabItem(
+              tabName = "ccPlots",
+              fluidRow(
+                ccPlotsui("ccPlot")
+              )
             ),
             shinydashboard::tabItem(
                 tabName = "integrateProjects",
@@ -674,6 +682,9 @@ seuratApp <- function(preset_project, appTitle = "chevreul", organism_type = "hu
         callModule(
             plotViolin, "violinPlot", seu, featureType,
             organism_type
+        )
+        callModule(
+          ccPlots, "ccPlot", seu
         )
         callModule(
             plotHeatmap, "heatMap", seu, featureType,

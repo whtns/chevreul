@@ -40,6 +40,8 @@ minimalSeuratApp <- function(object = panc8, loom_path = NULL, appTitle = NULL,
                 #   tabName = "coveragePlots", icon = icon("mountain")
             ), shinydashboard::menuItem("Differential Expression",
                 tabName = "diffex", icon = icon("magnet")
+            ), shinydashboard::menuItem("Cell Cycle Plots",
+                tabName = "ccPlots", icon = icon("sitemap")
                 # ), shinydashboard::menuItem("Pathway Enrichment Analysis",
                 #   tabName = "pathwayEnrichment", icon = icon("sitemap")
             ), shinydashboard::menuItem("Find Markers",
@@ -88,6 +90,12 @@ minimalSeuratApp <- function(object = panc8, loom_path = NULL, appTitle = NULL,
                 fluidRow(
                     plotViolinui("violinPlot")
                 )
+            ),
+            shinydashboard::tabItem(
+              tabName = "ccPlots",
+              fluidRow(
+                ccPlotsui("ccPlot")
+              )
             ),
             shinydashboard::tabItem(
                 tabName = "coveragePlots",
@@ -265,6 +273,9 @@ minimalSeuratApp <- function(object = panc8, loom_path = NULL, appTitle = NULL,
         callModule(
             plotViolin, "violinPlot", seu, featureType,
             organism_type
+        )
+        callModule(
+          ccPlots, "ccPlot", seu
         )
         callModule(
             plotHeatmap, "heatMap", seu, featureType,

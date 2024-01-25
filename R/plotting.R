@@ -894,3 +894,134 @@ plot_all_transcripts <- function(seu, features, embedding = "umap", from_gene = 
 
     return(plot_out)
 }
+
+
+#' Plot CC
+#'
+#' @param object
+#' @param group.by
+#' @param assay
+#' @param label
+#' @param phase_levels
+#' @param kept_phases
+#'
+#' @return
+#' @export
+#'
+#' @examples
+plot_cc <- function(object = NULL, group.by = "gene_snn_res.0.6", assay = "gene", label = "_filtered_", color.by = "batch", mytitle = "Title", faceted = TRUE, pt.size = 1, phase_levels = c("g1", "g1_s", "s", "s_g2", "g2", "g2_m", "post_mitotic", "hsp", "g1_stress", "other", "s_2"), kept_phases = NULL){
+
+  kept_phases <- kept_phases %||% phase_levels
+
+    heatmap_features  <-
+      object@misc$markers[[group.by]][["presto"]]
+
+    cluster_order <- levels(object@meta.data[[group.by]]) %>%
+      set_names(.)
+
+    object@meta.data[[group.by]] <-
+      factor(object@meta.data[[group.by]], levels = cluster_order)
+
+    group_by_clusters <- object@meta.data[[group.by]]
+
+    object@meta.data$clusters <- names(cluster_order[group_by_clusters])
+
+    object@meta.data$clusters <- factor(object@meta.data$clusters, levels = unique(setNames(names(cluster_order), cluster_order)[levels(object@meta.data[[group.by]])]))
+
+    heatmap_features <-
+      heatmap_features %>%
+      dplyr::arrange(Cluster) %>%
+      group_by(Cluster) %>%
+      slice_head(n=6) %>%
+      dplyr::filter(Gene.Name %in% rownames(GetAssayData(object, layer = "gene", slot = "scale.data"))) %>%
+      dplyr::filter(Gene.Name %in% VariableFeatures(object)) %>%
+      identity()
+
+  heatmap_features <-
+    heatmap_features %>%
+    dplyr::ungroup() %>%
+    dplyr::distinct(Gene.Name, .keep_all = TRUE)
+
+  # row_ha = ComplexHeatmap::rowAnnotation(term = rev(heatmap_features$term))
+
+  object_heatmap <- ggplotify::as.ggplot(
+    seu_complex_heatmap(object,
+                        features = heatmap_features$Gene.Name,
+                        group.by = c("G2M.Score", "S.Score", "clusters"),
+                        col_arrangement = c("clusters"),
+                        cluster_rows = FALSE,
+                        column_split =  sort(object@meta.data$clusters),
+                        row_split = rev(heatmap_features$Cluster),
+                        row_title_rot = 0,
+                        # row_split = sort(object@meta.data$clusters)
+    )) +
+    labs(title = mytitle) +
+    theme()
+
+
+  # browser()
+  labels <- data.frame(clusters=unique(object[[]][["clusters"]]), label =unique(object[[]][["clusters"]])) %>%
+    # dplyr::rename({{group.by}} := cluster) %>%
+    identity()
+
+  cc_data <- FetchData(object, c("clusters", "G2M.Score", "S.Score", "Phase", color.by))
+
+  centroid_data <-
+    cc_data %>%
+    dplyr::group_by(clusters) %>%
+    dplyr::summarise(mean_x = mean(S.Score), mean_y = mean(G2M.Score)) %>%
+    dplyr::mutate(clusters = factor(clusters, levels = levels(cc_data$clusters))) %>%
+    dplyr::mutate(centroid = "centroids") %>%
+    identity()
+
+  centroid_plot <-
+    cc_data %>%
+    ggplot(aes(x = `S.Score`, y = `G2M.Score`, group = .data[["clusters"]], color = .data[[color.by]])) +
+    geom_point(size = pt.size) +
+    theme_light() +
+    theme(
+      strip.background = element_blank(),
+      strip.text.x = element_blank()
+    ) +
+    geom_point(data = centroid_data, aes(x = mean_x, y = mean_y, fill = .data[["clusters"]]), size = 6, alpha = 0.7, shape = 23,  colour="black") +
+    NULL
+
+  facet_cell_cycle_plot <-
+    cc_data %>%
+    ggplot(aes(x = `S.Score`, y = `G2M.Score`, group = .data[["clusters"]], color = .data[[color.by]])) +
+    geom_point(size = pt.size) +
+    geom_point(data = centroid_data, aes(x = mean_x, y = mean_y, fill = .data[["clusters"]]), size = 6, alpha = 0.7, shape = 23,  colour="black") +
+    facet_wrap(~.data[["clusters"]], ncol = 2) +
+    theme_light() +
+    geom_label(data = labels,
+               aes(label = label),
+               # x = Inf,
+               # y = -Inf,
+               x = max(cc_data$S.Score)+0.05,
+               y = max(cc_data$G2M.Score)-0.1,
+               hjust=1,
+               vjust=1,
+               inherit.aes = FALSE) +
+    theme(
+      strip.background = element_blank(),
+      strip.text.x = element_blank()
+    ) +
+    # guides(color = "none") +
+    NULL
+
+  appender <- function(string) str_wrap(string, width = 40)
+
+  if(faceted){
+    # collage_plots <- list(object_heatmap, facet_cell_cycle_plot)
+    return(facet_cell_cycle_plot)
+  } else {
+    # collage_plots <- list(object_heatmap, centroid_plot)
+    return(centroid_plot)
+  }
+#
+#     mypatch <- patchwork::wrap_plots(collage_plots) +
+#       # plot_layout(widths = c(16, 4)) +
+#       # plot_layout(design = layout) +
+#       NULL
+
+}

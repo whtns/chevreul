@@ -1,3 +1,190 @@
+#' plot cell cycle plots
+#'
+#' @param id
+#'
+#' @return
+#' @export
+#'
+#' @examples
+ccPlotsui <- function(id){
+  ns <- NS(id)
+  tagList(
+    chevreulBox(
+      title = "cc Plots",
+      selectizeInput(ns("ccGroup"), "Grouping variable",
+                     choices = NULL, selected = NULL
+      ),
+      checkboxInput(ns("facet"), "Facet by Group?",
+                     value = TRUE
+      ),
+      actionButton(ns("ccAction"), "Make plot"),
+      downloadButton(ns("downloadPlot")),
+      plotOutput(ns("ccplot"), height = "500px"),
+      width = 11
+    )
+  )
+    }
+
+#' Plot Faceted cell cycle plots
+#'
+#' Plot Faceted cell cycle plots
+#'
+#' @param input
+#' @param output
+#' @param session
+#' @param seu Seurat object
+#' @param featureType Gene or Transcript
+#' @param organism_type Organism
+#'
+#' @return
+#' @export
+#'
+#' @examples
+ccPlots <- function(input, output, session, seu){
+    ns <- session$ns
+
+    observe({
+      req(seu())
+      updateSelectizeInput(session, "ccGroup",
+                           choices = colnames(seu()@meta.data), selected = "batch", server = TRUE
+      )
+    })
+
+      cc_plot <- eventReactive(input$ccAction, {
+        req(seu())
+        req(input$ccGroup)
+        req(!is.null(input$facet))
+
+      cc_plot <-
+        plot_cc(seu(), group.by = input$ccGroup, assay = "gene", label = "_filtered_", color.by = input$ccGroup, mytitle = "Title", faceted = input$facet, phase_levels = c("g1", "g1_s", "s", "s_g2", "g2", "g2_m", "post_mitotic", "hsp", "g1_stress", "other", "s_2"), kept_phases = NULL)
+
+    })
+
+    output$downloadPlot <- downloadHandler(
+      filename = function() {
+        paste("cc", ".pdf", sep = "")
+      },
+      content = function(file) {
+        ggsave(file, cc_plot() + ggpubr::theme_pubr(base_size = 20, x.text.angle = 45), width = 8, height = 6)
+      }
+    )
+
+    output$ccplot <- renderPlot({
+      print(cc_plot())
+    })
+
+
+}
+
+#' Title
+#'
+#' @param id
+#'
+#' @return
+#' @export
+#'
+#' @examples
+plotViolinui <- function(id) {
+  ns <- NS(id)
+  tagList(
+    chevreulBox(
+      title = "Violin Plots",
+      uiOutput(ns("vln_group")),
+      selectizeInput(ns("customFeature"),
+                     "Gene or transcript expression by which to color the plot eg. 'RXRG' or 'ENST00000488147'",
+                     choices = NULL, multiple = TRUE
+      ),
+      radioButtons(ns("slot"), "Data Type", choices = c("transformed" = "data", "raw counts" = "counts")),
+      downloadButton(ns("downloadPlot")),
+      plotly::plotlyOutput(ns("vplot"), height = 750),
+      width = 11
+    ) %>%
+      default_helper(type = "markdown", content = "violinPlot", size = "l")
+  )
+}
+
+#' Plot Violin Server
+#'
+#' Plots a Violin plot of a single data (gene expression, metrics, etc.) in the server Seurat app.
+#'
+#' @param input
+#' @param output
+#' @param session
+#' @param seu Seurat object
+#' @param featureType Gene or Transcript
+#' @param organism_type Organism
+#'
+#' @return
+#' @export
+#'
+#' @examples
+plotViolin <- function(input, output, session, seu, featureType, organism_type) {
+  ns <- session$ns
+  prefill_feature <- reactive({
+    req(featureType())
+    if (featureType() == "transcript") {
+      if (organism_type() == "human") {
+        "ENST00000488147"
+      } else if (organism_type() == "mouse") {
+        "ENSG00000488147"
+      }
+    } else if (featureType() == "gene") {
+      if (organism_type() == "human") {
+        "RXRG"
+      } else if (organism_type() == "mouse") {
+        "Rxrg"
+      }
+    }
+  })
+  observe({
+    req(prefill_feature())
+    req(seu())
+    updateSelectizeInput(session, "customFeature",
+                         choices = rownames(seu()@assays[["gene"]]),
+                         selected = prefill_feature(), server = TRUE
+    )
+  })
+
+  output$vln_group <- renderUI({
+    req(seu())
+    selectizeInput(ns("vlnGroup"), "Grouping variable",
+                   choices = colnames(seu()[[]]), selected = "batch"
+    )
+  })
+
+  vln_plot <- reactive({
+    req(input$customFeature)
+    req(input$vlnGroup)
+
+    vln_plot <-
+      plot_violin(seu(), plot_var = input$vlnGroup, features = input$customFeature, slot = input$slot)
+  })
+
+  output$downloadPlot <- downloadHandler(
+    filename = function() {
+      paste("violin", ".pdf", sep = "")
+    },
+    content = function(file) {
+      ggsave(file, vln_plot() + ggpubr::theme_pubr(base_size = 20, x.text.angle = 45), width = 16, height = 12)
+    }
+  )
+
+  output$vplot <- plotly::renderPlotly({
+    req(seu())
+    req(input$vlnGroup)
+    exclude_trace_number <- length(unique(seu()[[]][[input$vlnGroup]])) * 2
+
+    vln_plot <- plotly::ggplotly(vln_plot(), height = 700) %>%
+      plotly::style(opacity = 0.5) %>%
+      plotly::style(hoverinfo = "skip", traces = c(1:exclude_trace_number)) %>%
+      plotly_settings(width = 1200) %>%
+      plotly::toWebGL() %>%
+      identity()
+  })
+}
+
+
+
 #' plot clustree ui
 #'
 #' @param id
@@ -48,115 +235,6 @@ plotClustree <- function(input, output, session, seu) {
     })
 }
 
-
-#' Title
-#'
-#' @param id
-#'
-#' @return
-#' @export
-#'
-#' @examples
-plotViolinui <- function(id) {
-    ns <- NS(id)
-    tagList(
-        chevreulBox(
-            title = "Violin Plots",
-            uiOutput(ns("vln_group")),
-            selectizeInput(ns("customFeature"),
-                "Gene or transcript expression by which to color the plot eg. 'RXRG' or 'ENST00000488147'",
-                choices = NULL, multiple = TRUE
-            ),
-            radioButtons(ns("slot"), "Data Type", choices = c("transformed" = "data", "raw counts" = "counts")),
-            downloadButton(ns("downloadPlot")),
-            plotly::plotlyOutput(ns("vplot"), height = 750),
-            width = 11
-        ) %>%
-            default_helper(type = "markdown", content = "violinPlot", size = "l")
-    )
-}
-
-#' Plot Violin Server
-#'
-#' Plots a Violin plot of a single data (gene expression, metrics, etc.) in the server Seurat app.
-#'
-#' @param input
-#' @param output
-#' @param session
-#' @param seu Seurat object
-#' @param featureType Gene or Transcript
-#' @param organism_type Organism
-#'
-#' @return
-#' @export
-#'
-#' @examples
-plotViolin <- function(input, output, session, seu, featureType, organism_type) {
-    ns <- session$ns
-    prefill_feature <- reactive({
-        req(featureType())
-        if (featureType() == "transcript") {
-            if (organism_type() == "human") {
-                "ENST00000488147"
-            } else if (organism_type() == "mouse") {
-                "ENSG00000488147"
-            }
-        } else if (featureType() == "gene") {
-            if (organism_type() == "human") {
-                "RXRG"
-            } else if (organism_type() == "mouse") {
-                "Rxrg"
-            }
-        }
-    })
-    observe({
-        req(prefill_feature())
-        req(seu())
-        updateSelectizeInput(session, "customFeature",
-            choices = rownames(seu()@assays[["gene"]]),
-            selected = prefill_feature(), server = TRUE
-        )
-    })
-
-    output$vln_group <- renderUI({
-        req(seu())
-        selectizeInput(ns("vlnGroup"), "Grouping variable",
-            choices = colnames(seu()[[]]), selected = "batch"
-        )
-    })
-
-    vln_plot <- reactive({
-        req(input$customFeature)
-        req(input$vlnGroup)
-
-        vln_plot <-
-            plot_violin(seu(), plot_var = input$vlnGroup, features = input$customFeature, slot = input$slot)
-    })
-
-    output$downloadPlot <- downloadHandler(
-        filename = function() {
-            paste("violin", ".pdf", sep = "")
-        },
-        content = function(file) {
-            ggsave(file, vln_plot() + ggpubr::theme_pubr(base_size = 20, x.text.angle = 45), width = 16, height = 12)
-        }
-    )
-
-    output$vplot <- plotly::renderPlotly({
-        req(seu())
-        req(input$vlnGroup)
-        exclude_trace_number <- length(unique(seu()[[]][[input$vlnGroup]])) * 2
-
-        vln_plot <- plotly::ggplotly(vln_plot(), height = 700) %>%
-            plotly::style(opacity = 0.5) %>%
-            plotly::style(hoverinfo = "skip", traces = c(1:exclude_trace_number)) %>%
-            plotly_settings(width = 1200) %>%
-            plotly::toWebGL() %>%
-            identity()
-    })
-}
-
-
 #' Plot Heatmap ui
 #'
 #' @param id
@@ -171,7 +249,7 @@ plotHeatmapui <- function(id) {
         chevreulBox(
             title = "Heatmap",
             uiOutput(ns("colAnnoVarui")),
-            radioButtons(ns("slot"), "Data Scaling", choices = c(scaled = "scale.data", unscaled = "data"), selected = "scale.data", inline = TRUE),
+            radioButtons(ns("layer"), "Data Scaling", choices = c(scaled = "scale.data", unscaled = "data"), selected = "scale.data", inline = TRUE),
             selectizeInput(ns("dendroSelect"), "Clustering algorithm or metadata for column arrangement", choices = NULL, selected = NULL, multiple = TRUE),
             actionButton(ns("actionHeatmap"), "Plot Heatmap"),
             downloadButton(ns("downloadPlot"), "Download Heatmap"),
@@ -251,7 +329,7 @@ plotHeatmap <- function(input, output, session, seu, featureType, organism_type)
             assay <- "gene"
         }
 
-        hm <- seu_complex_heatmap(seu(), features = input$customFeature, assay = assay, group.by = input$colAnnoVar, slot = input$slot, col_arrangement = input$dendroSelect)
+        hm <- seu_complex_heatmap(seu(), features = input$customFeature, assay = assay, group.by = input$colAnnoVar, layer = input$layer, col_arrangement = input$dendroSelect)
 
         hm <- ComplexHeatmap::draw(hm)
         return(hm)
