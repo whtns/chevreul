@@ -140,14 +140,11 @@ The Chevreul function plots an annotated complex heat map from the Seurat object
 ```{r}
 top_10_features <- scran::getTopHVGs(human_gene_transcript_sce)[1:10]
 
-make_complex_heatmap(human_gene_transcript_sce, features = top_10_features, 
-                    group.by = "gene_snn_res.0.2")
-make_complex_heatmap(human_gene_transcript_sce, features = top_10_features, 
-                    group.by = "gene_snn_res.0.2", col_arrangement = "average")
-make_complex_heatmap(human_gene_transcript_sce, features = top_10_features, 
-                    group.by = c("Prep.Method", "gene_snn_res.0.2"), 
-                    col_arrangement = "gene_snn_res.0.2")
-make_complex_heatmap(human_gene_transcript_sce, features = top_10_features, 
-                    group.by = c("Prep.Method", "gene_snn_res.0.2"), 
-                    col_arrangement = "Prep.Method")
+make_complex_heatmap(human_gene_transcript_sce, features = top_10_features, group.by = "gene_snn_res.0.2")
+
+make_complex_heatmap(human_gene_transcript_sce, features = top_10_features, group.by = "gene_snn_res.0.2", col_arrangement = "average")
+
+make_complex_heatmap(human_gene_transcript_sce, features = top_10_features, group.by = c("Prep.Method", "gene_snn_res.0.2"), col_arrangement = "gene_snn_res.0.2")
+
+make_complex_heatmap(human_gene_transcript_sce, features = top_10_features, group.by = c("Prep.Method", "gene_snn_res.0.2"),  col_arrangement = "Prep.Method")
 ```

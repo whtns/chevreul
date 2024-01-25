@@ -186,13 +186,13 @@ update_human_gene_symbols <- function(object, assay = "gene") {
     }
   }
 
-  variable_features <- VariableFeatures(object[[assay]])
+  variable_features <- get_variable_features(object[[assay]])
   if(length(variable_features) > 1){
     new_variable_features <-
       dplyr::filter(new_rownames, old_symbol %in% variable_features) %>%
       dplyr::pull(symbol)
 
-    VariableFeatures(object[[assay]]) <- new_variable_features
+    get_variable_features(object[[assay]]) <- new_variable_features
 
   }
 

@@ -1,5 +1,7 @@
-setGeneric("list_plot_types", function(object)
-  standardGeneric("list_plot_types"))
+# get_feature_types ------------------------------
+
+
+# list_plot_types ------------------------------
 
 #' Collate list of variables to be plotted
 #'
@@ -8,6 +10,9 @@ setGeneric("list_plot_types", function(object)
 #' @return plot_types a list of category_vars or continuous_vars
 #' @export
 #' @examples
+setGeneric("list_plot_types", function(object)
+  standardGeneric("list_plot_types"))
+
 setMethod("list_plot_types", "Seurat",
           function(object) {
   meta_types <- tibble::tibble(
@@ -46,13 +51,6 @@ setMethod("list_plot_types", "Seurat",
   return(plot_types)
 })
 
-#' Collate list of variables to be plotted
-#'
-#' @param object
-#'
-#' @return plot_types a list of category_vars or continuous_vars
-#' @export
-#' @examples
 setMethod("list_plot_types", "SingleCellExperiment",
           function(object) {
             meta_types <- tibble::tibble(
@@ -93,9 +91,6 @@ setMethod("list_plot_types", "SingleCellExperiment",
 
 # pull_metadata ------------------------------
 
-setGeneric("pull_metadata", function(object)
-  standardGeneric("pull_metadata"))
-
 #' Pull object metadata
 #'
 #' @param object
@@ -103,28 +98,44 @@ setGeneric("pull_metadata", function(object)
 #' @return object metadata
 #' @export
 #' @examples
+setGeneric("pull_metadata", function(object)
+  standardGeneric("pull_metadata"))
+
 setMethod("pull_metadata", "Seurat",
           function(object) {
             object[[]]
           })
 
-#' Pull object metadata
-#'
-#' @param object
-#'
-#' @return object metadata
-#' @export
-#' @examples
 setMethod("pull_metadata", "SingleCellExperiment",
           function(object) {
             colData(object) %>%
               as.data.frame()
           })
 
-# set_metadata ------------------------------
+# get variable features ------------------------------
 
-setGeneric("set_metadata", function(object, meta.data)
-  standardGeneric("set_metadata"))
+#' Pull object metadata
+#'
+#' @param object
+#'
+#' @return variable features from a single cell object
+#' @export
+#' @examples
+setGeneric("get_variable_features", function(object, ...)
+  standardGeneric("get_variable_features"))
+
+setMethod("get_variable_features", "Seurat",
+          function(object, ...) {
+            VariableFeatures(object, ...)
+          })
+
+setMethod("get_variable_features", "SingleCellExperiment",
+          function(object, ...) {
+            scran::getTopHVGs(object, ...)
+          })
+
+
+# set_metadata ------------------------------
 
 #' Pull object metadata
 #'
@@ -133,21 +144,29 @@ setGeneric("set_metadata", function(object, meta.data)
 #' @return object metadata
 #' @export
 #' @examples
+setGeneric("set_metadata", function(object, meta.data)
+  standardGeneric("set_metadata"))
+
 setMethod("set_metadata", "Seurat",
           function(object, meta.data) {
             object@meta.data <- meta.data
             return(object)
           })
 
-#' Pull object metadata
-#'
-#' @param object
-#'
-#' @return object metadata
-#' @export
-#' @examples
 setMethod("set_metadata", "SingleCellExperiment",
           function(object, meta.data) {
             colData(object) <- meta.data
             return(object)
           })
+
+setGeneric("get_feature_types", function(object) {
+  standardGeneric("get_feature_types")
+})
+
+setMethod("get_feature_types", "Seurat", function(object) {
+  names(object()@assays)
+})
+
+setMethod("get_feature_types", "SingleCellExperiment", function(object) {
+  c(mainExpName(human_gene_transcript_sce), altExpNames(human_gene_transcript_sce))
+})

@@ -219,7 +219,7 @@ plotHeatmap <- function(input, output, session, object, featureType, organism_ty
       assay <- "gene"
     }
 
-    preset_features <- VariableFeatures(object(), assay = assay)[1:50]
+    preset_features <- get_variable_features(object(), assay = assay)[1:50]
 
     updateSelectizeInput(session, "customFeature",
       choices = rownames(object()@assays[["gene"]]),

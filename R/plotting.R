@@ -707,13 +707,15 @@ setMethod("plot_readcount", "SingleCellExperiment",
           })
 
 
+# class ------------------------------
+
 #' Plot Annotated Complexheatmap from Seurat object
 #'
 #' @param object A Seurat object
 #' @param features Vector of features to plot. Features can come
 #' @param cells Cells to retain
 #' @param group.by  Name of one or more metadata columns to annotate columns by (for example, orig.ident)
-#' @param layer
+#' @param layer "counts" for raw data "scale.data" for log-normalized data
 #' @param assay
 #' @param group.bar.height
 #' @param col_arrangement how to arrange columns whether with a dendrogram (Ward.D2, average, etc.) or exclusively by metadata category
@@ -727,122 +729,151 @@ setMethod("plot_readcount", "SingleCellExperiment",
 #' @examples
 #'
 #' # plot top 50 variable genes
-#' top_50_features <- VariableFeatures(human_gene_transcript_object)[1:50]
+#' top_50_features <- get_variable_features(human_gene_transcript_object)[1:50]
 #' make_complex_heatmap(human_gene_transcript_object, features = top_50_features)
 #'
-make_complex_heatmap <- function(object, features = NULL, group.by = "ident", cells = NULL,
-                                layer = "scale.data", assay = NULL, group.bar.height = 0.01,
-                                column_split = NULL, col_arrangement = "ward.D2", mm_col_dend = 30, ...)
-{
+setGeneric("make_complex_heatmap", function (object, features = NULL, group.by = "ident", cells = NULL, layer = "scale.data", assay = NULL, group.bar.height = 0.01, column_split = NULL, col_arrangement = "ward.D2", mm_col_dend = 30, ...)  standardGeneric("make_complex_heatmap"))
 
-  if (length(GetAssayData(object, layer = "scale.data")) == 0){
-    message("object has not been scaled. Please run `Seurat::ScaleData` to view a scaled heatmap; showing unscaled expression data")
-    layer = "data"
-  }
+setMethod("make_complex_heatmap", "Seurat",
+          function (object, features = NULL, group.by = "ident", cells = NULL, layer = "scale.data", assay = NULL, group.bar.height = 0.01, column_split = NULL, col_arrangement = "ward.D2", mm_col_dend = 30, ...)
+          {
+            if (length(GetAssayData(object, layer = "scale.data")) == 0) {
+              message("object has not been scaled. Please run `Seurat::ScaleData` to view a scaled heatmap; showing unscaled expression data")
+              layer = "data"
+            }
+            cells <- cells %||% colnames(x = object)
+            if (is.numeric(x = cells)) {
+              cells <- colnames(x = object)[cells]
+            }
+            assay <- assay %||% Seurat::DefaultAssay(object = object)
+            Seurat::DefaultAssay(object = object) <- assay
+            features <- features %||% get_variable_features(object = object)
+            features <- rev(x = unique(x = features))
+            possible.features <- rownames(x = GetAssayData(object = object, layer = layer))
+            if (any(!features %in% possible.features)) {
+              bad.features <- features[!features %in% possible.features]
+              features <- features[features %in% possible.features]
+              if (length(x = features) == 0) {
+                stop("No requested features found in the ", layer, " layer for the ", assay, " assay.")
+              }
+              warning("The following features were omitted as they were not found in the ", layer, " layer for the ", assay, " assay: ", paste(bad.features, collapse = ", "))
+            }
+            data <- as.data.frame(x = t(x = as.matrix(x = GetAssayData(object = object, layer = layer)[features, cells, drop = FALSE])))
+            object <- suppressMessages(expr = StashIdent(object = object, save.name = "ident"))
+            if (any(col_arrangement %in% c("ward.D", "single", "complete", "average", "mcquitty", "median", "centroid", "ward.D2"))) {
+              if ("pca" %in% Seurat::Reductions(object)) {
+                cluster_columns <- Seurat::Embeddings(object, "pca") %>% dist() %>% hclust(col_arrangement)
+              }
+              else {
+                message("pca not computed for this dataset; cells will be clustered by displayed features")
+                cluster_columns <- function(m) as.dendrogram(cluster::agnes(m), method = col_arrangement)
+              }
+            }
+            else {
+              cells <- object %>% Seurat::FetchData(vars = col_arrangement) %>% dplyr::arrange(across(all_of(col_arrangement))) %>% rownames()
+              data <- data[cells, ]
+              group.by = base::union(group.by, col_arrangement)
+              cluster_columns = FALSE
+            }
+            group.by <- group.by %||% "ident"
+            groups.use <- object[[group.by]][cells, , drop = FALSE]
+            groups.use <- groups.use %>% tibble::rownames_to_column("sample_id") %>% dplyr::mutate(across(where(is.character), ~str_wrap(str_replace_all(.x, ",", " "), 10))) %>% dplyr::mutate(across(where(is.character), as.factor)) %>% data.frame(row.names = 1) %>% identity()
+            groups.use.factor <- groups.use[sapply(groups.use, is.factor)]
+            ha_cols.factor <- NULL
+            if (length(groups.use.factor) > 0) {
+              ha_col_names.factor <- lapply(groups.use.factor, levels)
+              ha_cols.factor <- purrr::map(ha_col_names.factor, ~(scales::hue_pal())(length(.x))) %>% purrr::map2(ha_col_names.factor, purrr::set_names)
+            }
+            groups.use.numeric <- groups.use[sapply(groups.use, is.numeric)]
+            ha_cols.numeric <- NULL
+            if (length(groups.use.numeric) > 0) {
+              numeric_col_fun = function(myvec, color) {
+                circlize::colorRamp2(range(myvec), c("white", color))
+              }
+              ha_col_names.numeric <- names(groups.use.numeric)
+              ha_col_hues.numeric <- (scales::hue_pal())(length(ha_col_names.numeric))
+              ha_cols.numeric <- purrr::map2(groups.use[ha_col_names.numeric], ha_col_hues.numeric, numeric_col_fun)
+            }
+            ha_cols <- c(ha_cols.factor, ha_cols.numeric)
+            column_ha = ComplexHeatmap::HeatmapAnnotation(df = groups.use, height = grid::unit(group.bar.height, "points"), col = ha_cols)
+            hm <- ComplexHeatmap::Heatmap(t(data), name = "log expression", top_annotation = column_ha, cluster_columns = cluster_columns, show_column_names = FALSE, column_dend_height = grid::unit(mm_col_dend, "mm"), column_split = column_split, column_title = NULL, ...)
+            return(hm)
+          }
+)
 
-  cells <- cells %||% colnames(x = object)
-  if (is.numeric(x = cells)) {
-    cells <- colnames(x = object)[cells]
-  }
-  assay <- assay %||% Seurat::DefaultAssay(object = object)
-  Seurat::DefaultAssay(object = object) <- assay
-  features <- features %||% VariableFeatures(object = object)
-  features <- rev(x = unique(x = features))
-  possible.features <- rownames(x = GetAssayData(object = object,
-                                                 layer = layer))
-  if (any(!features %in% possible.features)) {
-    bad.features <- features[!features %in% possible.features]
-    features <- features[features %in% possible.features]
-    if (length(x = features) == 0) {
-      stop("No requested features found in the ", layer,
-           " layer for the ", assay, " assay.")
-    }
-    warning("The following features were omitted as they were not found in the ",
-            layer, " layer for the ", assay, " assay: ", paste(bad.features,
-                                                             collapse = ", "))
-  }
-  data <- as.data.frame(x = t(x = as.matrix(x = GetAssayData(object = object,
-                                                             layer = layer)[features, cells, drop = FALSE])))
-  object <- suppressMessages(expr = StashIdent(object = object,
-                                               save.name = "ident"))
+setMethod("make_complex_heatmap", "SingleCellExperiment",
+          function (object, features = NULL, group.by = "ident", cells = NULL, layer = "scale.data", assay = NULL, group.bar.height = 0.01, column_split = NULL, col_arrangement = "ward.D2", mm_col_dend = 30, ...)
+          {
 
-  if (any(col_arrangement %in% c("ward.D", "single", "complete", "average", "mcquitty",
-                            "median", "centroid", "ward.D2"))){
-    if("pca" %in% Seurat::Reductions(object)){
-      cluster_columns <-
-        Seurat::Embeddings(object, "pca") %>%
-        dist() %>%
-        hclust(col_arrangement)
-    } else {
-      message("pca not computed for this dataset; cells will be clustered by displayed features")
-      cluster_columns <- function(m) as.dendrogram(cluster::agnes(m), method = col_arrangement)
+            assay_method <- switch(layer,
+                                   counts = "counts",
+                                   scale.data = "logcounts")
 
-    }
 
-  } else {
+            cells <- cells %||% colnames(x = object)
+            if (is.numeric(x = cells)) {
+              cells <- colnames(x = object)[cells]
+            }
+            assay <- assay %||% mainExpName(object)
+            if(!assay == mainExpName(object)){
+              object <- swapAltExp(object, name = assay)
+            }
+            features <- features %||% scran::getTopHVGs(object)
+            features <- rev(unique(features))
+            possible.features <- rownames(x = counts(object = object, layer = layer))
+            if (any(!features %in% possible.features)) {
+              bad.features <- features[!features %in% possible.features]
+              features <- features[features %in% possible.features]
+              if (length(x = features) == 0) {
+                stop("No requested features found in the ", layer, " layer for the ", assay, " assay.")
+              }
+              warning("The following features were omitted as they were not found in the ", assay_method, " layer for the ", assay, " assay: ", paste(bad.features, collapse = ", "))
+            }
+            data <- as.data.frame(x = t(x = as.matrix(x = assay(object, assay_method)[features, cells, drop = FALSE])))
 
-    cells <-
-      object %>%
-      Seurat::FetchData(vars = col_arrangement) %>%
-      dplyr::arrange(across(all_of(col_arrangement))) %>%
-      rownames()
+            # object <- suppressMessages(expr = StashIdent(object = object, save.name = "ident"))
 
-    data <- data[cells,]
+            if (any(col_arrangement %in% c("ward.D", "single", "complete", "average", "mcquitty", "median", "centroid", "ward.D2"))) {
+              if ("PCA" %in% reducedDimNames(object)) {
+                cluster_columns <- reducedDim(human_gene_transcript_sce, "PCA") %>% dist() %>% hclust(col_arrangement)
+              }
+              else {
+                message("pca not computed for this dataset; cells will be clustered by displayed features")
+                cluster_columns <- function(m) as.dendrogram(cluster::agnes(m), method = col_arrangement)
+              }
+            }
+            else {
+              cells <- colData(object)[col_arrangement] %>% dplyr::arrange(across(all_of(col_arrangement))) %>% rownames()
+              data <- data[cells, ]
+              group.by = base::union(group.by, col_arrangement)
+              cluster_columns = FALSE
+            }
+            group.by <- group.by %||% "ident"
+            groups.use <- colData(object)[group.by] %>% as.data.frame()
+            groups.use <- groups.use %>% tibble::rownames_to_column("sample_id") %>% dplyr::mutate(across(where(is.character), ~str_wrap(str_replace_all(.x, ",", " "), 10))) %>% dplyr::mutate(across(where(is.character), as.factor)) %>% data.frame(row.names = 1) %>% identity()
+            groups.use.factor <- groups.use[sapply(groups.use, is.factor)]
+            ha_cols.factor <- NULL
+            if (length(groups.use.factor) > 0) {
+              ha_col_names.factor <- lapply(groups.use.factor, levels)
+              ha_cols.factor <- purrr::map(ha_col_names.factor, ~(scales::hue_pal())(length(.x))) %>% purrr::map2(ha_col_names.factor, purrr::set_names)
+            }
+            groups.use.numeric <- groups.use[sapply(groups.use, is.numeric)]
+            ha_cols.numeric <- NULL
+            if (length(groups.use.numeric) > 0) {
+              numeric_col_fun = function(myvec, color) {
+                circlize::colorRamp2(range(myvec), c("white", color))
+              }
+              ha_col_names.numeric <- names(groups.use.numeric)
+              ha_col_hues.numeric <- (scales::hue_pal())(length(ha_col_names.numeric))
+              ha_cols.numeric <- purrr::map2(groups.use[ha_col_names.numeric], ha_col_hues.numeric, numeric_col_fun)
+            }
+            ha_cols <- c(ha_cols.factor, ha_cols.numeric)
+            column_ha = ComplexHeatmap::HeatmapAnnotation(df = groups.use, height = grid::unit(group.bar.height, "points"), col = ha_cols)
+            hm <- ComplexHeatmap::Heatmap(t(data), name = "log expression", top_annotation = column_ha, cluster_columns = cluster_columns, show_column_names = FALSE, column_dend_height = grid::unit(mm_col_dend, "mm"), column_split = column_split, column_title = NULL, ...)
+            return(hm)
+          }
+)
 
-    group.by = base::union(group.by, col_arrangement)
-
-    cluster_columns = FALSE
-  }
-
-  group.by <- group.by %||% "ident"
-  groups.use <- object[[group.by]][cells, , drop = FALSE]
-
-  groups.use <- groups.use %>%
-    tibble::rownames_to_column("sample_id") %>%
-    dplyr::mutate(across(where(is.character), ~str_wrap(str_replace_all(.x, ",", " "), 10))) %>%
-    dplyr::mutate(across(where(is.character), as.factor)) %>%
-    data.frame(row.names = 1) %>%
-    identity()
-
-  # factor colors
-  groups.use.factor <- groups.use[sapply(groups.use, is.factor)]
-  ha_cols.factor <- NULL
-  if (length(groups.use.factor) > 0){
-    ha_col_names.factor <- lapply(groups.use.factor, levels)
-
-    ha_cols.factor <- purrr::map(ha_col_names.factor, ~scales::hue_pal()(length(.x))) %>%
-      purrr::map2(ha_col_names.factor, purrr::set_names)
-  }
-
-  # numeric colors
-  groups.use.numeric <- groups.use[sapply(groups.use, is.numeric)]
-  ha_cols.numeric <- NULL
-  if (length(groups.use.numeric) > 0){
-    numeric_col_fun = function(myvec, color){
-      circlize::colorRamp2(range(myvec), c("white", color))
-    }
-
-    ha_col_names.numeric <- names(groups.use.numeric)
-    ha_col_hues.numeric <- scales::hue_pal()(length(ha_col_names.numeric))
-
-    ha_cols.numeric  <- purrr::map2(groups.use[ha_col_names.numeric], ha_col_hues.numeric, numeric_col_fun)
-  }
-
-  ha_cols <- c(ha_cols.factor, ha_cols.numeric)
-
-  column_ha = ComplexHeatmap::HeatmapAnnotation(df = groups.use, height = grid::unit(group.bar.height, "points"), col = ha_cols)
-
-  hm <- ComplexHeatmap::Heatmap(t(data), name = "log expression", top_annotation = column_ha,
-                                cluster_columns = cluster_columns,
-                                show_column_names = FALSE,
-                                column_dend_height = grid::unit(mm_col_dend, "mm"),
-                                column_split = column_split,
-                                column_title = NULL,
-                                ...)
-
-  return(hm)
-
-}
 
 
 

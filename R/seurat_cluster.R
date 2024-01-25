@@ -1,5 +1,5 @@
 
-#' Preprocess Seurat Object
+#' Preprocess Single Cell Object
 #'
 #' Performs standard pre-processing workflow for scRNA-seq data
 #'
