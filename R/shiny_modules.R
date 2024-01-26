@@ -19,9 +19,10 @@ ccPlotsui <- function(id){
       ),
       actionButton(ns("ccAction"), "Make plot"),
       downloadButton(ns("downloadPlot")),
-      plotOutput(ns("ccplot"), height = "500px"),
-      width = 11
-    )
+      # plotOutput(ns("ccplot"), height = "500px"),
+      plotly::plotlyOutput(ns("ccplot"), height = 750),
+      sortable::sortable_js(ns("ccplot")),
+      width = 11),
   )
     }
 
@@ -65,12 +66,25 @@ ccPlots <- function(input, output, session, seu){
         paste("cc", ".pdf", sep = "")
       },
       content = function(file) {
-        ggsave(file, cc_plot() + ggpubr::theme_pubr(base_size = 20, x.text.angle = 45), width = 8, height = 6)
+        ggsave(file, cc_plot() + ggpubr::theme_pubr(base_size = 20, x.text.angle = 45), width = 8, height = 14)
       }
     )
 
-    output$ccplot <- renderPlot({
-      print(cc_plot())
+    # output$ccplot <- renderPlot({
+    #   print(cc_plot())
+    # })
+
+    output$ccplot <- plotly::renderPlotly({
+      req(seu())
+      req(input$ccGroup)
+      exclude_trace_number <- length(unique(seu()[[]][[input$ccGroup]])) * 2
+
+      cc_plot <- plotly::ggplotly(cc_plot(), height = 700) %>%
+        plotly::style(opacity = 0.5) %>%
+        plotly::style(hoverinfo = "skip", traces = c(1:exclude_trace_number)) %>%
+        plotly_settings(width = 1200) %>%
+        plotly::toWebGL() %>%
+        identity()
     })
 
 
