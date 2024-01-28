@@ -538,7 +538,7 @@ plot_markers <- function(seu, metavar = "batch", num_markers = 5, selected_value
     seu[[metavar]][is.na(seu[[metavar]])] <- "NA"
     Idents(seu) <- metavar
 
-    markerplot <- DotPlot(seu, assay = "gene", features = sliced_markers, group.by = metavar, dot.scale = 3) +
+    markerplot <- DotPlot(seu, assay = seurat_assay, features = sliced_markers, group.by = metavar, dot.scale = 3) +
         ggplot2::theme(
             axis.text.x = ggplot2::element_text(size = 10, angle = 45, vjust = 1, hjust = 1),
             axis.text.y = ggplot2::element_text(size = 10)
