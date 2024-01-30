@@ -267,4 +267,3 @@ setMethod("object_pipeline", "SingleCellExperiment",
             return(object)
           }
           )
-debu
