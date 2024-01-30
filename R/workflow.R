@@ -130,8 +130,7 @@ setMethod("integration_workflow", "SingleCellExperiment",
 # clustering workflow ------------------------------
 
 
-setGeneric("clustering_workflow", function(object, excluded_cells, resolution = seq(0.2, 2.0, by = 0.2), organism = "human", experiment_name = "default_experiment", ...)
-  standardGeneric("clustering_workflow"))
+
 
 #' Clustering Workflow
 #'
@@ -148,6 +147,10 @@ setGeneric("clustering_workflow", function(object, excluded_cells, resolution = 
 #' @export
 #'
 #' @examples
+#'
+setGeneric("clustering_workflow", function(object, excluded_cells, resolution = seq(0.2, 2.0, by = 0.2), organism = "human", experiment_name = "default_experiment", ...)
+  standardGeneric("clustering_workflow"))
+
 setMethod("clustering_workflow", "Seurat",
           function(object, excluded_cells, resolution = seq(0.2, 2.0, by = 0.2), organism = "human", experiment_name = "default_experiment", ...) {
             object <- object_pipeline(object, resolution = resolution, organism = organism, ...)
@@ -158,21 +161,6 @@ setMethod("clustering_workflow", "Seurat",
           }
           )
 
-#' Clustering Workflow
-#'
-#' Cluster and Reduce Dimensions of a object
-#'
-#' @param feature_objects list of objects named according to feature of interest ("gene" or "transcript")
-#' @param excluded_cells named list of cells to exclude
-#' @param resolution resolution(s) to use for clustering cells
-#' @param organism Organism
-#' @param experiment_name
-#' @param ...
-#'
-#' @return
-#' @export
-#'
-#' @examples
 setMethod("clustering_workflow", "SingleCellExperiment",
           function(object, excluded_cells, resolution = seq(0.2, 2.0, by = 0.2), organism = "human", experiment_name = "default_experiment", ...) {
             object <- object_pipeline(object, resolution = resolution, organism = organism, ...)

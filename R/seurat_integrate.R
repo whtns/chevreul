@@ -139,7 +139,7 @@ object_integrate <- function(object_list, method = "cca", organism = "human", ..
 
 #' Run Louvain Clustering at Multiple Resolutions
 #'
-#' @param object A singlecell objects
+#' @param object A single cell objects
 #' @param resolution Clustering resolution
 #' @param custom_clust
 #' @param reduction Set dimensional reduction object
@@ -149,36 +149,58 @@ object_integrate <- function(object_list, method = "cca", organism = "human", ..
 #' @export
 #'
 #' @examples
-object_cluster <- function(object = object, resolution = 0.6, custom_clust = NULL, reduction = "pca", algorithm = 1, ...) {
-  message(paste0("[", format(Sys.time(), "%H:%M:%S"), "] Clustering Cells..."))
-  object <- FindNeighbors(object = object, dims = 1:30, reduction = reduction)
+setGeneric("object_cluster", function (object = object, resolution = 0.6, custom_clust = NULL, reduction = "pca", algorithm = 1, ...)  standardGeneric("object_cluster"))
 
-  if (length(resolution) > 1) {
-    for (i in resolution) {
-      message(paste0("clustering at ", i, " resolution"))
-      object <- Seurat::FindClusters(object = object, resolution = i, algorithm = algorithm, ...)
-    }
-  } else if (length(resolution) == 1) {
-    message(paste0("clustering at ", resolution, " resolution"))
-    object <- Seurat::FindClusters(object = object, resolution = resolution, algorithm = algorithm, ...)
-  }
+setMethod("object_cluster", "Seurat",
+          function (object = object, resolution = 0.6, custom_clust = NULL, reduction = "pca", algorithm = 1, ...)
+          {
+            message(paste0("[", format(Sys.time(), "%H:%M:%S"), "] Clustering Cells..."))
+            object <- FindNeighbors(object = object, dims = 1:30, reduction = reduction)
+            if (length(resolution) > 1) {
+              for (i in resolution) {
+                message(paste0("clustering at ", i, " resolution"))
+                object <- Seurat::FindClusters(object = object, resolution = i, algorithm = algorithm, ...)
+              }
+            }
+            else if (length(resolution) == 1) {
+              message(paste0("clustering at ", resolution, " resolution"))
+              object <- Seurat::FindClusters(object = object, resolution = resolution, algorithm = algorithm, ...)
+            }
+            if (!is.null(custom_clust)) {
+              object <- Seurat::StashIdent(object = object, save.name = "old.ident")
+              clusters <- tibble::tibble(sample_id = rownames(pull_metadata(object))) %>% tibble::rownames_to_column("order") %>% dplyr::inner_join(custom_clust, by = "sample_id") %>% dplyr::pull(cluster) %>% identity()
+              Idents(object = object) <- clusters
+              return(object)
+            }
+            return(object)
+          }
+)
 
-  if (!is.null(custom_clust)) {
-    object <- Seurat::StashIdent(object = object, save.name = "old.ident")
-    clusters <- tibble::tibble("sample_id" = rownames(pull_metadata(object))) %>%
-      tibble::rownames_to_column("order") %>%
-      dplyr::inner_join(custom_clust, by = "sample_id") %>%
-      dplyr::pull(cluster) %>%
-      identity()
-
-    Idents(object = object) <- clusters
-
-
-    return(object)
-  }
-
-  return(object)
-}
+setMethod("object_cluster", "SingleCellExperiment",
+          function (object = object, resolution = 0.6, custom_clust = NULL, reduction = "PCA", algorithm = 1, ...)
+          {
+            message(paste0("[", format(Sys.time(), "%H:%M:%S"), "] Clustering Cells..."))
+            # return list of graph object with KNN (SNN?)
+            object <- scran::buildKNNGraph(x = object, use.dimred = reduction)
+            if (length(resolution) > 1) {
+              for (i in resolution) {
+                message(paste0("clustering at ", i, " resolution"))
+                object <- Seurat::FindClusters(object = object, resolution = i, algorithm = algorithm, ...)
+              }
+            }
+            else if (length(resolution) == 1) {
+              message(paste0("clustering at ", resolution, " resolution"))
+              object <- Seurat::FindClusters(object = object, resolution = resolution, algorithm = algorithm, ...)
+            }
+            if (!is.null(custom_clust)) {
+              object <- Seurat::StashIdent(object = object, save.name = "old.ident")
+              clusters <- tibble::tibble(sample_id = rownames(pull_metadata(object))) %>% tibble::rownames_to_column("order") %>% dplyr::inner_join(custom_clust, by = "sample_id") %>% dplyr::pull(cluster) %>% identity()
+              Idents(object = object) <- clusters
+              return(object)
+            }
+            return(object)
+          }
+)
 
 #' Read in Gene and Transcript Seurat Objects
 #'
@@ -217,11 +239,24 @@ load_object_path <- function(proj_dir = getwd(), prefix = "unfiltered") {
 #' @export
 #'
 #' @examples
-load_object_from_proj <- function(proj_dir, ...) {
-  object_file <- load_object_path(proj_dir, ...)
+setGeneric("load_object_from_proj", function (proj_dir, ...)  standardGeneric("load_object_from_proj"))
 
-  object_file <- readRDS(object_file)
-}
+setMethod("load_object_from_proj", "Seurat",
+          function (proj_dir, ...)
+          {
+            object_file <- load_object_path(proj_dir, ...)
+            object_file <- readRDS(object_file)
+          }
+)
+
+setMethod("load_object_from_proj", "SingleCellExperiment",
+          function (proj_dir, ...)
+          {
+            object_file <- load_object_path(proj_dir, ...)
+            object_file <- readRDS(object_file)
+          }
+)
+
 
 #' Dimensional Reduction
 #'
@@ -238,41 +273,104 @@ load_object_from_proj <- function(proj_dir, ...) {
 #' @export
 #'
 #' @examples
-object_reduce_dimensions <- function(object, assay = "gene", reduction = "pca", legacy_settings = FALSE, ...) {
-  if ("integrated" %in% names(object@assays)) {
-    assay <- "integrated"
-  } else {
-    assay <- "gene"
-  }
+setGeneric("object_reduce_dimensions", function (object, assay = "gene", reduction = "pca", legacy_settings = FALSE, ...)  standardGeneric("object_reduce_dimensions"))
 
-  num_samples <- dim(object)[[2]]
+setMethod("object_reduce_dimensions", "Seurat",
+          function (object, assay = "gene", reduction = "pca", legacy_settings = FALSE, ...)
+          {
+            if ("integrated" %in% names(object@assays)) {
+              assay <- "integrated"
+            }
+            else {
+              assay <- "gene"
+            }
+            num_samples <- dim(object)[[2]]
+            if (num_samples < 50) {
+              npcs <- num_samples - 1
+            }
+            else {
+              npcs <- 50
+            }
+            if (legacy_settings) {
+              message("using legacy settings")
+              object <- Seurat::RunPCA(object, assay = assay, features = rownames(object))
+            }
+            else {
+              object <- Seurat::RunPCA(object = object, assay = assay, features = Seurat::VariableFeatures(object = object), do.print = FALSE, npcs = npcs, ...)
+            }
+            if (reduction == "harmony") {
+              object <- harmony::RunHarmony(object, "batch")
+            }
+            if ((ncol(object) - 1) > 3 * 30) {
+              object <- Seurat::RunTSNE(object = object, assay = assay, reduction = reduction, dims = 1:30)
+              object <- Seurat::RunUMAP(object = object, assay = assay, reduction = reduction, dims = 1:30)
+            }
+            return(object)
+          }
+)
 
-  if (num_samples < 50) {
-    npcs <- num_samples - 1
-  } else {
-    npcs <- 50
-  }
+setMethod("object_reduce_dimensions", "SingleCellExperiment",
+          function (object, assay = "gene", reduction = "PCA", legacy_settings = FALSE, ...)
+          {
+            if ("integrated" %in% names(object@assays)) {
+              assay <- "integrated"
+            }
+            else {
+              assay <- "gene"
+            }
+            num_samples <- dim(object)[[2]]
+            if (num_samples < 50) {
+              npcs <- num_samples - 1
+            }
+            else {
+              npcs <- 50
+            }
+            if (legacy_settings) {
+              message("using legacy settings")
 
-  if (legacy_settings) {
-    message("using legacy settings")
-    object <- Seurat::RunPCA(object, assay = assay, features = rownames(object))
-  } else {
-    # object <- Seurat::RunPCA(object = object, do.print = FALSE, npcs = npcs, ...)
-    object <- Seurat::RunPCA(object = object, assay = assay, features = Seurat::VariableFeatures(object = object), do.print = FALSE, npcs = npcs, ...)
-  }
+              if ("gene" == assay){
+                object <- scater::runPCA(x = object, subset_row = rownames(object))
+              }
 
-  if (reduction == "harmony") {
-    object <- harmony::RunHarmony(object, "batch")
-  }
+              else{
+                object <- scater::runPCA(x = object, altexp = assay, subset_row = rownames(object))
+              }
 
-  if ((ncol(object) - 1) > 3 * 30) {
-    object <- Seurat::RunTSNE(object = object, assay = assay, reduction = reduction, dims = 1:30)
-    object <- Seurat::RunUMAP(object = object, assay = assay, reduction = reduction, dims = 1:30)
-  }
+            }
+            else {
 
-  return(object)
-}
+              if ("gene" == assay){
+                object <- scater::runPCA(x = object, subset_row = scran::getTopHVGs(stats = object), ncomponents = npcs, ...)
+            }
 
+              else{
+                object <- scater::runPCA(x = object, altexp = assay, subset_row = scran::getTopHVGs(stats = object), ncomponents = npcs, ...)
+              }
+
+            }
+            if (reduction == "harmony") {
+              object <- harmony::RunHarmony(object, "batch")
+            }
+            if ((ncol(object) - 1) > 3 * 30) {
+              if ("gene" == assay){
+                object <- scater::runTSNE(x = object, dimred = reduction, n_dimred = 1:30)
+              }
+
+              else{
+                object <- scater::runTSNE(x = object, altexp = assay, dimred = reduction, n_dimred = 1:30)
+              }
+              if ("gene" == assay){
+                object <- scater::runUMAP(x = object, dimred = reduction, n_dimred = 1:30)
+              }
+
+              else{
+                object <- scater::runUMAP(x = object, altexp = assay, dimred = reduction, n_dimred = 1:30)
+              }
+
+            }
+            return(object)
+          }
+)
 #'
 #' Give a new project name to a singlecell objects
 #'
