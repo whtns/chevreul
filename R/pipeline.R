@@ -230,7 +230,7 @@ setMethod("object_pipeline", "Seurat",
 #' processed_object <- object_pipeline(panc8)
 #'
 setMethod("object_pipeline", "SingleCellExperiment",
-          object_pipeline <- function(object, assay = "gene", resolution = 0.6, reduction = "pca", organism = "human", ...) {
+          object_pipeline <- function(object, assay = "gene", resolution = 0.6, reduction = "PCA", organism = "human", ...) {
 
             assays <- names(object@assays)
 
@@ -241,7 +241,7 @@ setMethod("object_pipeline", "SingleCellExperiment",
             }
 
             # PCA
-            object <- object_reduce_dimensions(object, check_duplicates = FALSE, reduction = reduction, ...)
+            object <- object_reduce_dimensions(object, reduction = reduction, ...)
 
             object <- object_cluster(object = object, resolution = resolution, reduction = reduction, ...)
 
@@ -267,3 +267,4 @@ setMethod("object_pipeline", "SingleCellExperiment",
             return(object)
           }
           )
+debu
