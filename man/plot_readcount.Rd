@@ -5,7 +5,7 @@
 \title{Plot Read Count}
 \usage{
 plot_readcount(
-  seu,
+  object,
   metavar = "nCount_RNA",
   color.by = "batch",
   yscale = "linear",
@@ -14,7 +14,7 @@ plot_readcount(
 )
 }
 \arguments{
-\item{seu}{A seurat object}
+\item{object}{A object}
 
 \item{metavar}{Metadata variable to plot. Default set to "nCount_RNA"}
 
@@ -29,8 +29,8 @@ Draw a box plot for read count data of a metadata variable
 }
 \examples{
 #interactive plotly
-plot_readcount(human_gene_transcript_seu, return_plotly = TRUE)
+plot_readcount(human_gene_transcript_object, return_plotly = TRUE)
 # static plot
-plot_readcount(human_gene_transcript_seu, return_plotly = FALSE)
+plot_readcount(human_gene_transcript_object, return_plotly = FALSE)
 
 }

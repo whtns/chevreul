@@ -4,10 +4,10 @@
 \alias{annotate_cell_cycle}
 \title{Annotate Cell Cycle}
 \usage{
-annotate_cell_cycle(seu, organism = "human", ...)
+annotate_cell_cycle(object, organism = "human", ...)
 }
 \arguments{
-\item{seu}{A seurat object}
+\item{object}{A object}
 
 \item{organism}{organism. Default "human"}
 }

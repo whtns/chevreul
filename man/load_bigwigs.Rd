@@ -4,10 +4,10 @@
 \alias{load_bigwigs}
 \title{Load Bigwigs}
 \usage{
-load_bigwigs(seu, bigwig_db = "~/.cache/chevreul/bw-files.db")
+load_bigwigs(object, bigwig_db = "~/.cache/chevreul/bw-files.db")
 }
 \arguments{
-\item{seu}{A seurat object}
+\item{object}{A object}
 
 \item{bigwig_db}{Sqlite database of bigwig files}
 }

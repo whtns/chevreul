@@ -5,14 +5,16 @@
 \title{Update a chevreul Object}
 \usage{
 update_chevreul_object(
-  seu_path,
+  object_path,
   feature,
   resolution = seq(0.2, 2, by = 0.2),
-  return_seu = TRUE,
+  return_object = TRUE,
   ...
 )
 }
 \arguments{
+\item{object_path}{Path to a object}
+
 \item{...}{}
 }
 \description{

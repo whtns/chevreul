@@ -151,9 +151,6 @@ setMethod("object_integration_pipeline", "SingleCellExperiment",
 
 # object_pipeline ------------------------------
 
-setGeneric("object_pipeline", function(object, assay = "gene", resolution = 0.6, reduction = "pca", organism = "human", ...)
-  standardGeneric("object_pipeline"))
-
 #' Run Seurat Pipeline
 #'
 #' This functions allows you to Preprocess, Cluster and Reduce Dimensions for a single object.
@@ -172,8 +169,11 @@ setGeneric("object_pipeline", function(object, assay = "gene", resolution = 0.6,
 #'
 #' processed_object <- object_pipeline(panc8)
 #'
+setGeneric("object_pipeline", function(object, assay = "gene", resolution = 0.6, reduction = "pca", organism = "human", ...)
+  standardGeneric("object_pipeline"))
+
 setMethod("object_pipeline", "Seurat",
-          object_pipeline <- function(object, assay = "gene", resolution = 0.6, reduction = "pca", organism = "human", ...) {
+          function(object, assay = "gene", resolution = 0.6, reduction = "pca", organism = "human", ...) {
 
             assays <- names(object@assays)
 
@@ -201,8 +201,9 @@ setMethod("object_pipeline", "Seurat",
             # annotate low read count category in object metadata
             object <- add_read_count_col(object)
 
+
             # annotate cell cycle scoring to objects
-            object <- annotate_cell_cycle(object, organism = organism, ...)
+              object <- annotate_cell_cycle(object, organism = organism, ...)
 
             # annotate mitochondrial percentage in object metadata
             object <- add_percent_mito(object, organism = organism)
@@ -211,26 +212,8 @@ setMethod("object_pipeline", "Seurat",
           }
           )
 
-#' Run Seurat Pipeline
-#'
-#' This functions allows you to Preprocess, Cluster and Reduce Dimensions for a single object.
-#'
-#' @param object A Seurat object
-#' @param assay Assay of interest in Seurat object
-#' @param resolution Resolution for clustering cells. Default set to 0.6.
-#' @param reduction Dimensional reduction object
-#' @param organism Organism
-#' @param ... Extra parameters passed to object_pipeline
-#'
-#' @return
-#' @export
-#'
-#' @examples
-#'
-#' processed_object <- object_pipeline(panc8)
-#'
 setMethod("object_pipeline", "SingleCellExperiment",
-          object_pipeline <- function(object, assay = "gene", resolution = 0.6, reduction = "PCA", organism = "human", ...) {
+          function(object, assay = "gene", resolution = 0.6, reduction = "PCA", organism = "human", ...) {
 
             assays <- names(object@assays)
 
@@ -255,8 +238,7 @@ setMethod("object_pipeline", "SingleCellExperiment",
             #   }
             # }
 
-            # annotate low read count category in object metadata
-            object <- add_read_count_col(object)
+
 
             # annotate cell cycle scoring to objects
             object <- annotate_cell_cycle(object, organism = organism, ...)

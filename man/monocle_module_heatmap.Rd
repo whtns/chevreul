@@ -7,7 +7,7 @@
 monocle_module_heatmap(
   cds,
   pr_deg_ids,
-  seu_resolution,
+  object_resolution,
   cells = NULL,
   collapse_rows = TRUE,
   resolution = 10^seq(-6, -1),

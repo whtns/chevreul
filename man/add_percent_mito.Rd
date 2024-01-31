@@ -4,14 +4,14 @@
 \alias{add_percent_mito}
 \title{Annotate percent mitochondrial reads per cell}
 \usage{
-add_percent_mito(seu, organism = "human", seurat_assay = "gene")
+add_percent_mito(object, organism = "human", object_assay = "gene")
 }
 \arguments{
-\item{seu}{A seurat object}
+\item{object}{A object}
 
 \item{organism}{mouse}
 
-\item{seurat_assay}{gene}
+\item{object_assay}{gene}
 }
 \description{
 Add a Read Count Categorical Variable to Seurat Object (based on nCount_RNA)

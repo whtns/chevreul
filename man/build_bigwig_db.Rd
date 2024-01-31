@@ -10,5 +10,5 @@ build_bigwig_db(bam_files, bigwig_db = "~/.cache/chevreul/bw-files.db")
 \item{bigwig_db}{}
 }
 \description{
-create a sqlite database of bigwig files matching cell ids in seurat objects
+Create a sqlite database of bigwig files matching cell ids in objects
 }

@@ -4,14 +4,14 @@
 \alias{find_all_markers}
 \title{Find All Markers}
 \usage{
-find_all_markers(seu, metavar = NULL, seurat_assay = "gene", ...)
+find_all_markers(object, metavar = NULL, object_assay = "gene", ...)
 }
 \arguments{
-\item{seu}{A seurat object.}
+\item{object}{A object.}
 
 \item{metavar}{A metadata variable to group by.}
 
-\item{seurat_assay}{Assay to use, Default "gene".}
+\item{object_assay}{Assay to use, Default "gene".}
 
 \item{...}{}
 }
@@ -19,7 +19,7 @@ find_all_markers(seu, metavar = NULL, seurat_assay = "gene", ...)
 Find all markers at a range of resolutions
 }
 \examples{
-markers_stashed_seu <- find_all_markers(panc8)
-marker_genes <- Misc(markers_stashed_seu, "markers")
+markers_stashed_object <- find_all_markers(panc8)
+marker_genes <- Misc(markers_stashed_object, "markers")
 str(marker_genes)
 }

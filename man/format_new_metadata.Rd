@@ -2,13 +2,15 @@
 % Please edit documentation in R/utils.R
 \name{format_new_metadata}
 \alias{format_new_metadata}
-\title{Title}
+\title{Add object Metadata}
 \usage{
-format_new_metadata(seu, datapath)
+format_new_metadata(object, datapath)
 }
 \arguments{
-\item{datapath}{}
+\item{object}{A object}
+
+\item{datapath}{Path to file containing metadata}
 }
 \description{
-Title
+Adds data to the object to produce a object with metadata added.
 }

@@ -5,7 +5,7 @@
 \title{Plot All Transcripts}
 \usage{
 plot_all_transcripts(
-  seu,
+  object,
   features,
   embedding = "umap",
   from_gene = TRUE,
@@ -13,7 +13,7 @@ plot_all_transcripts(
 )
 }
 \arguments{
-\item{seu}{A seurat object}
+\item{object}{A object}
 
 \item{features}{gene or vector of transcripts}
 
@@ -26,8 +26,8 @@ plot expression all transcripts for an input gene superimposed on an embedding
 }
 \examples{
 
-processed_seu <- clustering_workflow(human_gene_transcript_seu)
+processed_object <- clustering_workflow(human_gene_transcript_object)
 transcripts_to_plot <- genes_to_transcripts("RXRG")
-plot_all_transcripts(processed_seu, features = transcripts_to_plot)
+plot_all_transcripts(processed_object, features = transcripts_to_plot)
 
 }

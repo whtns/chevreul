@@ -4,7 +4,7 @@
 \alias{learn_graph_by_resolution}
 \title{Learn Monocle Graph by Resolution}
 \usage{
-learn_graph_by_resolution(cds, seu, resolution = 1)
+learn_graph_by_resolution(cds, object, resolution = 1)
 }
 \arguments{
 \item{resolution}{}

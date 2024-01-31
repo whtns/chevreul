@@ -4,7 +4,7 @@
 \alias{plotVelocity}
 \title{RNA Velocity Server Module}
 \usage{
-plotVelocity(input, output, session, seu, loom_path)
+plotVelocity(input, output, session, object, loom_path)
 }
 \arguments{
 \item{loom_path}{}

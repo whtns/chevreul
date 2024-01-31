@@ -2,13 +2,17 @@
 % Please edit documentation in R/utils.R
 \name{combine_cols}
 \alias{combine_cols}
-\title{Reformat Seurat Object Metadata}
+\title{Reformat object Metadata}
 \usage{
-combine_cols(seu, cols, new_col)
+combine_cols(object, cols, new_col)
 }
 \arguments{
-\item{new_col}{}
+\item{object}{A object}
+
+\item{cols}{Columns}
+
+\item{new_col}{New columns}
 }
 \description{
-Reformat Seurat Object Metadata
+Reformat object Metadata by Coalesced Columns
 }

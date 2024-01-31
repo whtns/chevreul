@@ -2,7 +2,7 @@
 % Please edit documentation in R/monocle.R
 \name{flip_pseudotime}
 \alias{flip_pseudotime}
-\title{Flip Pseudotime}
+\title{Flip Pobjectdotime}
 \usage{
 flip_pseudotime(cds)
 }
@@ -10,5 +10,5 @@ flip_pseudotime(cds)
 \item{cds}{}
 }
 \description{
-Flip Pseudotime
+Flip Pobjectdotime
 }

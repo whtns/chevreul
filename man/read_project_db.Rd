@@ -12,8 +12,12 @@ read_project_db(
 )
 }
 \arguments{
+\item{cache_location}{Path to cache "~/.cache/chevreul"}
+
+\item{sqlite_db}{sqlite db}
+
 \item{verbose}{}
 }
 \description{
-Read a database of chevreul projects
+Reads database of chevreul projects to a data frame
 }

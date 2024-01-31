@@ -4,10 +4,10 @@
 \alias{filter_low_rc_cells}
 \title{Filter our Cells from Seurat below read count threshold}
 \usage{
-filter_low_rc_cells(seu, read_thresh = 1e+05)
+filter_low_rc_cells(object, read_thresh = 1e+05)
 }
 \arguments{
-\item{seu}{A seurat object}
+\item{object}{A object}
 
 \item{read_thresh}{}
 }

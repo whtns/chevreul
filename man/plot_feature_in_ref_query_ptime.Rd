@@ -2,7 +2,7 @@
 % Please edit documentation in R/monocle2.R
 \name{plot_feature_in_ref_query_ptime}
 \alias{plot_feature_in_ref_query_ptime}
-\title{Plot Expression of a Given Feature of a set of Pseudotimes}
+\title{Plot Expression of a Given Feature of a set of Pobjectdotimes}
 \usage{
 plot_feature_in_ref_query_ptime(
   cds_list,
@@ -19,5 +19,5 @@ plot_feature_in_ref_query_ptime(
 \item{min_expr}{}
 }
 \description{
-Plot Expression of a Given Feature of a set of Pseudotimes
+Plot Expression of a Given Feature of a set of Pobjectdotimes
 }

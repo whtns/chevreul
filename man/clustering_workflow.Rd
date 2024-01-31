@@ -5,7 +5,7 @@
 \title{Clustering Workflow}
 \usage{
 clustering_workflow(
-  seu,
+  object,
   excluded_cells,
   resolution = seq(0.2, 2, by = 0.2),
   organism = "human",
@@ -18,14 +18,12 @@ clustering_workflow(
 
 \item{resolution}{resolution(s) to use for clustering cells}
 
+\item{organism}{Organism}
+
 \item{...}{}
 
-\item{feature_seus}{list of seurat objects named according to feature of interest ("gene" or "transcript")}
+\item{feature_objects}{list of objects named according to feature of interest ("gene" or "transcript")}
 }
 \description{
-Cluster and Reduce Dimensions of a seurat object
-}
-\examples{
-clustered_human_seu <- clustering_workflow(panc8, experiment_name = "seurat_pancreas", organism = "human")
-clustered_mouse_seu <- clustering_workflow(baron2016singlecell)
+Cluster and Reduce Dimensions of a object
 }

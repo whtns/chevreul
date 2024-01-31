@@ -10,5 +10,5 @@ filter_rows_to_top(df, column, values)
 \item{values}{}
 }
 \description{
-Filter Rows to Top
+Filters the sprcified rows in the given columns to the top
 }

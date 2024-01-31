@@ -2,13 +2,15 @@
 % Please edit documentation in R/cross_species.R
 \name{update_human_gene_symbols}
 \alias{update_human_gene_symbols}
-\title{Update human gene symbols in seurat object}
+\title{Update human gene symbols in object}
 \usage{
-update_human_gene_symbols(seu, assay = "gene")
+update_human_gene_symbols(object, assay = "gene")
 }
 \arguments{
-\item{seu}{}
+\item{object}{A Seurat object}
+
+\item{assay}{Assay to use, Default = "gene"}
 }
 \description{
-Update human gene symbols in seurat object
+Update human gene symbols in object
 }

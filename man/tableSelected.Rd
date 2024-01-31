@@ -4,10 +4,10 @@
 \alias{tableSelected}
 \title{Create Table of Selected Cells}
 \usage{
-tableSelected(input, output, session, seu)
+tableSelected(input, output, session, object)
 }
 \arguments{
-\item{seu}{}
+\item{object}{}
 }
 \description{
 Create Table of Selected Cells

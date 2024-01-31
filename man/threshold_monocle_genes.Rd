@@ -4,7 +4,7 @@
 \alias{threshold_monocle_genes}
 \title{Threshold monocle genes}
 \usage{
-threshold_monocle_genes(seu, cds, min_expression = 0.05)
+threshold_monocle_genes(object, cds, min_expression = 0.05)
 }
 \arguments{
 \item{min_expression}{}

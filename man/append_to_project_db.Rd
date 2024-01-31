@@ -13,8 +13,12 @@ append_to_project_db(
 )
 }
 \arguments{
+\item{cache_location}{Path to cache "~/.cache/chevreul"}
+
+\item{sqlite_db}{sqlite db}
+
 \item{verbose}{}
 }
 \description{
-Update a database of chevreul projects
+Append projects to datatbase
 }

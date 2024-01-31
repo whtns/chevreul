@@ -4,7 +4,7 @@
 \alias{plotHeatmap}
 \title{Plot Heatmap}
 \usage{
-plotHeatmap(input, output, session, seu, featureType, organism_type)
+plotHeatmap(input, output, session, object, featureType, organism_type)
 }
 \arguments{
 \item{organism_type}{}

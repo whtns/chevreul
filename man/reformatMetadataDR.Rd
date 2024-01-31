@@ -8,7 +8,7 @@ reformatMetadataDR(
   input,
   output,
   session,
-  seu,
+  object,
   featureType = "gene",
   col_bind = NULL,
   col_edit = TRUE,
@@ -38,7 +38,7 @@ reformatMetadataDR(
 )
 }
 \arguments{
-\item{seu}{}
+\item{object}{}
 }
 \description{
 Reformat Seurat Object Metadata Server

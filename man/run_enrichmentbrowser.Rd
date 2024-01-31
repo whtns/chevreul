@@ -5,7 +5,7 @@
 \title{Run Enrichment Browser on Differentially Expressed Genes}
 \usage{
 run_enrichmentbrowser(
-  seu,
+  object,
   cluster_list,
   de_results,
   enrichment_method = c("ora"),

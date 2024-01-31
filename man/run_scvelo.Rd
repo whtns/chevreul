@@ -5,7 +5,7 @@
 \title{scvelo_assay}
 \usage{
 run_scvelo(
-  seu,
+  object,
   loom_path,
   assay = "gene",
   fit.quantile = 0.05,
@@ -14,12 +14,12 @@ run_scvelo(
 )
 }
 \arguments{
-\item{seu}{a seurat object}
+\item{object}{a object}
 
 \item{loom_path}{path to matching loom file}
 
 \item{...}{}
 }
 \description{
-run scvelo on a gene or transcript level seurat object
+run scvelo on a gene or transcript level object
 }

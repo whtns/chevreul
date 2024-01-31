@@ -12,8 +12,14 @@ update_project_db(
 )
 }
 \arguments{
+\item{projects_dir}{The project directory to be updated}
+
+\item{cache_location}{Path to cache "~/.cache/chevreul"}
+
+\item{sqlite_db}{sqlite db}
+
 \item{verbose}{}
 }
 \description{
-Update a database of chevreul projects
+Add new/update existing projects to the database by recursing fully
 }

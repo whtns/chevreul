@@ -7,7 +7,7 @@
 process_monocle_child(
   ptime,
   monocle_cds,
-  trend_formula = "~sm.ns(Pseudotime, df=3)"
+  trend_formula = "~sm.ns(Pobjectdotime, df=3)"
 )
 }
 \arguments{

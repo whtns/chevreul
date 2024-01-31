@@ -5,7 +5,7 @@
 \title{Plot Violin plot}
 \usage{
 plot_violin(
-  seu,
+  object,
   plot_var = "batch",
   plot_vals = NULL,
   features = "RXRG",
@@ -14,7 +14,7 @@ plot_violin(
 )
 }
 \arguments{
-\item{seu}{A Seurat object}
+\item{object}{A Seurat object}
 
 \item{plot_var}{Variable to group (color) cells by}
 
@@ -30,6 +30,6 @@ grouped by a metadata variable
 }
 \examples{
 
-plot_violin(human_gene_transcript_seu, plot_var = "batch", features = c("NRL", "GNAT2"))
+plot_violin(human_gene_transcript_object, plot_var = "batch", features = c("NRL", "GNAT2"))
 
 }

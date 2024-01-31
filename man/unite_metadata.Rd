@@ -4,12 +4,15 @@
 \alias{unite_metadata}
 \title{Unite metadata}
 \usage{
-unite_metadata(seu, metavars)
+unite_metadata(object, metavars)
 }
 \arguments{
-\item{seu}{A seurat object}
+\item{object}{A object}
 
 \item{metavars}{A feature or variable to combine}
+}
+\value{
+an object with Idents formed from concatenation of metavars
 }
 \description{
 Unite metadata

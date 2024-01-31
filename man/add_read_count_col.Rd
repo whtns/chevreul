@@ -4,10 +4,10 @@
 \alias{add_read_count_col}
 \title{Annotate Low Read Count Category}
 \usage{
-add_read_count_col(seu, thresh = 1e+05)
+add_read_count_col(object, thresh = 1e+05)
 }
 \arguments{
-\item{seu}{A seurat object}
+\item{object}{A object}
 
 \item{thresh}{Set a threshold for low read count}
 }

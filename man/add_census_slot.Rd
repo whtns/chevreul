@@ -2,13 +2,13 @@
 % Please edit documentation in R/monocle2.R
 \name{add_census_slot}
 \alias{add_census_slot}
-\title{add census assay to a seurat object}
+\title{add census assay to a object}
 \usage{
-add_census_slot(seu, assay = "gene", slot = "counts")
+add_census_slot(object, assay = "gene", slot = "counts")
 }
 \arguments{
 \item{slot}{}
 }
 \description{
-add census assay to a seurat object
+add census assay to a object
 }

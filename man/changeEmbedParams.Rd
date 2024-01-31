@@ -4,10 +4,10 @@
 \alias{changeEmbedParams}
 \title{Change Embedding Parameters}
 \usage{
-changeEmbedParams(input, output, session, seu)
+changeEmbedParams(input, output, session, object)
 }
 \arguments{
-\item{seu}{}
+\item{object}{}
 }
 \description{
 Change Embedding Parameters

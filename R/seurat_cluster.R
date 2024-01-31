@@ -51,7 +51,7 @@ object_preprocess <- function(assay, scale = TRUE, normalize = TRUE, features = 
 #'
 #' Find all markers at a range of resolutions
 #'
-#' @param object A object.
+#' @param object An object.
 #' @param metavar A metadata variable to group by.
 #' @param object_assay Assay to use, Default "gene".
 #' @param ...

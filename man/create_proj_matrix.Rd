@@ -7,8 +7,8 @@
 create_proj_matrix(proj_list)
 }
 \arguments{
-\item{sub_dirs}{}
+\item{proj_list}{List of projects}
 }
 \description{
-Create a Table of single Cell Projects
+Uses a list of projects to create a matrix of single cell projects
 }

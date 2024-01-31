@@ -4,10 +4,10 @@
 \alias{findMarkers}
 \title{Find Markers}
 \usage{
-findMarkers(input, output, session, seu, plot_types, featureType)
+findMarkers(input, output, session, object, plot_types, featureType)
 }
 \arguments{
-\item{seu}{}
+\item{object}{}
 }
 \description{
 Find Markers

@@ -8,7 +8,7 @@ plotDimRed(
   input,
   output,
   session,
-  seu,
+  object,
   plot_types,
   featureType,
   organism_type,

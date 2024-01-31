@@ -5,19 +5,19 @@
 \title{Stash Marker Genes in a Seurat Object}
 \usage{
 stash_marker_features(
+  object,
   metavar,
-  seu,
-  seurat_assay,
+  object_assay = "gene",
   top_n = 200,
   p_val_cutoff = 0.5
 )
 }
 \arguments{
+\item{object}{A object}
+
 \item{metavar}{A metadata variable to group by}
 
-\item{seu}{A seurat object}
-
-\item{seurat_assay}{An assay to use}
+\item{object_assay}{An assay to use}
 
 \item{top_n}{Use top n genes, Default "200"}
 
@@ -28,6 +28,6 @@ Marker Genes will be stored in slot \verb{@misc$markers}
 }
 \examples{
 
-seu <- stash_marker_features(metavar = "batch", seu, seurat_assay = "gene")
+object <- stash_marker_features(metavar = "batch", object, object_assay = "gene")
 
 }

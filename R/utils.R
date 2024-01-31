@@ -229,7 +229,8 @@ prep_plot_genes_in_pseudotime <- function(cds, mygenes, resolution, partition = 
 
 #' Record Experiment Metadata
 #'
-#' @param object A object objet
+#' Records miscellaneous data
+#' @param object A object
 #' @param experiment_name
 #' @param organism
 #'
@@ -237,8 +238,8 @@ prep_plot_genes_in_pseudotime <- function(cds, mygenes, resolution, partition = 
 #' @export
 #'
 #' @examples
-#' logged_object <- record_experiment_data(human_gene_transcript_object, experiment_name = "human_gene_transcript", organism = "mouse")
-#' Misc(logged_object, "experiment")
+#'
+#'
 #' @importFrom purrr %||%
 setGeneric("record_experiment_data", function(object, experiment_name = "default_experiment", organism = "human")
   standardGeneric("record_experiment_data"))
@@ -251,9 +252,9 @@ setMethod("record_experiment_data", "Seurat",
               )
             }
 
-            organism <- object::Misc(object, "experiment")[["organism"]] %||% organism
+             organism <- Misc(object, "experiment")[["organism"]] %||% organism
 
-            experiment_name <- object::Misc(object, "experiment")[["experiment_name"]] %||% experiment_name
+             experiment_name <- Misc(object, "experiment")[["experiment_name"]] %||% experiment_name
 
             message(paste0("[", format(Sys.time(), "%H:%M:%S"), "] Logging Technical Details..."))
             experiment <- list(
@@ -286,8 +287,8 @@ setMethod("record_experiment_data", "Seurat",
 
             experiment$chevreul_version <- utils::packageVersion("chevreul")
 
-            Misc(object)[["experiment"]] <- NULL
-            Misc(object)[["experiment"]] <- experiment
+
+            Misc(object, slot ="experiment") <- experiment
 
             return(object)
           }
@@ -301,9 +302,9 @@ setMethod("record_experiment_data", "SingleCellExperiment",
               )
             }
 
-            organism <- object::Misc(object, "experiment")[["organism"]] %||% organism
+            organism <- metadata(human_gene_transcript_sce)[["experiment"]][["organism"]] %||% organism
 
-            experiment_name <- object::Misc(object, "experiment")[["experiment_name"]] %||% experiment_name
+            experiment_name <- metadata(object)[["experiment"]][["experiment_name"]] %||% experiment_name
 
             message(paste0("[", format(Sys.time(), "%H:%M:%S"), "] Logging Technical Details..."))
             experiment <- list(
@@ -330,14 +331,14 @@ setMethod("record_experiment_data", "SingleCellExperiment",
               capture.output(sessioninfo::session_info())
             )
 
-            if (!is.null(object@version)) {
-              experiment$seurat_version <- object@version
+            if (!is.null(objectVersion(object))) {
+              experiment$SingleCellExperiment_version <- objectVersion(object)
             }
 
             experiment$chevreul_version <- utils::packageVersion("chevreul")
 
-            Misc(object)[["experiment"]] <- NULL
-            Misc(object)[["experiment"]] <- experiment
+
+            metadata(object)[["experiment"]] <- experiment
 
             return(object)
           }

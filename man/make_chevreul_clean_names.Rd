@@ -2,13 +2,13 @@
 % Please edit documentation in R/utils.R
 \name{make_chevreul_clean_names}
 \alias{make_chevreul_clean_names}
-\title{Title}
+\title{Clean Vector of Chevreul Names}
 \usage{
 make_chevreul_clean_names(myvec)
 }
 \arguments{
-\item{myvec}{}
+\item{myvec}{A vector of object names}
 }
 \description{
-Title
+Cleans names of objects provided in a vector form
 }

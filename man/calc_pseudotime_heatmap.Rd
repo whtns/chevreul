@@ -18,7 +18,7 @@ calc_pseudotime_heatmap(
   norm_method = c("log", "vstExprs"),
   scale_max = 3,
   scale_min = -3,
-  trend_formula = "~sm.ns(Pseudotime, df=3)",
+  trend_formula = "~sm.ns(Pobjectdotime, df=3)",
   return_heatmap = FALSE,
   cores = 1,
   ...

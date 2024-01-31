@@ -2,7 +2,7 @@
 % Please edit documentation in R/wiggleplotr.R
 \name{plot_gene_coverage_by_var}
 \alias{plot_gene_coverage_by_var}
-\title{Plot BigWig Coverage for Genes of Interest Colored by a Given Variable}
+\title{Plot BigWig Coverage for Genes of Interest by a Given Variable}
 \usage{
 plot_gene_coverage_by_var(
   genes_of_interest = "RXRG",
@@ -22,12 +22,22 @@ plot_gene_coverage_by_var(
 )
 }
 \arguments{
-\item{cell_metadata}{a dataframe with cell metadata from seurat}
+\item{genes_of_interest}{Gene of interest}
+
+\item{cell_metadata}{a dataframe with cell metadata from object}
 
 \item{bigwig_tbl}{a tibble with colnames "name", "bigWig", and "sample_id" matching the filename, absolute path, and sample name of each cell in the cell_metadata}
+
+\item{var_of_interest}{Variable to color by}
+
+\item{organism}{Organism}
+
+\item{edb}{ensembldb object}
+
+\item{heights}{The heights of each row in the grid of plot}
 
 \item{...}{}
 }
 \description{
-Plot BigWig Coverage for Genes of Interest Colored by a Given Variable
+Plot BigWig coverage for genes of interest colored by a given variable
 }
