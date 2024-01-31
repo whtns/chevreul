@@ -4,7 +4,13 @@
 \alias{label_transfer}
 \title{Transfer Labels Between Seurat Objects}
 \usage{
-label_transfer(ref_seu, query_seu, ref_name = NULL, query_name = NULL, ...)
+label_transfer(
+  ref_object,
+  query_object,
+  ref_name = NULL,
+  query_name = NULL,
+  ...
+)
 }
 \arguments{
 \item{...}{}

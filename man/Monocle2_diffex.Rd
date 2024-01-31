@@ -4,10 +4,10 @@
 \alias{Monocle2_diffex}
 \title{Monocle2 differential expression}
 \usage{
-Monocle2_diffex(seu)
+Monocle2_diffex(object)
 }
 \arguments{
-\item{seu}{}
+\item{object}{}
 }
 \description{
 Monocle2 differential expression

@@ -5,13 +5,13 @@
 \title{Plot Cluster Marker Genes}
 \usage{
 plot_markers(
-  seu,
+  object,
   metavar = "batch",
   num_markers = 5,
   selected_values = NULL,
   return_plotly = FALSE,
   marker_method = "presto",
-  seurat_assay = "gene",
+  object_assay = "gene",
   hide_technical = NULL,
   unique_markers = FALSE,
   p_val_cutoff = 1,
@@ -19,7 +19,7 @@ plot_markers(
 )
 }
 \arguments{
-\item{seu}{a seurat object}
+\item{object}{a object}
 
 \item{metavar}{the metadata variable from which to pick clusters}
 
@@ -41,9 +41,9 @@ available methods are wilcoxon rank-sum test implemented in
 \examples{
 
 # interactive mode using "presto"
-plot_markers(human_gene_transcript_seu, metavar = "tech", marker_method = "presto", return_plotly = TRUE)
+plot_markers(human_gene_transcript_object, metavar = "tech", marker_method = "presto", return_plotly = TRUE)
 
 # static mode using "presto"
-plot_markers(human_gene_transcript_seu, metavar = "tech", marker_method = "genesorteR", return_plotly = FALSE)
+plot_markers(human_gene_transcript_object, metavar = "tech", marker_method = "genesorteR", return_plotly = FALSE)
 
 }

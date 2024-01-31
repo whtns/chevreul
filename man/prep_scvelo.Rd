@@ -5,14 +5,14 @@
 \title{scvelo_assay}
 \usage{
 prep_scvelo(
-  seu,
+  object,
   loom_path,
   velocity_mode = c("deterministic", "stochastic", "dynamical"),
   ...
 )
 }
 \arguments{
-\item{seu}{a seurat object}
+\item{object}{a object}
 
 \item{loom_path}{path to matching loom file}
 
@@ -23,5 +23,5 @@ prep_scvelo(
 \item{plot_method}{plotting method to use from scvelo}
 }
 \description{
-run scvelo on a gene or transcript level seurat object
+run scvelo on a gene or transcript level object
 }

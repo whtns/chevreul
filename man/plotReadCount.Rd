@@ -4,7 +4,7 @@
 \alias{plotReadCount}
 \title{Plot Read Count}
 \usage{
-plotReadCount(input, output, session, seu, plot_types)
+plotReadCount(input, output, session, object, plot_types)
 }
 \arguments{
 \item{plot_types}{}

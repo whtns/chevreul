@@ -4,10 +4,10 @@
 \alias{harmony_integrate}
 \title{Integrate small datasets with harmony}
 \usage{
-harmony_integrate(seu_list)
+harmony_integrate(object_list)
 }
 \arguments{
-\item{seu_list}{List of two or more seurat objects to integrate}
+\item{object_list}{List of two or more singlecell objectss to integrate}
 }
 \description{
 Integrate small datasets with harmony

@@ -4,13 +4,13 @@
 \alias{SetDefaultAssay}
 \title{Reset default assay}
 \usage{
-SetDefaultAssay(seu, new_assay)
+SetDefaultAssay(object, new_assay)
 }
 \arguments{
-\item{seu}{A seurat object}
+\item{object}{A singlecell objects}
 
 \item{new_assay}{Assay to set as default assay}
 }
 \description{
-Function to reset the default assay of a seurat object
+Function to reset the default assay of a singlecell objects
 }

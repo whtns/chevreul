@@ -5,7 +5,7 @@
 \title{Plot Metadata Variables}
 \usage{
 plot_var(
-  seu,
+  object,
   group = "batch",
   embedding = "umap",
   dims = c(1, 2),
@@ -16,7 +16,7 @@ plot_var(
 )
 }
 \arguments{
-\item{seu}{A Seurat object}
+\item{object}{}
 
 \item{group}{Name of one or more metadata columns to group (color) cells by.}
 
@@ -32,6 +32,9 @@ plot_var(
 
 \item{...}{}
 }
+\value{
+object metadata
+}
 \description{
 Plots static or interactive plot where each point represents a cell metadata
 variable whose position on the map depends on cell embeddings determined by the
@@ -42,10 +45,12 @@ reduction technique used
 
 
 # static mode
-plot_var(human_gene_transcript_seu, group = "batch", return_plotly  = FALSE)
+plot_var(human_gene_transcript_object, group = "batch", return_plotly  = FALSE)
 
 # interactive plotly plot
-plotly_plot <- plot_var(human_gene_transcript_seu, group = "batch")
+plotly_plot <- plot_var(human_gene_transcript_object, group = "batch")
 print(plotly_plot)
+
+Pull object metadata
 
 }

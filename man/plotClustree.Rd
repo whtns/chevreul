@@ -4,10 +4,10 @@
 \alias{plotClustree}
 \title{plot clustree server}
 \usage{
-plotClustree(input, output, session, seu)
+plotClustree(input, output, session, object)
 }
 \arguments{
-\item{seu}{}
+\item{object}{}
 }
 \description{
 plot clustree server

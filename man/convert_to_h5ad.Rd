@@ -2,18 +2,20 @@
 % Please edit documentation in R/run_scvelo.R
 \name{convert_to_h5ad}
 \alias{convert_to_h5ad}
-\title{convert a seurat object to an on-disk anndata object}
+\title{convert a object to an on-disk anndata object}
 \usage{
-convert_to_h5ad(seu, file_path)
+convert_to_h5ad(object, file_path)
 }
 \arguments{
-\item{file_path}{}
+\item{object}{A object}
+
+\item{file_path}{Path to file}
 }
 \description{
-convert a seurat object to an on-disk anndata object
+convert a object to an on-disk anndata object
 }
 \examples{
 
-convert_to_h5ad(human_gene_transcript_seu, "inst/extdata/seu.rds")
+convert_to_h5ad(human_gene_transcript_object, "inst/extdata/object.rds")
 
 }

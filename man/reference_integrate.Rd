@@ -5,8 +5,8 @@
 \title{Transfer labels between gene or transcript objects}
 \usage{
 reference_integrate(
-  ref_seu,
-  query_seu,
+  ref_object,
+  query_object,
   query_name = "fetal",
   ref_name = "organoid",
   ...

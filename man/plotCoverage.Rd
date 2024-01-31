@@ -8,7 +8,7 @@ plotCoverage(
   input,
   output,
   session,
-  seu,
+  object,
   plot_types,
   proj_dir,
   organism_type = "human",

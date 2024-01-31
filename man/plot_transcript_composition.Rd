@@ -5,7 +5,7 @@
 \title{Plot Transcript Composition}
 \usage{
 plot_transcript_composition(
-  seu,
+  object,
   gene_symbol,
   group.by = "batch",
   standardize = FALSE,
@@ -13,7 +13,7 @@ plot_transcript_composition(
 )
 }
 \arguments{
-\item{seu}{A seurat object}
+\item{object}{A object}
 
 \item{gene_symbol}{Gene symbol of gene of intrest}
 
@@ -26,6 +26,6 @@ plot_transcript_composition(
 plot the proportion of reads of a given gene map to each transcript
 }
 \examples{
-plot_transcript_composition(human_gene_transcript_seu, "RXRG", group.by = "gene_snn_res.0.6")
+plot_transcript_composition(human_gene_transcript_object, "RXRG", group.by = "gene_snn_res.0.6")
 
 }

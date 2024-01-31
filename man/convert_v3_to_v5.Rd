@@ -2,16 +2,16 @@
 % Please edit documentation in R/utils.R
 \name{convert_v3_to_v5}
 \alias{convert_v3_to_v5}
-\title{Convert seurat object to seurat V5 format}
+\title{Convert seurat to seurat V5 format}
 \usage{
-convert_v3_to_v5(seu_v3)
+convert_v3_to_v5(seurat_v3)
 }
 \arguments{
-\item{seu_v3}{a seurat object}
+\item{seurat_v3}{a version 3 seurat}
 }
 \description{
-Convert seurat object to seurat V5 format
+Convert seurat from v3 to v5 format
 }
 \examples{
-convert_v3_to_v5(human_gene_transcript_seu)
+convert_v3_to_v5(human_gene_transcript_seurat)
 }

@@ -181,27 +181,35 @@ setMethod("object_cluster", "SingleCellExperiment",
           {
             message(paste0("[", format(Sys.time(), "%H:%M:%S"), "] Clustering Cells..."))
             # return list of graph object with KNN (SNN?)
-            object <- scran::buildKNNGraph(x = object, use.dimred = reduction)
+            #object <- scran::buildKNNGraph(x = object, use.dimred = reduction)
             if (length(resolution) > 1) {
               for (i in resolution) {
                 message(paste0("clustering at ", i, " resolution"))
-                object <- Seurat::FindClusters(object = object, resolution = i, algorithm = algorithm, ...)
+                #object <- Seurat::FindClusters(object = object, resolution = i, algorithm = algorithm, ...)
+                cluster_labels <- scran::clusterCells(object, use.dimred = reduction,
+                                                      BLUSPARAM=bluster::NNGraphParam(cluster.fun = "louvain", cluster.args = list(resolution = i)))
+                # colLabels(object) <- cluster_labels
+                colData(object)[[glue::glue("gene_snn_res.{i}")]] <- cluster_labels
               }
             }
             else if (length(resolution) == 1) {
               message(paste0("clustering at ", resolution, " resolution"))
-              object <- Seurat::FindClusters(object = object, resolution = resolution, algorithm = algorithm, ...)
+              #object <- Seurat::FindClusters(object = object, resolution = resolution, algorithm = algorithm, ...)
+              cluster_labels <- scran::clusterCells(object, use.dimred = reduction,
+                                                    BLUSPARAM=bluster::NNGraphParam(cluster.fun="louvain", cluster.args = list(resolution = resolution)))
+
+
+              colData(object)[[glue("gene_snn_res.{resolution}")]] <- cluster_labels
             }
-            if (!is.null(custom_clust)) {
-              object <- Seurat::StashIdent(object = object, save.name = "old.ident")
-              clusters <- tibble::tibble(sample_id = rownames(pull_metadata(object))) %>% tibble::rownames_to_column("order") %>% dplyr::inner_join(custom_clust, by = "sample_id") %>% dplyr::pull(cluster) %>% identity()
-              Idents(object = object) <- clusters
-              return(object)
-            }
+            # if (!is.null(custom_clust)) {
+            #
+            #   clusters <- tibble::tibble(sample_id = rownames(pull_metadata(object))) %>% tibble::rownames_to_column("order") %>% dplyr::inner_join(custom_clust, by = "sample_id") %>% dplyr::pull(cluster) %>% identity()
+            #   Idents(object = object) <- clusters
+            #   return(object)
+            # }
             return(object)
           }
 )
-
 #' Read in Gene and Transcript Seurat Objects
 #'
 #' @param proj_dir path to project directory

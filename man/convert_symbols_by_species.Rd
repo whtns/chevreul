@@ -7,7 +7,9 @@
 convert_symbols_by_species(src_genes, src_species)
 }
 \arguments{
-\item{src_species}{}
+\item{src_genes}{Source gene symbol to be converted}
+
+\item{src_species}{Source species}
 }
 \description{
 Convert gene symbols between mouse and human

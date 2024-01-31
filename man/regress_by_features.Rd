@@ -4,10 +4,10 @@
 \alias{regress_by_features}
 \title{Regress Seurat Object by Given Set of Genes}
 \usage{
-regress_by_features(seu, feature_set, set_name, regress = TRUE, ...)
+regress_by_features(object, feature_set, set_name, regress = TRUE, ...)
 }
 \arguments{
-\item{seu}{A seurat object}
+\item{object}{A object}
 
 \item{set_name}{as a string}
 
@@ -18,6 +18,6 @@ Regress Seurat Object by Given Set of Genes
 }
 \examples{
 
-regressed_seu <- regress_by_features(panc8, feature_set  = cc.genes$s.genes, set_name = "s_genes")
+regressed_object <- regress_by_features(panc8, feature_set  = cc.genes$s.genes, set_name = "s_genes")
 
 }

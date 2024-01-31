@@ -4,12 +4,10 @@
 \alias{plot_cell_cycle_distribution}
 \title{Plot cell cycle distribution grouped by metadata}
 \usage{
-plot_cell_cycle_distribution(seu, features)
+plot_cell_cycle_distribution(object)
 }
 \arguments{
-\item{seu}{A seurat object}
-
-\item{features}{Features to plot (gene expression, metrics, PC scores, anything that can be retreived by Seurat::FetchData)}
+\item{object}{A object}
 }
 \description{
 Plot ridge plots of G1, S, and G2M phases grouped by provided metadata

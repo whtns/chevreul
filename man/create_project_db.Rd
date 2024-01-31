@@ -11,8 +11,12 @@ create_project_db(
 )
 }
 \arguments{
+\item{cache_location}{Path to cache "~/.cache/chevreul"}
+
+\item{sqlite_db}{Database to be created}
+
 \item{verbose}{}
 }
 \description{
-Create a database of chevreul projects
+Create a database containing chevreul projects
 }

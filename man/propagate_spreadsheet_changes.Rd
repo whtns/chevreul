@@ -4,10 +4,10 @@
 \alias{propagate_spreadsheet_changes}
 \title{Propagate Metadata Changes}
 \usage{
-propagate_spreadsheet_changes(updated_table, seu)
+propagate_spreadsheet_changes(updated_table, object)
 }
 \arguments{
-\item{seu}{}
+\item{object}{}
 }
 \description{
 Propagate Metadata Changes

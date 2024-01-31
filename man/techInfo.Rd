@@ -4,10 +4,10 @@
 \alias{techInfo}
 \title{Title}
 \usage{
-techInfo(input, output, session, seu)
+techInfo(input, output, session, object)
 }
 \arguments{
-\item{seu}{}
+\item{object}{}
 }
 \description{
 Title

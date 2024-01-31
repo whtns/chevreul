@@ -49,9 +49,10 @@ chevreul provides a single command to:
 By default clustering will be run at ten different resolutions between 0.2 and 2.0. Any resolution can be specified by providing the resolution argument as a numeric vector.
 
 ```{r, results=FALSE, eval=FALSE}
-clustered_object <- clustering_workflow(human_gene_transcript_object, 
-                                     experiment_name = "object_hu_trans", 
-                                     organism = "human")
+
+# debug(object_pipeline, signature = "SingleCellExperiment")
+clustered_sce_object <- clustering_workflow(human_gene_transcript_sce, 
+                                     experiment_name = "object_hu_trans")
 ```
 
 ```{r, results=FALSE, echo=FALSE}

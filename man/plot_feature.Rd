@@ -5,7 +5,7 @@
 \title{Plot Feature}
 \usage{
 plot_feature(
-  seu,
+  object,
   embedding = c("umap", "pca", "tsne"),
   features,
   dims = c(1, 2),
@@ -14,7 +14,7 @@ plot_feature(
 )
 }
 \arguments{
-\item{seu}{A Seurat object}
+\item{object}{A Seurat object}
 
 \item{embedding}{Dimensional reduction technique to be used}
 
@@ -26,15 +26,4 @@ plot_feature(
 Plots gene or transcript expression overlaid on a given embedding.
 If multiple features are supplied the joint density of all features
 will be plotted using \href{https://www.bioconductor.org/packages/devel/bioc/html/Nebulosa.html}{Nebulosa}
-}
-\examples{
-
-# static, single feature
-plot_feature(human_gene_transcript_seu, embedding = "umap", features = c("NRL"), return_plotly = FALSE)
-# static, multi-feature
-plot_feature(human_gene_transcript_seu, embedding = "umap", features = c("RXRG", "NRL"), return_plotly = FALSE)
-# interactive, multi-feature
-plotly_plot <- plot_feature(human_gene_transcript_seu, embedding = "umap", features = c("RXRG", "NRL"))
-print(plotly_plot)
-
 }

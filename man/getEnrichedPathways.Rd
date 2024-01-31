@@ -37,7 +37,7 @@ original is out-of-service; defaults to
 }
 \value{
 Seurat object with Enrichr results for samples and clusters stored in
-object@misc$enriched_pathways$enrichr
+Misc(object)$enriched_pathways$enrichr
 }
 \description{
 This function uses the enrichR API to look for enriched pathways
@@ -47,13 +47,13 @@ in marker gene sets of samples and clusters.
 Get enriched pathways based on marker genes from EnrichR.
 }
 \examples{
-pbmc <- readRDS(system.file("extdata/v1.2/seurat_pbmc.rds",
+pbmc <- readRDS(system.file("extdata/v1.2/object_pbmc.rds",
   package = "cerebroApp"
 ))
 pbmc <- getEnrichedPathways(
   object = pbmc,
   column_sample = "sample",
-  column_cluster = "seurat_clusters",
+  column_cluster = "object_clusters",
   databases = c("GO_Biological_Process_2018", "GO_Cellular_Component_2018"),
   adj_p_cutoff = 0.01,
   max_terms = 100,

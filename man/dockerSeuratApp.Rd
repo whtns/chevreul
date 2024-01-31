@@ -2,7 +2,7 @@
 % Please edit documentation in R/docker_app.R
 \name{dockerSeuratApp}
 \alias{dockerSeuratApp}
-\title{Create a seurat app on a shinyproxy docker instance}
+\title{Create a obect app on a shinyproxy docker instance}
 \usage{
 dockerSeuratApp(
   object = panc8,
@@ -14,14 +14,14 @@ dockerSeuratApp(
 )
 }
 \arguments{
-\item{object}{a seurat object}
+\item{object}{a obect object}
 
 \item{loom_path}{path to a loom file}
 
-\item{futureMb}{#' @param bigwigb  path to sqlite database listing bigwig files for cells in the seurat object}
+\item{futureMb}{#' @param bigwigb  path to sqlite database listing bigwig files for cells in the obect object}
 }
 \description{
-Create a seurat app on a shinyproxy docker instance
+Create a obect app on a shinyproxy docker instance
 }
 \examples{
 

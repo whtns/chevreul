@@ -8,7 +8,7 @@ diffex(
   input,
   output,
   session,
-  seu,
+  object,
   featureType,
   selected_cells,
   tests = c(`t-test` = "t", `wilcoxon rank-sum test` = "wilcox",
