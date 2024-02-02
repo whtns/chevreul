@@ -237,11 +237,13 @@ minimalSceApp <- function(input_object = panc8, loom_path = NULL, appTitle = NUL
     reductions <- reactive({
       req(object())
 
-      if(class(object) == "Seurat"){
+      if(class(object()) == "Seurat"){
         names(object()@reductions)
-      } else if(class(object) == "SingleCellExperiment"){
-        SingleCellExperiment::reducedDimNames(object)
+      } else if(class(object()) == "SingleCellExperiment"){
+        SingleCellExperiment::reducedDimNames(object())
       }
+
+      # asdf
     })
 
     observe({
@@ -305,11 +307,26 @@ minimalSceApp <- function(input_object = panc8, loom_path = NULL, appTitle = NUL
 
     callModule(pathwayEnrichment, "pathwayEnrichment", object)
 
+    # # plot all transcripts
+    # observe({
+    #   # req(featureType())
+    #   req(object())
+    #   if (query_assay(object(), "transcript")) {
+    #     callModule(
+    #       allTranscripts, "alltranscripts1", object, featureType,
+    #       organism_type
+    #     )
+    #
+    #     callModule(plotDimRed, "alltranscripts2", object, plot_types, featureType,
+    #                organism_type = organism_type, reductions
+    #     )
+    #   }
+    # })
+
     # plot all transcripts
     observe({
       req(featureType())
       req(object())
-      if ("transcript" %in% names(object()@assays)) {
         callModule(
           allTranscripts, "alltranscripts1", object, featureType,
           organism_type
@@ -318,7 +335,6 @@ minimalSceApp <- function(input_object = panc8, loom_path = NULL, appTitle = NUL
         callModule(plotDimRed, "alltranscripts2", object, plot_types, featureType,
                    organism_type = organism_type, reductions
         )
-      }
     })
 
     diffex_results <- callModule(
@@ -466,3 +482,4 @@ minimalSceApp <- function(input_object = panc8, loom_path = NULL, appTitle = NUL
   }
   shinyApp(ui, server, enableBookmarking = "server")
 }
+

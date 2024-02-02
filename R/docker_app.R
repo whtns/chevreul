@@ -310,7 +310,7 @@ dockerSeuratApp <- function(object = panc8, loom_path = NULL, appTitle = NULL,
     observe({
       req(featureType())
       req(object())
-      if ("transcript" %in% names(object()@assays)) {
+      if (query_assay(object(), "transcript")) {
         callModule(
           allTranscripts, "alltranscripts1", object, featureType,
           organism_type

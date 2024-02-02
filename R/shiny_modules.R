@@ -44,9 +44,10 @@ plotClustree <- function(input, output, session, object) {
   output$clustree <- renderPlot({
     req(object())
 
-    assay <- ifelse("integrated" %in% names(object()@assays), "integrated", "gene")
+    # assay <- ifelse("integrated" %in% names(object()@assays), "integrated", "gene")
     # DefaultAssay(object()) <- assay
-    clustree::clustree(object(), assay = assay)
+    # clustree::clustree(object(), assay = assay)
+    clustree::clustree(object())
   })
 }
 
@@ -118,7 +119,7 @@ plotViolin <- function(input, output, session, object, featureType, organism_typ
     req(prefill_feature())
     req(object())
     updateSelectizeInput(session, "customFeature",
-      choices = rownames(object()@assays[["gene"]]),
+      choices = genes_from_object(object()),
       selected = prefill_feature(), server = TRUE
     )
   })
@@ -126,7 +127,7 @@ plotViolin <- function(input, output, session, object, featureType, organism_typ
   output$vln_group <- renderUI({
     req(object())
     selectizeInput(ns("vlnGroup"), "Grouping variable",
-      choices = colnames(object()[[]]), selected = "batch"
+      choices = metadata_from_object(object()), selected = "batch"
     )
   })
 
@@ -150,7 +151,7 @@ plotViolin <- function(input, output, session, object, featureType, organism_typ
   output$vplot <- plotly::renderPlotly({
     req(object())
     req(input$vlnGroup)
-    exclude_trace_number <- length(unique(object()[[]][[input$vlnGroup]])) * 2
+    exclude_trace_number <- length(unique(pull_metadata(object())[[input$vlnGroup]])) * 2
 
     vln_plot <- plotly::ggplotly(vln_plot(), height = 700) %>%
       plotly::style(opacity = 0.5) %>%
@@ -213,7 +214,7 @@ plotHeatmap <- function(input, output, session, object, featureType, organism_ty
 
   observe({
     req(object())
-    if ("integrated" %in% names(object()@assays)) {
+    if (query_assay(object(), "integrated")) {
       assay <- "integrated"
     } else {
       assay <- "gene"
@@ -222,7 +223,7 @@ plotHeatmap <- function(input, output, session, object, featureType, organism_ty
     preset_features <- get_variable_features(object(), assay = assay)[1:50]
 
     updateSelectizeInput(session, "customFeature",
-      choices = rownames(object()@assays[["gene"]]),
+      choices = get_features(object(), assay = assay),
       selected = preset_features, server = TRUE
     )
   })
@@ -230,7 +231,7 @@ plotHeatmap <- function(input, output, session, object, featureType, organism_ty
   output$colAnnoVarui <- renderUI({
     req(object())
 
-    formatted_col_names <- colnames(pull_metadata(object)) %>%
+    formatted_col_names <- colnames(pull_metadata(object())) %>%
       make_chevreul_clean_names()
 
     selectizeInput(ns("colAnnoVar"), "Column Annotation(s)",
@@ -243,14 +244,14 @@ plotHeatmap <- function(input, output, session, object, featureType, organism_ty
 
     hclust_methods <- c("Ward" = "ward.D2", "single", "complete", "average")
 
-    updateSelectizeInput(session, "dendroSelect", choices = c(hclust_methods, colnames(object()[[]])), selected = "ward.D2")
+    updateSelectizeInput(session, "dendroSelect", choices = c(hclust_methods, colnames(pull_metadata(object()))), selected = "ward.D2")
   })
 
   heatmap_plot <- eventReactive(input$actionHeatmap, {
     req(input$customFeature)
     req(input$colAnnoVar)
 
-    if ("integrated" %in% names(object()@assays)) {
+    if (query_assay(object(), "integrated")) {
       assay <- "integrated"
     } else {
       assay <- "gene"
@@ -596,7 +597,7 @@ plotDimRed <- function(input, output, session, object, plot_types, featureType,
     req(prefill_feature())
     req(object())
     updateSelectizeInput(session, "customFeature",
-      choices = rownames(object()@assays[["gene"]]),
+      choices = get_features(object(), assay = assay),
       selected = prefill_feature(), server = TRUE
     )
   })
@@ -694,7 +695,7 @@ tableSelected <- function(input, output, session, object) {
   output$brushtable <- DT::renderDT({
     req(object())
     req(brush())
-    selected_meta <- data.frame(object()[[]][brush(), ])
+    selected_meta <- data.frame(pull_metadata(object())[brush(), ])
 
     # selection = list(mode = 'multiple', selected = c(1, 3, 8), target = 'row'),
     DT::datatable(selected_meta,
@@ -706,7 +707,7 @@ tableSelected <- function(input, output, session, object) {
 
   selected_cells <- reactive({
     selected_rows <- input$brushtable_rows_selected
-    rownames(object()[[]][brush(), ])[selected_rows]
+    rownames(pull_metadata(object())[brush(), ])[selected_rows]
   })
 
   return(selected_cells)
@@ -844,7 +845,7 @@ diffex <- function(input, output, session, object, featureType, selected_cells, 
 
   assay <- reactive({
     req(object())
-    if ("integrated" %in% names(object()@assays)) {
+    if (query_assay(object(), "integrated")) {
       assay <- "integrated"
     } else {
       assay <- "gene"
@@ -886,7 +887,7 @@ diffex <- function(input, output, session, object, featureType, selected_cells, 
 
   output$cc1 <- DT::renderDT({
     req(custom_cluster1())
-    selected_meta <- data.frame(object()[[]][custom_cluster1(), ])
+    selected_meta <- data.frame(pull_metadata(object())[custom_cluster1(), ])
     DT::datatable(selected_meta,
       extensions = "Buttons",
       options = list(dom = "Bft", buttons = c(
@@ -897,7 +898,7 @@ diffex <- function(input, output, session, object, featureType, selected_cells, 
   })
   output$cc2 <- DT::renderDT({
     req(custom_cluster2())
-    selected_meta <- data.frame(object()[[]][custom_cluster2(), ])
+    selected_meta <- data.frame(pull_metadata(object())[custom_cluster2(), ])
     DT::datatable(selected_meta,
       extensions = "Buttons",
       options = list(dom = "Bft", buttons = c(
@@ -966,7 +967,7 @@ diffex <- function(input, output, session, object, featureType, selected_cells, 
 
   cluster_list <- reactive({
     if (input$diffex_scheme == "louvain") {
-      object_meta <- object()[[paste0(DefaultAssay(object()), "_snn_res.", input$objectResolution)]]
+      object_meta <- pull_metadata(object())[[paste0(DefaultAssay(object()), "_snn_res.", input$objectResolution)]]
       cluster1_cells <- rownames(object_meta[object_meta == input$cluster1, , drop = FALSE])
       cluster2_cells <- rownames(object_meta[object_meta == input$cluster2, , drop = FALSE])
       list(cluster1 = cluster1_cells, cluster2 = cluster2_cells)
@@ -1042,7 +1043,7 @@ findMarkers <- function(input, output, session, object, plot_types, featureType)
 
   assay <- reactive({
     req(object())
-    if ("integrated" %in% names(object()@assays)) {
+    if (query_assay(object(), "integrated")) {
       assay <- "integrated"
     } else {
       assay <- "gene"
@@ -1063,7 +1064,7 @@ findMarkers <- function(input, output, session, object, plot_types, featureType)
     req(object())
     req(metavar())
 
-    choices <- levels(object()[[]][[metavar()]])
+    choices <- levels(pull_metadata(object())[[metavar()]])
 
     selectizeInput(ns("displayValues"), "Values to display", multiple = TRUE, choices = choices)
   })
@@ -1150,7 +1151,7 @@ plotReadCount <- function(input, output, session, object, plot_types) {
     req(input$colorby)
 
     if (input$colorby == "louvain") {
-      if ("integrated" %in% names(object()@assays)) {
+      if (query_assay(object(), "integrated")) {
         assay <- "integrated"
       } else {
         assay <- "gene"
@@ -1256,10 +1257,10 @@ allTranscripts <- function(input, output, session, object,
 
   observe({
     req(object())
-    updateSelectizeInput(session, "compositionGene", choices = rownames(object()[["gene"]]), selected = "RXRG", server = TRUE)
-    updateSelectizeInput(session, "embeddingGene", choices = rownames(object()[["gene"]]), selected = "RXRG", server = TRUE)
+    updateSelectizeInput(session, "compositionGene", choices = get_features(object(), assay = "gene"), selected = "RXRG", server = TRUE)
+    updateSelectizeInput(session, "embeddingGene", choices = get_features(object(), assay = "gene"), selected = "RXRG", server = TRUE)
 
-    formatted_col_names <- colnames(pull_metadata(object)) %>%
+    formatted_col_names <- colnames(pull_metadata(object())) %>%
       make_chevreul_clean_names()
 
     updateSelectizeInput(session, "groupby", choices = formatted_col_names, selected = "batch", server = TRUE)
@@ -1267,7 +1268,8 @@ allTranscripts <- function(input, output, session, object,
 
   transcripts <- reactive({
     req(object())
-    if("transcript" %in% names(object()@assays)){
+    req(input$embeddingGene)
+    if(query_assay(object(), "transcript")){
       get_transcripts_from_object(object(), input$embeddingGene, organism = organism_type())
     }
   })
@@ -1308,6 +1310,7 @@ allTranscripts <- function(input, output, session, object,
   })
 
   output$transcriptPlot <- plotly::renderPlotly({
+    req(pList())
     pList()[[input$transcriptSelect]] %>%
       plotly::ggplotly(height = 400) %>%
       plotly_settings() %>%
@@ -1390,8 +1393,8 @@ plotVelocity <- function(input, output, session, object, loom_path) {
 
   observe({
     req(object())
-    updateSelectizeInput(session, "varSelect", choices = colnames(object()[[]]), selected = "batch", server = TRUE)
-    updateSelectizeInput(session, "geneSelect", choices = rownames(object()[["gene"]]), selected = "RXRG", server = TRUE)
+    updateSelectizeInput(session, "varSelect", choices = colnames(pull_metadata(object())), selected = "batch", server = TRUE)
+    updateSelectizeInput(session, "geneSelect", choices = get_features(object(), assay = "gene"), selected = "RXRG", server = TRUE)
   })
 
   # reactive val adata ------------------------------
@@ -1405,7 +1408,7 @@ plotVelocity <- function(input, output, session, object, loom_path) {
         shinyjs::html("scveloMessages", "")
         message("Beginning")
 
-        if ("integrated" %in% names(object()@assays)) {
+        if (query_assay(object(), "integrated")) {
           assay <- "integrated"
         } else {
           assay <- "gene"
@@ -1436,7 +1439,7 @@ plotVelocity <- function(input, output, session, object, loom_path) {
   observe({
     req(adata())
 
-    if ("integrated" %in% names(object()@assays)) {
+    if (query_assay(object(), "integrated")) {
       assay <- "integrated"
     } else {
       assay <- "gene"
@@ -1454,7 +1457,7 @@ plotVelocity <- function(input, output, session, object, loom_path) {
     req(adata())
     req(input$geneSelect)
 
-    if ("integrated" %in% names(object()@assays)) {
+    if (query_assay(object(), "integrated")) {
       assay <- "integrated"
     } else {
       assay <- "gene"
@@ -1651,7 +1654,7 @@ monocle <- function(input, output, session, object, plot_types, featureType,
     req(object())
 
     selectizeInput(ns("colAnnoVar"), "Column Annotation(s)",
-      choices = colnames(object()[[]]), selected = "batch", multiple = TRUE
+      choices = colnames(pull_metadata(object())), selected = "batch", multiple = TRUE
     )
   })
 
@@ -1671,7 +1674,7 @@ monocle <- function(input, output, session, object, plot_types, featureType,
   })
 
   louvain_resolution <- reactive({
-    if ("integrated" %in% names(object()@assays)) {
+    if (query_assay(object(), "integrated")) {
       assay <- "integrated"
     }
     else {
@@ -2386,9 +2389,9 @@ plotCoverage <- function(input, output, session, object, plot_types, proj_dir, o
 
   observe({
     req(object())
-    updateSelectizeInput(session, "geneSelect", choices = rownames(object()[["gene"]]), server = TRUE)
+    updateSelectizeInput(session, "geneSelect", choices = get_features(object(), assay = "gene"), server = TRUE)
 
-    formatted_col_names <- colnames(pull_metadata(object)) %>%
+    formatted_col_names <- colnames(pull_metadata(object())) %>%
       make_chevreul_clean_names()
 
     updateSelectizeInput(session, "varSelect", choices = formatted_col_names, selected = "batch")
@@ -2415,7 +2418,7 @@ plotCoverage <- function(input, output, session, object, plot_types, proj_dir, o
 
     plot_gene_coverage_by_var(
       genes_of_interest = input$geneSelect,
-      cell_metadata = pull_metadata(object),
+      cell_metadata = pull_metadata(object()),
       bigwig_tbl = bigwig_tbl(),
       var_of_interest = input$varSelect,
       values_of_interest = input$displayvalues,
