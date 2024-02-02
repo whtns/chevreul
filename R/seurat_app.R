@@ -1,4 +1,4 @@
-#' Run Seurat Differential Expression
+#' Run Differential Expression
 #'
 #'
 #'
@@ -12,81 +12,121 @@
 #' @export
 #'
 #' @examples
-run_object_de <- function(object, cluster1, cluster2, resolution, diffex_scheme = "louvain", featureType, tests = c("t", "wilcox", "bimod")) {
+setGeneric("run_object_de", function(object, cluster1, cluster2, resolution, diffex_scheme = "louvain", featureType, tests = c("t", "wilcox", "bimod")) standardGeneric("run_object_de"))
 
-  match.arg(tests)
-
-  if (diffex_scheme == "louvain") {
-    if ("integrated" %in% names(object@assays)) {
-      active_assay <- "integrated"
-    } else {
-      active_assay <- "gene"
+setMethod(
+  "run_object_de", "Seurat",
+  function(object, cluster1, cluster2, resolution, diffex_scheme = "louvain", featureType, tests = c("t", "wilcox", "bimod")) {
+    match.arg(tests)
+    if (diffex_scheme == "louvain") {
+      if ("integrated" %in% names(object@assays)) {
+        active_assay <- "integrated"
+      } else {
+        active_assay <- "gene"
+      }
+      Idents(object) <- paste0(active_assay, "_snn_res.", resolution)
+      object <- subset(object, idents = c(cluster1, cluster2))
+    } else if (diffex_scheme == "feature") {
+      object <- object[, c(cluster1, cluster2)]
+      keep_cells <- c(cluster1, cluster2)
+      new_idents <- c(rep(1, length(cluster1)), rep(2, length(cluster2)))
+      names(new_idents) <- keep_cells
+      new_idents <- new_idents[colnames(object)]
+      Idents(object) <- new_idents
+      cluster1 <- 1
+      cluster2 <- 2
     }
-
-
-    Idents(object) <- paste0(active_assay, "_snn_res.", resolution)
-    object <- subset(object, idents = c(cluster1, cluster2))
-  } else if (diffex_scheme == "feature") {
-    # subset by supplied cell ids
-    #
-    object <- object[, c(cluster1, cluster2)]
-
-    keep_cells <- c(cluster1, cluster2)
-    new_idents <- c(rep(1, length(cluster1)), rep(2, length(cluster2)))
-    names(new_idents) <- keep_cells
-    new_idents <- new_idents[colnames(object)]
-    Idents(object) <- new_idents
-    cluster1 <- 1
-    cluster2 <- 2
-  }
-
-  test_list <- vector("list", length(tests))
-
-  for (test in tests) {
-    print(test)
-    de <- FindMarkers(object,
-                      assay = featureType,
-                      ident.1 = cluster1,
-                      ident.2 = cluster2,
-                      test.use = test
-                      )
-
-
-    if (featureType == "transcript") {
-      de_cols <- c("enstxp", "ensgene", "symbol", "p_val", "avg_log2FC", "pct.1", "pct.2", "p_val_adj")
-
-      de <-
-        de %>%
-        tibble::rownames_to_column("enstxp") %>%
-        dplyr::left_join(annotables::grch38_tx2gene, by = "enstxp") %>%
-        dplyr::left_join(annotables::grch38, by = "ensgene")
-
-      if ("avg_logFC" %in% colnames(de)){
-        de <- dplyr::mutate(de, avg_log2FC = log(exp(avg_logFC), 2))
-      }
-
-      de <- dplyr::select(de, any_of(de_cols))
-
-    } else if (featureType == "gene") {
-      de_cols <- c("ensgene", "symbol", "p_val", "avg_log2FC", "pct.1", "pct.2", "p_val_adj")
-
-      de <-
-        de %>%
-        tibble::rownames_to_column("symbol") %>%
-        dplyr::left_join(annotables::grch38, by = "symbol")
-
-      if ("avg_logFC" %in% colnames(de)){
-        de <- dplyr::mutate(de, avg_log2FC = log(exp(avg_logFC), 2))
-      }
-
+    test_list <- vector("list", length(tests))
+    for (test in tests) {
+      print(test)
+      de <- FindMarkers(object, assay = featureType, ident.1 = cluster1, ident.2 = cluster2, test.use = test)
+      if (featureType == "transcript") {
+        de_cols <- c("enstxp", "ensgene", "symbol", "p_val", "avg_log2FC", "pct.1", "pct.2", "p_val_adj")
+        de <- de %>%
+          tibble::rownames_to_column("enstxp") %>%
+          dplyr::left_join(annotables::grch38_tx2gene, by = "enstxp") %>%
+          dplyr::left_join(annotables::grch38, by = "ensgene")
+        if ("avg_logFC" %in% colnames(de)) {
+          de <- dplyr::mutate(de, avg_log2FC = log(exp(avg_logFC), 2))
+        }
         de <- dplyr::select(de, any_of(de_cols))
+      } else if (featureType == "gene") {
+        de_cols <- c("ensgene", "symbol", "p_val", "avg_log2FC", "pct.1", "pct.2", "p_val_adj")
+        de <- de %>%
+          tibble::rownames_to_column("symbol") %>%
+          dplyr::left_join(annotables::grch38, by = "symbol")
+        if ("avg_logFC" %in% colnames(de)) {
+          de <- dplyr::mutate(de, avg_log2FC = log(exp(avg_logFC), 2))
+        }
+        de <- dplyr::select(de, any_of(de_cols))
+      }
+      test_list[[match(test, tests)]] <- de
     }
-
-    test_list[[match(test, tests)]] <- de
+    names(test_list) <- tests
+    return(test_list)
   }
-  names(test_list) <- tests
-  return(test_list)
-}
+)
+
+setMethod(
+  "run_object_de", "SingleCellExperiment",
+  function(object, cluster1, cluster2, resolution, diffex_scheme = "louvain", featureType, tests = c("t", "wilcox", "bimod")) {
+    match.arg(tests)
+
+    if(featureType == "transcript") object <- altExp(object, "transcript")
+
+    if (diffex_scheme == "louvain") {
+      if ("integrated" %in% names(object@assays)) {
+        active_assay <- "integrated"
+      } else {
+        active_assay <- "gene"
+      }
+      colLabels(object) <- colData(object)[[paste0(active_assay, "_snn_res.", resolution)]]
+      object <- object[,colLabels(object) %in% c(cluster1, cluster2)]
+      colLabels(object) <- factor(colLabels(object))
+    } else if (diffex_scheme == "feature") {
+      object <- object[, c(cluster1, cluster2)]
+      keep_cells <- c(cluster1, cluster2)
+      new_idents <- c(rep(1, length(cluster1)), rep(2, length(cluster2)))
+      names(new_idents) <- keep_cells
+      new_idents <- new_idents[colnames(object)]
+      colLabels(object) <- new_idents
+      cluster1 <- 1
+      cluster2 <- 2
+    }
+    test_list <- vector("list", length(tests))
+    for (test in tests) {
+      print(test)
+      de <- scran::findMarkers(object, test.type = test)
+      if (featureType == "transcript") {
+        de_cols <- c("enstxp", "ensgene", "symbol", "p_val" = "p.value", "avg_log2FC", "pct.1", "pct.2", "p_val_adj" = "FDR")
+        de <- de[[1]] %>%
+          as.data.frame() %>%
+          tibble::rownames_to_column("enstxp") %>%
+          dplyr::left_join(annotables::grch38_tx2gene, by = "enstxp") %>%
+          dplyr::left_join(annotables::grch38, by = "ensgene")
+        if ("summary.logFC" %in% colnames(de)) {
+          de <- dplyr::mutate(de, avg_log2FC = log(exp(summary.logFC), 2))
+        }
+        de <- dplyr::select(de, any_of(de_cols))
+      } else if (featureType == "gene") {
+        de_cols <- c("ensgene", "symbol", "p_val" = "p.value", "avg_log2FC", "pct.1", "pct.2", "p_val_adj" = "FDR")
+        de <- de[[1]] %>%
+          as.data.frame() %>%
+          tibble::rownames_to_column("symbol") %>%
+          dplyr::left_join(annotables::grch38, by = "symbol")
+        if ("summary.logFC" %in% colnames(de)) {
+          de <- dplyr::mutate(de, avg_log2FC = log(exp(summary.logFC), 2))
+        }
+        de <- dplyr::select(de, any_of(de_cols))
+      }
+      test_list[[match(test, tests)]] <- de
+    }
+    names(test_list) <- tests
+    return(test_list)
+  }
+)
+
+
 
 
 #' Run Enrichment Browser on Differentially Expressed Genes

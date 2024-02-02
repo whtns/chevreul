@@ -640,7 +640,7 @@ setMethod(
       return(markerplot)
     }
     plot_height <- (150 * num_markers)
-    plot_width <- (100 * length(levels(pull_metadata(object)[[metavar]])))
+    plot_width <- (100 * length(levels(as.factor(pull_metadata(object)[[metavar]]))))
     markerplot <- plotly::ggplotly(markerplot, height = plot_height, width = plot_width) %>%
       plotly_settings() %>%
       plotly::toWebGL() %>%
