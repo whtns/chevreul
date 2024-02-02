@@ -70,7 +70,7 @@ Suggests:
     monocle3 (>= 0.2.1),
     rmarkdown,
     SeuratWrappers (>= 0.2.0),
-    testthat (>= 2.1.0)
+    testthat (>= 3.0.0)
 VignetteBuilder: 
     knitr
 Remotes: 
@@ -86,3 +86,4 @@ LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
 biocViews: Coverage, RNASeq, Sequencing, Visualization, GeneExpression, Transcription
+Config/testthat/edition: 3
