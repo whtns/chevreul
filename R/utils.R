@@ -175,7 +175,7 @@ setMethod(
   function(object, gene, organism = "human") {
     transcripts <- genes_to_transcripts(gene, organism)
 
-    transcripts <- transcripts[transcripts %in% rownames(GetAssay(object, "transcript"))]
+    transcripts <- transcripts[transcripts %in% rownames(retrieve_assay(object, "transcript"))]
   }
 )
 
@@ -184,7 +184,7 @@ setMethod(
   function(object, gene, organism = "human") {
     transcripts <- genes_to_transcripts(gene, organism)
 
-    transcripts <- transcripts[transcripts %in% rownames(GetAssay(object, "transcript"))]
+    transcripts <- transcripts[transcripts %in% rownames(retrieve_assay(object, "transcript"))]
 
   }
 )
@@ -935,5 +935,45 @@ convert_v3_to_v5 <- function(seurat_v3){
   }
 
   return(seurat_v5)
+
+}
+
+setGeneric("genes_from_object", function(object, ...) {
+  standardGeneric("genes_from_object")
+})
+
+setMethod("genes_from_object", "Seurat", function(object, assay) {
+  rownames(object@assays[[assay]])
+  })
+
+setMethod("genes_from_object", "SingleCellExperiment", function(object) {
+  rownames(object)
+})
+
+setGeneric("metadata_from_object", function(object) {
+  standardGeneric("metadata_from_object")
+})
+
+setMethod("metadata_from_object", "Seurat", function(object) {
+  colnames(object[[]])
+  })
+
+setMethod("metadata_from_object", "SingleCellExperiment", function(object) {
+  colnames(colData(object))
+})
+
+convert_seurat_to_sce <- function(seu){
+
+  sce <- as.SingleCellExperiment(seu, assay = DefaultAssay(seu))
+
+  alt_exp_names <- Assays(seu)[!Assays(seu) == DefaultAssay(seu)]
+
+  for(i in alt_exp_names){
+    altExp(sce, i) <- as.SingleCellExperiment(seu, assay = i)
+  }
+
+  sce@metadata <- seu@misc
+
+  return(sce)
 
 }

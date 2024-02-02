@@ -114,7 +114,7 @@ setMethod("pull_metadata", "SingleCellExperiment",
 
 # get variable features ------------------------------
 
-#' Pull object metadata
+#' Get variable features
 #'
 #' @param object
 #'
@@ -131,7 +131,29 @@ setMethod("get_variable_features", "Seurat",
 
 setMethod("get_variable_features", "SingleCellExperiment",
           function(object, ...) {
-            scran::getTopHVGs(object, ...)
+            scran::getTopHVGs(object)
+          })
+
+# get feature names ------------------------------
+
+#' Get feature names
+#'
+#' @param object
+#'
+#' @return variable features from a single cell object
+#' @export
+#' @examples
+setGeneric("get_features", function(object, ...)
+  standardGeneric("get_features"))
+
+setMethod("get_features", "Seurat",
+          function(object, ...) {
+            Features(object, ...)
+          })
+
+setMethod("get_features", "SingleCellExperiment",
+          function(object, ...) {
+            rownames(object)
           })
 
 
@@ -159,6 +181,8 @@ setMethod("set_metadata", "SingleCellExperiment",
             return(object)
           })
 
+# get_feature_types ------------------------------
+
 setGeneric("get_feature_types", function(object) {
   standardGeneric("get_feature_types")
 })
@@ -169,4 +193,62 @@ setMethod("get_feature_types", "Seurat", function(object) {
 
 setMethod("get_feature_types", "SingleCellExperiment", function(object) {
   c(mainExpName(human_gene_transcript_sce), altExpNames(human_gene_transcript_sce))
+})
+
+# check_integrated ------------------------------
+
+setGeneric("check_integrated", function(object) {
+  standardGeneric("check_integrated")
+})
+
+setMethod("check_integrated", "Seurat", function(object) {
+  if ("integrated" %in% names(object@assays)) {
+    assay <- "integrated"
+  } else {
+    assay <- "gene"
+  }
+
+  return(assay)
+
+})
+
+setMethod("check_integrated", "SingleCellExperiment", function(object) {
+  assay <- str_subset(assayNames(scMerge_unsupervised), "scMerge")
+
+  return(assay)
+})
+
+# retrieve_assays ------------------------------
+setGeneric("retrieve_assay", function(object, assay) {
+  standardGeneric("retrieve_assay")
+})
+
+setMethod("retrieve_assay", "Seurat", function(object, assay) {
+  assay <- GetAssay(object, assay = assay)
+
+  return(assay)
+
+})
+
+setMethod("retrieve_assay", "SingleCellExperiment", function(object, assay) {
+
+  if(assay %in% mainExpName(object)){
+    return(object)
+  } else if(assay %in% altExpNames(object)){
+    return(altExp(object, assay))
+  }
+
+})
+
+# query_assay ------------------------------
+setGeneric("query_assay", function(object, assay) {
+  standardGeneric("query_assay")
+})
+
+setMethod("query_assay", "Seurat", function(object, assay) {
+  return(assay %in% Seurat::Assays(object))
+})
+
+setMethod("query_assay", "SingleCellExperiment", function(object, assay) {
+  return(assay %in% c(mainExpName(object), altExpNames(object)))
 })

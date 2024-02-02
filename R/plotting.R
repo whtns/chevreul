@@ -289,22 +289,10 @@ setMethod("plot_var", "SingleCellExperiment",
 #' @return
 #'
 #' @examples
-setGeneric("plotly_settings", function (plotly_plot, width = 600, height = 700)  standardGeneric("plotly_settings"))
-
-setMethod("plotly_settings", "Seurat",
-          function (plotly_plot, width = 600, height = 700)
-          {
-            plotly_plot %>% plotly::layout(dragmode = "lasso") %>% plotly::config(toImageButtonOptions = list(format = "svg", filename = "myplot", width = width, height = height)) %>% identity()
-          }
-)
-
-setMethod("plotly_settings", "SingleCellExperiment",
-          function (plotly_plot, width = 600, height = 700)
-          {
-            plotly_plot %>% plotly::layout(dragmode = "lasso") %>% plotly::config(toImageButtonOptions = list(format = "svg", filename = "myplot", width = width, height = height)) %>% identity()
-          }
-)
-
+#'
+plotly_settings <- function(plotly_plot, width = 600, height = 700){
+  plotly_plot %>% plotly::layout(dragmode = "lasso") %>% plotly::config(toImageButtonOptions = list(format = "svg", filename = "myplot", width = width, height = height)) %>% identity()
+}
 
 #' Plot Violin plot
 #'
@@ -350,7 +338,7 @@ setMethod(
       plot_vals <- plot_vals[!is.na(plot_vals)]
     }
     object <- object[, pull_metadata(object)[[plot_var]] %in% plot_vals]
-    vln_plot <- scater::plotExpression(object, features = features, x = plot_var, color_by = plot_var, ...) + geom_boxplot(width = 0.2) + NULL
+    vln_plot <- scater::plotExpression(object, features = features, x = plot_var, color_by = plot_var) + geom_boxplot(width = 0.2) + NULL
     print(vln_plot)
   }
 )
@@ -378,6 +366,8 @@ setGeneric("plot_feature", function(object, embedding = c("umap", "pca", "tsne")
 
 setMethod("plot_feature", "Seurat",
           function(object, embedding = c("umap", "pca", "tsne"), features, dims = c(1,2), return_plotly = FALSE, pt.size = 1.0){
+
+            embedding <- tolower(embedding)
 
             Seurat::DefaultAssay(object) <- "gene"
 
@@ -413,7 +403,9 @@ setMethod("plot_feature", "Seurat",
 )
 
 setMethod("plot_feature", "SingleCellExperiment",
-          function(object, embedding = c("UMAP", "PCA", "TSNE"), features, dims = c(1,2), return_plotly = FALSE, pt.size = 1.0){
+          function(object, embedding = c("umap", "pca", "tsne"), features, dims = c(1,2), return_plotly = FALSE, pt.size = 1.0){
+
+            embedding <- toupper(embedding)
 
             metadata <- pull_metadata(object)
             key <- rownames(metadata)
@@ -630,7 +622,7 @@ setMethod(
       dplyr::distinct(feature, .keep_all = TRUE) %>%
       identity()
     if (!is.null(selected_values)) {
-      object <- object[, Idents(object) %in% selected_values]
+      object <- object[, pull_metadata(object)[[metavar]] %in% selected_values]
       sliced_markers <- sliced_markers %>%
         dplyr::filter(group %in% selected_values) %>%
         dplyr::distinct(feature, .keep_all = TRUE)
@@ -648,7 +640,7 @@ setMethod(
       return(markerplot)
     }
     plot_height <- (150 * num_markers)
-    plot_width <- (100 * length(levels(Idents(object))))
+    plot_width <- (100 * length(levels(pull_metadata(object)[[metavar]])))
     markerplot <- plotly::ggplotly(markerplot, height = plot_height, width = plot_width) %>%
       plotly_settings() %>%
       plotly::toWebGL() %>%
@@ -820,7 +812,7 @@ setMethod("make_complex_heatmap", "SingleCellExperiment",
             }
             features <- features %||% scran::getTopHVGs(object)
             features <- rev(unique(features))
-            possible.features <- rownames(x = counts(object = object, layer = layer))
+            possible.features <- rownames(x = counts(object = object, layer = assay_method))
             if (any(!features %in% possible.features)) {
               bad.features <- features[!features %in% possible.features]
               features <- features[features %in% possible.features]

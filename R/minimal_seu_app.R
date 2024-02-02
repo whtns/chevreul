@@ -15,7 +15,7 @@
 #' minimalSeuratApp(panc8)
 #' }
 #'
-minimalSeuratApp <- function(object = panc8, loom_path = NULL, appTitle = NULL,
+minimalSeuratApp <- function(single_cell_object = panc8, loom_path = NULL, appTitle = NULL,
                              organism_type = "human", futureMb = 13000, bigwig_db = "~/.cache/chevreul/bw-files.db") {
   future::plan(strategy = "multicore", workers = 6)
   future_size <- futureMb * 1024^2
@@ -207,7 +207,7 @@ minimalSeuratApp <- function(object = panc8, loom_path = NULL, appTitle = NULL,
 
     object <- reactiveVal(NULL)
     observe({
-      object(object)
+      object(single_cell_object)
     })
 
     organism_type <- reactive({
@@ -237,9 +237,9 @@ minimalSeuratApp <- function(object = panc8, loom_path = NULL, appTitle = NULL,
     reductions <- reactive({
       req(object())
 
-      if(class(object) == "Seurat"){
+      if(class(object()) == "Seurat"){
         names(object()@reductions)
-      } else if(class(object) == "SingleCellExperiment"){
+      } else if(class(object()) == "SingleCellExperiment"){
         SingleCellExperiment::reducedDimNames(object)
       }
     })
@@ -309,7 +309,7 @@ minimalSeuratApp <- function(object = panc8, loom_path = NULL, appTitle = NULL,
     observe({
       req(featureType())
       req(object())
-      if ("transcript" %in% names(object()@assays)) {
+      if (query_assay(object(), "transcript")) {
         callModule(
           allTranscripts, "alltranscripts1", object, featureType,
           organism_type
