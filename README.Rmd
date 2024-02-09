@@ -6,12 +6,12 @@ output: github_document
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
-  eval = FALSE,
-  collapse = TRUE,
-  comment = "#>",
-   dpi=900,
-  fig.path = "man/figures/README-",
-  out.width = "100%"
+    eval = FALSE,
+    collapse = TRUE,
+    comment = "#>",
+    dpi = 900,
+    fig.path = "man/figures/README-",
+    out.width = "100%"
 )
 ```
 
@@ -51,7 +51,7 @@ You can also customize the location of the app using these steps:
 
 ```{r, eval=FALSE}
 devtools::install_github("whtns/chevreul")
-chevreul::create_project_db(destdir='/your/path/to/app')
+chevreul::create_project_db(destdir = "/your/path/to/app")
 ```
 
 
@@ -81,9 +81,10 @@ Chevreul provides a single command to:
 By default clustering will be run at ten different resolutions between 0.2 and 2.0. Any resolution can be specified by providing the resolution argument as a numeric vector.
 
 ```{r, cache = FALSE, eval = FALSE}
-clustered_object <- clustering_workflow(human_gene_transcript_object, 
-                                     experiment_name = "object_hu_trans", 
-                                     organism = "human")
+clustered_object <- clustering_workflow(human_gene_transcript_object,
+    experiment_name = "object_hu_trans",
+    organism = "human"
+)
 ```
 
 ## Get a first look at a processed dataset using an interactive shiny app
@@ -112,7 +113,6 @@ We can then create a object in the usual manner using `CreatSeuratObject` functi
 
 ```{r}
 myobject <- CreateSeuratObject(human_count, assay = "gene", meta.data = human_meta)
-
 ```
 
 ## Preprocess the object
@@ -130,7 +130,7 @@ This single function includes object sub-functions that normalizes, identifies h
 Chevreul also implements a standardized dimension reduction step to select variable features at a user-specified threshold and perform PCA, tSNE, and UMAP. The default assay the dimension reduction is being run on is "gene".
 
 ```{r, results=FALSE, warning = FALSE, message=FALSE}
-myobject <- object_reduce_dimensions(myobject, assay = "RNA") 
+myobject <- object_reduce_dimensions(myobject, assay = "RNA")
 ```
 
 
@@ -139,7 +139,7 @@ myobject <- object_reduce_dimensions(myobject, assay = "RNA")
 Clustering analysis is performed via Louvain(default) or alternative algorithms available in Seurat. Clustering is performed at a range of resolutions with default value ranging from 0.2 to 2 and pca reduction
 
 ```{r, message = FALSE, result = FALSE, chache = FALSE, warning = FALSE}
- object <- object_cluster(object = Dim_Red_object, resolution = seq(0.2, 2, by = 0.2) )
+object <- object_cluster(object = Dim_Red_object, resolution = seq(0.2, 2, by = 0.2))
 ```
 
 This function produces clustering analysis via two steps performed using two different sub-functions
@@ -150,8 +150,7 @@ This function produces clustering analysis via two steps performed using two dif
 Chevreul includes a function, `SplitObject`, which is capable of splitting the dataset into subsets based on a single attribute indicated by the split.by argument 
 
 ```{r}
-split_human<- SplitObject(human_gene_transcript_object, split.by = "dataset")
-
+split_human <- SplitObject(human_gene_transcript_object, split.by = "dataset")
 ```
 In this example the `split_human` object consists of a list of subsetted objects which are split based on batch
 
@@ -167,7 +166,7 @@ integrated_object <- integration_workflow(split_human)
 ## View analysis details
 
 ```{r, eval = FALSE}
-Misc(integrated_object, "experiment") %>% 
-  tibble::enframe() %>% 
-  knitr::kable()
+Misc(integrated_object, "experiment") %>%
+    tibble::enframe() %>%
+    knitr::kable()
 ```

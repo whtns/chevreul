@@ -49,7 +49,7 @@ You can also customize the location of the app using these steps:
 
 ``` r
 devtools::install_github("whtns/chevreul")
-chevreul::create_project_db(destdir='/your/path/to/app')
+chevreul::create_project_db(destdir = "/your/path/to/app")
 ```
 
 ## Getting Started
@@ -81,9 +81,10 @@ By default clustering will be run at ten different resolutions between
 argument as a numeric vector.
 
 ``` r
-clustered_object <- clustering_workflow(human_gene_transcript_object, 
-                                     experiment_name = "object_hu_trans", 
-                                     organism = "human")
+clustered_object <- clustering_workflow(human_gene_transcript_object,
+    experiment_name = "object_hu_trans",
+    organism = "human"
+)
 ```
 
 ## Get a first look at a processed dataset using an interactive shiny app
@@ -131,7 +132,7 @@ tSNE, and UMAP. The default assay the dimension reduction is being run
 on is “gene”.
 
 ``` r
-myobject <- object_reduce_dimensions(myobject, assay = "RNA") 
+myobject <- object_reduce_dimensions(myobject, assay = "RNA")
 ```
 
 ## Community detection by clustering
@@ -141,7 +142,7 @@ algorithms available in Seurat. Clustering is performed at a range of
 resolutions with default value ranging from 0.2 to 2 and pca reduction
 
 ``` r
- object <- object_cluster(object = Dim_Red_object, resolution = seq(0.2, 2, by = 0.2) )
+object <- object_cluster(object = Dim_Red_object, resolution = seq(0.2, 2, by = 0.2))
 ```
 
 This function produces clustering analysis via two steps performed using
@@ -154,7 +155,7 @@ splitting the dataset into subsets based on a single attribute indicated
 by the split.by argument
 
 ``` r
-split_human<- SplitObject(human_gene_transcript_object, split.by = "dataset")
+split_human <- SplitObject(human_gene_transcript_object, split.by = "dataset")
 ```
 
 In this example the `split_human` object consists of a list of subsetted
@@ -173,7 +174,7 @@ integrated_object <- integration_workflow(split_human)
 ## View analysis details
 
 ``` r
-Misc(integrated_object, "experiment") %>% 
-  tibble::enframe() %>% 
-  knitr::kable()
+Misc(integrated_object, "experiment") %>%
+    tibble::enframe() %>%
+    knitr::kable()
 ```

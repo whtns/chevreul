@@ -2,7 +2,7 @@
 % Please edit documentation in R/seurat_app.R
 \name{run_object_de}
 \alias{run_object_de}
-\title{Run Seurat Differential Expression}
+\title{Run Differential Expression}
 \usage{
 run_object_de(
   object,
@@ -18,5 +18,5 @@ run_object_de(
 \item{diffex_scheme}{}
 }
 \description{
-Run Seurat Differential Expression
+Run Differential Expression
 }

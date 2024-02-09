@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils_classes.R
 \name{get_variable_features}
 \alias{get_variable_features}
-\title{Pull object metadata}
+\title{Get variable features}
 \usage{
 get_variable_features(object, ...)
 }
@@ -13,5 +13,5 @@ get_variable_features(object, ...)
 variable features from a single cell object
 }
 \description{
-Pull object metadata
+Get variable features
 }

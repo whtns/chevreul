@@ -1,21 +1,26 @@
-old_harmony_integrate <- function (object_list)
-  {
+old_harmony_integrate <- function(object_list) {
     object_list.integrated <- purrr::reduce(object_list, merge)
     object_list.integrated <- object_preprocess(object_list.integrated)
     object_list.integrated <- object_reduce_dimensions(object_list.integrated)
     object_list.integrated <- RenameAssays(object_list.integrated,
-                                        gene = "RNA")
+        gene = "RNA"
+    )
     object_list.integrated@assays[["integrated"]] <- object_list.integrated@assays[["RNA"]]
     object_list.integrated <- harmony::RunHarmony(object_list.integrated,
-                                               group.by.vars = "batch")
-    object_list.integrated <- RunUMAP(object_list.integrated, reduction = "harmony",
-                                   dims = 1:30)
+        group.by.vars = "batch"
+    )
+    object_list.integrated <- RunUMAP(object_list.integrated,
+        reduction = "harmony",
+        dims = 1:30
+    )
     object_list.integrated <- FindNeighbors(object_list.integrated,
-                                         reduction = "harmony", dims = 1:30) %>% FindClusters()
+        reduction = "harmony", dims = 1:30
+    ) %>% FindClusters()
     object_list.integrated <- RenameAssays(object_list.integrated,
-                                        RNA = "gene")
+        RNA = "gene"
+    )
     object_list.integrated
-  }
+}
 
 #' Integrate small datasets with harmony
 #'
@@ -25,16 +30,16 @@ old_harmony_integrate <- function (object_list)
 #' @export
 #'
 #' @examples
-harmony_integrate <- function(object_list){
-  object_list.integrated <- purrr::reduce(object_list, merge)
-  object_list.integrated@assays[["integrated"]] <- object_list.integrated@assays[["gene"]]
-  DefaultAssay(object_list.integrated) <- "integrated"
-  object_list.integrated <- object_preprocess(object_list.integrated)
-  object_list.integrated <- object_reduce_dimensions(object_list.integrated)
-  object_list.integrated <- harmony::RunHarmony(object_list.integrated, group.by.vars = "batch", assay.use = "integrated")
-  object_list.integrated <- RunUMAP(object_list.integrated, assay = "integrated", reduction = "harmony", dims = 1:30)
-  object_list.integrated <- FindNeighbors(object_list.integrated, assay = "integrated", reduction = "harmony", dims = 1:30)
-  object_list.integrated
+harmony_integrate <- function(object_list) {
+    object_list.integrated <- purrr::reduce(object_list, merge)
+    object_list.integrated@assays[["integrated"]] <- object_list.integrated@assays[["gene"]]
+    DefaultAssay(object_list.integrated) <- "integrated"
+    object_list.integrated <- object_preprocess(object_list.integrated)
+    object_list.integrated <- object_reduce_dimensions(object_list.integrated)
+    object_list.integrated <- harmony::RunHarmony(object_list.integrated, group.by.vars = "batch", assay.use = "integrated")
+    object_list.integrated <- RunUMAP(object_list.integrated, assay = "integrated", reduction = "harmony", dims = 1:30)
+    object_list.integrated <- FindNeighbors(object_list.integrated, assay = "integrated", reduction = "harmony", dims = 1:30)
+    object_list.integrated
 }
 
 #' Merge Small Seurat Objects
@@ -46,17 +51,17 @@ harmony_integrate <- function(object_list){
 #'
 #' @examples
 merge_small_objects <- function(object_list, k.filter = 50) {
-  # check if any singlecell objectss are too small and if so merge with the first singlecell objects
-  object_dims <- purrr::map(object_list, dim) %>%
-    purrr::map_lgl(~ .x[[2]] < k.filter)
+    # check if any singlecell objectss are too small and if so merge with the first singlecell objects
+    object_dims <- map(object_list, dim) %>%
+        purrr::map_lgl(~ .x[[2]] < k.filter)
 
-  small_objects <- object_list[object_dims]
+    small_objects <- object_list[object_dims]
 
-  object_list <- object_list[!object_dims]
+    object_list <- object_list[!object_dims]
 
-  object_list[[1]] <- purrr::reduce(c(small_objects, object_list[[1]]), merge)
+    object_list[[1]] <- purrr::reduce(c(small_objects, object_list[[1]]), merge)
 
-  return(object_list)
+    return(object_list)
 }
 
 
@@ -70,8 +75,82 @@ merge_small_objects <- function(object_list, k.filter = 50) {
 #' @export
 #'
 #' @examples
-object_integrate <- function(object_list, method = "cca", organism = "human", ...) {
+seurat_integrate <- function(object_list, method = "cca", organism = "human", ...) {
+    # To construct a reference we will identify ‘anchors’ between the individual datasets. First, we split the combined object into a list, with each dataset as an element.
 
+    # Prior to finding anchors, we perform standard preprocessing (log-normalization), and identify variable features individually for each. Note that Seurat v3 implements an improved method for variable feature selection based on a variance stabilizing transformation ("vst")
+
+    for (i in 1:length(x = object_list)) {
+        object_list[[i]][["gene"]] <- object_preprocess(object_list[[i]][["gene"]], scale = TRUE)
+
+        object_list[[i]]$batch <- names(object_list)[[i]]
+    }
+
+    object_list <- merge_small_objects(object_list)
+
+    if (method == "rpca") {
+        # scale and run pca for each separate batch in order to use reciprocal pca instead of cca
+        features <- SelectIntegrationFeatures(object.list = object_list)
+        object_list <- map(object_list, Seurat::ScaleData, features = features)
+        object_list <- map(object_list, Seurat::RunPCA, features = features)
+        object_list.anchors <- FindIntegrationAnchors(object.list = object_list, reduction = "rpca", dims = 1:30)
+    } else if (method == "cca") {
+        # Next, we identify anchors using the FindIntegrationAnchors function, which takes a list of Seurat objects as input.
+        object_list.anchors <- Seurat::FindIntegrationAnchors(object.list = object_list, dims = 1:30, k.filter = 50)
+    }
+
+    # proceed with integration
+    # object_list.integrated <- IntegrateData(anchorset = object_list.anchors, dims = 1:30)
+
+    # see https://github.com/satijalab/seurat/issues/6341------------------------------
+    cells_per_batch <- sapply(object_list, ncol)
+    min_k_weight <- min(cells_per_batch) - 1
+    min_k_weight <- ifelse(min_k_weight < 100, min_k_weight, 100)
+
+    object_list.integrated <- tryCatch(IntegrateData(anchorset = object_list.anchors, dims = 1:30, k.weight = min_k_weight), error = function(e) e)
+    run_harmony <- any(class(object_list.integrated) == "error")
+    if (run_harmony) {
+        object_list.integrated <- harmony_integrate(object_list)
+    }
+
+    #   enriched_object <- tryCatch(getEnrichedPathways(object), error = function(e) e)
+    #   enrichr_available <- !any(class(enriched_object) == "error")
+    #   if(enrichr_available){
+    #     object <- enriched_object
+    #   }
+
+    # Next, we identify anchors using the FindIntegrationAnchors function, which takes a list of Seurat objects as input.
+
+    # #stash batches
+    Idents(object_list.integrated) <- "batch"
+    object_list.integrated[["batch"]] <- Idents(object_list.integrated)
+
+    # switch to integrated assay. The variable features of this assay are
+    # automatically set during IntegrateData
+    Seurat::DefaultAssay(object = object_list.integrated) <- "integrated"
+
+    # if not integrated with harmony run the standard workflow for visualization and clustering
+    if (!"harmony" %in% names(object_list.integrated@reductions)) {
+        object_list.integrated <- Seurat::ScaleData(object = object_list.integrated, verbose = FALSE)
+        object_list.integrated <- object_reduce_dimensions(object_list.integrated, ...)
+    }
+
+    object_list.integrated <- record_experiment_data(object_list.integrated, experiment_name = "integrated", organism = organism)
+
+    return(object_list.integrated)
+}
+
+#' Batch Correct Multiple SingleCellExperiments
+#'
+#' @param object_list List of two or more singlecell objects
+#' @param method Default "cca"
+#' @param ...
+#'
+#' @return
+#' @export
+#'
+#' @examples
+sce_integrate <- function(object_list, method = "cca", organism = "human", ...) {
   # To construct a reference we will identify ‘anchors’ between the individual datasets. First, we split the combined object into a list, with each dataset as an element.
 
   # Prior to finding anchors, we perform standard preprocessing (log-normalization), and identify variable features individually for each. Note that Seurat v3 implements an improved method for variable feature selection based on a variance stabilizing transformation ("vst")
@@ -87,8 +166,8 @@ object_integrate <- function(object_list, method = "cca", organism = "human", ..
   if (method == "rpca") {
     # scale and run pca for each separate batch in order to use reciprocal pca instead of cca
     features <- SelectIntegrationFeatures(object.list = object_list)
-    object_list <- purrr::map(object_list, Seurat::ScaleData, features = features)
-    object_list <- purrr::map(object_list, Seurat::RunPCA, features = features)
+    object_list <- map(object_list, Seurat::ScaleData, features = features)
+    object_list <- map(object_list, Seurat::RunPCA, features = features)
     object_list.anchors <- FindIntegrationAnchors(object.list = object_list, reduction = "rpca", dims = 1:30)
   } else if (method == "cca") {
     # Next, we identify anchors using the FindIntegrationAnchors function, which takes a list of Seurat objects as input.
@@ -100,12 +179,12 @@ object_integrate <- function(object_list, method = "cca", organism = "human", ..
 
   # see https://github.com/satijalab/seurat/issues/6341------------------------------
   cells_per_batch <- sapply(object_list, ncol)
-  min_k_weight = min(cells_per_batch) - 1
+  min_k_weight <- min(cells_per_batch) - 1
   min_k_weight <- ifelse(min_k_weight < 100, min_k_weight, 100)
 
   object_list.integrated <- tryCatch(IntegrateData(anchorset = object_list.anchors, dims = 1:30, k.weight = min_k_weight), error = function(e) e)
   run_harmony <- any(class(object_list.integrated) == "error")
-  if(run_harmony){
+  if (run_harmony) {
     object_list.integrated <- harmony_integrate(object_list)
   }
 
@@ -126,7 +205,7 @@ object_integrate <- function(object_list, method = "cca", organism = "human", ..
   Seurat::DefaultAssay(object = object_list.integrated) <- "integrated"
 
   # if not integrated with harmony run the standard workflow for visualization and clustering
-  if (!"harmony" %in% names(object_list.integrated@reductions)){
+  if (!"harmony" %in% names(object_list.integrated@reductions)) {
     object_list.integrated <- Seurat::ScaleData(object = object_list.integrated, verbose = FALSE)
     object_list.integrated <- object_reduce_dimensions(object_list.integrated, ...)
   }
@@ -149,66 +228,72 @@ object_integrate <- function(object_list, method = "cca", organism = "human", ..
 #' @export
 #'
 #' @examples
-setGeneric("object_cluster", function (object = object, resolution = 0.6, custom_clust = NULL, reduction = "pca", algorithm = 1, ...)  standardGeneric("object_cluster"))
+setGeneric("object_cluster", function(object = object, resolution = 0.6, custom_clust = NULL, reduction = "pca", algorithm = 1, ...) standardGeneric("object_cluster"))
 
-setMethod("object_cluster", "Seurat",
-          function (object = object, resolution = 0.6, custom_clust = NULL, reduction = "pca", algorithm = 1, ...)
-          {
-            message(paste0("[", format(Sys.time(), "%H:%M:%S"), "] Clustering Cells..."))
-            object <- FindNeighbors(object = object, dims = 1:30, reduction = reduction)
-            if (length(resolution) > 1) {
-              for (i in resolution) {
+setMethod(
+    "object_cluster", "Seurat",
+    function(object = object, resolution = 0.6, custom_clust = NULL, reduction = "pca", algorithm = 1, ...) {
+        message(paste0("[", format(Sys.time(), "%H:%M:%S"), "] Clustering Cells..."))
+        object <- FindNeighbors(object = object, dims = 1:30, reduction = reduction)
+        if (length(resolution) > 1) {
+            for (i in resolution) {
                 message(paste0("clustering at ", i, " resolution"))
                 object <- Seurat::FindClusters(object = object, resolution = i, algorithm = algorithm, ...)
-              }
             }
-            else if (length(resolution) == 1) {
-              message(paste0("clustering at ", resolution, " resolution"))
-              object <- Seurat::FindClusters(object = object, resolution = resolution, algorithm = algorithm, ...)
-            }
-            if (!is.null(custom_clust)) {
-              object <- Seurat::StashIdent(object = object, save.name = "old.ident")
-              clusters <- tibble::tibble(sample_id = rownames(pull_metadata(object))) %>% tibble::rownames_to_column("order") %>% dplyr::inner_join(custom_clust, by = "sample_id") %>% dplyr::pull(cluster) %>% identity()
-              Idents(object = object) <- clusters
-              return(object)
-            }
+        } else if (length(resolution) == 1) {
+            message(paste0("clustering at ", resolution, " resolution"))
+            object <- Seurat::FindClusters(object = object, resolution = resolution, algorithm = algorithm, ...)
+        }
+        if (!is.null(custom_clust)) {
+            object <- Seurat::StashIdent(object = object, save.name = "old.ident")
+            clusters <- tibble::tibble(sample_id = rownames(pull_metadata(object))) %>%
+                tibble::rownames_to_column("order") %>%
+                dplyr::inner_join(custom_clust, by = "sample_id") %>%
+                dplyr::pull(cluster) %>%
+                identity()
+            Idents(object = object) <- clusters
             return(object)
-          }
+        }
+        return(object)
+    }
 )
 
-setMethod("object_cluster", "SingleCellExperiment",
-          function (object = object, resolution = 0.6, custom_clust = NULL, reduction = "PCA", algorithm = 1, ...)
-          {
-            message(paste0("[", format(Sys.time(), "%H:%M:%S"), "] Clustering Cells..."))
-            # return list of graph object with KNN (SNN?)
-            #object <- scran::buildKNNGraph(x = object, use.dimred = reduction)
-            if (length(resolution) > 1) {
-              for (i in resolution) {
+setMethod(
+    "object_cluster", "SingleCellExperiment",
+    function(object = object, resolution = 0.6, custom_clust = NULL, reduction = "PCA", algorithm = 1, ...) {
+        message(paste0("[", format(Sys.time(), "%H:%M:%S"), "] Clustering Cells..."))
+        # return list of graph object with KNN (SNN?)
+        # object <- scran::buildKNNGraph(x = object, use.dimred = reduction)
+        if (length(resolution) > 1) {
+            for (i in resolution) {
                 message(paste0("clustering at ", i, " resolution"))
-                #object <- Seurat::FindClusters(object = object, resolution = i, algorithm = algorithm, ...)
-                cluster_labels <- scran::clusterCells(object, use.dimred = reduction,
-                                                      BLUSPARAM=bluster::NNGraphParam(cluster.fun = "louvain", cluster.args = list(resolution = i)))
+                # object <- Seurat::FindClusters(object = object, resolution = i, algorithm = algorithm, ...)
+                cluster_labels <- scran::clusterCells(object,
+                    use.dimred = reduction,
+                    BLUSPARAM = bluster::NNGraphParam(cluster.fun = "louvain", cluster.args = list(resolution = i))
+                )
                 # colLabels(object) <- cluster_labels
                 colData(object)[[glue::glue("gene_snn_res.{i}")]] <- cluster_labels
-              }
             }
-            else if (length(resolution) == 1) {
-              message(paste0("clustering at ", resolution, " resolution"))
-              #object <- Seurat::FindClusters(object = object, resolution = resolution, algorithm = algorithm, ...)
-              cluster_labels <- scran::clusterCells(object, use.dimred = reduction,
-                                                    BLUSPARAM=bluster::NNGraphParam(cluster.fun="louvain", cluster.args = list(resolution = resolution)))
+        } else if (length(resolution) == 1) {
+            message(paste0("clustering at ", resolution, " resolution"))
+            # object <- Seurat::FindClusters(object = object, resolution = resolution, algorithm = algorithm, ...)
+            cluster_labels <- scran::clusterCells(object,
+                use.dimred = reduction,
+                BLUSPARAM = bluster::NNGraphParam(cluster.fun = "louvain", cluster.args = list(resolution = resolution))
+            )
 
 
-              colData(object)[[glue("gene_snn_res.{resolution}")]] <- cluster_labels
-            }
-            # if (!is.null(custom_clust)) {
-            #
-            #   clusters <- tibble::tibble(sample_id = rownames(pull_metadata(object))) %>% tibble::rownames_to_column("order") %>% dplyr::inner_join(custom_clust, by = "sample_id") %>% dplyr::pull(cluster) %>% identity()
-            #   Idents(object = object) <- clusters
-            #   return(object)
-            # }
-            return(object)
-          }
+            colData(object)[[glue("gene_snn_res.{resolution}")]] <- cluster_labels
+        }
+        # if (!is.null(custom_clust)) {
+        #
+        #   clusters <- tibble::tibble(sample_id = rownames(pull_metadata(object))) %>% tibble::rownames_to_column("order") %>% dplyr::inner_join(custom_clust, by = "sample_id") %>% dplyr::pull(cluster) %>% identity()
+        #   Idents(object = object) <- clusters
+        #   return(object)
+        # }
+        return(object)
+    }
 )
 #' Read in Gene and Transcript Seurat Objects
 #'
@@ -221,20 +306,20 @@ setMethod("object_cluster", "SingleCellExperiment",
 #'
 #' @examples
 load_object_path <- function(proj_dir = getwd(), prefix = "unfiltered") {
-  object_regex <- paste0(paste0(".*/", prefix, "_object.rds"))
+    object_regex <- paste0(paste0(".*/", prefix, "_object.rds"))
 
-  object_path <- fs::path(proj_dir, "output", "seurat") %>%
-    fs::dir_ls(regexp = object_regex)
+    object_path <- fs::path(proj_dir, "output", "seurat") %>%
+        fs::dir_ls(regexp = object_regex)
 
-  if (!rlang::is_empty(object_path)) {
-    return(object_path)
-  }
+    if (!rlang::is_empty(object_path)) {
+        return(object_path)
+    }
 
-  stop("'", object_path, "' does not exist",
-    paste0(" in current working directory ('", getwd(), "')"),
-    ".",
-    call. = FALSE
-  )
+    stop("'", object_path, "' does not exist",
+        paste0(" in current working directory ('", getwd(), "')"),
+        ".",
+        call. = FALSE
+    )
 }
 
 
@@ -247,22 +332,22 @@ load_object_path <- function(proj_dir = getwd(), prefix = "unfiltered") {
 #' @export
 #'
 #' @examples
-setGeneric("load_object_from_proj", function (proj_dir, ...)  standardGeneric("load_object_from_proj"))
+setGeneric("load_object_from_proj", function(proj_dir, ...) standardGeneric("load_object_from_proj"))
 
-setMethod("load_object_from_proj", "Seurat",
-          function (proj_dir, ...)
-          {
-            object_file <- load_object_path(proj_dir, ...)
-            object_file <- readRDS(object_file)
-          }
+setMethod(
+    "load_object_from_proj", "Seurat",
+    function(proj_dir, ...) {
+        object_file <- load_object_path(proj_dir, ...)
+        object_file <- readRDS(object_file)
+    }
 )
 
-setMethod("load_object_from_proj", "SingleCellExperiment",
-          function (proj_dir, ...)
-          {
-            object_file <- load_object_path(proj_dir, ...)
-            object_file <- readRDS(object_file)
-          }
+setMethod(
+    "load_object_from_proj", "SingleCellExperiment",
+    function(proj_dir, ...) {
+        object_file <- load_object_path(proj_dir, ...)
+        object_file <- readRDS(object_file)
+    }
 )
 
 
@@ -281,103 +366,85 @@ setMethod("load_object_from_proj", "SingleCellExperiment",
 #' @export
 #'
 #' @examples
-setGeneric("object_reduce_dimensions", function (object, assay = "gene", reduction = "pca", legacy_settings = FALSE, ...)  standardGeneric("object_reduce_dimensions"))
+setGeneric("object_reduce_dimensions", function(object, assay = "gene", reduction = "pca", legacy_settings = FALSE, ...) standardGeneric("object_reduce_dimensions"))
 
-setMethod("object_reduce_dimensions", "Seurat",
-          function (object, assay = "gene", reduction = "pca", legacy_settings = FALSE, ...)
-          {
-            if ("integrated" %in% names(object@assays)) {
-              assay <- "integrated"
-            }
-            else {
-              assay <- "gene"
-            }
-            num_samples <- dim(object)[[2]]
-            if (num_samples < 50) {
-              npcs <- num_samples - 1
-            }
-            else {
-              npcs <- 50
-            }
-            if (legacy_settings) {
-              message("using legacy settings")
-              object <- Seurat::RunPCA(object, assay = assay, features = rownames(object))
-            }
-            else {
-              object <- Seurat::RunPCA(object = object, assay = assay, features = Seurat::VariableFeatures(object = object), do.print = FALSE, npcs = npcs, ...)
-            }
-            if (reduction == "harmony") {
-              object <- harmony::RunHarmony(object, "batch")
-            }
-            if ((ncol(object) - 1) > 3 * 30) {
-              object <- Seurat::RunTSNE(object = object, assay = assay, reduction = reduction, dims = 1:30)
-              object <- Seurat::RunUMAP(object = object, assay = assay, reduction = reduction, dims = 1:30)
-            }
-            return(object)
-          }
+setMethod(
+    "object_reduce_dimensions", "Seurat",
+    function(object, assay = "gene", reduction = "pca", legacy_settings = FALSE, ...) {
+        if ("integrated" %in% names(object@assays)) {
+            assay <- "integrated"
+        } else {
+            assay <- "gene"
+        }
+        num_samples <- dim(object)[[2]]
+        if (num_samples < 50) {
+            npcs <- num_samples - 1
+        } else {
+            npcs <- 50
+        }
+        if (legacy_settings) {
+            message("using legacy settings")
+            object <- Seurat::RunPCA(object, assay = assay, features = rownames(object))
+        } else {
+            object <- Seurat::RunPCA(object = object, assay = assay, features = Seurat::VariableFeatures(object = object), do.print = FALSE, npcs = npcs, ...)
+        }
+        if (reduction == "harmony") {
+            object <- harmony::RunHarmony(object, "batch")
+        }
+        if ((ncol(object) - 1) > 3 * 30) {
+            object <- Seurat::RunTSNE(object = object, assay = assay, reduction = reduction, dims = 1:30)
+            object <- Seurat::RunUMAP(object = object, assay = assay, reduction = reduction, dims = 1:30)
+        }
+        return(object)
+    }
 )
 
-setMethod("object_reduce_dimensions", "SingleCellExperiment",
-          function (object, assay = "gene", reduction = "PCA", legacy_settings = FALSE, ...)
-          {
-            if ("integrated" %in% names(object@assays)) {
-              assay <- "integrated"
-            }
-            else {
-              assay <- "gene"
-            }
-            num_samples <- dim(object)[[2]]
-            if (num_samples < 50) {
-              npcs <- num_samples - 1
-            }
-            else {
-              npcs <- 50
-            }
-            if (legacy_settings) {
-              message("using legacy settings")
+setMethod(
+    "object_reduce_dimensions", "SingleCellExperiment",
+    function(object, assay = "gene", reduction = "PCA", legacy_settings = FALSE, ...) {
+        if ("integrated" %in% names(object@assays)) {
+            assay <- "integrated"
+        } else {
+            assay <- "gene"
+        }
+        num_samples <- dim(object)[[2]]
+        if (num_samples < 50) {
+            npcs <- num_samples - 1
+        } else {
+            npcs <- 50
+        }
+        if (legacy_settings) {
+            message("using legacy settings")
 
-              if ("gene" == assay){
+            if ("gene" == assay) {
                 object <- scater::runPCA(x = object, subset_row = rownames(object))
-              }
-
-              else{
+            } else {
                 object <- scater::runPCA(x = object, altexp = assay, subset_row = rownames(object))
-              }
-
             }
-            else {
-
-              if ("gene" == assay){
+        } else {
+            if ("gene" == assay) {
                 object <- scater::runPCA(x = object, subset_row = scran::getTopHVGs(stats = object), ncomponents = npcs, ...)
-            }
-
-              else{
+            } else {
                 object <- scater::runPCA(x = object, altexp = assay, subset_row = scran::getTopHVGs(stats = object), ncomponents = npcs, ...)
-              }
-
             }
-            if (reduction == "harmony") {
-              object <- harmony::RunHarmony(object, "batch")
-            }
-            if ((ncol(object) - 1) > 3 * 30) {
-              if ("gene" == assay){
+        }
+        if (reduction == "harmony") {
+            object <- harmony::RunHarmony(object, "batch")
+        }
+        if ((ncol(object) - 1) > 3 * 30) {
+            if ("gene" == assay) {
                 object <- scater::runTSNE(x = object, dimred = reduction, n_dimred = 1:30)
-              }
-
-              else{
+            } else {
                 object <- scater::runTSNE(x = object, altexp = assay, dimred = reduction, n_dimred = 1:30)
-              }
-              if ("gene" == assay){
-                object <- scater::runUMAP(x = object, dimred = reduction, n_dimred = 1:30)
-              }
-
-              else{
-                object <- scater::runUMAP(x = object, altexp = assay, dimred = reduction, n_dimred = 1:30)
-              }
-
             }
-            return(object)
-          }
+            if ("gene" == assay) {
+                object <- scater::runUMAP(x = object, dimred = reduction, n_dimred = 1:30)
+            } else {
+                object <- scater::runUMAP(x = object, altexp = assay, dimred = reduction, n_dimred = 1:30)
+            }
+        }
+        return(object)
+    }
 )
 #'
 #' Give a new project name to a singlecell objects
@@ -389,10 +456,9 @@ setMethod("object_reduce_dimensions", "SingleCellExperiment",
 #' @export
 #'
 #' @examples
-#'
 rename_object <- function(object, new_name) {
-  object@project.name <- new_name
-  return(object)
+    object@project.name <- new_name
+    return(object)
 }
 
 #' Reset default assay
@@ -407,8 +473,8 @@ rename_object <- function(object, new_name) {
 #'
 #' @examples
 SetDefaultAssay <- function(object, new_assay) {
-  Seurat::DefaultAssay(object) <- new_assay
-  return(object)
+    Seurat::DefaultAssay(object) <- new_assay
+    return(object)
 }
 
 
@@ -427,7 +493,7 @@ SetDefaultAssay <- function(object, new_assay) {
 #'
 #' @examples
 filter_merged_objects <- function(objects, filter_var, filter_val, .drop = F) {
-  objects <- purrr::map(objects, ~ filter_merged_object(object = .x, filter_var = filter_var, filter_val = filter_val, .drop = .drop))
+    objects <- map(objects, ~ filter_merged_object(object = .x, filter_var = filter_var, filter_val = filter_val, .drop = .drop))
 }
 
 
@@ -443,14 +509,14 @@ filter_merged_objects <- function(objects, filter_var, filter_val, .drop = F) {
 #'
 #' @examples
 filter_merged_object <- function(object, filter_var, filter_val, .drop = .drop) {
-  if (.drop) {
-    mycells <- pull_metadata(object)[[filter_var]] == filter_val
-  } else {
-    mycells <- pull_metadata(object)[[filter_var]] == filter_val | is.na(pull_metadata(object)[[filter_var]])
-  }
-  mycells <- colnames(object)[mycells]
-  object <- object[, mycells]
-  return(object)
+    if (.drop) {
+        mycells <- pull_metadata(object)[[filter_var]] == filter_val
+    } else {
+        mycells <- pull_metadata(object)[[filter_var]] == filter_val | is.na(pull_metadata(object)[[filter_var]])
+    }
+    mycells <- colnames(object)[mycells]
+    object <- object[, mycells]
+    return(object)
 }
 
 
@@ -470,17 +536,30 @@ filter_merged_object <- function(object, filter_var, filter_val, .drop = .drop) 
 #' @examples
 #' panc8$batch <- panc8$gene$tech
 #' reintegrate_object(panc8)
-reintegrate_object <- function(object, feature = "gene", suffix = "", reduction = "pca", algorithm = 1, ...) {
-  Seurat::DefaultAssay(object) <- "gene"
+setGeneric("reintegrate_object", function (object, feature = "gene", suffix = "", reduction = "pca", algorithm = 1, ...)  standardGeneric("reintegrate_object"))
 
-  organism <- Misc(object)$experiment$organism
-  experiment_name <- Misc(object)$experiment$experiment_name
+setMethod("reintegrate_object", "Seurat",
+          function (object, feature = "gene", suffix = "", reduction = "pca", algorithm = 1, ...)
+          {
+            Seurat::DefaultAssay(object) <- "gene"
+            organism <- Misc(object)$experiment$organism
+            experiment_name <- Misc(object)$experiment$experiment_name
+            object <- Seurat::DietSeurat(object, counts = TRUE, data = TRUE, scale.data = FALSE)
+            objects <- Seurat::SplitObject(object, split.by = "batch")
+            object <- object_integration_pipeline(objects, feature = feature, suffix = suffix, algorithm = algorithm, ...)
+            object <- record_experiment_data(object, experiment_name, organism)
+          }
+)
 
-  object <- Seurat::DietSeurat(object, counts = TRUE, data = TRUE, scale.data = FALSE)
-  objects <- Seurat::SplitObject(object, split.by = "batch")
-  object <- object_integration_pipeline(objects, feature = feature, suffix = suffix, algorithm = algorithm, ...)
-
-  object <- record_experiment_data(object, experiment_name, organism)
-
-  # integration_workflow <- function(batches, excluded_cells = NULL, resolution = seq(0.2, 2.0, by = 0.2), experiment_name = "default_experiment", organism = "human", ...) {
-}
+setMethod("reintegrate_object", "SingleCellExperiment",
+          function (object, feature = "gene", suffix = "", reduction = "PCA", algorithm = 1, ...)
+          {
+            # Seurat::DefaultAssay(object) <- "gene"
+            organism <- metadata(object)$experiment$organism
+            experiment_name <- metadata(object)$experiment$experiment_name
+            # object <- Seurat::DietSeurat(object, counts = TRUE, data = TRUE, scale.data = FALSE)
+            objects <- batchelor::divideIntoBatches(object, object$batch, byrow = FALSE, restrict = NULL)[["batches"]]
+            object <- object_integration_pipeline(objects, feature = feature, suffix = suffix, algorithm = algorithm, ...)
+            object <- record_experiment_data(object, experiment_name, organism)
+          }
+)

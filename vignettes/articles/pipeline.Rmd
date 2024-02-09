@@ -5,24 +5,23 @@ In this article we will introduce the pipeline being used for processing the dat
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>",
+    collapse = TRUE,
+    comment = "#>",
     # dev.args = list(png = list(type = "cairo")),
-  dpi=900,
-  out.width = "100%",
-  message = FALSE,
-  warning = FALSE
+    dpi = 900,
+    out.width = "100%",
+    message = FALSE,
+    warning = FALSE
 )
 
 library(xfun)
 
-format_table <- function(mydf){
-  mydf %>% 
-    kableExtra::kbl() %>% 
-    kable_paper() %>% 
-    scroll_box(width = "700px", height = "200px")
+format_table <- function(mydf) {
+    mydf %>%
+        kableExtra::kbl() %>%
+        kable_paper() %>%
+        scroll_box(width = "700px", height = "200px")
 }
-
 ```
 
 First step is to load Chevreul and all other packages required 

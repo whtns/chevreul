@@ -63,7 +63,8 @@ Imports:
     tidyr,
     unglue,
     waiter,
-    wiggleplotr (>= 1.13.1)
+    wiggleplotr (>= 1.13.1),
+    purrr
 Suggests: 
     ggplot2,
     knitr,
