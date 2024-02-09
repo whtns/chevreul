@@ -5,7 +5,7 @@
 \title{Create a minimal object app}
 \usage{
 minimalSeuratApp(
-  object = panc8,
+  single_cell_object = panc8,
   loom_path = NULL,
   appTitle = NULL,
   organism_type = "human",
@@ -14,13 +14,13 @@ minimalSeuratApp(
 )
 }
 \arguments{
-\item{object}{a single cell object}
-
 \item{loom_path}{path to a loom file}
 
 \item{organism_type}{Organism}
 
 \item{futureMb}{}
+
+\item{object}{a single cell object}
 }
 \description{
 Create a minimal object app

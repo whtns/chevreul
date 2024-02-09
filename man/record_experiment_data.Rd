@@ -11,14 +11,10 @@ record_experiment_data(
 )
 }
 \arguments{
-\item{object}{A object objet}
+\item{object}{A object}
 
 \item{organism}{}
 }
 \description{
-Record Experiment Metadata
-}
-\examples{
-logged_object <- record_experiment_data(human_gene_transcript_object, experiment_name = "human_gene_transcript", organism = "mouse")
-Misc(logged_object, "experiment")
+Records miscellaneous data
 }

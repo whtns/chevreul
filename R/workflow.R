@@ -1,8 +1,8 @@
-
 # integration workflow ------------------------------
 
-setGeneric("integration_workflow", function(batches, excluded_cells = NULL, resolution = seq(0.2, 2.0, by = 0.2), experiment_name = "default_experiment", organism = "human", ...)
-  standardGeneric("integration_workflow"))
+setGeneric("integration_workflow", function(batches, excluded_cells = NULL, resolution = seq(0.2, 2.0, by = 0.2), experiment_name = "default_experiment", organism = "human", ...) {
+    standardGeneric("integration_workflow")
+})
 
 #' Integration Workflow
 #'
@@ -19,51 +19,50 @@ setGeneric("integration_workflow", function(batches, excluded_cells = NULL, reso
 #' @export
 #'
 #' @examples
-setMethod("integration_workflow", "Seurat",
-          function(batches, excluded_cells = NULL, resolution = seq(0.2, 2.0, by = 0.2), experiment_name = "default_experiment", organism = "human", ...) {
-            checkmate::check_list(batches)
+setMethod(
+    "integration_workflow", "Seurat",
+    function(batches, excluded_cells = NULL, resolution = seq(0.2, 2.0, by = 0.2), experiment_name = "default_experiment", organism = "human", ...) {
+        checkmate::check_list(batches)
 
-            checkmate::check_character(excluded_cells)
+        checkmate::check_character(excluded_cells)
 
-            # organisms <- purrr::map(batches, Misc, c("experiment", "organism"))
+        # organisms <- map(batches, Misc, c("experiment", "organism"))
 
-            organisms <- purrr::map(batches, list("meta.data", "organism", 1))
+        organisms <- map(batches, list("meta.data", "organism", 1))
 
-            if (any(purrr::map_lgl(organisms, is.null))) {
-              organisms <- case_when(
+        if (any(purrr::map_lgl(organisms, is.null))) {
+            organisms <- case_when(
                 grepl("Hs", names(batches)) ~ "human",
                 grepl("Mm", names(batches)) ~ "mouse",
                 TRUE ~ "human"
-              )
-              names(organisms) <- names(batches)
-            }
+            )
+            names(organisms) <- names(batches)
+        }
 
-            experiment_names <- names(batches)
+        experiment_names <- names(batches)
 
-            batches <- purrr::pmap(list(batches, experiment_names, organisms), record_experiment_data)
+        batches <- purrr::pmap(list(batches, experiment_names, organisms), record_experiment_data)
 
-            batch_organisms <- map_chr(batches, list("misc", "experiment", "organism"))
+        batch_organisms <- map_chr(batches, list("misc", "experiment", "organism"))
 
-            if (all(batch_organisms == "mouse")) {
-              merged_batches <- purrr::imap(batches, object_integration_pipeline, resolution = resolution, organism = "mouse", ...)
-              Misc(merged_batches)$batches <- names(batches)
+        if (all(batch_organisms == "mouse")) {
+            merged_batches <- purrr::imap(batches, object_integration_pipeline, resolution = resolution, organism = "mouse", ...)
+            Misc(merged_batches)$batches <- names(batches)
+        } else if (all(batch_organisms == "human")) {
+            merged_batches <- object_integration_pipeline(batches, resolution = resolution, organism = "human", ...)
+            Misc(merged_batches)$batches <- names(batches)
+        } else {
+            mouse_object_list <- batches[names(organisms[organisms == "mouse"])]
+            human_object_list <- batches[names(organisms[organisms == "human"])]
+            merged_batches <- cross_species_integrate(mouse_object_list = mouse_object_list, human_object_list = human_object_list)
+            Misc(merged_batches)$batches <- names(batches)
+        }
 
-            } else if (all(batch_organisms == "human")) {
-              merged_batches <- object_integration_pipeline(batches, resolution = resolution, organism = "human", ...)
-              Misc(merged_batches)$batches <- names(batches)
+        merged_batches <- record_experiment_data(merged_batches, experiment_name, organism)
 
-            } else {
-              mouse_object_list <- batches[names(organisms[organisms == "mouse"])]
-              human_object_list <- batches[names(organisms[organisms == "human"])]
-              merged_batches <- cross_species_integrate(mouse_object_list = mouse_object_list, human_object_list = human_object_list)
-              Misc(merged_batches)$batches <- names(batches)
-            }
-
-            merged_batches <- record_experiment_data(merged_batches, experiment_name, organism)
-
-            return(merged_batches)
-          }
-          )
+        return(merged_batches)
+    }
+)
 
 #' Integration Workflow
 #'
@@ -80,50 +79,49 @@ setMethod("integration_workflow", "Seurat",
 #' @export
 #'
 #' @examples
-setMethod("integration_workflow", "SingleCellExperiment",
-          function(batches, excluded_cells = NULL, resolution = seq(0.2, 2.0, by = 0.2), experiment_name = "default_experiment", organism = "human", ...) {
-            checkmate::check_list(batches)
+setMethod(
+    "integration_workflow", "SingleCellExperiment",
+    function(batches, excluded_cells = NULL, resolution = seq(0.2, 2.0, by = 0.2), experiment_name = "default_experiment", organism = "human", ...) {
+        checkmate::check_list(batches)
 
-            checkmate::check_character(excluded_cells)
+        checkmate::check_character(excluded_cells)
 
-            # organisms <- purrr::map(batches, Misc, c("experiment", "organism"))
+        # organisms <- map(batches, Misc, c("experiment", "organism"))
 
-            organisms <- purrr::map(batches, list("meta.data", "organism", 1))
+        organisms <- map(batches, list("meta.data", "organism", 1))
 
-            if (any(purrr::map_lgl(organisms, is.null))) {
-              organisms <- case_when(
+        if (any(purrr::map_lgl(organisms, is.null))) {
+            organisms <- case_when(
                 grepl("Hs", names(batches)) ~ "human",
                 grepl("Mm", names(batches)) ~ "mouse",
                 TRUE ~ "human"
-              )
-              names(organisms) <- names(batches)
-            }
+            )
+            names(organisms) <- names(batches)
+        }
 
-            experiment_names <- names(batches)
+        experiment_names <- names(batches)
 
-            batches <- purrr::pmap(list(batches, experiment_names, organisms), record_experiment_data)
+        batches <- purrr::pmap(list(batches, experiment_names, organisms), record_experiment_data)
 
-            batch_organisms <- map_chr(batches, list("misc", "experiment", "organism"))
+        batch_organisms <- map_chr(batches, list("misc", "experiment", "organism"))
 
-            if (all(batch_organisms == "mouse")) {
-              merged_batches <- purrr::imap(batches, object_integration_pipeline, resolution = resolution, organism = "mouse", ...)
-              Misc(merged_batches)$batches <- names(batches)
+        if (all(batch_organisms == "mouse")) {
+            merged_batches <- purrr::imap(batches, object_integration_pipeline, resolution = resolution, organism = "mouse", ...)
+            Misc(merged_batches)$batches <- names(batches)
+        } else if (all(batch_organisms == "human")) {
+            merged_batches <- object_integration_pipeline(batches, resolution = resolution, organism = "human", ...)
+            Misc(merged_batches)$batches <- names(batches)
+        } else {
+            mouse_object_list <- batches[names(organisms[organisms == "mouse"])]
+            human_object_list <- batches[names(organisms[organisms == "human"])]
+            merged_batches <- cross_species_integrate(mouse_object_list = mouse_object_list, human_object_list = human_object_list)
+            Misc(merged_batches)$batches <- names(batches)
+        }
 
-            } else if (all(batch_organisms == "human")) {
-              merged_batches <- object_integration_pipeline(batches, resolution = resolution, organism = "human", ...)
-              Misc(merged_batches)$batches <- names(batches)
+        merged_batches <- record_experiment_data(merged_batches, experiment_name, organism)
 
-            } else {
-              mouse_object_list <- batches[names(organisms[organisms == "mouse"])]
-              human_object_list <- batches[names(organisms[organisms == "human"])]
-              merged_batches <- cross_species_integrate(mouse_object_list = mouse_object_list, human_object_list = human_object_list)
-              Misc(merged_batches)$batches <- names(batches)
-            }
-
-            merged_batches <- record_experiment_data(merged_batches, experiment_name, organism)
-
-            return(merged_batches)
-          }
+        return(merged_batches)
+    }
 )
 
 
@@ -147,26 +145,28 @@ setMethod("integration_workflow", "SingleCellExperiment",
 #' @export
 #'
 #' @examples
-#'
-setGeneric("clustering_workflow", function(object, excluded_cells, resolution = seq(0.2, 2.0, by = 0.2), organism = "human", experiment_name = "default_experiment", ...)
-  standardGeneric("clustering_workflow"))
+setGeneric("clustering_workflow", function(object, excluded_cells, resolution = seq(0.2, 2.0, by = 0.2), organism = "human", experiment_name = "default_experiment", ...) {
+    standardGeneric("clustering_workflow")
+})
 
-setMethod("clustering_workflow", "Seurat",
-          function(object, excluded_cells, resolution = seq(0.2, 2.0, by = 0.2), organism = "human", experiment_name = "default_experiment", ...) {
-            object <- object_pipeline(object, resolution = resolution, organism = organism, ...)
+setMethod(
+    "clustering_workflow", "Seurat",
+    function(object, excluded_cells, resolution = seq(0.2, 2.0, by = 0.2), organism = "human", experiment_name = "default_experiment", ...) {
+        object <- object_pipeline(object, resolution = resolution, organism = organism, ...)
 
-            object <- record_experiment_data(object, experiment_name, organism)
+        object <- record_experiment_data(object, experiment_name, organism)
 
-            # save_object(feature_objects, proj_dir = proj_dir, ...)
-          }
-          )
+        # save_object(feature_objects, proj_dir = proj_dir, ...)
+    }
+)
 
-setMethod("clustering_workflow", "SingleCellExperiment",
-          function(object, excluded_cells, resolution = seq(0.2, 2.0, by = 0.2), organism = "human", experiment_name = "default_experiment", ...) {
-            object <- object_pipeline(object, resolution = resolution, organism = organism, ...)
+setMethod(
+    "clustering_workflow", "SingleCellExperiment",
+    function(object, excluded_cells, resolution = seq(0.2, 2.0, by = 0.2), organism = "human", experiment_name = "default_experiment", ...) {
+        object <- object_pipeline(object, resolution = resolution, organism = organism, ...)
 
-            object <- record_experiment_data(object, experiment_name, organism)
+        object <- record_experiment_data(object, experiment_name, organism)
 
-            # save_object(feature_objects, proj_dir = proj_dir, ...)
-          }
-          )
+        # save_object(feature_objects, proj_dir = proj_dir, ...)
+    }
+)

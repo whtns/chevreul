@@ -1,8 +1,5 @@
 # seurat integration ------------------------------
 
-setGeneric("object_integration_pipeline", function(object_list, resolution = seq(0.2, 2.0, by = 0.2), suffix = "", algorithm = 1, organism = "human", annotate_cell_cycle = FALSE, annotate_percent_mito = FALSE, reduction = "pca", ...)
-  standardGeneric("object_integration_pipeline"))
-
 #' Run Seurat Integration
 #'
 #' Run batch correction, followed by:
@@ -23,131 +20,114 @@ setGeneric("object_integration_pipeline", function(object_list, resolution = seq
 #' @examples
 #'
 #' batches <- panc8 %>%
-#'   Seurat::SplitObject(split.by = "tech")
+#'     Seurat::SplitObject(split.by = "tech")
 #'
 #' integrated_object <- object_integration_pipeline(batches)
-setMethod("object_integration_pipeline", "Seurat",
-          function(object_list, resolution = seq(0.2, 2.0, by = 0.2), suffix = "", algorithm = 1, organism = "human", annotate_cell_cycle = FALSE, annotate_percent_mito = FALSE, reduction = "pca", ...) {
-            experiment_names <- names(object_list)
+setGeneric("object_integration_pipeline", function(object_list, resolution = seq(0.2, 2.0, by = 0.2), suffix = "", algorithm = 1, organism = "human", annotate_cell_cycle = FALSE, annotate_percent_mito = FALSE, reduction = "pca", ...) {
+    standardGeneric("object_integration_pipeline")
+})
 
-            organisms <- case_when(
-              grepl("Hs", experiment_names) ~ "human",
-              grepl("Mm", experiment_names) ~ "mouse"
-            )
+setMethod(
+    "object_integration_pipeline", "Seurat",
+    function(object_list, resolution = seq(0.2, 2.0, by = 0.2), suffix = "", algorithm = 1, organism = "human", annotate_cell_cycle = FALSE, annotate_percent_mito = FALSE, reduction = "pca", ...) {
+        experiment_names <- names(object_list)
 
-            names(organisms) <- experiment_names
+        organisms <- case_when(
+            grepl("Hs", experiment_names) ~ "human",
+            grepl("Mm", experiment_names) ~ "mouse"
+        )
 
-            organisms[is.na(organisms)] <- organism
+        names(organisms) <- experiment_names
 
-            integrated_object <- object_integrate(object_list, organism = organism, ...)
+        organisms[is.na(organisms)] <- organism
 
-            # cluster merged objects
-            if ("harmony" %in% names(integrated_object@reductions)) reduction = "harmony"
-            integrated_object <- object_cluster(integrated_object, resolution = resolution, algorithm = algorithm, reduction = reduction, ...)
+        integrated_object <- object_integrate(object_list, organism = organism, ...)
 
-
-            object_assay = "gene"
-            if ("harmony" %in% names(integrated_object@reductions)) object_assay = "integrated"
-            integrated_object <- find_all_markers(integrated_object, object_assay = object_assay)
-
-            #   enriched_object <- tryCatch(getEnrichedPathways(integrated_object), error = function(e) e)
-            #   enrichr_available <- !any(class(enriched_object) == "error")
-            #   if(enrichr_available){
-            #     integrated_object <- enriched_object
-            #   }
-
-            # add read count column
-            integrated_object <- add_read_count_col(integrated_object)
-
-            # annotate cell cycle scoring to objects
-            if (annotate_cell_cycle) {
-              integrated_object <- annotate_cell_cycle(integrated_object, ...)
-            }
-
-            # annotate mitochondrial percentage in object metadata
-            if (annotate_percent_mito) {
-              integrated_object <- add_percent_mito(integrated_object, ...)
-            }
-
-            # annotate excluded cells
-            # integrated_object <- annotate_excluded(integrated_object, excluded_cells)
-
-            return(integrated_object)
-          }
-          )
-
-#' Run Seurat Integration
-#'
-#' Run batch correction, followed by:
-#' 1) stashing of batches in metadata 'batch'
-#' 2) clustering with resolution 0.2 to 2.0 in increments of 0.2
-#' 3) saving to <proj_dir>/output/sce/<feature>_object_<suffix>.rds
-#'
-#' @param suffix a suffix to be appended to a file save in output dir
-#' @param object_list List of objects to be integrated
-#' @param resolution Range of resolution
-#' @param algorithm Algorithm for modularity optimization. Default 1:original Louvain algorithm
-#' @param organism Default "human"
-#' @param ...
-#'
-#' @return
-#' @export
-#'
-#' @examples
-#'
-#' batches <- panc8 %>%
-#'   Seurat::SplitObject(split.by = "tech")
-#'
-#' integrated_object <- object_integration_pipeline(batches)
-setMethod("object_integration_pipeline", "SingleCellExperiment",
-          function(object_list, resolution = seq(0.2, 2.0, by = 0.2), suffix = "", algorithm = 1, organism = "human", annotate_cell_cycle = FALSE, annotate_percent_mito = FALSE, reduction = "pca", ...) {
-            experiment_names <- names(object_list)
-
-            organisms <- case_when(
-              grepl("Hs", experiment_names) ~ "human",
-              grepl("Mm", experiment_names) ~ "mouse"
-            )
-
-            names(organisms) <- experiment_names
-
-            organisms[is.na(organisms)] <- organism
-
-            integrated_object <- object_integrate(object_list, organism = organism, ...)
-
-            # cluster merged objects
-            if ("harmony" %in% names(integrated_object@reductions)) reduction = "harmony"
-            integrated_object <- object_cluster(integrated_object, resolution = resolution, algorithm = algorithm, reduction = reduction, ...)
+        # cluster merged objects
+        if ("harmony" %in% names(integrated_object@reductions)) reduction <- "harmony"
+        integrated_object <- object_cluster(integrated_object, resolution = resolution, algorithm = algorithm, reduction = reduction, ...)
 
 
-            object_assay = "gene"
-            if ("harmony" %in% names(integrated_object@reductions)) object_assay = "integrated"
-            integrated_object <- find_all_markers(integrated_object, object_assay = object_assay)
+        object_assay <- "gene"
+        if ("harmony" %in% names(integrated_object@reductions)) object_assay <- "integrated"
+        integrated_object <- find_all_markers(integrated_object, object_assay = object_assay)
 
-            #   enriched_object <- tryCatch(getEnrichedPathways(integrated_object), error = function(e) e)
-            #   enrichr_available <- !any(class(enriched_object) == "error")
-            #   if(enrichr_available){
-            #     integrated_object <- enriched_object
-            #   }
+        #   enriched_object <- tryCatch(getEnrichedPathways(integrated_object), error = function(e) e)
+        #   enrichr_available <- !any(class(enriched_object) == "error")
+        #   if(enrichr_available){
+        #     integrated_object <- enriched_object
+        #   }
 
-            # add read count column
-            integrated_object <- add_read_count_col(integrated_object)
+        # add read count column
+        integrated_object <- add_read_count_col(integrated_object)
 
-            # annotate cell cycle scoring to objects
-            if (annotate_cell_cycle) {
-              integrated_object <- annotate_cell_cycle(integrated_object, ...)
-            }
+        # annotate cell cycle scoring to objects
+        if (annotate_cell_cycle) {
+            integrated_object <- annotate_cell_cycle(integrated_object, ...)
+        }
 
-            # annotate mitochondrial percentage in object metadata
-            if (annotate_percent_mito) {
-              integrated_object <- add_percent_mito(integrated_object, ...)
-            }
+        # annotate mitochondrial percentage in object metadata
+        if (annotate_percent_mito) {
+            integrated_object <- add_percent_mito(integrated_object, ...)
+        }
 
-            # annotate excluded cells
-            # integrated_object <- annotate_excluded(integrated_object, excluded_cells)
+        # annotate excluded cells
+        # integrated_object <- annotate_excluded(integrated_object, excluded_cells)
 
-            return(integrated_object)
-          }
-          )
+        return(integrated_object)
+    }
+)
+
+setMethod(
+    "object_integration_pipeline", "SingleCellExperiment",
+    function(object_list, resolution = seq(0.2, 2.0, by = 0.2), suffix = "", algorithm = 1, organism = "human", annotate_cell_cycle = FALSE, annotate_percent_mito = FALSE, reduction = "pca", ...) {
+        experiment_names <- names(object_list)
+
+        organisms <- case_when(
+            grepl("Hs", experiment_names) ~ "human",
+            grepl("Mm", experiment_names) ~ "mouse"
+        )
+
+        names(organisms) <- experiment_names
+
+        organisms[is.na(organisms)] <- organism
+
+        integrated_object <- object_integrate(object_list, organism = organism, ...)
+
+        # cluster merged objects
+        if ("harmony" %in% names(integrated_object@reductions)) reduction <- "harmony"
+        integrated_object <- object_cluster(integrated_object, resolution = resolution, algorithm = algorithm, reduction = reduction, ...)
+
+
+        object_assay <- "gene"
+        if ("harmony" %in% names(integrated_object@reductions)) object_assay <- "integrated"
+        integrated_object <- find_all_markers(integrated_object, object_assay = object_assay)
+
+        #   enriched_object <- tryCatch(getEnrichedPathways(integrated_object), error = function(e) e)
+        #   enrichr_available <- !any(class(enriched_object) == "error")
+        #   if(enrichr_available){
+        #     integrated_object <- enriched_object
+        #   }
+
+        # add read count column
+        integrated_object <- add_read_count_col(integrated_object)
+
+        # annotate cell cycle scoring to objects
+        if (annotate_cell_cycle) {
+            integrated_object <- annotate_cell_cycle(integrated_object, ...)
+        }
+
+        # annotate mitochondrial percentage in object metadata
+        if (annotate_percent_mito) {
+            integrated_object <- add_percent_mito(integrated_object, ...)
+        }
+
+        # annotate excluded cells
+        # integrated_object <- annotate_excluded(integrated_object, excluded_cells)
+
+        return(integrated_object)
+    }
+)
 
 # object_pipeline ------------------------------
 
@@ -169,83 +149,84 @@ setMethod("object_integration_pipeline", "SingleCellExperiment",
 #'
 #' processed_object <- object_pipeline(panc8)
 #'
-setGeneric("object_pipeline", function(object, assay = "gene", resolution = 0.6, reduction = "pca", organism = "human", ...)
-  standardGeneric("object_pipeline"))
+setGeneric("object_pipeline", function(object, assay = "gene", resolution = 0.6, reduction = "pca", organism = "human", ...) {
+    standardGeneric("object_pipeline")
+})
 
-setMethod("object_pipeline", "Seurat",
-          function(object, assay = "gene", resolution = 0.6, reduction = "pca", organism = "human", ...) {
+setMethod(
+    "object_pipeline", "Seurat",
+    function(object, assay = "gene", resolution = 0.6, reduction = "pca", organism = "human", ...) {
+        assays <- names(object@assays)
 
-            assays <- names(object@assays)
+        assays <- assays[assays %in% c("gene", "transcript")]
 
-            assays <- assays[assays %in% c("gene", "transcript")]
+        for (assay in assays) {
+            object[[assay]] <- object_preprocess(object[[assay]], scale = TRUE, ...)
+        }
 
-            for (assay in assays) {
-              object[[assay]] <- object_preprocess(object[[assay]], scale = TRUE, ...)
-            }
+        # PCA
+        object <- object_reduce_dimensions(object, check_duplicates = FALSE, reduction = reduction, ...)
 
-            # PCA
-            object <- object_reduce_dimensions(object, check_duplicates = FALSE, reduction = reduction, ...)
+        object <- object_cluster(object = object, resolution = resolution, reduction = reduction, ...)
 
-            object <- object_cluster(object = object, resolution = resolution, reduction = reduction, ...)
+        object <- find_all_markers(object, object_assay = "gene")
 
-            object <- find_all_markers(object, object_assay = "gene")
+        # if (feature == "gene"){
+        #   enriched_object <- tryCatch(getEnrichedPathways(object), error = function(e) e)
+        #   enrichr_available <- !any(class(enriched_object) == "error")
+        #   if(enrichr_available){
+        #     object <- enriched_object
+        #   }
+        # }
 
-            # if (feature == "gene"){
-            #   enriched_object <- tryCatch(getEnrichedPathways(object), error = function(e) e)
-            #   enrichr_available <- !any(class(enriched_object) == "error")
-            #   if(enrichr_available){
-            #     object <- enriched_object
-            #   }
-            # }
-
-            # annotate low read count category in object metadata
-            object <- add_read_count_col(object)
-
-
-            # annotate cell cycle scoring to objects
-              object <- annotate_cell_cycle(object, organism = organism, ...)
-
-            # annotate mitochondrial percentage in object metadata
-            object <- add_percent_mito(object, organism = organism)
-
-            return(object)
-          }
-          )
-
-setMethod("object_pipeline", "SingleCellExperiment",
-          function(object, assay = "gene", resolution = 0.6, reduction = "PCA", organism = "human", ...) {
-
-            assays <- names(object@assays)
-
-            assays <- assays[assays %in% c("gene", "transcript")]
-
-            for (assay in assays) {
-              object[[assay]] <- object_preprocess(object[[assay]], scale = TRUE, ...)
-            }
-
-            # PCA
-            object <- object_reduce_dimensions(object, reduction = reduction, ...)
-
-            object <- object_cluster(object = object, resolution = resolution, reduction = reduction, ...)
-
-            object <- find_all_markers(object, object_assay = "gene")
-
-            # if (feature == "gene"){
-            #   enriched_object <- tryCatch(getEnrichedPathways(object), error = function(e) e)
-            #   enrichr_available <- !any(class(enriched_object) == "error")
-            #   if(enrichr_available){
-            #     object <- enriched_object
-            #   }
-            # }
+        # annotate low read count category in object metadata
+        object <- add_read_count_col(object)
 
 
+        # annotate cell cycle scoring to objects
+        object <- annotate_cell_cycle(object, organism = organism, ...)
 
-            # annotate cell cycle scoring to objects
-            object <- annotate_cell_cycle(object, organism = organism, ...)
+        # annotate mitochondrial percentage in object metadata
+        object <- add_percent_mito(object, organism = organism)
 
-            # annotate mitochondrial percentage in object metadata
-            object <- add_percent_mito(object, organism = organism)
+        return(object)
+    }
+)
 
-            return(object)
-          }
-          )
+setMethod(
+    "object_pipeline", "SingleCellExperiment",
+    function(object, assay = "gene", resolution = 0.6, reduction = "PCA", organism = "human", ...) {
+        assays <- names(object@assays)
+
+        assays <- assays[assays %in% c("gene", "transcript")]
+
+        for (assay in assays) {
+            object[[assay]] <- object_preprocess(object[[assay]], scale = TRUE, ...)
+        }
+
+        # PCA
+        object <- object_reduce_dimensions(object, reduction = reduction, ...)
+
+        object <- object_cluster(object = object, resolution = resolution, reduction = reduction, ...)
+
+        object <- find_all_markers(object, object_assay = "gene")
+
+        # if (feature == "gene"){
+        #   enriched_object <- tryCatch(getEnrichedPathways(object), error = function(e) e)
+        #   enrichr_available <- !any(class(enriched_object) == "error")
+        #   if(enrichr_available){
+        #     object <- enriched_object
+        #   }
+        # }
+
+
+
+        # annotate cell cycle scoring to objects
+        object <- annotate_cell_cycle(object, organism = organism, ...)
+
+        # annotate mitochondrial percentage in object metadata
+        object <- add_percent_mito(object, organism = organism)
+
+        return(object)
+    }
+)

@@ -7,7 +7,7 @@
 find_all_markers(object, metavar = NULL, object_assay = "gene", ...)
 }
 \arguments{
-\item{object}{A object.}
+\item{object}{An object.}
 
 \item{metavar}{A metadata variable to group by.}
 

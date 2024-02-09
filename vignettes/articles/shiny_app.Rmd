@@ -4,13 +4,13 @@ title: "Shiny App"
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>",
+    collapse = TRUE,
+    comment = "#>",
     # dev.args = list(png = list(type = "cairo")),
-  dpi=900,
-  out.width = "100%",
-  message = FALSE,
-  warning = FALSE
+    dpi = 900,
+    out.width = "100%",
+    message = FALSE,
+    warning = FALSE
 )
 
 library(kableExtra)
@@ -85,8 +85,7 @@ Running DE testing results in a data frame containing the following information:
 *  p_val_adj : Adjusted p-value, based on bonferroni correction using all features in the dataset.
 
 ```{r, eval = FALSE}
-d1<-read.csv("Dominic.csv", header = TRUE)
-
+d1 <- read.csv("Dominic.csv", header = TRUE)
 ```
 
 

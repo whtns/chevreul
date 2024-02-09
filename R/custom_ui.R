@@ -11,12 +11,12 @@
 #'
 #' @examples
 default_helper <- function(ui_element, title = "", content = "test", type = "inline", ...) {
-  shinyhelper::helper(ui_element,
-    type = type,
-    title = title,
-    content = content,
-    ...
-  )
+    shinyhelper::helper(ui_element,
+        type = type,
+        title = title,
+        content = content,
+        ...
+    )
 }
 
 #' custom collapsible box
@@ -29,13 +29,13 @@ default_helper <- function(ui_element, title = "", content = "test", type = "inl
 #'
 #' @examples
 chevreulBox <- function(title = "", ...) {
-  shinydashboard::box(
-    title = title,
-    status = "primary",
-    solidHeader = TRUE,
-    collapsible = TRUE,
-    ...
-  )
+    shinydashboard::box(
+        title = title,
+        status = "primary",
+        solidHeader = TRUE,
+        collapsible = TRUE,
+        ...
+    )
 }
 
 #' Custom Dropdown Button
@@ -49,13 +49,13 @@ chevreulBox <- function(title = "", ...) {
 #'
 #' @examples
 dropdownButton <- function(inputId, ...) {
-  tagList(
-    shinyWidgets::dropdownButton(
-      inputId = inputId,
-      ...,
-      circle = TRUE, status = "info",
-      icon = icon("bars"), width = "300px"
-    ),
-    br()
-  )
+    tagList(
+        shinyWidgets::dropdownButton(
+            inputId = inputId,
+            ...,
+            circle = TRUE, status = "info",
+            icon = icon("bars"), width = "300px"
+        ),
+        br()
+    )
 }

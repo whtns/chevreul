@@ -4,24 +4,23 @@ title: "Integration of Seurat objects"
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>",
+    collapse = TRUE,
+    comment = "#>",
     # dev.args = list(png = list(type = "cairo")),
-  dpi=900,
-  out.width = "100%",
-  message = FALSE,
-  warning = FALSE
+    dpi = 900,
+    out.width = "100%",
+    message = FALSE,
+    warning = FALSE
 )
 
 library(xfun)
 
-format_table <- function(mydf){
-  mydf %>% 
-    kableExtra::kbl() %>% 
-    kable_paper() %>% 
-    scroll_box(width = "800px", height = "200px")
+format_table <- function(mydf) {
+    mydf %>%
+        kableExtra::kbl() %>%
+        kable_paper() %>%
+        scroll_box(width = "800px", height = "200px")
 }
-
 ```
 
 When joint analysis of two or more single cell sequencing data is to be performed, we need to first integrate the individual datasets. In Chevreul, a single function `integration_workflow` is capable of integrating multiple Seurat objects provided as a list.
@@ -43,18 +42,15 @@ Here, we are using the `panc8` dataset, which is produced in two batches using d
 
 ```{r, eval=FALSE}
 batches <-
-  human_gene_transcript_object[,!is.na(human_gene_transcript_object$Prep.Method)] %>%
-  Seurat::SplitObject(split.by = "Prep.Method") %>%
-  identity()
+    human_gene_transcript_object[, !is.na(human_gene_transcript_object$Prep.Method)] %>%
+    Seurat::SplitObject(split.by = "Prep.Method") %>%
+    identity()
 
 integrated_object <- integration_workflow(batches)
-
 ```
 
 ```{r, echo=FALSE}
-
 integrated_object <- readRDS("~/rpkgs/chevreul/object_integrated.rds")
-
 ```
 
 
@@ -67,8 +63,8 @@ When analyzing data across multiple batches, batch effects can become problemati
 markerp <- plot_markers(human_gene_transcript_object, metavar = "gene_snn_res.0.2", num_markers = 10)
 dp <- DimPlot(human_gene_transcript_object, group.by = "gene_snn_res.0.2", split.by = "Prep.Method")
 
-wrap_plots(markerp, dp) + 
-  plot_layout(widths = c(1,6), ncol = 1)
+wrap_plots(markerp, dp) +
+    plot_layout(widths = c(1, 6), ncol = 1)
 ```
 
 ## Integrate within species
