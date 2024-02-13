@@ -9,6 +9,9 @@ filter_merged_objects(objects, filter_var, filter_val, .drop = F)
 \arguments{
 \item{.drop}{}
 }
+\value{
+a list of single cell objects
+}
 \description{
 Filter Seurat Objects by custom variable and reset assay to uncorrected "gene"
 }

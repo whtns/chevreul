@@ -4,16 +4,17 @@
 \alias{object_from_tximport}
 \title{Create a object from output of  \href{http://bioconductor.org/packages/release/bioc/html/tximport.html}{tximport} and a table of cell metadata}
 \usage{
-object_from_tximport(txi, meta_tbl, ...)
+object_from_tximport(txi, meta_tbl)
 }
 \arguments{
 \item{txi}{output from load_counts_by_tximport}
 
 \item{meta_tbl}{a tibble of cell metadata with cell ids as the first column}
 
-\item{...}{}
-
 \item{feature}{the feature level on which to summarize counts gene or transcript}
+}
+\value{
+a single cell object
 }
 \description{
 Create a object from output of  \href{http://bioconductor.org/packages/release/bioc/html/tximport.html}{tximport} and a table of cell metadata

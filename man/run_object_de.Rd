@@ -15,7 +15,18 @@ run_object_de(
 )
 }
 \arguments{
-\item{diffex_scheme}{}
+\item{object}{single cell object}
+
+\item{cluster1}{cluster 1}
+
+\item{cluster2}{cluster 2}
+
+\item{resolution}{resolution}
+
+\item{diffex_scheme}{scheme for differential expression}
+}
+\value{
+a dataframe with differential expression information
 }
 \description{
 Run Differential Expression

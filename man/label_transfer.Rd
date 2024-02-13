@@ -15,6 +15,9 @@ label_transfer(
 \arguments{
 \item{...}{}
 }
+\value{
+a single cell object
+}
 \description{
 Transfer Labels Between Seurat Objects
 }

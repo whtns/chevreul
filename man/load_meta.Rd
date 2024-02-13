@@ -7,7 +7,10 @@
 load_meta(proj_dir)
 }
 \arguments{
-\item{proj_dir}{}
+\item{proj_dir}{a project directory}
+}
+\value{
+a cell level metadata tibble
 }
 \description{
 Load Sample Metadata for a given project

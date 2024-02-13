@@ -6,7 +6,7 @@
 \usage{
 plot_readcount(
   object,
-  metavar = "nCount_RNA",
+  group_by = "nCount_RNA",
   color.by = "batch",
   yscale = "linear",
   return_plotly = FALSE,
@@ -16,7 +16,7 @@ plot_readcount(
 \arguments{
 \item{object}{A object}
 
-\item{metavar}{Metadata variable to plot. Default set to "nCount_RNA"}
+\item{group_by}{Metadata variable to plot. Default set to "nCount_RNA"}
 
 \item{color.by}{Variable to color bins by. Default set to "batch"}
 
@@ -24,13 +24,17 @@ plot_readcount(
 
 \item{return_plotly}{whether to return an interactive ploly plot. Default set to FALSE}
 }
+\value{
+a histogram of read counts
+}
 \description{
 Draw a box plot for read count data of a metadata variable
 }
 \examples{
-#interactive plotly
-plot_readcount(human_gene_transcript_object, return_plotly = TRUE)
-# static plot
-plot_readcount(human_gene_transcript_object, return_plotly = FALSE)
+interactive plotly
+\dontrun{plot_readcount(human_gene_transcript_object, return_plotly = TRUE)}
+
+static plot
+\dontrun{plot_readcount(human_gene_transcript_object, return_plotly = FALSE)}
 
 }

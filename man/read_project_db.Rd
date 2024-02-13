@@ -18,6 +18,9 @@ read_project_db(
 
 \item{verbose}{}
 }
+\value{
+a tibble with single cell objects
+}
 \description{
 Reads database of chevreul projects to a data frame
 }

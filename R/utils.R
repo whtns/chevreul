@@ -5,7 +5,7 @@
 #' @param object A object
 #' @param datapath Path to file containing metadata
 #'
-#' @return
+#' @return a single cell object
 #' @export
 #'
 #' @examples
@@ -17,15 +17,15 @@ setMethod(
     "format_new_metadata", "Seurat",
     function(object, datapath) {
         new_meta <- read_csv(datapath) %>%
-            dplyr::mutate(across(contains("snn"), as.factor))
+            mutate(across(contains("snn"), as.factor))
 
         rowname_col <- colnames(new_meta)[1]
 
-        new_meta <- tibble::column_to_rownames(new_meta, rowname_col)
+        new_meta <- column_to_rownames(new_meta, rowname_col)
 
-        object <- object::AddMetaData(object, new_meta)
+        object <- Seurat::AddMetaData(object, new_meta)
         DefaultAssay(object) <- "gene"
-        ncalc <- object:::CalcN(object)
+        ncalc <- Seurat:::CalcN(object)
         object$nFeature_RNA <- ncalc$nFeature
         object$nCount_RNA <- ncalc$nCount
 
@@ -37,17 +37,18 @@ setMethod(
     "format_new_metadata", "SingleCellExperiment",
     function(object, datapath) {
         new_meta <- read_csv(datapath) %>%
-            dplyr::mutate(across(contains("snn"), as.factor))
+            mutate(across(contains("snn"), as.factor))
 
         rowname_col <- colnames(new_meta)[1]
 
-        new_meta <- tibble::column_to_rownames(new_meta, rowname_col)
+        new_meta <- column_to_rownames(new_meta, rowname_col)
 
-        object <- object::AddMetaData(object, new_meta)
-        DefaultAssay(object) <- "gene"
-        ncalc <- object:::CalcN(object)
-        object$nFeature_RNA <- ncalc$nFeature
-        object$nCount_RNA <- ncalc$nCount
+        colData(object) <- new_meta
+
+        # DefaultAssay(object) <- "gene"
+        object <- addPerCellQC(object)
+        object$nFeature_gene <- object$detected
+        object$nCount_gene <- ncalc$sum
 
         return(object)
     }
@@ -61,7 +62,7 @@ setMethod(
 #' @param cols Columns
 #' @param new_col New columns
 #'
-#' @return
+#' @return updated cell level metadata
 #' @export
 #'
 #' @examples
@@ -76,11 +77,11 @@ setMethod(
         drop_cols <- cols[!cols == new_col]
         na_cols <- purrr::map_lgl(cols, ~ all(is.na(object[[.x]])))
         cols <- cols[!na_cols]
-        meta <- tibble::rownames_to_column(pull_metadata(object)) %>%
+        meta <- rownames_to_column(pull_metadata(object)) %>%
             dplyr::mutate_at(vars(one_of(cols)), as.character) %>%
-            dplyr::mutate(`:=`(!!new_col, dplyr::coalesce(!!!syms(cols)))) %>%
-            dplyr::select(-drop_cols) %>%
-            tibble::column_to_rownames(var = "rowname") %>%
+            mutate(`:=`(!!new_col, dplyr::coalesce(!!!syms(cols)))) %>%
+            select(-drop_cols) %>%
+            column_to_rownames(var = "rowname") %>%
             identity()
     }
 )
@@ -92,66 +93,14 @@ setMethod(
         drop_cols <- cols[!cols == new_col]
         na_cols <- purrr::map_lgl(cols, ~ all(is.na(object[[.x]])))
         cols <- cols[!na_cols]
-        meta <- tibble::rownames_to_column(pull_metadata(object)) %>%
+        meta <- rownames_to_column(pull_metadata(object)) %>%
             dplyr::mutate_at(vars(one_of(cols)), as.character) %>%
-            dplyr::mutate(`:=`(!!new_col, dplyr::coalesce(!!!syms(cols)))) %>%
-            dplyr::select(-drop_cols) %>%
-            tibble::column_to_rownames(var = "rowname") %>%
+            mutate(`:=`(!!new_col, dplyr::coalesce(!!!syms(cols)))) %>%
+            select(-drop_cols) %>%
+            column_to_rownames(var = "rowname") %>%
             identity()
     }
 )
-
-
-
-#' Filter Rows to Top
-#'
-#' Filters the sprcified rows in the given columns to the top
-#'
-#' @param df
-#' @param column
-#' @param values
-#'
-#' @return
-#' @export
-#'
-#' @examples
-setGeneric("filter_rows_to_top", function(df, column, values) {
-    standardGeneric("filter_rows_to_top")
-})
-
-setMethod(
-    "filter_rows_to_top", "Seurat",
-    function(df, column, values) {
-        matched_df <- df[df[[column]] %in% values, ]
-
-        matched_df <- matched_df[match(values, matched_df[[column]]), ]
-
-        unmatched_df <- df[!(df[[column]] %in% values), ]
-
-        total_df <- list(matched_df = matched_df, unmatched_df = unmatched_df)
-        total_df <- dplyr::bind_rows(total_df)
-
-        return(total_df)
-    }
-)
-
-setMethod(
-    "filter_rows_to_top", "SingleCellExperiment",
-    function(df, column, values) {
-        matched_df <- df[df[[column]] %in% values, ]
-
-        matched_df <- matched_df[match(values, matched_df[[column]]), ]
-
-        unmatched_df <- df[!(df[[column]] %in% values), ]
-
-        total_df <- list(matched_df = matched_df, unmatched_df = unmatched_df)
-        total_df <- dplyr::bind_rows(total_df)
-
-        return(total_df)
-    }
-)
-
-
 
 #' Get Transcripts in object
 #'
@@ -161,10 +110,11 @@ setMethod(
 #' @param gene Gene of intrest
 #' @param organism Organism
 #'
-#' @return
+#' @return transcripts constituting a gene of interest in a single cell object
 #' @export
 #'
 #' @examples
+#'
 #' RXRG_transcripts <- get_transcripts_from_object(human_gene_transcript_object, "RXRG")
 #'
 setGeneric("get_transcripts_from_object", function(object, gene, organism = "human") {
@@ -189,43 +139,6 @@ setMethod(
     }
 )
 
-#' Title
-#'
-#' @param cds
-#' @param mygenes
-#' @param resolution
-#'
-#' @return
-#' @export
-#'
-#' @examples
-prep_plot_genes_in_pseudotime <- function(cds, mygenes, resolution, partition = FALSE) {
-    if (partition) {
-        partition_cells <- monocle3::partitions(cds)
-        # partition_cells <-  split(names(partition_cells), partition_cells)[[input$partitions]]
-        partition_cells <- split(names(partition_cells), partition_cells)[[1]]
-
-        cds <- cds[, colnames(cds) %in% partition_cells]
-    }
-
-    cds <- cds[rownames(cds) %in% mygenes, ]
-
-    if (any(grepl("integrated", colnames(colData(cds))))) {
-        default_assay <- "integrated"
-    } else {
-        default_assay <- "gene"
-    }
-
-    color_cells_by <- paste0(default_assay, "_snn_res.", resolution)
-
-    gene_ptime_plot <- monocle3::plot_genes_in_pseudotime(cds,
-        color_cells_by = color_cells_by,
-        min_expr = 0.5
-    )
-
-    return(gene_ptime_plot)
-}
-
 
 #' Record Experiment Metadata
 #'
@@ -234,7 +147,7 @@ prep_plot_genes_in_pseudotime <- function(cds, mygenes, resolution, partition = 
 #' @param experiment_name
 #' @param organism
 #'
-#' @return
+#' @return a single cell object
 #' @export
 #'
 #' @examples
@@ -277,8 +190,8 @@ setMethod(
             UMI_min = 50,
             genes_min = 10
         )
-        experiment$session_info <- list(
-            capture.output(sessioninfo::session_info())
+        experiment$sessionInfo <- list(
+            capture.output(sessionInfo())
         )
 
         if (!is.null(object@version)) {
@@ -328,8 +241,8 @@ setMethod(
             UMI_min = 50,
             genes_min = 10
         )
-        experiment$session_info <- list(
-            capture.output(sessioninfo::session_info())
+        experiment$sessionInfo <- list(
+            capture.output(sessionInfo())
         )
 
         if (!is.null(objectVersion(object))) {
@@ -352,7 +265,7 @@ setMethod(
 #' @param resolution
 #' @param ...
 #'
-#' @return
+#' @return a single cell object
 #' @export
 #'
 #' @examples
@@ -368,7 +281,7 @@ setMethod(
 
         if (is.list(object)) {
             object <- convert_object_list_to_multimodal(object)
-            # object <- object::UpdateobjectObject(object)
+            # object <- Seurat::UpdateSeuratObject(object)
         } else if (all(names(object@assays) == "RNA")) {
             object <- RenameAssays(object, RNA = "gene")
         } else if (identical(names(object@assays), c("RNA", "integrated"))) {
@@ -449,7 +362,7 @@ setMethod(
 
         if (is.list(object)) {
             object <- convert_object_list_to_multimodal(object)
-            # object <- object::UpdateobjectObject(object)
+            # object <- Seurat::UpdateSeuratObject(object)
         } else if (all(names(object@assays) == "RNA")) {
             object <- RenameAssays(object, RNA = "gene")
         } else if (identical(names(object@assays), c("RNA", "integrated"))) {
@@ -566,7 +479,7 @@ setMethod(
 #' @param updated_table
 #' @param object
 #'
-#' @return
+#' @return a single cell object
 #' @export
 #'
 #' @examples
@@ -576,7 +489,7 @@ propagate_spreadsheet_changes <- function(updated_table, object) {
     sample_ids <- rownames(meta)
 
     meta <- meta %>%
-        dplyr::mutate(meta, across(contains("snn"), as.factor)) %>%
+        mutate(meta, across(contains("snn"), as.factor)) %>%
         mutate(across(where(is.ordered), ~ as.factor(as.character(.x))))
 
     rownames(meta) <- sample_ids
@@ -594,7 +507,7 @@ propagate_spreadsheet_changes <- function(updated_table, object) {
 #' @param sqlite_db Database to be created
 #' @param verbose
 #'
-#' @return
+#' @return a sqlite database with single cell objects
 #' @export
 #'
 #' @examples
@@ -606,18 +519,18 @@ setMethod(
         if (!dir.exists(cache_location)) {
             dir.create(cache_location)
         }
-        con <- DBI::dbConnect(RSQLite::SQLite(), fs::path(cache_location, sqlite_db))
+        con <- dbConnect(RSQLite::SQLite(), path(cache_location, sqlite_db))
         projects_tbl <- tibble::tibble(project_name = character(), project_path = character(), project_slug = character(), project_type = character(), )
-        message(paste0("building table of chevreul projects at ", fs::path(cache_location, sqlite_db)))
+        message(paste0("building table of chevreul projects at ", path(cache_location, sqlite_db)))
         tryCatch({
-            DBI::dbWriteTable(con, "projects_tbl", projects_tbl)
+            dbWriteTable(con, "projects_tbl", projects_tbl)
         }, warning = function(w) {
             message(sprintf("Warning in %s: %s", deparse(w[["call"]]), w[["message"]]))
         }, error = function(e) {
             message("projects db already exists!")
         }, finally = {
         })
-        DBI::dbDisconnect(con)
+        dbDisconnect(con)
     }
 )
 
@@ -627,18 +540,18 @@ setMethod(
         if (!dir.exists(cache_location)) {
             dir.create(cache_location)
         }
-        con <- DBI::dbConnect(RSQLite::SQLite(), fs::path(cache_location, sqlite_db))
+        con <- dbConnect(RSQLite::SQLite(), path(cache_location, sqlite_db))
         projects_tbl <- tibble::tibble(project_name = character(), project_path = character(), project_slug = character(), project_type = character(), )
-        message(paste0("building table of chevreul projects at ", fs::path(cache_location, sqlite_db)))
+        message(paste0("building table of chevreul projects at ", path(cache_location, sqlite_db)))
         tryCatch({
-            DBI::dbWriteTable(con, "projects_tbl", projects_tbl)
+            dbWriteTable(con, "projects_tbl", projects_tbl)
         }, warning = function(w) {
             message(sprintf("Warning in %s: %s", deparse(w[["call"]]), w[["message"]]))
         }, error = function(e) {
             message("projects db already exists!")
         }, finally = {
         })
-        DBI::dbDisconnect(con)
+        dbDisconnect(con)
     }
 )
 #' Update a database of chevreul projects
@@ -650,7 +563,7 @@ setMethod(
 #' @param sqlite_db sqlite db
 #' @param verbose
 #'
-#' @return
+#' @return a sqlite database with single cell objects
 #' @export
 #'
 #' @examples
@@ -662,27 +575,27 @@ update_project_db <- function(projects_dir = NULL,
         dir.create(cache_location)
     }
 
-    con <- DBI::dbConnect(RSQLite::SQLite(), fs::path(cache_location, sqlite_db))
+    con <- dbConnect(RSQLite::SQLite(), path(cache_location, sqlite_db))
 
     projects_tbl <-
-        fs::dir_ls(projects_dir, glob = "*.here", recurse = TRUE, fail = FALSE, all = TRUE) %>%
-        fs::path_dir(.) %>%
-        purrr::set_names(fs::path_file(.)) %>%
-        tibble::enframe("project_name", "project_path") %>%
-        dplyr::mutate(project_slug = stringr::str_remove(project_name, "_proj$")) %>%
-        dplyr::mutate(project_type = fs::path_file(fs::path_dir(project_path))) %>%
+        dir_ls(projects_dir, glob = "*.here", recurse = TRUE, fail = FALSE, all = TRUE) %>%
+        path_dir(.) %>%
+        purrr::set_names(path_file(.)) %>%
+        enframe("project_name", "project_path") %>%
+        mutate(project_slug = str_remove(project_name, "_proj$")) %>%
+        mutate(project_type = path_file(path_dir(project_path))) %>%
         identity()
 
     current_projects_tbl <-
         DBI::dbReadTable(con, "projects_tbl") %>%
-        dplyr::filter(fs::file_exists(project_path)) %>%
-        dplyr::filter(!project_path %in% projects_tbl$project_path) %>%
-        dplyr::bind_rows(projects_tbl) %>%
-        dplyr::distinct(project_path, .keep_all = TRUE)
+        filter(fs::file_exists(project_path)) %>%
+        filter(!project_path %in% projects_tbl$project_path) %>%
+        bind_rows(projects_tbl) %>%
+        distinct(project_path, .keep_all = TRUE)
 
-    DBI::dbWriteTable(con, "projects_tbl", projects_tbl, overwrite = TRUE)
+    dbWriteTable(con, "projects_tbl", projects_tbl, overwrite = TRUE)
 
-    DBI::dbDisconnect(con)
+    dbDisconnect(con)
 }
 
 #' Update a database of chevreul projects
@@ -696,7 +609,7 @@ update_project_db <- function(projects_dir = NULL,
 #' @param verbose
 #'
 #'
-#' @return
+#' @return a sqlite database with single cell objects
 #' @export
 #'
 #' @examples
@@ -708,26 +621,26 @@ append_to_project_db <- function(new_project_path, projects_dir = NULL,
         dir.create(cache_location)
     }
 
-    con <- DBI::dbConnect(RSQLite::SQLite(), fs::path(cache_location, sqlite_db))
+    con <- dbConnect(RSQLite::SQLite(), path(cache_location, sqlite_db))
 
     projects_tbl <-
         new_project_path %>%
-        purrr::set_names(fs::path_file(.)) %>%
-        tibble::enframe("project_name", "project_path") %>%
-        dplyr::mutate(project_slug = stringr::str_remove(project_name, "_proj$")) %>%
-        dplyr::mutate(project_type = fs::path_file(fs::path_dir(project_path))) %>%
+        purrr::set_names(path_file(.)) %>%
+        enframe("project_name", "project_path") %>%
+        mutate(project_slug = str_remove(project_name, "_proj$")) %>%
+        mutate(project_type = path_file(path_dir(project_path))) %>%
         identity()
 
     current_projects_tbl <-
         DBI::dbReadTable(con, "projects_tbl") %>%
-        dplyr::filter(fs::file_exists(project_path)) %>%
-        dplyr::filter(!project_path %in% projects_tbl$project_path) %>%
-        dplyr::bind_rows(projects_tbl) %>%
-        dplyr::distinct(project_path, .keep_all = TRUE)
+        filter(fs::file_exists(project_path)) %>%
+        filter(!project_path %in% projects_tbl$project_path) %>%
+        bind_rows(projects_tbl) %>%
+        distinct(project_path, .keep_all = TRUE)
 
-    DBI::dbWriteTable(con, "projects_tbl", current_projects_tbl, overwrite = TRUE)
+    dbWriteTable(con, "projects_tbl", current_projects_tbl, overwrite = TRUE)
 
-    DBI::dbDisconnect(con)
+    dbDisconnect(con)
 }
 
 #' Read a database of chevreul projects
@@ -739,7 +652,7 @@ append_to_project_db <- function(new_project_path, projects_dir = NULL,
 #' @param sqlite_db sqlite db
 #' @param verbose
 #'
-#' @return
+#' @return a tibble with single cell objects
 #' @export
 #'
 #' @examples
@@ -751,12 +664,12 @@ read_project_db <- function(projects_dir = NULL,
         dir.create(cache_location)
     }
 
-    con <- DBI::dbConnect(RSQLite::SQLite(), fs::path(cache_location, sqlite_db))
+    con <- dbConnect(RSQLite::SQLite(), path(cache_location, sqlite_db))
 
     current_projects_tbl <-
         DBI::dbReadTable(con, "projects_tbl")
 
-    DBI::dbDisconnect(con)
+    dbDisconnect(con)
 
     return(current_projects_tbl)
 }
@@ -768,26 +681,26 @@ read_project_db <- function(projects_dir = NULL,
 #' @param cache_location Path to cache "~/.cache/chevreul"
 #' @param sqlite_db sqlite db containing bw files
 #'
-#' @return
+#' @return a sqlite database of bigwig files for cells in a single cell object
 #' @export
 #'
 #' @examples
 make_bigwig_db <- function(new_project = NULL, cache_location = "~/.cache/chevreul/", sqlite_db = "bw-files.db") {
-    new_bigwigfiles <- fs::dir_ls(new_project, glob = "*.bw", recurse = TRUE) %>%
-        purrr::set_names(fs::path_file(.)) %>%
-        tibble::enframe("name", "bigWig") %>%
-        dplyr::mutate(sample_id = stringr::str_remove(name, "_Aligned.sortedByCoord.out.*bw$")) %>%
-        dplyr::filter(!stringr::str_detect(name, "integrated")) %>%
-        dplyr::distinct(sample_id, .keep_all = TRUE) %>%
+    new_bigwigfiles <- dir_ls(new_project, glob = "*.bw", recurse = TRUE) %>%
+        purrr::set_names(path_file(.)) %>%
+        enframe("name", "bigWig") %>%
+        mutate(sample_id = str_remove(name, "_Aligned.sortedByCoord.out.*bw$")) %>%
+        filter(!stringr::str_detect(name, "integrated")) %>%
+        distinct(sample_id, .keep_all = TRUE) %>%
         identity()
 
-    con <- DBI::dbConnect(RSQLite::SQLite(), dbname = fs::path(cache_location, sqlite_db))
+    con <- dbConnect(RSQLite::SQLite(), dbname = path(cache_location, sqlite_db))
 
     all_bigwigfiles <-
         dbReadTable(con, "bigwigfiles") %>%
-        dplyr::bind_rows(new_bigwigfiles)
+        bind_rows(new_bigwigfiles)
 
-    DBI::dbWriteTable(con, "bigwigfiles", all_bigwigfiles, overwrite = TRUE)
+    dbWriteTable(con, "bigwigfiles", all_bigwigfiles, overwrite = TRUE)
 
     return(all_bigwigfiles)
 }
@@ -798,56 +711,32 @@ make_bigwig_db <- function(new_project = NULL, cache_location = "~/.cache/chevre
 #' @param projects_dir path to project dir
 #' @param db_path path to .db file
 #'
-#' @return
+#' @return a tibble with cell level metadata from a single cell object
 #'
 #' @examples
 metadata_from_batch <- function(batch, projects_dir = "/dataVolume/storage/single_cell_projects",
     db_path = "single-cell-projects.db") {
-    mydb <- DBI::dbConnect(RSQLite::SQLite(), fs::path(projects_dir, db_path))
+    mydb <- dbConnect(RSQLite::SQLite(), path(projects_dir, db_path))
 
-    projects_tbl <- DBI::dbReadTable(mydb, "projects_tbl") %>%
-        dplyr::filter(!project_type %in% c("integrated_projects", "resources"))
+    projects_tbl <- dbReadTable(mydb, "projects_tbl") %>%
+        filter(!project_type %in% c("integrated_projects", "resources"))
 
-    DBI::dbDisconnect(mydb)
+    dbDisconnect(mydb)
 
     metadata <-
         projects_tbl %>%
-        dplyr::filter(project_slug == batch) %>%
-        dplyr::pull(project_path) %>%
-        fs::path("data") %>%
-        fs::dir_ls(glob = "*.csv") %>%
+        filter(project_slug == batch) %>%
+        pull(project_path) %>%
+        path("data") %>%
+        dir_ls(glob = "*.csv") %>%
         identity()
-}
-
-#' Swap counts from Feature
-#'
-#' @param cds
-#' @param featureType
-#'
-#' @return
-#' @export
-#'
-#' @examples
-swap_counts_from_feature <- function(cds, featureType) {
-    print(featureType)
-    #
-    #   if (featureType == "transcript"){
-    #     rowData(cds[[featureType]])$gene_short_name <- rownames(cds[[featureType]])
-    #   }
-
-    assay(cds$traj, withDimnames = FALSE) <- assay(cds[[featureType]])
-    rowData(cds$traj) <- rowData(cds[[featureType]])
-    rownames(cds$traj) <- rownames(cds[[featureType]])
-    cds$traj@preprocess_aux$gene_loadings <- cds[[featureType]]@preprocess_aux$gene_loadings
-    # counts(cds$traj) <- counts(cds[[featureType]])
-    cds$traj
 }
 
 #' convert object list to multimodal object
 #'
 #' @param object_list
 #'
-#' @return
+#' @return a list of single cell objects
 #' @export
 #'
 #' @examples
@@ -885,7 +774,7 @@ convert_object_list_to_multimodal <- function(object_list) {
 #'
 #' @param myvec A vector of object names
 #'
-#' @return
+#' @return a clean vector of object names
 #' @export
 #'
 #' @examples
@@ -901,7 +790,7 @@ make_chevreul_clean_names <- function(myvec) {
 #'
 #' @param seurat_v3 a version 3 seurat
 #'
-#' @return
+#' @return a verstion 5 seurat
 #' @export
 #'
 #' @examples
@@ -937,18 +826,39 @@ convert_v3_to_v5 <- function(seurat_v3) {
     return(seurat_v5)
 }
 
+#' Get genes from Object
+#'
+#' Get genes from the object
+#'
+#' @param object an object
+#'
+#' @return a vector of genes in a single cell object
+#' @export
+#'
+#' @examples
 setGeneric("genes_from_object", function(object, ...) {
     standardGeneric("genes_from_object")
 })
 
 setMethod("genes_from_object", "Seurat", function(object, assay) {
-    rownames(object@assays[[assay]])
+    #rownames(object@assays[[assay]])
+     rownames(object)
 })
 
 setMethod("genes_from_object", "SingleCellExperiment", function(object) {
     rownames(object)
 })
 
+#' Get metadata from object
+#'
+#' Get metadata from the given object
+#'
+#' @param object a single cell object
+#'
+#' @return a tibble with metadata from a single cell object
+#' @export
+#'
+#' @examples
 setGeneric("metadata_from_object", function(object) {
     standardGeneric("metadata_from_object")
 })
@@ -961,16 +871,16 @@ setMethod("metadata_from_object", "SingleCellExperiment", function(object) {
     colnames(colData(object))
 })
 
-convert_seurat_to_sce <- function(seu) {
-    sce <- as.SingleCellExperiment(seu, assay = DefaultAssay(seu))
-
-    alt_exp_names <- Assays(seu)[!Assays(seu) == DefaultAssay(seu)]
-
-    for (i in alt_exp_names) {
-        altExp(sce, i) <- as.SingleCellExperiment(seu, assay = i)
-    }
-
-    sce@metadata <- seu@misc
-
-    return(sce)
-}
+# convert_seurat_to_sce <- function(seu) {
+#     sce <- as.SingleCellExperiment(seu, assay = DefaultAssay(seu))
+#
+#     alt_exp_names <- Seurat::Assays(seu)[!Seurat::Assays(seu) == DefaultAssay(seu)]
+#
+#     for (i in alt_exp_names) {
+#         altExp(sce, i) <- as.SingleCellExperiment(seu, assay = i)
+#     }
+#
+#     sce@metadata <- seu@misc
+#
+#     return(sce)
+# }

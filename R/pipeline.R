@@ -14,7 +14,7 @@
 #' @param organism Default "human"
 #' @param ...
 #'
-#' @return
+#' @return an integrated single cell object
 #' @export
 #'
 #' @examples
@@ -140,9 +140,9 @@ setMethod(
 #' @param resolution Resolution for clustering cells. Default set to 0.6.
 #' @param reduction Dimensional reduction object
 #' @param organism Organism
-#' @param ... Extra parameters passed to object_pipeline
+#' @param ... extra parameters passed to internal functions
 #'
-#' @return
+#' @return a processed single cell object
 #' @export
 #'
 #' @examples

@@ -2,13 +2,13 @@
 % Please edit documentation in R/create_seu.R
 \name{load_counts_by_tximport}
 \alias{load_counts_by_tximport}
-\title{Run \href{http://bioconductor.org/packages/release/bioc/html/tximport.html}{tximport} on a set of cells}
+\title{Load Counts by Tximport}
 \usage{
 load_counts_by_tximport(
   proj_dir,
   type = "salmon",
   countsFromAbundance = "scaledTPM",
-  edb = EnsDb.Hsapiens.v86::EnsDb.Hsapiens.v86
+  edb = EnsDb.Hsapiens.v86
 )
 }
 \arguments{
@@ -20,7 +20,13 @@ load_counts_by_tximport(
 
 \item{edb}{}
 }
+\value{
+a list of feature count matrices for gene symbols and transcripts
+}
 \description{
+Run \href{http://bioconductor.org/packages/release/bioc/html/tximport.html}{tximport} on a set of cells
+}
+\details{
 cells can be quantified using:
 \itemize{
 \item stringtie

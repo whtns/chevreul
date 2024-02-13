@@ -1,12 +1,12 @@
-#' Create a minimal object app
+#' Create a minimal chevreul app using SingleCellExperiment input
 #'
 #' @param object a singlecell object
 #' @param loom_path path to a loom file
-#' @param appTitle
-#' @param organism_type Organism™
-#' @param futureMb
+#' @param appTitle a title for the app
+#' @param organism_type human or mouse
+#' @param futureMb the megabytes available for the future package
 #'
-#' @return
+#' @return a minimal chevreul app
 #' @export
 #'
 #' @examples
@@ -14,8 +14,7 @@
 #' minimalSceApp(panc8)
 #' }
 #'
-minimalSceApp <- function(input_object = panc8, loom_path = NULL, appTitle = NULL,
-    organism_type = "human", futureMb = 13000, bigwig_db = "~/.cache/chevreul/bw-files.db") {
+minimalSceApp <- function(input_object = panc8, loom_path = NULL, appTitle = NULL, organism_type = "human", futureMb = 13000, bigwig_db = "~/.cache/chevreul/bw-files.db") {
     future::plan(strategy = "multicore", workers = 6)
     future_size <- futureMb * 1024^2
     options(future.globals.maxSize = future_size)
@@ -25,34 +24,34 @@ minimalSceApp <- function(input_object = panc8, loom_path = NULL, appTitle = NUL
         info = TRUE, searching = TRUE, autoWidth = F, ordering = TRUE,
         scrollX = TRUE, language = list(search = "Filter:")
     ))
-    header <- shinydashboard::dashboardHeader(title = appTitle)
-    sidebar <- shinydashboard::dashboardSidebar(
+    header <- dashboardHeader(title = appTitle)
+    sidebar <- dashboardSidebar(
         textOutput("appTitle"),
         uiOutput("featureType"),
-        shinydashboard::sidebarMenu(
-            shinydashboard::menuItem("Reformat Metadata",
+        sidebarMenu(
+            menuItem("Reformat Metadata",
                 tabName = "reformatMetadata", icon = icon("columns")
-            ), shinydashboard::menuItem("Plot Data",
+            ), menuItem("Plot Data",
                 tabName = "comparePlots", icon = icon("chart-bar"), selected = TRUE
-            ), shinydashboard::menuItem("Heatmap/Violin Plots",
+            ), menuItem("Heatmap/Violin Plots",
                 tabName = "violinPlots", icon = icon("sort")
-                # ), shinydashboard::menuItem("Coverage Plots",
+                # ), menuItem("Coverage Plots",
                 #   tabName = "coveragePlots", icon = icon("mountain")
-            ), shinydashboard::menuItem("Differential Expression",
+            ), menuItem("Differential Expression",
                 tabName = "diffex", icon = icon("magnet")
-                # ), shinydashboard::menuItem("Pathway Enrichment Analysis",
+                # ), menuItem("Pathway Enrichment Analysis",
                 #   tabName = "pathwayEnrichment", icon = icon("sitemap")
-            ), shinydashboard::menuItem("Find Markers",
+            ), menuItem("Find Markers",
                 tabName = "findMarkers", icon = icon("bullhorn")
-            ), shinydashboard::menuItem("Subset Object Input",
+            ), menuItem("Subset Object Input",
                 tabName = "subsetObject", icon = icon("filter")
-            ), shinydashboard::menuItem("All Transcripts",
+            ), menuItem("All Transcripts",
                 tabName = "allTranscripts", icon = icon("sliders-h")
-            ), shinydashboard::menuItem("Monocle",
+            ), menuItem("Monocle",
                 tabName = "monocle", icon = icon("bullseye")
-            ), shinydashboard::menuItem("Regress Features",
+            ), menuItem("Regress Features",
                 tabName = "regressFeatures", icon = icon("eraser")
-            ), shinydashboard::menuItem("Technical Information",
+            ), menuItem("Technical Information",
                 tabName = "techInfo", icon = icon("cogs")
             )
         ),
@@ -62,10 +61,10 @@ minimalSceApp <- function(input_object = panc8, loom_path = NULL, appTitle = NUL
         changeEmbedParamsui("changeembed"),
         width = 250
     )
-    body <- shinydashboard::dashboardBody(
+    body <- dashboardBody(
         waiter::use_waiter(),
-        shinydashboard::tabItems(
-            shinydashboard::tabItem(
+        tabItems(
+            tabItem(
                 tabName = "comparePlots",
                 h2("Compare Plots") %>%
                     default_helper(type = "markdown", content = "comparePlots"),
@@ -80,7 +79,7 @@ minimalSceApp <- function(input_object = panc8, loom_path = NULL, appTitle = NUL
                 ),
                 plotClustree_UI("clustreePlot")
             ),
-            shinydashboard::tabItem(
+            tabItem(
                 tabName = "violinPlots",
                 fluidRow(
                     plotHeatmapui("heatMap")
@@ -89,19 +88,19 @@ minimalSceApp <- function(input_object = panc8, loom_path = NULL, appTitle = NUL
                     plotViolinui("violinPlot")
                 )
             ),
-            shinydashboard::tabItem(
+            tabItem(
                 tabName = "coveragePlots",
                 fluidRow(
                     plotCoverage_UI("coverageplots")
                 )
             ),
-            shinydashboard::tabItem(
+            tabItem(
                 tabName = "reformatMetadata",
                 fluidRow(
                     reformatMetadataDRui("reformatMetadataDR")
                 )
             ),
-            shinydashboard::tabItem(
+            tabItem(
                 tabName = "subsetObject",
                 h2("Subset Object Input") %>%
                     default_helper(type = "markdown", content = "subsetObject"),
@@ -115,8 +114,8 @@ minimalSceApp <- function(input_object = panc8, loom_path = NULL, appTitle = NUL
                         "Upload .csv file with cells to include",
                         accept = c(".csv")
                     ),
-                    shinyjs::useShinyjs(),
-                    # shinyjs::runcodeUI(code = "shinyjs::alert('Hello!')"),
+                    useShinyjs(),
+                    # runcodeUI(code = "alert('Hello!')"),
                     textOutput("subsetMessages"),
                     width = 6
                 ),
@@ -124,32 +123,32 @@ minimalSceApp <- function(input_object = panc8, loom_path = NULL, appTitle = NUL
                     title = "Selected Cells", tableSelectedui("subset"),
                     width = 6
                 )
-            ), shinydashboard::tabItem(
+            ), tabItem(
                 tabName = "findMarkers",
                 h2("Find Markers"),
                 findMarkersui("findmarkers"),
                 plotDimRedui("markerScatter")
-            ), shinydashboard::tabItem(
+            ), tabItem(
                 tabName = "allTranscripts",
                 h2("All Transcripts"),
                 plotDimRedui("alltranscripts2"),
                 allTranscriptsui("alltranscripts1")
             ),
-            shinydashboard::tabItem(
+            tabItem(
                 tabName = "diffex",
                 h2("Differential Expression") %>%
                     default_helper(type = "markdown", content = "diffex"),
                 plotDimRedui("diffex"),
                 diffexui("diffex")
             ),
-            shinydashboard::tabItem(
+            tabItem(
                 tabName = "pathwayEnrichment",
                 h2("Pathway Enrichment"),
                 fluidRow(
                     pathwayEnrichmentui("pathwayEnrichment")
                 )
             ),
-            shinydashboard::tabItem(
+            tabItem(
                 tabName = "regressFeatures",
                 fluidRow(
                     chevreulBox(
@@ -178,11 +177,11 @@ minimalSceApp <- function(input_object = panc8, loom_path = NULL, appTitle = NUL
                     ) %>%
                         default_helper(type = "markdown", content = "regressFeatures")
                 )
-            ), shinydashboard::tabItem(
+            ), tabItem(
                 tabName = "monocle",
                 h2("Monocle"),
                 monocleui("monocle")
-            ), shinydashboard::tabItem(
+            ), tabItem(
                 tabName = "techInfo",
                 h2("Technical Information"),
                 techInfoui("techInfo")
@@ -345,7 +344,7 @@ minimalSceApp <- function(input_object = panc8, loom_path = NULL, appTitle = NUL
             req(subset_selected_cells())
             withCallingHandlers(
                 {
-                    shinyjs::html("subsetMessages", "")
+                    html("subsetMessages", "")
                     message("Beginning")
                     subset_object <- object()[, colnames(object()) %in% subset_selected_cells()]
                     object(subset_object)
@@ -363,7 +362,7 @@ minimalSceApp <- function(input_object = panc8, loom_path = NULL, appTitle = NUL
                     message("Complete!")
                 },
                 message = function(m) {
-                    shinyjs::html(id = "subsetMessages", html = paste0(
+                    html(id = "subsetMessages", html = paste0(
                         "Subsetting Object: ",
                         m$message
                     ), add = FALSE)
@@ -375,7 +374,7 @@ minimalSceApp <- function(input_object = panc8, loom_path = NULL, appTitle = NUL
             req(input$uploadCsv)
             withCallingHandlers(
                 {
-                    shinyjs::html("subsetMessages", "")
+                    html("subsetMessages", "")
                     message("Beginning")
                     subset_object <- subset_by_meta(
                         input$uploadCsv$datapath,
@@ -397,7 +396,7 @@ minimalSceApp <- function(input_object = panc8, loom_path = NULL, appTitle = NUL
                     message("Complete!")
                 },
                 message = function(m) {
-                    shinyjs::html(id = "subsetMessages", html = paste0(
+                    html(id = "subsetMessages", html = paste0(
                         "Subsetting Object: ",
                         m$message
                     ), add = FALSE)

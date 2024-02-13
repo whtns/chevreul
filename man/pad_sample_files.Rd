@@ -9,6 +9,9 @@ pad_sample_files(proj_dir)
 \arguments{
 \item{proj_dir}{}
 }
+\value{
+a list of fastq files
+}
 \description{
 pad sample numbers to prep for armor
 }

@@ -13,6 +13,9 @@ combine_cols(object, cols, new_col)
 
 \item{new_col}{New columns}
 }
+\value{
+updated cell level metadata
+}
 \description{
 Reformat object Metadata by Coalesced Columns
 }

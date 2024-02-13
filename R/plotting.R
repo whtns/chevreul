@@ -1,22 +1,18 @@
 #' Unite metadata
 #'
-#'
-#'
 #' @param object A object
-#' @param metavars A feature or variable to combine
+#' @param group_bys A feature or variable to combine
 #'
-#' @return an object with Idents formed from concatenation of metavars
+#' @return an object with Idents formed from concatenation of group_bys
 #' @export
-#'
-#' @examples
-setGeneric("unite_metadata", function(object, metavars) standardGeneric("unite_metadata"))
+setGeneric("unite_metadata", function(object, group_bys) standardGeneric("unite_metadata"))
 
 setMethod(
     "unite_metadata", "Seurat",
-    function(object, metavars) {
-        newcolname <- paste(metavars, collapse = "_by_")
-        newdata <- object[[metavars]] %>%
-            tidyr::unite(!!newcolname, metavars) %>%
+    function(object, group_bys) {
+        newcolname <- paste(group_bys, collapse = "_by_")
+        newdata <- object[[group_bys]] %>%
+            tidyr::unite(!!newcolname, group_bys) %>%
             tibble::deframe()
         Idents(object) <- newdata
         return(object)
@@ -25,145 +21,16 @@ setMethod(
 
 setMethod(
     "unite_metadata", "SingleCellExperiment",
-    function(object, metavars) {
-        newcolname <- paste(metavars, collapse = "_by_")
-        newdata <- colData(object)[metavars] %>%
+    function(object, group_bys) {
+        newcolname <- paste(group_bys, collapse = "_by_")
+        newdata <- colData(object)[group_bys] %>%
             as.data.frame() %>%
-            tidyr::unite(!!newcolname, metavars) %>%
+            tidyr::unite(!!newcolname, group_bys) %>%
             tibble::deframe()
         # Idents(object) <- newdata
         return(object)
     }
 )
-
-#' Plot monocle pseudotime over multiple branches
-#'
-#' Plots heatmap to de
-#'
-#' @param cds CellDataSet for the experiment
-#' @param branches The terminal branches on the developmental tree to be investigated.
-#' @param branches_name
-#' @param cluster_rows
-#' @param hclust_method
-#' @param num_clusters
-#' @param hmcols
-#' @param add_annotation_row
-#' @param add_annotation_col
-#' @param show_rownames
-#' @param use_gene_short_name
-#' @param norm_method
-#' @param scale_max
-#' @param scale_min
-#' @param trend_formula
-#' @param return_heatmap
-#' @param cores
-#'
-#' @return
-#'
-#' @examples
-setGeneric("plot_multiple_branches_heatmap", function(cds, branches, branches_name = NULL, cluster_rows = TRUE, hclust_method = "ward.D2", num_clusters = 6, hmcols = NULL, add_annotation_row = NULL, add_annotation_col = NULL, show_rownames = FALSE, use_gene_short_name = TRUE, norm_method = c("vstExprs", "log"), scale_max = 3, scale_min = -3, trend_formula = "~sm.ns(Pobjectdotime, df=3)", return_heatmap = FALSE, cores = 1) standardGeneric("plot_multiple_branches_heatmap"))
-
-setMethod(
-    "plot_multiple_branches_heatmap", "cell_data_set",
-    function(cds, branches, branches_name = NULL, cluster_rows = TRUE, hclust_method = "ward.D2", num_clusters = 6, hmcols = NULL, add_annotation_row = NULL, add_annotation_col = NULL, show_rownames = FALSE, use_gene_short_name = TRUE, norm_method = c("vstExprs", "log"), scale_max = 3, scale_min = -3, trend_formula = "~sm.ns(Pobjectdotime, df=3)", return_heatmap = FALSE, cores = 1) {
-        pobjectdocount <- 1
-        if (!(all(branches %in% Biobase::pData(cds)$State)) & length(branches) == 1) {
-            stop("This function only allows to make multiple branch plots where branches is included in the pData")
-        }
-        branch_label <- branches
-        if (!is.null(branches_name)) {
-            if (length(branches) != length(branches_name)) {
-                stop("branches_name should have the same length as branches")
-            }
-            branch_label <- branches_name
-        }
-        g <- cds@minSpanningTree
-        m <- NULL
-        for (branch_in in branches) {
-            branches_cells <- row.names(subset(Biobase::pData(cds), State == branch_in))
-            root_state <- subset(Biobase::pData(cds), Pobjectdotime == 0)[, "State"]
-            root_state_cells <- row.names(subset(Biobase::pData(cds), State == root_state))
-            if (cds@dim_reduce_type != "ICA") {
-                root_state_cells <- unique(paste("Y_", cds@auxOrderingData$DDRTree$pr_graph_cell_proj_closest_vertex[root_state_cells, ], sep = ""))
-                branches_cells <- unique(paste("Y_", cds@auxOrderingData$DDRTree$pr_graph_cell_proj_closest_vertex[branches_cells, ], sep = ""))
-            }
-            root_cell <- root_state_cells[which(degree(g, v = root_state_cells) == 1)]
-            tip_cell <- branches_cells[which(degree(g, v = branches_cells) == 1)]
-            traverse_res <- traverseTree(g, root_cell, tip_cell)
-            path_cells <- names(traverse_res$shortest_path[[1]])
-            if (cds@dim_reduce_type != "ICA") {
-                pc_ind <- cds@auxOrderingData$DDRTree$pr_graph_cell_proj_closest_vertex
-                path_cells <- row.names(pc_ind)[paste("Y_", pc_ind[, 1], sep = "") %in% path_cells]
-            }
-            cds_subset <- cds[, path_cells]
-            newdata <- data.frame(Pobjectdotime = seq(0, max(Biobase::pData(cds_subset)$Pobjectdotime), length.out = 100))
-            tmp <- genSmoothCurves(cds_subset, cores = cores, trend_formula = trend_formula, relative_expr = T, new_data = newdata)
-            if (is.null(m)) {
-                m <- tmp
-            } else {
-                m <- cbind(m, tmp)
-            }
-        }
-        m <- m[!apply(m, 1, sum) == 0, ]
-        norm_method <- match.arg(norm_method)
-        if (norm_method == "vstExprs" && is.null(cds@dispFitInfo[["blind"]]$disp_func) == FALSE) {
-            m <- vstExprs(cds, expr_matrix = m)
-        } else if (norm_method == "log") {
-            m <- log10(m + pobjectdocount)
-        }
-        m <- m[!apply(m, 1, sd) == 0, ]
-        m <- Matrix::t(scale(Matrix::t(m), center = TRUE))
-        m <- m[is.na(row.names(m)) == FALSE, ]
-        m[is.nan(m)] <- 0
-        m[m > scale_max] <- scale_max
-        m[m < scale_min] <- scale_min
-        heatmap_matrix <- m
-        row_dist <- as.dist((1 - cor(Matrix::t(heatmap_matrix))) / 2)
-        row_dist[is.na(row_dist)] <- 1
-        if (is.null(hmcols)) {
-            bks <- seq(-3.1, 3.1, by = 0.1)
-            hmcols <- colorRamps::blue2green2red(length(bks) - 1)
-        } else {
-            bks <- seq(-3.1, 3.1, length.out = length(hmcols))
-        }
-        ph <- pheatmap(heatmap_matrix, useRaster = T, cluster_cols = FALSE, cluster_rows = T, show_rownames = F, show_colnames = F, clustering_distance_rows = row_dist, clustering_method = hclust_method, cutree_rows = num_clusters, silent = TRUE, filename = NA, breaks = bks, color = hmcols)
-        annotation_col <- data.frame(Branch = factor(rep(rep(branch_label, each = 100))))
-        annotation_row <- data.frame(Cluster = factor(cutree(ph$tree_row, num_clusters)))
-        col_gaps_ind <- c(1:(length(branches) - 1)) * 100
-        if (!is.null(add_annotation_row)) {
-            old_colnames_length <- ncol(annotation_row)
-            annotation_row <- cbind(annotation_row, add_annotation_row[row.names(annotation_row), ])
-            colnames(annotation_row)[(old_colnames_length + 1):ncol(annotation_row)] <- colnames(add_annotation_row)
-        }
-        if (use_gene_short_name == TRUE) {
-            if (is.null(Biobase::fData(cds)$gene_short_name) == FALSE) {
-                feature_label <- as.character(Biobase::fData(cds)[row.names(heatmap_matrix), "gene_short_name"])
-                feature_label[is.na(feature_label)] <- row.names(heatmap_matrix)
-                row_ann_labels <- as.character(Biobase::fData(cds)[row.names(annotation_row), "gene_short_name"])
-                row_ann_labels[is.na(row_ann_labels)] <- row.names(annotation_row)
-            } else {
-                feature_label <- row.names(heatmap_matrix)
-                row_ann_labels <- row.names(annotation_row)
-            }
-        } else {
-            feature_label <- row.names(heatmap_matrix)
-            row_ann_labels <- row.names(annotation_row)
-        }
-        row.names(heatmap_matrix) <- feature_label
-        row.names(annotation_row) <- row_ann_labels
-        colnames(heatmap_matrix) <- c(1:ncol(heatmap_matrix))
-        if (!(cluster_rows)) {
-            annotation_row <- NA
-        }
-        ph_res <- pheatmap(heatmap_matrix[, ], useRaster = T, cluster_cols = FALSE, cluster_rows = cluster_rows, show_rownames = show_rownames, show_colnames = F, clustering_distance_rows = row_dist, clustering_method = hclust_method, cutree_rows = num_clusters, annotation_row = annotation_row, annotation_col = annotation_col, gaps_col = col_gaps_ind, treeheight_row = 20, breaks = bks, fontsize = 12, color = hmcols, silent = TRUE, border_color = NA, filename = NA)
-        grid::grid.rect(gp = grid::gpar("fill", col = NA))
-        grid::grid.draw(ph_res$gtable)
-        if (return_heatmap) {
-            return(ph_res)
-        }
-    }
-)
-
 
 #' Plot Metadata Variables
 #'
@@ -178,14 +45,12 @@ setMethod(
 #' @param highlight A list of character or numeric vectors of cells to highlight
 #' @param pt.size Adjust point size on the plot
 #' @param return_plotly Convert plot to interactive web-based graph
-#' @param ...
+#' @param ... extra parameters passed to ggplot
 #'
-#' @return
+#' @return a ggplot
 #' @export
 #'
 #' @examples
-#'
-#'
 #' # static mode
 #' \dontrun{
 #' plot_var(human_gene_transcript_object, group = "batch", return_plotly = FALSE)
@@ -198,12 +63,6 @@ setMethod(
 #' \dontrun{
 #' print(plotly_plot)
 #' }
-#'
-#' @param object
-#'
-#' @return object metadata
-#' @export
-#' @examples
 setGeneric("plot_var", function(object, group = "batch", embedding = "umap", dims = c(1, 2), highlight = NULL, pt.size = 1.0, return_plotly = FALSE, ...) {
     standardGeneric("plot_var")
 })
@@ -237,12 +96,12 @@ setMethod(
             return(d)
         }
 
-        plotly_plot <- plotly::ggplotly(d, tooltip = "cellid", height = 500) %>%
+        plotly_plot <- ggplotly(d, tooltip = "cellid", height = 500) %>%
             # htmlwidgets::onRender(javascript) %>%
-            # plotly::highlight(on = "plotly_selected", off = "plotly_relayout") %>%
+            # highlight(on = "plotly_selected", off = "plotly_relayout") %>%
             plotly_settings() %>%
-            plotly::toWebGL() %>%
-            # plotly::partial_bundle() %>%
+            toWebGL() %>%
+            # partial_bundle() %>%
             identity()
     }
 )
@@ -270,12 +129,12 @@ setMethod(
             return(d)
         }
 
-        plotly_plot <- plotly::ggplotly(d, tooltip = "cellid", height = 500) %>%
+        plotly_plot <- ggplotly(d, tooltip = "cellid", height = 500) %>%
             # htmlwidgets::onRender(javascript) %>%
-            # plotly::highlight(on = "plotly_selected", off = "plotly_relayout") %>%
+            # highlight(on = "plotly_selected", off = "plotly_relayout") %>%
             plotly_settings() %>%
-            plotly::toWebGL() %>%
-            # plotly::partial_bundle() %>%
+            toWebGL() %>%
+            # partial_bundle() %>%
             identity()
     }
 )
@@ -288,13 +147,11 @@ setMethod(
 #' @param width Default set to '600'
 #' @param height Default set to '700'
 #'
-#' @return
-#'
-#' @examples
+#'@noRd
 plotly_settings <- function(plotly_plot, width = 600, height = 700) {
     plotly_plot %>%
-        plotly::layout(dragmode = "lasso") %>%
-        plotly::config(toImageButtonOptions = list(format = "svg", filename = "myplot", width = width, height = height)) %>%
+        layout(dragmode = "lasso") %>%
+        config(toImageButtonOptions = list(format = "svg", filename = "myplot", width = width, height = height)) %>%
         identity()
 }
 
@@ -308,9 +165,9 @@ plotly_settings <- function(plotly_plot, width = 600, height = 700) {
 #' @param plot_vals
 #' @param features Features to plot
 #' @param assay Name of assay to use, defaults to the active assay
-#' @param ...
+#' @param ... extra parameters passed to ggplot2
 #'
-#' @return
+#' @return a violin plot
 #' @export
 #'
 #' @examples
@@ -360,11 +217,9 @@ setMethod(
 #' @param features Features to plot
 #' @param dims Dimensions to plot, must be a two-length numeric vector
 #'
-#' @return
+#' @return an embedding colored by a feature of interest
 #' @export
 #' @importFrom ggplot2 aes
-#'
-#' @examples
 setGeneric("plot_feature", function(object, embedding = c("umap", "pca", "tsne"), features, dims = c(1, 2), return_plotly = FALSE, pt.size = 1.0) {
     standardGeneric("plot_feature")
 })
@@ -399,10 +254,10 @@ setMethod(
             return(fp)
         }
 
-        plotly_plot <- plotly::ggplotly(fp, tooltip = "cellid", height = 500) %>%
+        plotly_plot <- ggplotly(fp, tooltip = "cellid", height = 500) %>%
             plotly_settings() %>%
-            plotly::toWebGL() %>%
-            # plotly::partial_bundle() %>%
+            toWebGL() %>%
+            # partial_bundle() %>%
             identity()
     }
 )
@@ -435,10 +290,10 @@ setMethod(
             return(fp)
         }
 
-        plotly_plot <- plotly::ggplotly(fp, tooltip = "cellid", height = 500) %>%
+        plotly_plot <- ggplotly(fp, tooltip = "cellid", height = 500) %>%
             plotly_settings() %>%
-            plotly::toWebGL() %>%
-            # plotly::partial_bundle() %>%
+            toWebGL() %>%
+            # partial_bundle() %>%
             identity()
     }
 )
@@ -447,11 +302,9 @@ setMethod(
 #'
 #' Plot ridge plots of G1, S, and G2M phases grouped by provided metadata
 #'
-#' @param object A object
-#' @return
+#' @param object A single cell object
+#' @return a ggplot of cell cycle scores
 #' @export
-#'
-#' @examples
 setGeneric("plot_cell_cycle_distribution", function(object) standardGeneric("plot_cell_cycle_distribution"))
 
 setMethod(
@@ -472,7 +325,7 @@ setMethod(
         hs_pairs0 <- cc.genes.cyclone
         assignments <- cyclone(object, hs_pairs0, gene.names = rownames(object))
         colData(object)[colnames(assignments$scores)] <- assignments$scores
-        colData(object)["phases"] <- assignments$phases
+        colData(object)["Phase"] <- assignments$phases
         return(object)
     }
 )
@@ -481,41 +334,37 @@ setMethod(
 #' Plot Cluster Marker Genes
 #'
 #' Plot a dot plot of n marker features grouped by cell metadata
-#' available methods are wilcoxon rank-sum test implemented in
-#' [presto](https://github.com/immunogenomics/presto) and specificity scores implemented in [genesorteR](https://github.com/mahmoudibrahim/genesorteR)
+#' available methods are wilcoxon rank-sum test
 #'
 #' @param object a object
-#' @param marker_method either "presto" or "genesorteR"
-#' @param metavar the metadata variable from which to pick clusters
+#' @param marker_method "wilcox"
+#' @param group_by the metadata variable from which to pick clusters
 #' @param num_markers default is 5
-#' @param selected_values
+#' @param selected_values selected values to display
 #' @param return_plotly whether to return an interactive ploly plot
-#' @param featureType
+#' @param featureType gene or transcript
 #' @param hide_technical whether to exclude mitochondrial or ribosomal genes
-#' @param ...
+#' @param ... extra parameters passed to ggplot2
 #'
-#' @return
+#' @return a ggplot with marker genes from group_by
 #' @export
 #'
 #' @examples
 #'
-#' # interactive mode using "presto"
-#' plot_markers(human_gene_transcript_object, metavar = "tech", marker_method = "presto", return_plotly = TRUE)
+#' interactive mode using "wilcox"
+#' \dontrun{plot_markers(human_gene_transcript_object, group_by = "tech", marker_method = "wilcox", return_plotly = TRUE)}
 #'
-#' # static mode using "presto"
-#' plot_markers(human_gene_transcript_object, metavar = "tech", marker_method = "genesorteR", return_plotly = FALSE)
-#'
-setGeneric("plot_markers", function(object, metavar = "batch", num_markers = 5, selected_values = NULL, return_plotly = FALSE, marker_method = "presto", object_assay = "gene", hide_technical = NULL, unique_markers = FALSE, p_val_cutoff = 1, ...) standardGeneric("plot_markers"))
+setGeneric("plot_markers", function(object, group_by = "batch", num_markers = 5, selected_values = NULL, return_plotly = FALSE, marker_method = "wilcox", object_assay = "gene", hide_technical = NULL, unique_markers = FALSE, p_val_cutoff = 1, ...) standardGeneric("plot_markers"))
 
 setMethod(
     "plot_markers", "Seurat",
-    function(object, metavar = "batch", num_markers = 5, selected_values = NULL, return_plotly = FALSE, marker_method = "presto", object_assay = "gene", hide_technical = NULL, unique_markers = FALSE, p_val_cutoff = 1, ...) {
-        Idents(object) <- pull_metadata(object)[[metavar]]
-        object <- find_all_markers(object, metavar, object_assay = object_assay, p_val_cutoff = p_val_cutoff)
-        marker_table <- Misc(object)$markers[[metavar]][[marker_method]]
+    function(object, group_by = "batch", num_markers = 5, selected_values = NULL, return_plotly = FALSE, marker_method = "wilcox", object_assay = "gene", hide_technical = NULL, unique_markers = FALSE, p_val_cutoff = 1, ...) {
+        Idents(object) <- pull_metadata(object)[[group_by]]
+        object <- find_all_markers(object, group_by, object_assay = object_assay, p_val_cutoff = p_val_cutoff)
+        marker_table <- Misc(object)$markers[[group_by]][[marker_method]]
         markers <- marker_table %>%
             enframe_markers() %>%
-            dplyr::mutate(dplyr::across(.fns = as.character))
+            mutate(dplyr::across(.fns = as.character))
         if (!is.null(hide_technical)) {
             markers <- map(markers, c)
             if (hide_technical == "pobjectdo") {
@@ -535,45 +384,45 @@ setMethod(
         }
         if (unique_markers) {
             markers <- markers %>%
-                dplyr::mutate(precedence = row_number()) %>%
+                mutate(precedence = row_number()) %>%
                 pivot_longer(-precedence, names_to = "group", values_to = "markers") %>%
-                dplyr::arrange(markers, precedence) %>%
-                dplyr::group_by(markers) %>%
-                dplyr::filter(row_number() == 1) %>%
-                dplyr::arrange(group, precedence) %>%
-                tidyr::drop_na() %>%
-                dplyr::group_by(group) %>%
-                dplyr::mutate(precedence = row_number()) %>%
+                arrange(markers, precedence) %>%
+                group_by(markers) %>%
+                filter(row_number() == 1) %>%
+                arrange(group, precedence) %>%
+                drop_na() %>%
+                group_by(group) %>%
+                mutate(precedence = row_number()) %>%
                 tidyr::pivot_wider(names_from = "group", values_from = "markers") %>%
-                dplyr::select(-precedence)
+                select(-precedence)
         }
         sliced_markers <- markers %>%
             dplyr::slice_head(n = num_markers) %>%
             tidyr::pivot_longer(everything(), names_to = "group", values_to = "feature") %>%
-            dplyr::arrange(group) %>%
-            dplyr::distinct(feature, .keep_all = TRUE) %>%
+            arrange(group) %>%
+            distinct(feature, .keep_all = TRUE) %>%
             identity()
         if (!is.null(selected_values)) {
             object <- object[, Idents(object) %in% selected_values]
             sliced_markers <- sliced_markers %>%
-                dplyr::filter(group %in% selected_values) %>%
-                dplyr::distinct(feature, .keep_all = TRUE)
+                filter(group %in% selected_values) %>%
+                distinct(feature, .keep_all = TRUE)
         }
         vline_coords <- head(cumsum(table(sliced_markers$group)) + 0.5, -1)
-        sliced_markers <- dplyr::pull(sliced_markers, feature)
-        object[[metavar]][is.na(object[[metavar]])] <- "NA"
-        Idents(object) <- metavar
+        sliced_markers <- pull(sliced_markers, feature)
+        object[[group_by]][is.na(object[[group_by]])] <- "NA"
+        Idents(object) <- group_by
 
-        markerplot <- DotPlot(object, assay = "gene", features = sliced_markers, group.by = metavar, dot.scale = 3) + ggplot2::theme(axis.text.x = ggplot2::element_text(size = 10, angle = 45, vjust = 1, hjust = 1), axis.text.y = ggplot2::element_text(size = 10)) + ggplot2::scale_y_discrete(position = "left") + ggplot2::scale_x_discrete(limits = sliced_markers) + ggplot2::geom_vline(xintercept = vline_coords, linetype = 2) + ggplot2::coord_flip() + NULL
+        markerplot <- DotPlot(object, assay = "gene", features = sliced_markers, group.by = group_by, dot.scale = 3) + ggplot2::theme(axis.text.x = ggplot2::element_text(size = 10, angle = 45, vjust = 1, hjust = 1), axis.text.y = ggplot2::element_text(size = 10)) + ggplot2::scale_y_discrete(position = "left") + ggplot2::scale_x_discrete(limits = sliced_markers) + ggplot2::geom_vline(xintercept = vline_coords, linetype = 2) + ggplot2::coord_flip() + NULL
 
         if (return_plotly == FALSE) {
             return(markerplot)
         }
         plot_height <- (150 * num_markers)
         plot_width <- (100 * length(levels(Idents(object))))
-        markerplot <- plotly::ggplotly(markerplot, height = plot_height, width = plot_width) %>%
+        markerplot <- ggplotly(markerplot, height = plot_height, width = plot_width) %>%
             plotly_settings() %>%
-            plotly::toWebGL() %>%
+            toWebGL() %>%
             identity()
         return(list(plot = markerplot, markers = marker_table))
     }
@@ -581,13 +430,13 @@ setMethod(
 
 setMethod(
     "plot_markers", "SingleCellExperiment",
-    function(object, metavar = "batch", num_markers = 5, selected_values = NULL, return_plotly = FALSE, marker_method = "presto", object_assay = "gene", hide_technical = NULL, unique_markers = FALSE, p_val_cutoff = 1, ...) {
-        # Idents(object) <- pull_metadata(object)[[metavar]]
-        object <- find_all_markers(object, metavar, object_assay = object_assay, p_val_cutoff = p_val_cutoff)
-        marker_table <- metadata(object)$markers[[metavar]][[marker_method]]
+    function(object, group_by = "batch", num_markers = 5, selected_values = NULL, return_plotly = FALSE, marker_method = "wilcox", object_assay = "gene", hide_technical = NULL, unique_markers = FALSE, p_val_cutoff = 1, ...) {
+        # Idents(object) <- pull_metadata(object)[[group_by]]
+        object <- find_all_markers(object, group_by, object_assay = object_assay, p_val_cutoff = p_val_cutoff)
+        marker_table <- metadata(object)$markers[[group_by]][[marker_method]]
         markers <- marker_table %>%
             enframe_markers() %>%
-            dplyr::mutate(dplyr::across(.fns = as.character))
+            mutate(dplyr::across(.fns = as.character))
         if (!is.null(hide_technical)) {
             markers <- map(markers, c)
             if (hide_technical == "pobjectdo") {
@@ -607,34 +456,34 @@ setMethod(
         }
         if (unique_markers) {
             markers <- markers %>%
-                dplyr::mutate(precedence = row_number()) %>%
+                mutate(precedence = row_number()) %>%
                 pivot_longer(-precedence, names_to = "group", values_to = "markers") %>%
-                dplyr::arrange(markers, precedence) %>%
-                dplyr::group_by(markers) %>%
-                dplyr::filter(row_number() == 1) %>%
-                dplyr::arrange(group, precedence) %>%
-                tidyr::drop_na() %>%
-                dplyr::group_by(group) %>%
-                dplyr::mutate(precedence = row_number()) %>%
+                arrange(markers, precedence) %>%
+                group_by(markers) %>%
+                filter(row_number() == 1) %>%
+                arrange(group, precedence) %>%
+                drop_na() %>%
+                group_by(group) %>%
+                mutate(precedence = row_number()) %>%
                 tidyr::pivot_wider(names_from = "group", values_from = "markers") %>%
-                dplyr::select(-precedence)
+                select(-precedence)
         }
         sliced_markers <- markers %>%
             dplyr::slice_head(n = num_markers) %>%
             tidyr::pivot_longer(everything(), names_to = "group", values_to = "feature") %>%
-            dplyr::arrange(group) %>%
-            dplyr::distinct(feature, .keep_all = TRUE) %>%
+            arrange(group) %>%
+            distinct(feature, .keep_all = TRUE) %>%
             identity()
         if (!is.null(selected_values)) {
-            object <- object[, pull_metadata(object)[[metavar]] %in% selected_values]
+            object <- object[, pull_metadata(object)[[group_by]] %in% selected_values]
             sliced_markers <- sliced_markers %>%
-                dplyr::filter(group %in% selected_values) %>%
-                dplyr::distinct(feature, .keep_all = TRUE)
+                filter(group %in% selected_values) %>%
+                distinct(feature, .keep_all = TRUE)
         }
         vline_coords <- head(cumsum(table(sliced_markers$group)) + 0.5, -1)
-        sliced_markers <- dplyr::pull(sliced_markers, feature)
-        object[[metavar]][is.na(object[[metavar]])] <- "NA"
-        markerplot <- scater::plotDots(object, features = sliced_markers, group = metavar) +
+        sliced_markers <- pull(sliced_markers, feature)
+        object[[group_by]][is.na(object[[group_by]])] <- "NA"
+        markerplot <- scater::plotDots(object, features = sliced_markers, group = group_by) +
             ggplot2::theme(axis.text.x = ggplot2::element_text(size = 10, angle = 45, vjust = 1, hjust = 1), axis.text.y = ggplot2::element_text(size = 10)) +
             # ggplot2::scale_y_discrete(position = "left") +
             # ggplot2::scale_x_discrete(limits = sliced_markers) +
@@ -644,10 +493,10 @@ setMethod(
             return(markerplot)
         }
         plot_height <- (150 * num_markers)
-        plot_width <- (100 * length(levels(as.factor(pull_metadata(object)[[metavar]]))))
-        markerplot <- plotly::ggplotly(markerplot, height = plot_height, width = plot_width) %>%
+        plot_width <- (100 * length(levels(as.factor(pull_metadata(object)[[group_by]]))))
+        markerplot <- ggplotly(markerplot, height = plot_height, width = plot_width) %>%
             plotly_settings() %>%
-            plotly::toWebGL() %>%
+            toWebGL() %>%
             identity()
         return(list(plot = markerplot, markers = marker_table))
     }
@@ -659,31 +508,32 @@ setMethod(
 #' Draw a box plot for read count data of a metadata variable
 #'
 #' @param object A object
-#' @param metavar Metadata variable to plot. Default set to "nCount_RNA"
+#' @param group_by Metadata variable to plot. Default set to "nCount_RNA"
 #' @param color.by Variable to color bins by. Default set to "batch"
 #' @param yscale Scale of y axis. Default set to "linear"
 #' @param return_plotly whether to return an interactive ploly plot. Default set to FALSE
 #'
-#' @return
+#' @return a histogram of read counts
 #' @export
 #'
 #' @examples
-#' # interactive plotly
-#' plot_readcount(human_gene_transcript_object, return_plotly = TRUE)
-#' # static plot
-#' plot_readcount(human_gene_transcript_object, return_plotly = FALSE)
+#' interactive plotly
+#' \dontrun{plot_readcount(human_gene_transcript_object, return_plotly = TRUE)}
+#'
+#' static plot
+#' \dontrun{plot_readcount(human_gene_transcript_object, return_plotly = FALSE)}
 #'
 #' @importFrom ggplot2 ggplot aes geom_bar theme labs scale_y_log10
-setGeneric("plot_readcount", function(object, metavar = "nCount_RNA", color.by = "batch", yscale = "linear", return_plotly = FALSE, ...) standardGeneric("plot_readcount"))
+setGeneric("plot_readcount", function(object, group_by = "nCount_RNA", color.by = "batch", yscale = "linear", return_plotly = FALSE, ...) standardGeneric("plot_readcount"))
 
 setMethod(
     "plot_readcount", "Seurat",
-    function(object, metavar = "nCount_RNA", color.by = "batch", yscale = "linear", return_plotly = FALSE, ...) {
-        object_tbl <- tibble::rownames_to_column(pull_metadata(object), "SID") %>% dplyr::select(SID, !!as.symbol(metavar), !!as.symbol(color.by))
-        rc_plot <- ggplot(object_tbl, aes(x = reorder(SID, -!!as.symbol(metavar)), y = !!as.symbol(metavar), fill = !!as.symbol(color.by))) +
+    function(object, group_by = "nCount_RNA", color.by = "batch", yscale = "linear", return_plotly = FALSE, ...) {
+        object_tbl <- rownames_to_column(pull_metadata(object), "SID") %>% select(SID, !!as.symbol(group_by), !!as.symbol(color.by))
+        rc_plot <- ggplot(object_tbl, aes(x = reorder(SID, -!!as.symbol(group_by)), y = !!as.symbol(group_by), fill = !!as.symbol(color.by))) +
             geom_bar(position = "identity", stat = "identity") +
             theme(axis.text.x = element_blank()) +
-            labs(title = metavar, x = "Sample") +
+            labs(title = group_by, x = "Sample") +
             NULL
         if (yscale == "log") {
             rc_plot <- rc_plot + scale_y_log10()
@@ -691,21 +541,21 @@ setMethod(
         if (return_plotly == FALSE) {
             return(rc_plot)
         }
-        rc_plot <- plotly::ggplotly(rc_plot, tooltip = "cellid", height = 500) %>%
+        rc_plot <- ggplotly(rc_plot, tooltip = "cellid", height = 500) %>%
             plotly_settings() %>%
-            plotly::toWebGL() %>%
+            toWebGL() %>%
             identity()
     }
 )
 
 setMethod(
     "plot_readcount", "SingleCellExperiment",
-    function(object, metavar = "nCount_RNA", color.by = "batch", yscale = "linear", return_plotly = FALSE, ...) {
-        object_tbl <- tibble::rownames_to_column(pull_metadata(object), "SID") %>% dplyr::select(SID, !!as.symbol(metavar), !!as.symbol(color.by))
-        rc_plot <- ggplot(object_tbl, aes(x = reorder(SID, -!!as.symbol(metavar)), y = !!as.symbol(metavar), fill = !!as.symbol(color.by))) +
+    function(object, group_by = "nCount_RNA", color.by = "batch", yscale = "linear", return_plotly = FALSE, ...) {
+        object_tbl <- rownames_to_column(pull_metadata(object), "SID") %>% select(SID, !!as.symbol(group_by), !!as.symbol(color.by))
+        rc_plot <- ggplot(object_tbl, aes(x = reorder(SID, -!!as.symbol(group_by)), y = !!as.symbol(group_by), fill = !!as.symbol(color.by))) +
             geom_bar(position = "identity", stat = "identity") +
             theme(axis.text.x = element_blank()) +
-            labs(title = metavar, x = "Sample") +
+            labs(title = group_by, x = "Sample") +
             NULL
         if (yscale == "log") {
             rc_plot <- rc_plot + scale_y_log10()
@@ -713,15 +563,12 @@ setMethod(
         if (return_plotly == FALSE) {
             return(rc_plot)
         }
-        rc_plot <- plotly::ggplotly(rc_plot, tooltip = "cellid", height = 500) %>%
+        rc_plot <- ggplotly(rc_plot, tooltip = "cellid", height = 500) %>%
             plotly_settings() %>%
-            plotly::toWebGL() %>%
+            toWebGL() %>%
             identity()
     }
 )
-
-
-# class ------------------------------
 
 #' Plot Annotated Complexheatmap from Seurat object
 #'
@@ -730,21 +577,20 @@ setMethod(
 #' @param cells Cells to retain
 #' @param group.by  Name of one or more metadata columns to annotate columns by (for example, orig.ident)
 #' @param layer "counts" for raw data "scale.data" for log-normalized data
-#' @param assay
-#' @param group.bar.height
+#' @param assay assay to display
+#' @param group.bar.height height for group bars
 #' @param col_arrangement how to arrange columns whether with a dendrogram (Ward.D2, average, etc.) or exclusively by metadata category
 #' @param column_split whether to split columns by metadat value
 #' @param mm_col_dend height of column dendrogram
 #' @param ... additional arguments passed to ComplexHeatmap::Heatmap
 #'
-#' @return
+#' @return a complexheatmap
 #' @export
 #'
 #' @examples
-#'
-#' # plot top 50 variable genes
-#' top_50_features <- get_variable_features(human_gene_transcript_object)[1:50]
-#' make_complex_heatmap(human_gene_transcript_object, features = top_50_features)
+#' plot top 50 variable genes
+#' \dontrun{top_50_features <- get_variable_features(human_gene_transcript_object)[1:50]}
+#' \dontrun{make_complex_heatmap(human_gene_transcript_object, features = top_50_features)}
 #'
 setGeneric("make_complex_heatmap", function(object, features = NULL, group.by = "ident", cells = NULL, layer = "scale.data", assay = NULL, group.bar.height = 0.01, column_split = NULL, col_arrangement = "ward.D2", mm_col_dend = 30, ...) standardGeneric("make_complex_heatmap"))
 
@@ -786,7 +632,7 @@ setMethod(
         } else {
             cells <- object %>%
                 Seurat::FetchData(vars = col_arrangement) %>%
-                dplyr::arrange(across(all_of(col_arrangement))) %>%
+                arrange(across(all_of(col_arrangement))) %>%
                 rownames()
             data <- data[cells, ]
             group.by <- base::union(group.by, col_arrangement)
@@ -795,9 +641,9 @@ setMethod(
         group.by <- group.by %||% "ident"
         groups.use <- object[[group.by]][cells, , drop = FALSE]
         groups.use <- groups.use %>%
-            tibble::rownames_to_column("sample_id") %>%
-            dplyr::mutate(across(where(is.character), ~ str_wrap(str_replace_all(.x, ",", " "), 10))) %>%
-            dplyr::mutate(across(where(is.character), as.factor)) %>%
+            rownames_to_column("sample_id") %>%
+            mutate(across(where(is.character), ~ stringr::str_wrap(stringr::str_replace_all(.x, ",", " "), 10))) %>%
+            mutate(across(where(is.character), as.factor)) %>%
             data.frame(row.names = 1) %>%
             identity()
         groups.use.factor <- groups.use[sapply(groups.use, is.factor)]
@@ -866,7 +712,8 @@ setMethod(
             }
         } else {
             cells <- colData(object)[col_arrangement] %>%
-                dplyr::arrange(across(all_of(col_arrangement))) %>%
+              as.data.frame() %>%
+                arrange(across(all_of(col_arrangement))) %>%
                 rownames()
             data <- data[cells, ]
             group.by <- base::union(group.by, col_arrangement)
@@ -875,9 +722,9 @@ setMethod(
         group.by <- group.by %||% "ident"
         groups.use <- colData(object)[group.by] %>% as.data.frame()
         groups.use <- groups.use %>%
-            tibble::rownames_to_column("sample_id") %>%
-            dplyr::mutate(across(where(is.character), ~ str_wrap(str_replace_all(.x, ",", " "), 10))) %>%
-            dplyr::mutate(across(where(is.character), as.factor)) %>%
+            rownames_to_column("sample_id") %>%
+            mutate(across(where(is.character), ~ stringr::str_wrap(stringr::str_replace_all(.x, ",", " "), 10))) %>%
+            mutate(across(where(is.character), as.factor)) %>%
             data.frame(row.names = 1) %>%
             identity()
         groups.use.factor <- groups.use[sapply(groups.use, is.factor)]
@@ -903,9 +750,6 @@ setMethod(
     }
 )
 
-
-
-
 #' Plot Transcript Composition
 #'
 #' plot the proportion of reads of a given gene map to each transcript
@@ -917,11 +761,11 @@ setMethod(
 #' @param standardize
 #' @param drop_zero Drop zero values
 #'
-#' @return
+#' @return a stacked barplot of transcript counts
 #' @export
 #'
 #' @examples
-#' plot_transcript_composition(human_gene_transcript_object, "RXRG", group.by = "gene_snn_res.0.6")
+#' \dontrun{plot_transcript_composition(human_gene_transcript_object, "RXRG", group.by = "gene_snn_res.0.6")}
 #'
 setGeneric("plot_transcript_composition", function(object, gene_symbol, group.by = "batch", standardize = FALSE, drop_zero = FALSE) standardGeneric("plot_transcript_composition"))
 
@@ -929,27 +773,27 @@ setMethod(
     "plot_transcript_composition", "Seurat",
     function(object, gene_symbol, group.by = "batch", standardize = FALSE, drop_zero = FALSE) {
         transcripts <- annotables::grch38 %>%
-            dplyr::filter(symbol == gene_symbol) %>%
-            dplyr::left_join(annotables::grch38_tx2gene, by = "ensgene") %>%
-            dplyr::pull(enstxp)
+            filter(symbol == gene_symbol) %>%
+            left_join(annotables::grch38_tx2gene, by = "ensgene") %>%
+            pull(enstxp)
         metadata <- object@meta.data
         metadata$sample_id <- NULL
         metadata <- metadata %>%
-            tibble::rownames_to_column("sample_id") %>%
-            dplyr::select(sample_id, group.by = {{ group.by }})
+            rownames_to_column("sample_id") %>%
+            select(sample_id, group.by = {{ group.by }})
         data <- FetchData(object$transcript, vars = transcripts)
         data <- expm1(as.matrix(data))
         data <- data %>%
             as.data.frame() %>%
-            tibble::rownames_to_column("sample_id") %>%
+            rownames_to_column("sample_id") %>%
             tidyr::pivot_longer(cols = starts_with("ENST"), names_to = "transcript", values_to = "expression") %>%
-            dplyr::left_join(metadata, by = "sample_id") %>%
-            dplyr::mutate(group.by = as.factor(group.by), transcript = as.factor(transcript))
-        data <- dplyr::group_by(data, group.by, transcript)
+            left_join(metadata, by = "sample_id") %>%
+            mutate(group.by = as.factor(group.by), transcript = as.factor(transcript))
+        data <- group_by(data, group.by, transcript)
         if (drop_zero) {
-            data <- dplyr::filter(data, expression != 0)
+            data <- filter(data, expression != 0)
         }
-        data <- dplyr::summarize(data, expression = mean(expression))
+        data <- summarize(data, expression = mean(expression))
         position <- ifelse(standardize, "fill", "stack")
         p <- ggplot(data = data, aes(x = group.by, y = expression, fill = transcript)) +
             geom_col(stat = "identity", position = position) +
@@ -965,14 +809,14 @@ setMethod(
     "plot_transcript_composition", "SingleCellExperiment",
     function(object, gene_symbol, group.by = "batch", standardize = FALSE, drop_zero = FALSE) {
         transcripts <- annotables::grch38 %>%
-            dplyr::filter(symbol == gene_symbol) %>%
-            dplyr::left_join(annotables::grch38_tx2gene, by = "ensgene") %>%
-            dplyr::pull(enstxp)
+            filter(symbol == gene_symbol) %>%
+            left_join(annotables::grch38_tx2gene, by = "ensgene") %>%
+            pull(enstxp)
         metadata <- pull_metadata(object)
         metadata$sample_id <- NULL
         metadata <- metadata %>%
-            tibble::rownames_to_column("sample_id") %>%
-            dplyr::select(sample_id, group.by = {{ group.by }})
+            rownames_to_column("sample_id") %>%
+            select(sample_id, group.by = {{ group.by }})
 
         transcripts <- transcripts[transcripts %in% rownames(altExp(object, "transcript"))]
 
@@ -982,15 +826,15 @@ setMethod(
 
         data <- data %>%
             as.data.frame() %>%
-            tibble::rownames_to_column("sample_id") %>%
+            rownames_to_column("sample_id") %>%
             tidyr::pivot_longer(cols = starts_with("ENST"), names_to = "transcript", values_to = "expression") %>%
-            dplyr::left_join(metadata, by = "sample_id") %>%
-            dplyr::mutate(group.by = as.factor(group.by), transcript = as.factor(transcript))
-        data <- dplyr::group_by(data, group.by, transcript)
+            left_join(metadata, by = "sample_id") %>%
+            mutate(group.by = as.factor(group.by), transcript = as.factor(transcript))
+        data <- group_by(data, group.by, transcript)
         if (drop_zero) {
-            data <- dplyr::filter(data, expression != 0)
+            data <- filter(data, expression != 0)
         }
-        data <- dplyr::summarize(data, expression = mean(expression))
+        data <- summarize(data, expression = mean(expression))
         position <- ifelse(standardize, "fill", "stack")
         p <- ggplot(data = data, aes(x = group.by, y = expression, fill = transcript)) +
             geom_col(stat = "identity", position = position) +
@@ -1011,14 +855,14 @@ setMethod(
 #' @param embedding umap
 #' @param from_gene whether to look up transcripts for an input gene
 #'
-#' @return
+#' @return a list of embedding plots colored by a feature of interest
 #' @export
 #'
 #' @examples
 #'
-#' processed_object <- clustering_workflow(human_gene_transcript_object)
+#' \dontrun{processed_object <- clustering_workflow(human_gene_transcript_object)
 #' transcripts_to_plot <- genes_to_transcripts("RXRG")
-#' plot_all_transcripts(processed_object, features = transcripts_to_plot)
+#' plot_all_transcripts(processed_object, features = transcripts_to_plot)}
 #'
 setGeneric("plot_all_transcripts", function(object, features, embedding = "umap", from_gene = TRUE, combine = TRUE) standardGeneric("plot_all_transcripts"))
 

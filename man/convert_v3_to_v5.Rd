@@ -9,6 +9,9 @@ convert_v3_to_v5(seurat_v3)
 \arguments{
 \item{seurat_v3}{a version 3 seurat}
 }
+\value{
+a verstion 5 seurat
+}
 \description{
 Convert seurat from v3 to v5 format
 }

@@ -7,7 +7,16 @@
 global_cellalign(exp_ref, exp_query, traj_ref, traj_query, numPts = 200)
 }
 \arguments{
-\item{traj_query}{}
+\item{exp_ref}{reference experiment}
+
+\item{exp_query}{query experiment}
+
+\item{traj_ref}{reference trajectory}
+
+\item{traj_query}{query trajectory}
+}
+\value{
+a list containing an alignment and an alignment plot
 }
 \description{
 Global Alignment of two trajectories with cellAlign

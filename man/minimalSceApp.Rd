@@ -2,7 +2,7 @@
 % Please edit documentation in R/minimal_sce_app.R
 \name{minimalSceApp}
 \alias{minimalSceApp}
-\title{Create a minimal object app}
+\title{Create a minimal chevreul app using SingleCellExperiment input}
 \usage{
 minimalSceApp(
   input_object = panc8,
@@ -16,18 +16,22 @@ minimalSceApp(
 \arguments{
 \item{loom_path}{path to a loom file}
 
-\item{organism_type}{Organism}
+\item{appTitle}{a title for the app}
 
-\item{futureMb}{}
+\item{organism_type}{human or mouse}
+
+\item{futureMb}{the megabytes available for the future package}
 
 \item{object}{a singlecell object}
 }
+\value{
+a minimal chevreul app
+}
 \description{
-Create a minimal object app
+Create a minimal chevreul app using SingleCellExperiment input
 }
 \examples{
-
-/dontrun{
+\dontrun{
 minimalSceApp(panc8)
 }
 

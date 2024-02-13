@@ -24,6 +24,9 @@ clustering_workflow(
 
 \item{feature_objects}{list of objects named according to feature of interest ("gene" or "transcript")}
 }
+\value{
+a clustered single cell object
+}
 \description{
 Cluster and Reduce Dimensions of a object
 }

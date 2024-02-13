@@ -7,7 +7,10 @@
 plot_cell_cycle_distribution(object)
 }
 \arguments{
-\item{object}{A object}
+\item{object}{A single cell object}
+}
+\value{
+a ggplot of cell cycle scores
 }
 \description{
 Plot ridge plots of G1, S, and G2M phases grouped by provided metadata

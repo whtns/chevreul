@@ -9,6 +9,9 @@ convert_mouse_object_to_human(object)
 \arguments{
 \item{object}{Mouse object}
 }
+\value{
+a single cell object
+}
 \description{
 Convert Seurat Objects from Mouse to Human
 }

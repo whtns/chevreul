@@ -11,10 +11,9 @@ annotate_cell_cycle(object, organism = "human", ...)
 
 \item{organism}{organism. Default "human"}
 }
+\value{
+a single cell object
+}
 \description{
 Annotate Cell Cycle for Gene and Transcript Seurat Objects
-}
-\examples{
-annotate_cell_cycle(panc8, organism = "human")
-annotate_cell_cycle(baron2016singlecell, organism = "mouse")
 }

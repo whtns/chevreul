@@ -9,6 +9,9 @@ rename_from_x_notation(cell_ids, batch_id)
 \arguments{
 \item{batch_id}{}
 }
+\value{
+a vector of cell ids
+}
 \description{
 Rename cell ids from annoying old notation
 }

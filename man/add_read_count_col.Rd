@@ -11,6 +11,9 @@ add_read_count_col(object, thresh = 1e+05)
 
 \item{thresh}{Set a threshold for low read count}
 }
+\value{
+a single cell obejct with cell metadata column containing read counts
+}
 \description{
 Add a Read Count Categorical Variable to Seurat Object (based on nCount_RNA)
 }

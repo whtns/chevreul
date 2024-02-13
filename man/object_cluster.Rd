@@ -22,6 +22,9 @@ object_cluster(
 
 \item{...}{}
 }
+\value{
+a single cell object with louvain clusters
+}
 \description{
 Run Louvain Clustering at Multiple Resolutions
 }

@@ -17,6 +17,9 @@ update_chevreul_object(
 
 \item{...}{}
 }
+\value{
+a single cell object
+}
 \description{
 Update a chevreul Object
 }

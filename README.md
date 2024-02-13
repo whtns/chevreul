@@ -175,6 +175,6 @@ integrated_object <- integration_workflow(split_human)
 
 ``` r
 Misc(integrated_object, "experiment") %>%
-    tibble::enframe() %>%
+    enframe() %>%
     knitr::kable()
 ```

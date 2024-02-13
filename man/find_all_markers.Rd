@@ -4,16 +4,19 @@
 \alias{find_all_markers}
 \title{Find All Markers}
 \usage{
-find_all_markers(object, metavar = NULL, object_assay = "gene", ...)
+find_all_markers(object, group_by = NULL, object_assay = "gene", ...)
 }
 \arguments{
 \item{object}{An object.}
 
-\item{metavar}{A metadata variable to group by.}
+\item{group_by}{A metadata variable to group by.}
 
 \item{object_assay}{Assay to use, Default "gene".}
 
 \item{...}{}
+}
+\value{
+a single cell object containing marker genes
 }
 \description{
 Find all markers at a range of resolutions

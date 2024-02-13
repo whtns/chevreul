@@ -26,6 +26,9 @@ object_preprocess(
 
 \item{...}{}
 }
+\value{
+a preprocessed single cell object
+}
 \description{
 Performs standard pre-processing workflow for scRNA-seq data
 }

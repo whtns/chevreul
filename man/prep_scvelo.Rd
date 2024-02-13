@@ -22,6 +22,9 @@ prep_scvelo(
 
 \item{plot_method}{plotting method to use from scvelo}
 }
+\value{
+a single cell object with velocity calculated
+}
 \description{
 run scvelo on a gene or transcript level object
 }

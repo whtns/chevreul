@@ -7,7 +7,10 @@
 enframe_markers(marker_table)
 }
 \arguments{
-\item{marker_table}{}
+\item{marker_table}{a table of marker genes}
+}
+\value{
+a table of marker genes
 }
 \description{
 Title

@@ -7,7 +7,12 @@
 set_colnames_txi(txi, colnames)
 }
 \arguments{
-\item{colnames}{}
+\item{txi}{txi}
+
+\item{colnames}{column names}
+}
+\value{
+a list of matrices
 }
 \description{
 Set Column Names from \code{tximport}

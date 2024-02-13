@@ -2,7 +2,7 @@
 % Please edit documentation in R/seurat_integrate.R
 \name{rename_object}
 \alias{rename_object}
-\title{Give a new project name to a singlecell objects}
+\title{Give a new project name to a single cell object}
 \usage{
 rename_object(object, new_name)
 }
@@ -11,6 +11,9 @@ rename_object(object, new_name)
 
 \item{new_name}{New name to assign}
 }
+\value{
+a renamed single cell object
+}
 \description{
-Give a new project name to a singlecell objects
+Give a new project name to a single cell object
 }

@@ -5,12 +5,9 @@
 #' @param object A object
 #' @param organism organism. Default "human"
 #'
-#' @return
+#' @return a single cell object
 #' @export
 #'
-#' @examples
-#' annotate_cell_cycle(panc8, organism = "human")
-#' annotate_cell_cycle(baron2016singlecell, organism = "mouse")
 setGeneric("annotate_cell_cycle", function(object, organism = "human", ...) standardGeneric("annotate_cell_cycle"))
 
 setMethod(
@@ -19,8 +16,8 @@ setMethod(
         s_genes <- cc.genes$s.genes
         g2m_genes <- cc.genes$g2m.genes
         if (organism == "mouse") {
-            s_genes <- dplyr::filter(human_to_mouse_homologs, HGNC.symbol %in% s_genes) %>% dplyr::pull(MGI.symbol)
-            g2m_genes <- dplyr::filter(human_to_mouse_homologs, HGNC.symbol %in% g2m_genes) %>% dplyr::pull(MGI.symbol)
+            s_genes <- filter(human_to_mouse_homologs, HGNC.symbol %in% s_genes) %>% pull(MGI.symbol)
+            g2m_genes <- filter(human_to_mouse_homologs, HGNC.symbol %in% g2m_genes) %>% pull(MGI.symbol)
         }
         object <- CellCycleScoring(object, s.features = s_genes, g2m.features = g2m_genes, set.ident = FALSE)
         return(object)
@@ -32,8 +29,8 @@ setMethod(
     function(object, organism = "human", ...) {
         hs_pairs0 <- cc.genes.cyclone
         if (organism == "mouse") {
-            s_genes <- dplyr::filter(human_to_mouse_homologs, HGNC.symbol %in% s_genes) %>% dplyr::pull(MGI.symbol)
-            g2m_genes <- dplyr::filter(human_to_mouse_homologs, HGNC.symbol %in% g2m_genes) %>% dplyr::pull(MGI.symbol)
+            s_genes <- filter(human_to_mouse_homologs, HGNC.symbol %in% s_genes) %>% pull(MGI.symbol)
+            g2m_genes <- filter(human_to_mouse_homologs, HGNC.symbol %in% g2m_genes) %>% pull(MGI.symbol)
         }
 
         assignments <- scran::cyclone(object, hs_pairs0, gene.names = rownames(object))
@@ -49,7 +46,7 @@ setMethod(
 #'
 #' @param genes
 #'
-#' @return
+#' @returna a vector of transcripts
 #' @export
 #'
 #' @examples
@@ -71,8 +68,8 @@ genes_to_transcripts <- function(genes, organism = "human") {
 
     feature_table %>%
         as_tibble() %>%
-        dplyr::filter(gene_name %in% genes) %>%
-        dplyr::pull(tx_id)
+        filter(gene_name %in% genes) %>%
+        pull(tx_id)
 }
 
 #' Ensembl Transcript Ids to Gene Symbols
@@ -81,7 +78,7 @@ genes_to_transcripts <- function(genes, organism = "human") {
 #'
 #' @param transcripts
 #'
-#' @return
+#' @return a vector of gene symbols
 #' @export
 #'
 #' @examples
@@ -100,9 +97,9 @@ transcripts_to_genes <- function(transcripts, organism = "human") {
     }
 
     tibble::tibble(enstxp = transcripts) %>%
-        dplyr::left_join(transcript_table, by = "enstxp") %>%
-        dplyr::left_join(gene_table, by = "ensgene") %>%
-        dplyr::pull("symbol") %>%
+        left_join(transcript_table, by = "enstxp") %>%
+        left_join(gene_table, by = "ensgene") %>%
+        pull("symbol") %>%
         identity()
 }
 
@@ -113,10 +110,8 @@ transcripts_to_genes <- function(transcripts, organism = "human") {
 #' @param object A object
 #' @param thresh Set a threshold for low read count
 #'
-#' @return
+#' @return a single cell obejct with cell metadata column containing read counts
 #' @export
-#'
-#' @examples
 setGeneric("add_read_count_col", function(object, thresh = 1e+05) standardGeneric("add_read_count_col"))
 
 setMethod(
@@ -145,12 +140,8 @@ setMethod(
 #' @param organism mouse
 #' @param object_assay gene
 #'
-#' @return
+#' @return a single cell obejct with cell metadata column containing mitochondrial percentage
 #' @export
-#'
-#' @examples
-#' add_percent_mito(panc8)
-#' add_percent_mito(baron2016singlecell, organism = "mouse")
 setGeneric("add_percent_mito", function(object, organism = "human", object_assay = "gene") standardGeneric("add_percent_mito"))
 
 setMethod(
@@ -180,10 +171,9 @@ setMethod(
 #' @param excluded_cells a named list of cells to be excluded of the form list(set1 = c(cell1, celll2), set2 = c(cell3, cell4))
 #' all other cells will be marked NA in a column titled "excluded_because"
 #'
-#' @return
+#' @return a single cell obejct with cell metadata column containing exclusion criteria
 #' @export
 #'
-#' @examples
 annotate_excluded <- function(object, ...) {
     # consider replacing
     # mutate(coalesce_var = coalesce(!!! syms(vars_select(names(.), dplyr::starts_with("my")))))
@@ -193,14 +183,14 @@ annotate_excluded <- function(object, ...) {
     excluded_cells <- purrr::map2(excluded_cells, names(excluded_cells), ~ rep(.y, length(.x))) %>%
         unlist() %>%
         purrr::set_names(unlist(excluded_cells)) %>%
-        tibble::enframe("sample_id", "excluded_because")
+        enframe("sample_id", "excluded_because")
 
     excluded_because <- tibble::as_tibble(object[["nCount_RNA"]], rownames = "sample_id") %>%
         dplyr::full_join(excluded_cells, by = "sample_id")
 
     if ("excluded_because.x" %in% colnames(excluded_because)) {
         excluded_because <- dplyr::coalesce(excluded_because, excluded_because.x, excluded_because.y) %>%
-            dplyr::select(-nCount_RNA) %>%
+            select(-nCount_RNA) %>%
             tibble::deframe() %>%
             identity()
     } else {

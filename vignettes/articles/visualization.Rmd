@@ -73,7 +73,7 @@ The `plot_readcount` function displays a histogram of cell read counts colored a
 
 ```{r}
 plot_readcount(human_gene_transcript_seu,
-    metavar = "nCount_RNA",
+    group_by = "nCount_RNA",
     color.by = "Prep.Method"
 )
 ```
@@ -95,8 +95,8 @@ Marker genes of louvain clusters or additional experimental metadata can be plot
 
 ```{r}
 plot_markers(human_gene_transcript_seu,
-    metavar = "gene_snn_res.0.2",
-    marker_method = "presto"
+    group_by = "gene_snn_res.0.2",
+    marker_method = "wilcox"
 )
 ```
 

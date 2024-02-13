@@ -11,6 +11,9 @@ load_bigwigs(object, bigwig_db = "~/.cache/chevreul/bw-files.db")
 
 \item{bigwig_db}{Sqlite database of bigwig files}
 }
+\value{
+a vector of bigwigs file paths
+}
 \description{
 Load a tibble of bigwig file paths by cell id
 }

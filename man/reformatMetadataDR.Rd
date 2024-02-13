@@ -40,6 +40,9 @@ reformatMetadataDR(
 \arguments{
 \item{object}{}
 }
+\value{
+a shiny server
+}
 \description{
 Reformat Seurat Object Metadata Server
 }

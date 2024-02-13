@@ -9,6 +9,9 @@ reformatMetadataDRui(id)
 \arguments{
 \item{id}{}
 }
+\value{
+UI to reformat the metadata of a single cell object
+}
 \description{
 Reformat Seurat Object Metadata UI
 }

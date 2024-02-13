@@ -138,8 +138,8 @@ getEnrichedPathways <- function(object,
     ## - try up to three times to run enrichR annotation (fails sometimes)
     ## - filter results
     ## --------------------------------------------------------------------------##
-    if (!is.null(Misc(object)$markers[[1]]$presto)) {
-        if (is.data.frame(Misc(object)$markers[[1]]$presto)) {
+    if (!is.null(Misc(object)$markers[[1]]$wilcox)) {
+        if (is.data.frame(Misc(object)$markers[[1]]$wilcox)) {
             message(
                 paste0(
                     "[", format(Sys.time(), "%H:%M:%S"),
@@ -148,8 +148,8 @@ getEnrichedPathways <- function(object,
             )
 
             ## remove clusters for which no marker genes were found
-            markers_by_cluster <- Misc(object)$markers[[1]]$presto %>%
-                # dplyr::filter(padj < 0.05) %>%
+            markers_by_cluster <- Misc(object)$markers[[1]]$wilcox %>%
+                # filter(padj < 0.05) %>%
                 identity()
 
             cluster_names <- names(markers_by_cluster)
@@ -167,7 +167,7 @@ getEnrichedPathways <- function(object,
                         attempt <- attempt + 1
                         try(
                             temp <- markers_by_cluster %>%
-                                dplyr::pull(x) %>%
+                                pull(x) %>%
                                 .send_enrichr_query(databases = databases, URL_API = URL_API)
                         )
                     }
@@ -177,8 +177,8 @@ getEnrichedPathways <- function(object,
                         simplify = FALSE, function(y) {
                             ## apply cut-off of adj. p-value and add database info as column
                             out <- temp[[y]] %>%
-                                dplyr::filter(.data$Adjusted.P.value <= adj_p_cutoff) %>%
-                                dplyr::mutate(db = y)
+                                filter(.data$Adjusted.P.value <= adj_p_cutoff) %>%
+                                mutate(db = y)
                             ## if there are more than max_terms entries...
                             if (nrow(out) > max_terms) {
                                 out <- out %>% dplyr::top_n(-max_terms, .data$Adjusted.P.value)
@@ -209,12 +209,12 @@ getEnrichedPathways <- function(object,
             for (i in names(results_by_cluster))
             {
                 results_by_cluster[[i]] <- results_by_cluster[[i]] %>%
-                    dplyr::mutate(group = i)
+                    mutate(group = i)
             }
             ## merge clusters into single table
             results_by_cluster <- do.call(rbind, results_by_cluster) %>%
-                dplyr::select(.data$group, .data$db, dplyr::everything()) %>%
-                dplyr::mutate(
+                select(.data$group, .data$db, dplyr::everything()) %>%
+                mutate(
                     cluster = factor(.data$group, levels = intersect(
                         cluster_names,
                         .data$group
@@ -272,24 +272,24 @@ getEnrichedPathways <- function(object,
 }
 
 
-#' Title
+#' Enrichment by Cluster
 #'
 #' @param enrich_by_cluster
 #'
-#' @return
+#' @return a dataframe of enrichment scores
 #' @export
 #'
 #' @examples
 format_pathway_table <- function(enrich_by_cluster, cluster, db) {
     enrich_by_cluster <-
         enrich_by_cluster %>%
-        dplyr::filter(
+        filter(
             cluster == cluster,
             db == db
         ) %>%
-        dplyr::select(3, 4, 5, 6, 10, 11) %>%
-        dplyr::arrange(-Combined.Score) %>%
-        dplyr::mutate(
+        select(3, 4, 5, 6, 10, 11) %>%
+        arrange(-Combined.Score) %>%
+        mutate(
             P.value = formatC(P.value, format = "e", digits = 2),
             Adjusted.P.value = formatC(Adjusted.P.value, format = "e", digits = 2),
             Combined.Score = formatC(Combined.Score, format = "f", digits = 2)

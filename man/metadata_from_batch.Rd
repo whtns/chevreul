@@ -15,6 +15,9 @@ metadata_from_batch(
 
 \item{db_path}{path to .db file}
 }
+\value{
+a tibble with cell level metadata from a single cell object
+}
 \description{
 Retrieve Metadata from Batch
 }

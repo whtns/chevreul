@@ -4,15 +4,15 @@
 \alias{unite_metadata}
 \title{Unite metadata}
 \usage{
-unite_metadata(object, metavars)
+unite_metadata(object, group_bys)
 }
 \arguments{
 \item{object}{A object}
 
-\item{metavars}{A feature or variable to combine}
+\item{group_bys}{A feature or variable to combine}
 }
 \value{
-an object with Idents formed from concatenation of metavars
+an object with Idents formed from concatenation of group_bys
 }
 \description{
 Unite metadata

@@ -15,7 +15,22 @@ local_cellalign(
 )
 }
 \arguments{
-\item{numPts}{}
+\item{exp_ref}{reference experiment}
+
+\item{exp_query}{query experiment}
+
+\item{traj_ref}{reference trajectory}
+
+\item{traj_query}{query trajectory}
+
+\item{Thresh}{threhold}
+
+\item{winSz}{window size}
+
+\item{numPts}{number of points}
+}
+\value{
+a list containing an alignment and an alignment plot
 }
 \description{
 cell align

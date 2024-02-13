@@ -9,7 +9,10 @@ filter_low_rc_cells(object, read_thresh = 1e+05)
 \arguments{
 \item{object}{A object}
 
-\item{read_thresh}{}
+\item{read_thresh}{read threshold}
+}
+\value{
+a single cell object
 }
 \description{
 Filter our Cells from Seurat below read count threshold

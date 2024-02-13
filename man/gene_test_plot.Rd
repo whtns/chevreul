@@ -14,7 +14,20 @@ gene_test_plot(
 )
 }
 \arguments{
-\item{numPts}{}
+\item{expGlobalRef}{reference experiment}
+
+\item{expGlobalQuery}{query experiment}
+
+\item{trajRef}{reference trajectory}
+
+\item{trajQuery}{query trajectory}
+
+\item{winSz}{window size}
+
+\item{numPts}{number of points}
+}
+\value{
+a plot
 }
 \description{
 Plot Gene expression over pseudotime on reference and query trajectories from cellAlign

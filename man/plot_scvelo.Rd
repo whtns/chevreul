@@ -15,6 +15,9 @@ plot_scvelo(
 \arguments{
 \item{plot_method}{}
 }
+\value{
+a matplotlib of RNA velocity
+}
 \description{
 Plot scvelo on embedding plot
 }

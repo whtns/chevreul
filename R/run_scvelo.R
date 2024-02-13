@@ -7,7 +7,7 @@
 #' @param fit.quantile
 #' @param ...
 #'
-#' @return
+#' @return a single cell object with RNA velocity calculated
 #' @export
 #'
 #' @examples
@@ -43,7 +43,7 @@ run_scvelo <- function(object, loom_path, assay = "gene", fit.quantile = 0.05, c
 
     # sub_object <- SeuratObject::RenameAssays(sub_object, gene = "RNA")
 
-    h5ad_path <- stringr::str_replace(loom_path, ".loom", ".h5ad")
+    h5ad_path <- str_replace(loom_path, ".loom", ".h5ad")
 
     # sceasy::convertFormat(sub_object, from="seurat", to="anndata",
     #                       outFile=fs::path_expand(h5ad_path))
@@ -58,7 +58,7 @@ run_scvelo <- function(object, loom_path, assay = "gene", fit.quantile = 0.05, c
 #' @param object A object
 #' @param file_path Path to file
 #'
-#' @return
+#' @return a path to an h5ad file
 #' @export
 #'
 #' @examples
@@ -86,7 +86,7 @@ convert_to_h5ad <- function(object, file_path) {
 #' @param plot_method plotting method to use from scvelo
 #' @param ...
 #'
-#' @return
+#' @return a single cell object with velocity calculated
 #' @export
 #'
 #' @examples
@@ -138,7 +138,7 @@ prep_scvelo <- function(object, loom_path, velocity_mode = c("deterministic", "s
 #' @param group.by
 #' @param plot_method
 #'
-#' @return
+#' @return a matplotlib of RNA velocity
 #' @export
 #'
 #' @examples

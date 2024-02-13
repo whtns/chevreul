@@ -9,6 +9,9 @@ propagate_spreadsheet_changes(updated_table, object)
 \arguments{
 \item{object}{}
 }
+\value{
+a single cell object
+}
 \description{
 Propagate Metadata Changes
 }

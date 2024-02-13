@@ -11,6 +11,9 @@ convert_to_h5ad(object, file_path)
 
 \item{file_path}{Path to file}
 }
+\value{
+a path to an h5ad file
+}
 \description{
 convert a object to an on-disk anndata object
 }

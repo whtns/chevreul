@@ -2,28 +2,27 @@
 #'
 #' cell align
 #'
-#' @param exp_ref
-#' @param exp_query
-#' @param traj_ref
-#' @param traj_query
-#' @param Thresh
-#' @param winSz
-#' @param numPts
+#' @param exp_ref reference experiment
+#' @param exp_query query experiment
+#' @param traj_ref reference trajectory
+#' @param traj_query query trajectory
+#' @param Thresh threhold
+#' @param winSz window size
+#' @param numPts number of points
 #'
-#' @return
+#' @return a list containing an alignment and an alignment plot
 #' @export
 #'
 #'
-#' @examples
-#' @importFrom cellAlign scaleInterpolate
+#' @importFrom cellAlign scaleInterpolate sub2ind
 local_cellalign <- function(exp_ref, exp_query, traj_ref, traj_query, Thresh = 0.2, winSz = 0.1, numPts = 200) {
-    # interpolating and scaling data for local alignment
+  message("interpolating and scaling data for local alignment")
     interLocalRef <- interWeights(expDataBatch = exp_ref, trajCond = traj_ref, winSz = winSz, numPts = numPts)
     interLocalQuery <- interWeights(expDataBatch = exp_query, trajCond = traj_query, winSz = winSz, numPts = numPts)
     interScaledLocalRef <- scaleInterpolate(interLocalRef)
     interScaledLocalQuery <- scaleInterpolate(interLocalQuery)
 
-    # calculate dissimilarity matrix gated with threshold and align at local minima
+    message("calculate dissimilarity matrix gated with threshold and align at local minima")
     A <- calcDistMat(interScaledLocalQuery$scaledData, interScaledLocalRef$scaledData, dist.method = "Euclidean")
     A[A > 10 * Thresh] <- max(A)
     alignment <- localAlign(interScaledLocalQuery$scaledData, interScaledLocalRef$scaledData, threshPercent = Thresh)
@@ -31,17 +30,14 @@ local_cellalign <- function(exp_ref, exp_query, traj_ref, traj_query, Thresh = 0
     costMat <- t(apply(A, 1, function(x) {
         return(as.numeric(x))
     }))
-    linearInd <- cellAlign::sub2ind(nrow(A), alignment$align[[1]]$index1, alignment$align[[1]]$index2)
+    linearInd <- sub2ind(nrow(A), alignment$align[[1]]$index1, alignment$align[[1]]$index2)
     costMat[linearInd] <- NA
     costMat <- data.frame(costMat, row.names = 1:numPts)
     colnames(costMat) <- 1:numPts
-    # pheatmap(costMat, cluster_cols = F, cluster_rows=F, border_color = NA,
-    #          main = 'gated search region',
-    #          show_rownames = F, show_colnames = F)
 
     alignment_plot <- plotAlign(alignment)
 
-    # plots regions in pseudotime that are conserved
+    message("plot regions in pseudotime that are conserved")
     BRef <- colMeans(interScaledLocalRef$scaledData)
     BQuery <- colMeans(interScaledLocalQuery$scaledData)
     p <- unique(alignment$align[[1]]$index1)
@@ -58,30 +54,30 @@ local_cellalign <- function(exp_ref, exp_query, traj_ref, traj_query, Thresh = 0
 
 #' Global Alignment of two trajectories with cellAlign
 #'
-#' @param exp_ref
-#' @param exp_query
-#' @param traj_ref
-#' @param traj_query
+#' @param exp_ref reference experiment
+#' @param exp_query query experiment
+#' @param traj_ref reference trajectory
+#' @param traj_query query trajectory
 #'
-#' @return
+#' @return a list containing an alignment and an alignment plot
 #' @export
 #'
-#' @examples
+#' @importFrom cellAlign plotMapping interWeights plotAlign scaleInterpolate sub2ind
 global_cellalign <- function(exp_ref, exp_query, traj_ref, traj_query, numPts = 200) {
-    interRef <- cellAlign::interWeights(
+    interRef <- interWeights(
         expDataBatch = exp_ref, trajCond = traj_ref,
         winSz = 0.1, numPts = numPts
     )
-    interQuery <- cellAlign::interWeights(
+    interQuery <- interWeights(
         expDataBatch = exp_query, trajCond = traj_query,
         winSz = 0.1, numPts = numPts
     )
 
-    # scale the interpolated data (Recommended):
-    interScaledGlobalRef <- cellAlign::scaleInterpolate(interRef)
-    interScaledGlobalQuery <- cellAlign::scaleInterpolate(interQuery)
+    message("scale the interpolated data")
+    interScaledGlobalRef <- scaleInterpolate(interRef)
+    interScaledGlobalQuery <- scaleInterpolate(interQuery)
 
-    # test small DistMat
+    message("test small DistMat")
     A <- calcDistMat(interScaledGlobalQuery$scaledData[, 1:10], interScaledGlobalRef$scaledData[, 1:10], dist.method = "Euclidean")
     pheatmap(A,
         cluster_cols = F, cluster_rows = F, main = "Ref vs Query distances, 1st 10 points",
@@ -89,7 +85,7 @@ global_cellalign <- function(exp_ref, exp_query, traj_ref, traj_query, numPts = 
     )
 
 
-    # perform global alignment of all genes
+    message("perform global alignment of all genes")
     alignment <- globalAlign(interScaledGlobalQuery$scaledData, interScaledGlobalRef$scaledData,
         scores = list(
             query = interScaledGlobalQuery$traj,
@@ -97,13 +93,13 @@ global_cellalign <- function(exp_ref, exp_query, traj_ref, traj_query, numPts = 
         ),
         sigCalc = F, numPerm = 20
     )
-    p <- cellAlign::plotAlign(alignment)
-    # map interpolation to real data
+    p <- plotAlign(alignment)
+    message("map interpolation to real data")
     mapping <- mapRealDataGlobal(alignment,
         intTrajQuery = interScaledGlobalQuery$traj, realTrajQuery = traj_query,
         intTrajRef = interScaledGlobalRef$traj, realTrajRef = traj_ref
     )
-    mapping_plot <- cellAlign::plotMapping(mapping)
+    mapping_plot <- plotMapping(mapping)
     print(p)
     print(mapping_plot)
     return(list(alignment, mapping))
@@ -111,29 +107,28 @@ global_cellalign <- function(exp_ref, exp_query, traj_ref, traj_query, numPts = 
 
 #' Plot Gene expression over pseudotime on reference and query trajectories from cellAlign
 #'
-#' @param expGlobalRef
-#' @param expGlobalQuery
-#' @param trajRef
-#' @param trajQuery
-#' @param winSz
-#' @param numPts
+#' @param expGlobalRef reference experiment
+#' @param expGlobalQuery query experiment
+#' @param trajRef reference trajectory
+#' @param trajQuery query trajectory
+#' @param winSz window size
+#' @param numPts number of points
 #'
-#' @return
+#' @return a plot
 #' @export
 #'
-#' @examples
+#' @importFrom cellAlign interWeights
 gene_test_plot <- function(expGlobalRef, expGlobalQuery, trajRef, trajQuery, winSz = 0.1, numPts = 200) {
-    interGlobalRef <- cellAlign::interWeights(
+    interGlobalRef <- interWeights(
         expDataBatch = expGlobalRef, trajCond = trajRef,
         winSz = winSz, numPts = numPts
     )
-    interGlobalQuery <- cellAlign::interWeights(
+    interGlobalQuery <- interWeights(
         expDataBatch = expGlobalQuery, trajCond = trajQuery,
         winSz = winSz, numPts = numPts
     )
 
     sharedMarkers <- intersect(rownames(expGlobalRef), rownames(expGlobalQuery))
-    # whichgene="NRL"
     whichgene <- sharedMarkers[1]
     selectedRef <- interGlobalRef$interpolatedVals[whichgene, ]
     selectedQuery <- interGlobalQuery$interpolatedVals[whichgene, ]
@@ -145,7 +140,7 @@ gene_test_plot <- function(expGlobalRef, expGlobalQuery, trajRef, trajQuery, win
     dfRefM <- melt(dfRef, id.vars = "traj")
     dfQueryM <- melt(dfQuery, id.vars = "traj")
 
-    # plot of an example gene and its interpolation with error bars
+    message("plot of an example gene and its interpolation with error bars")
     p <- ggplot(dfRefi, aes(x = traj, y = value)) +
         geom_errorbar(aes(ymin = value - error / 2, ymax = value + error / 2)) +
         geom_line(size = 2) +

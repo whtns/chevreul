@@ -24,7 +24,10 @@ object_pipeline(
 
 \item{organism}{Organism}
 
-\item{...}{Extra parameters passed to object_pipeline}
+\item{...}{extra parameters passed to internal functions}
+}
+\value{
+a processed single cell object
 }
 \description{
 This functions allows you to Preprocess, Cluster and Reduce Dimensions for a single object.

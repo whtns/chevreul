@@ -13,17 +13,16 @@ License: MIT + file LICENSE
 URL: https://github.com/whtns/chevreul,
     https://whtns.github.io/chevreul/
 BugReports: https://github.com/cobriniklab/chevreul/issues
-Depends: 
-    R (>= 2.10),
+Depends:
+    R (>= 4.3.1),
     Seurat,
     SingleCellExperiment,
     scater,
     shiny (>= 1.6.0),
     shinydashboard
-Imports: 
+Imports:
     annotables (>= 0.1.91),
     Biobase,
-    checkmate,
     clustree,
     ComplexHeatmap (>= 2.5.4),
     DataEditR (>= 0.0.9),
@@ -34,11 +33,9 @@ Imports:
     formattable,
     fs,
     future,
-    genesorteR (>= 0.4.3),
     glue,
     ggplotify,
     tximport,
-    ggpubr,
     ggpubr,
     httr,
     janitor,
@@ -48,13 +45,10 @@ Imports:
     Nebulosa,
     patchwork,
     plotly,
-    presto (>= 1.0.0),
     Rcpp,
     reticulate,
-    rhandsontable,
     rlang,
     RSQLite,
-    sessioninfo,
     shinyFiles,
     shinyhelper,
     shinyjs,
@@ -64,27 +58,36 @@ Imports:
     unglue,
     waiter,
     wiggleplotr (>= 1.13.1),
-    purrr
-Suggests: 
+    purrr,
+    batchelor,
+    stringr,
+    tibble,
+    EnsDb.Hsapiens.v86,
+    cellAlign,
     ggplot2,
+    scran,
+    AnnotationDbi,
+    EnhancedVolcano,
+    EnrichmentBrowser,
+    harmony,
+    scuttle,
+    dtw
+Suggests:
+    BiocStyle,
     knitr,
     monocle3 (>= 0.2.1),
+    RefManageR,
     rmarkdown,
     SeuratWrappers (>= 0.2.0),
     testthat (>= 3.0.0)
-VignetteBuilder: 
+VignetteBuilder:
     knitr
-Remotes: 
+Remotes:
     cole-trapnell-lab/monocle3,
-    DillonHammill/DataEditR,
-    immunogenomics/presto,
-    jokergoo/ComplexHeatmap,
-    mahmoudibrahim/genesorteR,
-    stephenturner/annotables,
     satijalab/seurat-wrappers
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
-biocViews: Coverage, RNASeq, Sequencing, Visualization, GeneExpression, Transcription
+biocViews: Coverage, RNASeq, Sequencing, Visualization, GeneExpression, Transcription, SingleCell
 Config/testthat/edition: 3

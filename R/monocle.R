@@ -3,23 +3,12 @@
 #' @param object
 #'
 #' @return
-#' @export
 #'
 #' @examples
 #' processed_object <- clustering_workflow(human_gene_transcript_object)
 #' cds <- convert_object_to_cds(processed_object)
 convert_object_to_cds <- function(object, resolution = 1, min_expression = 0.05) {
     print(resolution)
-
-    # # drop sample_name metadata column as that is reserved by monocle3
-    # object$sample_name <- NULL
-    #
-    # cds <- SeuratWrappers::as.cell_data_set(object) %>%
-    #   monocle3::estimate_size_factors()
-    #
-    # rowData(cds)$gene_short_name <- rownames(cds)
-    #
-    # return(cds)
 
     # Building the necessary parts for a basic cds
 
@@ -103,7 +92,6 @@ convert_object_to_cds <- function(object, resolution = 1, min_expression = 0.05)
 #' @param clusters
 #'
 #' @return
-#' @export
 #'
 #' @examples
 assign_clusters_to_cds <- function(cds, clusters) {
@@ -121,7 +109,6 @@ assign_clusters_to_cds <- function(cds, clusters) {
 #' @param resolution
 #'
 #' @return
-#' @export
 #'
 #' @examples
 learn_graph_by_resolution <- function(cds, object, resolution = 1) {
@@ -151,7 +138,6 @@ learn_graph_by_resolution <- function(cds, object, resolution = 1) {
 #' @param color_cells_by
 #'
 #' @return
-#' @export
 #'
 #' @examples
 plot_cds <- function(cds, color_cells_by = NULL, genes = NULL, return_plotly = TRUE) {
@@ -183,10 +169,10 @@ plot_cds <- function(cds, color_cells_by = NULL, genes = NULL, return_plotly = T
     if (return_plotly) {
         cds_plot <-
             cds_plot %>%
-            plotly::ggplotly(height = 400) %>%
+            ggplotly(height = 400) %>%
             plotly_settings() %>%
-            plotly::toWebGL() %>%
-            # plotly::partial_bundle() %>%
+            toWebGL() %>%
+            # partial_bundle() %>%
             identity()
     }
 
@@ -200,7 +186,6 @@ plot_cds <- function(cds, color_cells_by = NULL, genes = NULL, return_plotly = T
 #' @param color_cells_by
 #'
 #' @return
-#' @export
 #'
 #' @examples
 plot_pseudotime <- function(cds, resolution, color_cells_by = NULL, genes = NULL) {
@@ -232,10 +217,10 @@ plot_pseudotime <- function(cds, resolution, color_cells_by = NULL, genes = NULL
 
     cds_plot <-
         cds_plot %>%
-        plotly::ggplotly(height = 400) %>%
+        ggplotly(height = 400) %>%
         plotly_settings() %>%
-        plotly::toWebGL() %>%
-        # plotly::partial_bundle() %>%
+        toWebGL() %>%
+        # partial_bundle() %>%
         identity()
 
     # print(cds_plot)
@@ -247,7 +232,6 @@ plot_pseudotime <- function(cds, resolution, color_cells_by = NULL, genes = NULL
 #' @param resolution
 #'
 #' @return
-#' @export
 #'
 #' @examples
 plot_monocle_features <- function(cds, resolution, genes = NULL, ...) {
@@ -276,11 +260,11 @@ plot_monocle_features <- function(cds, resolution, genes = NULL, ...) {
 
     cds_plot <-
         cds_plot %>%
-        plotly::ggplotly(height = 400) %>%
-        plotly::ggplotly(height = 400) %>%
+        ggplotly(height = 400) %>%
+        ggplotly(height = 400) %>%
         plotly_settings() %>%
-        plotly::toWebGL() %>%
-        # plotly::partial_bundle() %>%
+        toWebGL() %>%
+        # partial_bundle() %>%
         identity()
 
     # print(cds_plot)
@@ -317,7 +301,6 @@ plot_monocle_features <- function(cds, resolution, genes = NULL, ...) {
 #' @param ...
 #'
 #' @return
-#' @export
 #'
 #' @examples
 plot_cells <- function(cds, x = 1, y = 2, reduction_method = c(
@@ -466,7 +449,7 @@ plot_cells <- function(cds, x = 1, y = 2, reduction_method = c(
                 prin_graph_dim_1 = x,
                 prin_graph_dim_2 = y
             ) %>%
-            dplyr::mutate(
+            mutate(
                 sample_name = rownames(.),
                 sample_state = rownames(.)
             )
@@ -477,7 +460,7 @@ plot_cells <- function(cds, x = 1, y = 2, reduction_method = c(
                 source = "from",
                 target = "to"
             ) %>%
-            dplyr::left_join(
+            left_join(
                 ica_space_df %>%
                     dplyr::select_(
                         source = "sample_name", source_prin_graph_dim_1 = "prin_graph_dim_1",
@@ -485,7 +468,7 @@ plot_cells <- function(cds, x = 1, y = 2, reduction_method = c(
                     ),
                 by = "source"
             ) %>%
-            dplyr::left_join(
+            left_join(
                 ica_space_df %>%
                     dplyr::select_(
                         target = "sample_name", target_prin_graph_dim_1 = "prin_graph_dim_1",
@@ -572,15 +555,15 @@ plot_cells <- function(cds, x = 1, y = 2, reduction_method = c(
                 }
             }
             if (scale_to_range) {
-                markers_exprs <- dplyr::group_by(
+                markers_exprs <- group_by(
                     markers_exprs,
                     feature_label
                 ) %>%
-                    dplyr::mutate(
+                    mutate(
                         max_val_for_feature = max(value),
                         min_val_for_feature = min(value)
                     ) %>%
-                    dplyr::mutate(value = 100 *
+                    mutate(value = 100 *
                         (value - min_val_for_feature) / (max_val_for_feature -
                             min_val_for_feature))
                 expression_legend_label <- "% Max"
@@ -602,44 +585,44 @@ plot_cells <- function(cds, x = 1, y = 2, reduction_method = c(
                 if (label_groups_by_cluster && is.null(data_df$cell_group) ==
                     FALSE) {
                     text_df <- data_df %>%
-                        dplyr::group_by(cell_group) %>%
-                        dplyr::mutate(cells_in_cluster = dplyr::n()) %>%
-                        dplyr::group_by(cell_color, add = TRUE) %>%
-                        dplyr::mutate(per = dplyr::n() / cells_in_cluster)
-                    median_coord_df <- text_df %>% dplyr::summarize(
+                        group_by(cell_group) %>%
+                        mutate(cells_in_cluster = dplyr::n()) %>%
+                        group_by(cell_color, add = TRUE) %>%
+                        mutate(per = dplyr::n() / cells_in_cluster)
+                    median_coord_df <- text_df %>% summarize(
                         fraction_of_group = dplyr::n(),
                         text_x = stats::median(x = data_dim_1),
                         text_y = stats::median(x = data_dim_2)
                     )
-                    text_df <- suppressMessages(text_df %>% dplyr::select(per) %>%
-                        dplyr::distinct())
+                    text_df <- suppressMessages(text_df %>% select(per) %>%
+                        distinct())
                     text_df <- suppressMessages(dplyr::inner_join(
                         text_df,
                         median_coord_df
                     ))
                     text_df <- text_df %>%
-                        dplyr::group_by(cell_group) %>%
+                        group_by(cell_group) %>%
                         dplyr::top_n(labels_per_group, per)
                 } else {
                     text_df <- data_df %>%
-                        dplyr::group_by(cell_color) %>%
-                        dplyr::mutate(per = 1)
-                    median_coord_df <- text_df %>% dplyr::summarize(
+                        group_by(cell_color) %>%
+                        mutate(per = 1)
+                    median_coord_df <- text_df %>% summarize(
                         fraction_of_group = dplyr::n(),
                         text_x = stats::median(x = data_dim_1),
                         text_y = stats::median(x = data_dim_2)
                     )
-                    text_df <- suppressMessages(text_df %>% dplyr::select(per) %>%
-                        dplyr::distinct())
+                    text_df <- suppressMessages(text_df %>% select(per) %>%
+                        distinct())
                     text_df <- suppressMessages(dplyr::inner_join(
                         text_df,
                         median_coord_df
                     ))
                     text_df <- text_df %>%
-                        dplyr::group_by(cell_color) %>%
+                        group_by(cell_color) %>%
                         dplyr::top_n(labels_per_group, per)
                 }
-                text_df$label <- as.character(text_df %>% dplyr::pull(cell_color))
+                text_df$label <- as.character(text_df %>% pull(cell_color))
             } else {
                 message(paste(
                     "Cells aren't colored in a way that allows them to",
@@ -768,7 +751,7 @@ plot_cells <- function(cds, x = 1, y = 2, reduction_method = c(
                     names(mst_branch_nodes),
                     sample_name
                 )) %>%
-                dplyr::mutate(branch_point_idx = seq_len(dplyr::n()))
+                mutate(branch_point_idx = seq_len(dplyr::n()))
             g <- g + geom_point(
                 aes_string(
                     x = "prin_graph_dim_1",
@@ -793,7 +776,7 @@ plot_cells <- function(cds, x = 1, y = 2, reduction_method = c(
                     names(mst_leaf_nodes),
                     sample_name
                 )) %>%
-                dplyr::mutate(leaf_idx = seq_len(dplyr::n()))
+                mutate(leaf_idx = seq_len(dplyr::n()))
             g <- g + geom_point(
                 aes_string(
                     x = "prin_graph_dim_1",
@@ -818,7 +801,7 @@ plot_cells <- function(cds, x = 1, y = 2, reduction_method = c(
                     names(mst_root_nodes),
                     sample_name
                 )) %>%
-                dplyr::mutate(root_idx = seq_len(dplyr::n()))
+                mutate(root_idx = seq_len(dplyr::n()))
             g <- g + geom_point(
                 aes_string(
                     x = "prin_graph_dim_1",
@@ -862,11 +845,9 @@ plot_cells <- function(cds, x = 1, y = 2, reduction_method = c(
 #' @param min_expression
 #'
 #' @return
-#' @export
 #'
 #' @examples
 threshold_monocle_genes <- function(object, cds, min_expression = 0.05) {
-    # browser()
     agg_mat <- Seurat::GetAssayData(object, assay = "gene") %>%
         as.matrix()
 
@@ -897,7 +878,6 @@ threshold_monocle_genes <- function(object, cds, min_expression = 0.05) {
 #' @param ...
 #'
 #' @return
-#' @export
 #'
 #' @examples
 monocle_module_heatmap <- function(cds, pr_deg_ids, object_resolution, cells = NULL, collapse_rows = TRUE,
@@ -927,27 +907,27 @@ monocle_module_heatmap <- function(cds, pr_deg_ids, object_resolution, cells = N
 
     thresholded_genes <- monocle3::fData(cds) %>%
         tibble::as_tibble() %>%
-        dplyr::mutate(id = gene_short_name) %>%
-        dplyr::filter(percent_cells > 0.05)
+        mutate(id = gene_short_name) %>%
+        filter(percent_cells > 0.05)
 
     cds <- cds[rownames(cds) %in% thresholded_genes$id, ]
 
     gene_module_df <- monocle3::find_gene_modules(cds2, resolution = resolution) %>%
-        dplyr::arrange(module) %>%
-        dplyr::filter(id %in% rownames(cds)) %>%
-        dplyr::left_join(thresholded_genes, by = "id") %>%
+        arrange(module) %>%
+        filter(id %in% rownames(cds)) %>%
+        left_join(thresholded_genes, by = "id") %>%
         identity()
 
     cell_group_df <- tibble::tibble(
         cell = row.names(colData(cds)),
         cell_group = colData(cds)[[object_resolution]]
     ) %>%
-        dplyr::mutate(cell_group = cell)
+        mutate(cell_group = cell)
 
     if (collapse_rows != TRUE) {
         heatmap_row_df <-
-            dplyr::select(gene_module_df, id) %>%
-            dplyr::mutate(module = id)
+            select(gene_module_df, id) %>%
+            mutate(module = id)
 
         module_levels <- levels(gene_module_df$module)
         col <- scales::hue_pal()(length(module_levels))
@@ -979,14 +959,14 @@ monocle_module_heatmap <- function(cds, pr_deg_ids, object_resolution, cells = N
 
     pseudotime_tbl <-
         monocle3::pseudotime(cds) %>%
-        tibble::enframe("sample_id", "pseudotime")
+        enframe("sample_id", "pseudotime")
 
     groups.use <- colData(cds)[cells, group.by, drop = FALSE] %>%
         as.data.frame() %>%
-        tibble::rownames_to_column("sample_id") %>%
-        dplyr::mutate(across(where(is.character), as.factor)) %>%
-        dplyr::left_join(pseudotime_tbl, by = "sample_id") %>%
-        dplyr::arrange(pseudotime) %>%
+        rownames_to_column("sample_id") %>%
+        mutate(across(where(is.character), as.factor)) %>%
+        left_join(pseudotime_tbl, by = "sample_id") %>%
+        arrange(pseudotime) %>%
         data.frame(row.names = 1) %>%
         identity()
 
@@ -1037,12 +1017,11 @@ monocle_module_heatmap <- function(cds, pr_deg_ids, object_resolution, cells = N
     return(list(module_table = gene_module_df, module_heatmap = module_heatmap, agg_mat = agg_mat))
 }
 
-#' Flip Pobjectdotime
+#' Flip Pseudotime
 #'
-#' @param cds
+#' @param cds a cell data set object
 #'
 #' @return
-#' @export
 #'
 #' @examples
 flip_pseudotime <- function(cds) {
@@ -1071,13 +1050,517 @@ flip_pseudotime <- function(cds) {
 export_pseudotime <- function(cds, root_cells) {
     root_cells <- root_cells %>%
         set_names(.) %>%
-        tibble::enframe("sample_id", "root_cell") %>%
-        dplyr::mutate(root_cell = 1)
+        enframe("sample_id", "root_cell") %>%
+        mutate(root_cell = 1)
 
     monocle_pt <- monocle3::pseudotime(cds) %>%
-        tibble::enframe("sample_id", "pseudotime") %>%
-        dplyr::arrange(pseudotime) %>%
-        dplyr::left_join(root_cells, by = "sample_id")
+        enframe("sample_id", "pseudotime") %>%
+        arrange(pseudotime) %>%
+        left_join(root_cells, by = "sample_id")
 
     return(monocle_pt)
+}
+
+#' Monocle UI Module
+#'
+#' @param id
+#'
+#' @noRd
+monocleui <- function(id) {
+  ns <- NS(id)
+  tagList(
+    fluidRow(
+      chevreulBox(
+        title = "Seurat Data",
+        plotlyOutput(ns("objectdimplot"), height = 500),
+        width = 6
+        # plotDimRedui(ns("plotdimred")
+      ),
+      chevreulBox(
+        title = "Pobjectdotime Settings",
+        actionButton(ns("subsetSeurat"), "Subset Seurat before Pobjectdotime Calculation"),
+        actionButton(ns("calcCDS"), "Calculate Pobjectdotime"),
+        sliderInput(ns("cdsResolution"), "Resolution of clustering algorithm (affects number of clusters)",
+                    min = 0.2, max = 2, step = 0.2, value = 0.6
+        ),
+        actionButton(ns("subsetCells"), "Subset Monocle Object After Pobjectdotime Calculation"),
+        uiOutput(ns("rootCellsui")),
+        actionButton(ns("plotPobjectdotime"), "Calculate Pobjectdotime With Root Cells"),
+        downloadButton(ns("downloadPT"), "Export Pobjectdotime"),
+        checkboxInput(ns("flipPtime"), "Invert Pobjectdotime", value = TRUE),
+        width = 6
+      )
+    ),
+    chevreulBox(
+      title = "Embedding Plot",
+      selectizeInput(ns("plottype1"), "Variable to Plot", choices = c(Louvain = "louvain"), selected = "Louvain", multiple = TRUE),
+      selectizeInput(ns("customFeature1"), "Gene or transcript expression by which to color the plot",
+                     choices = NULL, multiple = FALSE
+      ),
+      uiOutput(ns("moduleSelect1")),
+      plotlyOutput(ns("monoclePlot1")),
+      width = 6
+    ),
+    chevreulBox(
+      title = "Embedding Plot",
+      selectizeInput(ns("plottype2"), "Variable to Plot", choices = c(Louvain = "louvain"), selected = "Louvain", multiple = TRUE),
+      selectizeInput(ns("customFeature2"), "gene or transcript on which to color the plot",
+                     choices = NULL, multiple = FALSE
+      ),
+      uiOutput(ns("moduleSelect2")),
+      plotlyOutput(ns("monoclePlot2")),
+      width = 6
+    ),
+    fluidRow(
+      chevreulBox(
+        title = "calculate pseudotime",
+        radioButtons(ns("diffexFeature"), "Feature for differential expression", choices = c("gene", "transcript")),
+        actionButton(ns("calcPtimeGenes"), "Find Pobjectdotime Correlated Genes"),
+        sliderInput(ns("qvalThreshold"), "Set q value threshold for module calculation", min = 0.01, 0.1, value = 0.05, step = 0.01),
+        textOutput("pseudotimeMessages"),
+        uiOutput(ns("partitionSelect")),
+        uiOutput(ns("genePlotQuery2")),
+        DT::DTOutput(ns("ptimeGenesDT")),
+        downloadButton(ns("downloadGenesDT"), "Download data as csv"),
+        # uiOutput(ns("ptimeGenes")),
+        width = 6
+      ),
+      chevreulBox(
+        title = "Plot Feature Expression over Pobjectdotime",
+        plotlyOutput(ns("ptimeGenesLinePlot")),
+        width = 6,
+        height = 650
+      )
+    ),
+    chevreulBox(
+      title = "Heatmap",
+      uiOutput(ns("colAnnoVarui")),
+      radioButtons(ns("heatmapRows"), "annotate heatmap rows by genes or modules?", choices = c("modules", "genes")),
+      downloadButton(ns("downloadPlot"), "Download Heatmap"),
+      downloadButton(ns("downloadCds"), "Download celldataset"),
+      plotOutput(ns("monocleHeatmap"), width = "800px", height = "1200px")
+    ),
+    chevreulBox(
+      title = "Modules",
+      plotOutput(ns("modulePlot")),
+      div(DT::dataTableOutput(ns("moduleTable")), style = "font-size: 75%")
+    )
+  )
+}
+
+#' Monocle Server Module
+#'
+#' @param input
+#' @param output
+#' @param session
+#' @param cds
+#' @param object
+#' @param plot_types
+#' @param resolution
+#'
+#' @noRd
+monocle <- function(input, output, session, object, plot_types, featureType,
+                    organism_type, reductions) {
+  ns <- session$ns
+
+  # markermarker
+  w <- waiter::Waiter$new(ns("monocleHeatmap"),
+                          html = waiter::spin_loaders(id = 1, color = "black", style = "position:relative;margin:auto;"),
+                          color = waiter::transparent(.5)
+  )
+
+  output$colAnnoVarui <- renderUI({
+    req(object())
+
+    selectizeInput(ns("colAnnoVar"), "Column Annotation(s)",
+                   choices = colnames(pull_metadata(object())), selected = "batch", multiple = TRUE
+    )
+  })
+
+  cds_rvs <- reactiveValues(selected = c(traj = TRUE, ptime = FALSE, diff_features = FALSE))
+  cds_plot_types <- reactiveVal(c(Pobjectdotime = "pseudotime", Module = "module"))
+  myplot_types <- reactive({
+    c(purrr::flatten_chr(plot_types()), cds_plot_types())
+  })
+
+  # to be able to subset, create a new copy of the object
+
+  object_monocle <- reactiveVal()
+
+  observe({
+    req(object())
+    object_monocle(object())
+  })
+
+  louvain_resolution <- reactive({
+    if (query_assay(object(), "integrated")) {
+      assay <- "integrated"
+    } else {
+      assay <- "gene"
+    }
+
+    paste0(assay, "_snn_res.", input$cdsResolution)
+  })
+
+  objectdimplot <- reactive({
+    req(object_monocle())
+
+    plot_var(object_monocle(), embedding = "umap", group = louvain_resolution(), return_plotly = TRUE)
+  })
+
+  output$objectdimplot <- renderPlotly({
+    objectdimplot()
+  })
+
+  # callModule(plotDimRed, "plotdimred", object, plot_types, featureType,
+  #            organism_type, reductions)
+
+
+  observeEvent(input$subsetSeurat, {
+    req(object_monocle())
+
+    d <- event_data("plotly_selected", priority = "event")
+    if (is.null(d)) {
+      msg <- "Click and drag events (i.e. select/lasso) appear here (double-click to clear)"
+      print(d)
+    } else {
+      print(d$key)
+      print(d)
+      subset_monocle <- object_monocle()[, d$key]
+      object_monocle(subset_monocle)
+    }
+  })
+
+  observeEvent(input$calcCDS, {
+    req(object_monocle())
+    cds_rvs$selected <- c(traj = TRUE, ptime = FALSE, diff_features = FALSE)
+    cds <- convert_object_to_cds(object(), resolution = input$cdsResolution)
+    # cds <- convert_object_to_cds(object_monocle(), resolution = input$cdsResolution)
+    cds <- cds[, colnames(cds) %in% colnames(object_monocle())]
+
+    cds <- threshold_monocle_genes(object_monocle(), cds)
+
+    cds <- learn_graph_by_resolution(cds, object_monocle(),
+                                     resolution = input$cdsResolution
+    )
+    updateSelectizeInput(session, "plottype1", selected = "louvain", choices = myplot_types())
+    updateSelectizeInput(session, "customFeature1", choices = rownames(cds), server = TRUE)
+    updateSelectizeInput(session, "plottype2", selected = "louvain", choices = myplot_types())
+    updateSelectizeInput(session, "customFeature2", choices = rownames(cds), server = TRUE)
+    cds_rvs$traj <- cds
+  })
+
+  selected_plot <- reactiveVal()
+
+  output$monoclePlot1 <- renderPlotly({
+    req(input$plottype1)
+    req(cds_rvs$traj)
+    w$show()
+    print(cds_rvs$selected)
+    if (input$plottype1 == "louvain") {
+      cluster_resolution <- reactive({
+        if (any(stringr::str_detect(colnames(colData(cds_rvs$traj)), "integrated"))) {
+          paste0("integrated", "_snn_res.", input$cdsResolution)
+        } else {
+          paste0("gene", "_snn_res.", input$cdsResolution)
+        }
+      })
+      plot_cds(cds_rvs$traj, color_cells_by = cluster_resolution())
+    } else if (input$plottype1 == "pseudotime") {
+      plot_pseudotime(cds_rvs$traj, color_cells_by = "pseudotime", resolution = input$cdsResolution)
+    } else if (input$plottype1 == "feature") {
+      plot_monocle_features(cds_rvs$traj, genes = input$customFeature1, monocle_heatmap()$agg_mat)
+    } else if (input$plottype1 == "module") {
+      print(monocle_heatmap()$module_table)
+      print(input$plotModule1)
+      genes <- monocle_heatmap()$module_table %>%
+        filter(module %in% input$plotModule1) %>%
+        dplyr::mutate(module = factor(module))
+      plot_monocle_features(cds_rvs$traj, genes = genes, monocle_heatmap()$agg_mat)
+    } else {
+      plot_cds(cds_rvs$traj, color_cells_by = input$plottype1)
+    }
+  })
+
+  output$monoclePlot2 <- renderPlotly({
+    req(input$plottype2)
+    req(cds_rvs$traj)
+    w$show()
+    print(cds_rvs$selected)
+    if (input$plottype2 == "louvain") {
+      cluster_resolution <- reactive({
+        if (any(stringr::str_detect(colnames(colData(cds_rvs$traj)), "integrated"))) {
+          paste0("integrated", "_snn_res.", input$cdsResolution)
+        } else {
+          paste0("gene", "_snn_res.", input$cdsResolution)
+        }
+      })
+      plot_cds(cds_rvs$traj, color_cells_by = cluster_resolution())
+    } else if (input$plottype2 == "pseudotime") {
+      plot_pseudotime(cds_rvs$traj, color_cells_by = "pseudotime", resolution = input$cdsResolution)
+    } else if (input$plottype2 == "feature") {
+      plot_monocle_features(cds_rvs$traj, genes = input$customFeature2, monocle_heatmap()$agg_mat)
+    } else if (input$plottype2 == "module") {
+      print(monocle_heatmap()$module_table)
+      print(input$plotModule2)
+
+      genes <- monocle_heatmap()$module_table %>%
+        filter(module %in% input$plotModule2) %>%
+        dplyr::mutate(module = factor(module))
+      plot_monocle_features(cds_rvs$traj, genes = genes, monocle_heatmap()$agg_mat)
+    } else {
+      plot_cds(cds_rvs$traj, color_cells_by = input$plottype2)
+    }
+  })
+
+  cdsbrush <- reactive({
+    req(cds_rvs$traj)
+    d <- event_data("plotly_selected")
+    if (is.null(d)) {
+      msg <- "Click and drag events (i.e. select/lasso) appear here (double-click to clear)"
+      return(d)
+    } else {
+      # selected_cells <- colnames(cds_rvs$traj)[as.numeric(d$key)]
+      d$key
+    }
+  })
+
+  observeEvent(input$subsetCells, {
+    req(cds_rvs$traj)
+    print(cdsbrush())
+    cds_rvs$traj <- cds_rvs$traj[, cdsbrush()]
+  })
+
+  output$rootCellsui <- renderUI({
+    selectizeInput(ns("rootCells"), "Choose Root Cells", choices = c("Choose Root Cells" = "", colnames(cds_rvs$traj)), multiple = TRUE)
+  })
+
+  exported_pseudotime <- reactiveVal()
+
+  observeEvent(input$plotPobjectdotime, {
+    req(cds_rvs$traj)
+    req(input$rootCells)
+    cds_rvs$traj <- monocle3::order_cells(cds_rvs$traj, root_cells = input$rootCells)
+
+    # # select only first partition
+    # cds_rvs$traj <- cds_rvs$traj[, monocle3::partitions(cds_rvs$traj) == 1]
+
+
+    if (input$flipPtime) {
+      cds_rvs$traj <- flip_pseudotime(cds_rvs$traj)
+    }
+    updateSelectizeInput(session, "plottype1", selected = "pseudotime", choices = myplot_types())
+    updateSelectizeInput(session, "plottype2", selected = "pseudotime", choices = myplot_types())
+    cds_rvs$selected <- c(traj = FALSE, ptime = TRUE, diff_features = FALSE)
+    # markermarker
+
+    exported_pseudotime(export_pseudotime(cds_rvs$traj, input$rootCells))
+  })
+
+
+  output$downloadPT <- downloadHandler(
+    filename = function() {
+      paste("pseudotime-", Sys.Date(), ".csv", sep = "")
+    },
+    content = function(file) {
+      readr::write_csv(exported_pseudotime(), file)
+    }
+  )
+
+  # markermarker
+  observeEvent(input$calcPtimeGenes, {
+    req(input$diffexFeature)
+    if (req(cds_rvs$selected["ptime"])) {
+      # markermarker
+      # cds_rvs$traj  <- swap_counts_from_feature(cds_rvs$traj, input$diffexFeature)
+
+      showModal(modalDialog(
+        title = "Calculating Pobjectdotime Correlated Features",
+        "This may take a few minutes!"
+      ))
+      cds_rvs$traj@metadata[["diff_features"]] <- monocle3::graph_test(cds_rvs$traj, neighbor_graph = "principal_graph", cores = 4, expression_family = "negbinom")
+
+      cds_rvs$selected <- c(traj = FALSE, ptime = FALSE, diff_features = TRUE)
+
+      removeModal()
+    }
+  })
+
+  cds_pr_test_res <- reactive({
+    if (req(cds_rvs$selected["diff_features"])) {
+      cds_rvs$traj@metadata$diff_features %>%
+        # subset(q_value < 0.05) %>%
+        arrange(q_value) %>%
+        dplyr::select(-status) %>%
+        # dplyr::filter %>%
+        identity()
+    }
+  })
+
+  observe({
+    req(cds_pr_test_res())
+    if (req(cds_rvs$selected["diff_features"])) {
+      output$genePlotQuery2 <- renderUI({
+        selectizeInput(ns("genePlotQuery1"), "Pick Gene to Plot on Pobjectdotime", choices = rownames(cds_pr_test_res()), multiple = TRUE, selected = rownames(cds_pr_test_res())[1])
+      })
+
+      output$partitionSelect <- renderUI({
+        selectizeInput(ns("partitions"), "Select a Partition to Plot", choices = levels(monocle3::partitions(cds_rvs$traj)), multiple = FALSE)
+      })
+    }
+  })
+
+  observe({
+    req(cds_pr_test_res())
+    req(input$genePlotQuery1)
+    if (req(cds_rvs$selected["diff_features"])) {
+      output$ptimeGenesLinePlot <- renderPlotly({
+        genes_in_pseudotime <- prep_plot_genes_in_pseudotime(cds_rvs$traj, input$genePlotQuery1, input$cdsResolution)
+        genes_in_pseudotime <-
+          genes_in_pseudotime %>%
+          ggplotly(height = 600) %>%
+          plotly_settings() %>%
+          toWebGL() %>%
+          # partial_bundle() %>%
+          identity()
+      })
+
+      output$ptimeGenesDT <- DT::renderDT({
+        DT::datatable(cds_pr_test_res(),
+                      extensions = "Buttons",
+                      options = list(dom = "Bftp", buttons = c("copy", "csv"), scrollX = "100px", scrollY = "400px", pageLength = 200, paging = TRUE)
+        )
+      })
+
+      output$downloadGenesDT <- downloadHandler(
+        filename = function() {
+          paste("diffex_ptime-", Sys.Date(), ".csv", sep = "")
+        },
+        content = function(file) {
+          write.csv(cds_pr_test_res(), file)
+        }
+      )
+    }
+  })
+
+  monocle_heatmap <- reactive({
+    req(cds_rvs$traj)
+    req(input$colAnnoVar)
+
+    heatmap_genes <- cds_pr_test_res() %>%
+      filter(q_value < input$qvalThreshold)
+
+    monocle_module_heatmap(cds_rvs$traj, rownames(heatmap_genes), input$cdsResolution, collapse_rows = input$heatmapRows, group.by = input$colAnnoVar)
+  }) %>%
+    bindCache(cds_rvs$traj, input$cdsResolution, input$heatmapRows)
+
+  module_choices <- reactive({
+    module_choices <- as.character(unique(monocle_heatmap()$module_table$module))
+    # names(module_choices) <- paste("Module", module_choices)
+  })
+
+  output$moduleSelect1 <- renderUI({
+    selectizeInput(ns("plotModule1"), "gene module to plot (if computed)", choices = module_choices(), multiple = TRUE)
+  })
+  output$moduleSelect2 <- renderUI({
+    selectizeInput(ns("plotModule2"), "gene module to plot (if computed)", choices = module_choices(), multiple = TRUE)
+  })
+
+  observe({
+    output$monocleHeatmap <- renderPlot({
+      monocle_heatmap()$module_heatmap
+    })
+
+    output$moduleTable <- DT::renderDT({
+      DT::datatable(monocle_heatmap()$module_table,
+                    extensions = "Buttons",
+                    options = list(dom = "Bft", buttons = c(
+                      "copy",
+                      "csv"
+                    ), scrollX = "100px", scrollY = "400px")
+      )
+    })
+
+    output$modulePlot <- renderPlot({
+      ggplot(monocle_heatmap()$module_table, aes(dim_1, dim_2, color = module)) +
+        geom_point()
+    })
+  })
+
+  output$downloadPlot <- downloadHandler(
+    filename = function() {
+      paste("heatmap", ".pdf", sep = "")
+    },
+    content = function(file) {
+      ggsave(file, ggplotify::as.ggplot(monocle_heatmap()$module_heatmap), width = 16, height = 12)
+    }
+  )
+
+  output$downloadCds <- downloadHandler(
+    filename = function() {
+      paste("cds", ".rds", sep = "")
+    },
+    content = function(file) {
+      saveRDS(cds_rvs$traj, file)
+    }
+  )
+}
+
+#' Prep plot genes in pseudotime
+#'
+#' @param cds
+#' @param mygenes
+#' @param resolution
+#'
+#' @return
+#'
+#' @examples
+prep_plot_genes_in_pseudotime <- function(cds, mygenes, resolution, partition = FALSE) {
+  if (partition) {
+    partition_cells <- monocle3::partitions(cds)
+    # partition_cells <-  split(names(partition_cells), partition_cells)[[input$partitions]]
+    partition_cells <- split(names(partition_cells), partition_cells)[[1]]
+
+    cds <- cds[, colnames(cds) %in% partition_cells]
+  }
+
+  cds <- cds[rownames(cds) %in% mygenes, ]
+
+  if (any(grepl("integrated", colnames(colData(cds))))) {
+    default_assay <- "integrated"
+  } else {
+    default_assay <- "gene"
+  }
+
+  color_cells_by <- paste0(default_assay, "_snn_res.", resolution)
+
+  gene_ptime_plot <- monocle3::plot_genes_in_pseudotime(cds,
+                                                        color_cells_by = color_cells_by,
+                                                        min_expr = 0.5
+  )
+
+  return(gene_ptime_plot)
+}
+
+#' Swap counts from Feature
+#'
+#' @param cds
+#' @param featureType
+#'
+#' @return
+#'
+#' @examples
+swap_counts_from_feature <- function(cds, featureType) {
+  print(featureType)
+  #
+  #   if (featureType == "transcript"){
+  #     rowData(cds[[featureType]])$gene_short_name <- rownames(cds[[featureType]])
+  #   }
+
+  assay(cds$traj, withDimnames = FALSE) <- assay(cds[[featureType]])
+  rowData(cds$traj) <- rowData(cds[[featureType]])
+  rownames(cds$traj) <- rownames(cds[[featureType]])
+  cds$traj@preprocess_aux$gene_loadings <- cds[[featureType]]@preprocess_aux$gene_loadings
+  # counts(cds$traj) <- counts(cds[[featureType]])
+  cds$traj
 }

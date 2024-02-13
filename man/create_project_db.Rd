@@ -17,6 +17,9 @@ create_project_db(
 
 \item{verbose}{}
 }
+\value{
+a sqlite database with single cell objects
+}
 \description{
 Create a database containing chevreul projects
 }

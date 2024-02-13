@@ -21,13 +21,16 @@ plot_all_transcripts(
 
 \item{from_gene}{whether to look up transcripts for an input gene}
 }
+\value{
+a list of embedding plots colored by a feature of interest
+}
 \description{
 plot expression all transcripts for an input gene superimposed on an embedding
 }
 \examples{
 
-processed_object <- clustering_workflow(human_gene_transcript_object)
+\dontrun{processed_object <- clustering_workflow(human_gene_transcript_object)
 transcripts_to_plot <- genes_to_transcripts("RXRG")
-plot_all_transcripts(processed_object, features = transcripts_to_plot)
+plot_all_transcripts(processed_object, features = transcripts_to_plot)}
 
 }
