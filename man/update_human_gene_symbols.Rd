@@ -11,6 +11,9 @@ update_human_gene_symbols(object, assay = "gene")
 
 \item{assay}{Assay to use, Default = "gene"}
 }
+\value{
+a single cell object
+}
 \description{
 Update human gene symbols in object
 }

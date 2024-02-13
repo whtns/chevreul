@@ -13,6 +13,9 @@ update_object_meta(object, proj_dir, numcols)
 
 \item{numcols}{}
 }
+\value{
+updated object metadata
+}
 \description{
 Given a project metadata file located in <proj_dir>/data/<meta_file>, update an existing object with the project data
 }

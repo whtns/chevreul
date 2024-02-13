@@ -29,6 +29,10 @@ make_complex_heatmap(
 
 \item{layer}{"counts" for raw data "scale.data" for log-normalized data}
 
+\item{assay}{assay to display}
+
+\item{group.bar.height}{height for group bars}
+
 \item{column_split}{whether to split columns by metadat value}
 
 \item{col_arrangement}{how to arrange columns whether with a dendrogram (Ward.D2, average, etc.) or exclusively by metadata category}
@@ -37,13 +41,15 @@ make_complex_heatmap(
 
 \item{...}{additional arguments passed to ComplexHeatmap::Heatmap}
 }
+\value{
+a complexheatmap
+}
 \description{
 Plot Annotated Complexheatmap from Seurat object
 }
 \examples{
-
-# plot top 50 variable genes
-top_50_features <- get_variable_features(human_gene_transcript_object)[1:50]
-make_complex_heatmap(human_gene_transcript_object, features = top_50_features)
+plot top 50 variable genes
+\dontrun{top_50_features <- get_variable_features(human_gene_transcript_object)[1:50]}
+\dontrun{make_complex_heatmap(human_gene_transcript_object, features = top_50_features)}
 
 }

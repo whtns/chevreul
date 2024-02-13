@@ -13,11 +13,14 @@ regress_by_features(object, feature_set, set_name, regress = TRUE, ...)
 
 \item{regress}{}
 }
+\value{
+a single cell object with features regressed
+}
 \description{
 Regress Seurat Object by Given Set of Genes
 }
 \examples{
 
-regressed_object <- regress_by_features(panc8, feature_set  = cc.genes$s.genes, set_name = "s_genes")
+regressed_object <- regress_by_features(panc8, feature_set = cc.genes$s.genes, set_name = "s_genes")
 
 }

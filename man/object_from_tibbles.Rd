@@ -4,10 +4,17 @@
 \alias{object_from_tibbles}
 \title{Create a Seurat Object from a set of tibbles}
 \usage{
-object_from_tibbles(exp_tbl, feature, meta_tbl, ...)
+object_from_tibbles(exp_tbl, feature, meta_tbl)
 }
 \arguments{
-\item{...}{}
+\item{exp_tbl}{experiment tibble}
+
+\item{feature}{feature type}
+
+\item{meta_tbl}{metadata tibble}
+}
+\value{
+a single cell object
 }
 \description{
 Create a Seurat Object from a set of tibbles

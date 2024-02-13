@@ -9,6 +9,9 @@ harmony_integrate(object_list)
 \arguments{
 \item{object_list}{List of two or more singlecell objectss to integrate}
 }
+\value{
+an integrated single cell object
+}
 \description{
 Integrate small datasets with harmony
 }

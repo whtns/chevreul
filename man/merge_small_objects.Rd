@@ -7,7 +7,10 @@
 merge_small_objects(object_list, k.filter = 50)
 }
 \arguments{
-\item{object_list}{List of two or more singlecell objectss}
+\item{object_list}{List of two or more singlecell objects}
+}
+\value{
+a single cell object
 }
 \description{
 Merge Small Seurat Objects

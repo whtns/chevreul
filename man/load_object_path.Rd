@@ -11,6 +11,9 @@ load_object_path(proj_dir = getwd(), prefix = "unfiltered")
 
 \item{prefix}{default "unfiltered"}
 }
+\value{
+a single cell object
+}
 \description{
 Read in Gene and Transcript Seurat Objects
 }

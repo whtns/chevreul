@@ -9,6 +9,9 @@ convert_object_list_to_multimodal(object_list)
 \arguments{
 \item{object_list}{}
 }
+\value{
+a list of single cell objects
+}
 \description{
 convert object list to multimodal object
 }

@@ -11,6 +11,9 @@ filter_merged_object(object, filter_var, filter_val, .drop = .drop)
 
 \item{.drop}{}
 }
+\value{
+a single cell object
+}
 \description{
 Filter a Single Seurat Object
 }

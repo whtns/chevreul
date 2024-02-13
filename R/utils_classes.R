@@ -24,26 +24,26 @@ setMethod(
         )
 
         meta_types <- meta_types %>%
-            dplyr::filter(!grepl("_snn_res", vars)) %>%
-            dplyr::mutate(meta_type = dplyr::case_when(
+            filter(!grepl("_snn_res", vars)) %>%
+            mutate(meta_type = case_when(
                 var_type %in% c("int", "dbl") ~ "continuous",
                 var_type %in% c("chr", "fct", "ord", "lgl") ~ "category"
             )) %>%
-            dplyr::mutate(meta_type = ifelse(meta_type == "continuous" & num_levels < 30, "category", meta_type)) %>%
-            dplyr::filter(num_levels > 1) %>%
+            mutate(meta_type = ifelse(meta_type == "continuous" & num_levels < 30, "category", meta_type)) %>%
+            filter(num_levels > 1) %>%
             identity()
 
         continuous_vars <- meta_types %>%
-            dplyr::filter(meta_type == "continuous") %>%
-            dplyr::pull(vars)
+            filter(meta_type == "continuous") %>%
+            pull(vars)
 
         continuous_vars <- c("feature", continuous_vars) %>%
             purrr::set_names(stringr::str_to_title(stringr::str_replace_all(., "[[:punct:]]", " ")))
 
 
         category_vars <- meta_types %>%
-            dplyr::filter(meta_type == "category") %>%
-            dplyr::pull(vars) %>%
+            filter(meta_type == "category") %>%
+            pull(vars) %>%
             purrr::set_names(stringr::str_to_title(stringr::str_replace_all(., "[^[:alnum:][:space:]\\.]", " ")))
 
         plot_types <- list(category_vars = category_vars, continuous_vars = continuous_vars)
@@ -64,26 +64,26 @@ setMethod(
         )
 
         meta_types <- meta_types %>%
-            dplyr::filter(!grepl("_snn_res", vars)) %>%
-            dplyr::mutate(meta_type = dplyr::case_when(
+            filter(!grepl("_snn_res", vars)) %>%
+            mutate(meta_type = case_when(
                 var_type %in% c("int", "dbl") ~ "continuous",
                 var_type %in% c("chr", "fct", "ord", "lgl") ~ "category"
             )) %>%
-            dplyr::mutate(meta_type = ifelse(meta_type == "continuous" & num_levels < 30, "category", meta_type)) %>%
-            dplyr::filter(num_levels > 1) %>%
+            mutate(meta_type = ifelse(meta_type == "continuous" & num_levels < 30, "category", meta_type)) %>%
+            filter(num_levels > 1) %>%
             identity()
 
         continuous_vars <- meta_types %>%
-            dplyr::filter(meta_type == "continuous") %>%
-            dplyr::pull(vars)
+            filter(meta_type == "continuous") %>%
+            pull(vars)
 
         continuous_vars <- c("feature", continuous_vars) %>%
             purrr::set_names(stringr::str_to_title(stringr::str_replace_all(., "[[:punct:]]", " ")))
 
 
         category_vars <- meta_types %>%
-            dplyr::filter(meta_type == "category") %>%
-            dplyr::pull(vars) %>%
+            filter(meta_type == "category") %>%
+            pull(vars) %>%
             purrr::set_names(stringr::str_to_title(stringr::str_replace_all(., "[^[:alnum:][:space:]\\.]", " ")))
 
         plot_types <- list(category_vars = category_vars, continuous_vars = continuous_vars)
@@ -213,11 +213,26 @@ setGeneric("get_feature_types", function(object) {
 })
 
 setMethod("get_feature_types", "Seurat", function(object) {
-    names(object()@assays)
+    sort(names(object@assays))
 })
 
 setMethod("get_feature_types", "SingleCellExperiment", function(object) {
-    c(mainExpName(human_gene_transcript_sce), altExpNames(human_gene_transcript_sce))
+    sort(c(mainExpName(object), altExpNames(object)))
+})
+
+setGeneric("set_feature_types", function(object, feature_type) {
+  standardGeneric("set_feature_types")
+})
+
+setMethod("set_feature_types", "Seurat", function(object, feature_type) {
+  DefaultAssay(object) <- feature_type
+})
+
+setMethod("set_feature_types", "SingleCellExperiment", function(object, feature_type) {
+  if(feature_type %in% altExpNames(object)){
+    object <- swapAltExp(object, feature_type, saved = mainExpName(object), withColData = TRUE)
+  }
+  return(object)
 })
 
 # check_integrated ------------------------------

@@ -22,6 +22,9 @@ plot_feature(
 
 \item{dims}{Dimensions to plot, must be a two-length numeric vector}
 }
+\value{
+an embedding colored by a feature of interest
+}
 \description{
 Plots gene or transcript expression overlaid on a given embedding.
 If multiple features are supplied the joint density of all features

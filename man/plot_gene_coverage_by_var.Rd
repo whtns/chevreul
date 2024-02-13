@@ -8,7 +8,7 @@ plot_gene_coverage_by_var(
   genes_of_interest = "RXRG",
   cell_metadata,
   bigwig_tbl,
-  var_of_interest = "batch",
+  group_by = "batch",
   values_of_interest = NULL,
   organism = "human",
   edb = NULL,
@@ -28,7 +28,7 @@ plot_gene_coverage_by_var(
 
 \item{bigwig_tbl}{a tibble with colnames "name", "bigWig", and "sample_id" matching the filename, absolute path, and sample name of each cell in the cell_metadata}
 
-\item{var_of_interest}{Variable to color by}
+\item{group_by}{Variable to color by}
 
 \item{organism}{Organism}
 
@@ -37,6 +37,9 @@ plot_gene_coverage_by_var(
 \item{heights}{The heights of each row in the grid of plot}
 
 \item{...}{}
+}
+\value{
+a ggplot with coverage faceted by group_by
 }
 \description{
 Plot BigWig coverage for genes of interest colored by a given variable

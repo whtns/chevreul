@@ -11,6 +11,9 @@ convert_symbols_by_species(src_genes, src_species)
 
 \item{src_species}{Source species}
 }
+\value{
+a single cell object
+}
 \description{
 Convert gene symbols between mouse and human
 }

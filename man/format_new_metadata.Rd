@@ -11,6 +11,9 @@ format_new_metadata(object, datapath)
 
 \item{datapath}{Path to file containing metadata}
 }
+\value{
+a single cell object
+}
 \description{
 Adds data to the object to produce a object with metadata added.
 }

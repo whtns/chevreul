@@ -1,11 +1,3 @@
-#' plot clustree ui
-#'
-#' @param id
-#'
-#' @return
-#' @export
-#'
-#' @examples
 plotClustree_UI <- function(id) {
     ns <- NS(id)
     tagList(
@@ -19,34 +11,17 @@ plotClustree_UI <- function(id) {
 
 #' plot clustree server
 #'
-#' @param input
-#' @param output
-#' @param session
-#' @param object
-#'
-#' @return
-#' @export
-#'
-#' @examples
+#' @noRd
 plotClustree <- function(input, output, session, object) {
     # set appropriate assay
-    # assay = reactive({
-    #   ifelse("integrated" %in% names(object()@assays), "integrated", "gene")
-    # })
-
-    output$checkSeu <- renderText({
-        req(object())
-        "test"
+    assay = reactive({
+      ifelse("integrated" %in% names(object()@assays), "integrated", "gene")
     })
 
     output$clustree <- renderPlot({
         req(object())
-
-        # assay <- ifelse("integrated" %in% names(object()@assays), "integrated", "gene")
-        # DefaultAssay(object()) <- assay
-        # clustree::clustree(object(), assay = assay)
-        # asdf
-        assay <- "integrated"
+        assay <- ifelse("integrated" %in% get_feature_types(object()), "integrated", "gene")
+        object <- set_feature_types(object(), assay)
         clustree::clustree(object(), prefix = paste0(assay, "_snn_res."))
     })
 }
@@ -56,10 +31,7 @@ plotClustree <- function(input, output, session, object) {
 #'
 #' @param id
 #'
-#' @return
-#' @export
-#'
-#' @examples
+#' @noRd
 plotViolinui <- function(id) {
     ns <- NS(id)
     tagList(
@@ -72,7 +44,7 @@ plotViolinui <- function(id) {
             ),
             radioButtons(ns("slot"), "Data Type", choices = c("transformed" = "data", "raw counts" = "counts")),
             downloadButton(ns("downloadPlot")),
-            plotly::plotlyOutput(ns("vplot"), height = 750),
+            plotlyOutput(ns("vplot"), height = 750),
             width = 11
         ) %>%
             default_helper(type = "markdown", content = "violinPlot", size = "l")
@@ -83,17 +55,11 @@ plotViolinui <- function(id) {
 #'
 #' Plots a Violin plot of a single data (gene expression, metrics, etc.) in the server Seurat app.
 #'
-#' @param input
-#' @param output
-#' @param session
 #' @param object Seurat object
 #' @param featureType Gene or Transcript
 #' @param organism_type Organism
 #'
-#' @return
-#' @export
-#'
-#' @examples
+#' @noRd
 plotViolin <- function(input, output, session, object, featureType, organism_type) {
     ns <- session$ns
     prefill_feature <- reactive({
@@ -145,16 +111,16 @@ plotViolin <- function(input, output, session, object, featureType, organism_typ
         }
     )
 
-    output$vplot <- plotly::renderPlotly({
+    output$vplot <- renderPlotly({
         req(object())
         req(input$vlnGroup)
         exclude_trace_number <- length(unique(pull_metadata(object())[[input$vlnGroup]])) * 2
 
-        vln_plot <- plotly::ggplotly(vln_plot(), height = 700) %>%
-            plotly::style(opacity = 0.5) %>%
-            plotly::style(hoverinfo = "skip", traces = c(1:exclude_trace_number)) %>%
+        vln_plot <- ggplotly(vln_plot(), height = 700) %>%
+            style(opacity = 0.5) %>%
+            style(hoverinfo = "skip", traces = c(1:exclude_trace_number)) %>%
             plotly_settings(width = 1200) %>%
-            plotly::toWebGL() %>%
+            toWebGL() %>%
             identity()
     })
 }
@@ -164,10 +130,7 @@ plotViolin <- function(input, output, session, object, featureType, organism_typ
 #'
 #' @param id
 #'
-#' @return
-#' @export
-#'
-#' @examples
+#' @noRd
 plotHeatmapui <- function(id) {
     ns <- NS(id)
     tagList(
@@ -190,17 +153,12 @@ plotHeatmapui <- function(id) {
 
 #' Plot Heatmap
 #'
-#' @param input
-#' @param output
-#' @param session
-#' @param object
-#' @param featureType
-#' @param organism_type
+#' @param object a single cell object
+#' @param featureType gene or transcript
+#' @param organism_type human or mouse
 #'
-#' @return
-#' @export
+#' @noRd
 #'
-#' @examples
 plotHeatmap <- function(input, output, session, object, featureType, organism_type) {
     ns <- session$ns
 
@@ -256,7 +214,7 @@ plotHeatmap <- function(input, output, session, object, featureType, organism_ty
 
         hm <- make_complex_heatmap(object(), features = input$customFeature, assay = assay, group.by = input$colAnnoVar, layer = input$layer, col_arrangement = input$dendroSelect)
 
-        hm <- ComplexHeatmap::draw(hm)
+        hm <- draw(hm)
         return(hm)
     })
 
@@ -277,20 +235,16 @@ plotHeatmap <- function(input, output, session, object, featureType, organism_ty
 
 #' Integrate Project UI
 #'
-#' @param id
 #'
-#' @return
-#' @export
-#'
-#' @examples
+#'@noRd
 integrateProjui <- function(id) {
     ns <- NS(id)
     tagList(
         chevreulBox(
             title = "Integrate Projects",
             actionButton(ns("integrateAction"), "Integrate Selected Projects"),
-            # shinyjs::useShinyjs(),
-            # shinyjs::runcodeUI(code = "shinyjs::alert('Hello!')", id = "subsetcode"),
+            # useShinyjs(),
+            # runcodeUI(code = "alert('Hello!')", id = "subsetcode"),
             textOutput(ns("integrationMessages")),
             checkboxInput(ns("legacySettings"), "Use Legacy Settings", value = FALSE),
             textOutput(ns("integrationResult")),
@@ -304,15 +258,12 @@ integrateProjui <- function(id) {
 
 #' Integrate Projects Server Function
 #'
-#' @param input
-#' @param output
-#' @param proj_matrices
-#' @param session
+#' @param proj_matrices project matrices
+#' @param object a single cell object
+#' @param proj_dir project directory
+#' @param con a connection
 #'
-#' @return
-#' @export
-#'
-#' @examples
+#' @noRd
 integrateProj <- function(input, output, session, proj_matrices, object, proj_dir, con) {
     ns <- session$ns
 
@@ -337,7 +288,7 @@ integrateProj <- function(input, output, session, proj_matrices, object, proj_di
 
     selectedProjects <- reactive({
         selectedProjects <- dplyr::slice(proj_matrix(), selectedRows()) %>%
-            dplyr::pull(project_path) %>%
+            pull(project_path) %>%
             identity()
     })
 
@@ -347,10 +298,10 @@ integrateProj <- function(input, output, session, proj_matrices, object, proj_di
         req(selectedProjects())
         withCallingHandlers(
             {
-                shinyjs::html("integrationMessages", "")
+                html("integrationMessages", "")
                 message("Beginning")
                 message(selectedProjects())
-                batches <- fs::path(selectedProjects(), "output", "seurat", "unfiltered_object.rds") %>%
+                batches <- path(selectedProjects(), "output", "seurat", "unfiltered_object.rds") %>%
                     map(readRDS)
 
                 names(batches) <- names(selectedProjects())
@@ -361,7 +312,7 @@ integrateProj <- function(input, output, session, proj_matrices, object, proj_di
                 message("Integration Complete!")
             },
             message = function(m) {
-                shinyjs::html(id = "integrationMessages", html = paste0("Running Integration: ", m$message), add = FALSE)
+                html(id = "integrationMessages", html = paste0("Running Integration: ", m$message), add = FALSE)
             }
         )
     })
@@ -376,9 +327,9 @@ integrateProj <- function(input, output, session, proj_matrices, object, proj_di
         # }
         #
 
-        newProjName <- paste0(map(fs::path_file(selectedProjects()), ~ gsub("_proj", "", .x)), collapse = "_")
+        newProjName <- paste0(map(path_file(selectedProjects()), ~ gsub("_proj", "", .x)), collapse = "_")
         integrated_proj_dir <- "/dataVolume/storage/single_cell_projects/integrated_projects/"
-        newProjDir <- fs::path(integrated_proj_dir, newProjName)
+        newProjDir <- path(integrated_proj_dir, newProjName)
 
         proj_dir(newProjDir)
 
@@ -430,19 +381,19 @@ integrateProj <- function(input, output, session, proj_matrices, object, proj_di
                     save_object(mergedSeus(), proj_dir = integratedProjectSavePath())
                     set_permissions_call <- paste0("chmod -R 775 ", integratedProjectSavePath())
                     system(set_permissions_call)
-                    writeLines(character(), fs::path(integratedProjectSavePath(), ".here"))
+                    writeLines(character(), path(integratedProjectSavePath(), ".here"))
                     # create_proj_db()
                     DBI::dbAppendTable(con, "projects_tbl", data.frame(
-                        project_name = fs::path_file(integratedProjectSavePath()),
+                        project_name = path_file(integratedProjectSavePath()),
                         project_path = integratedProjectSavePath(),
-                        project_slug = stringr::str_remove(fs::path_file(integratedProjectSavePath()), "_proj$"),
+                        project_slug = str_remove(path_file(integratedProjectSavePath()), "_proj$"),
                         project_type = "integrated_projects"
                     ))
                     shiny::incProgress(8 / 10)
 
-                    velocyto_dir <- fs::path(integratedProjectSavePath(), "output", "velocyto")
+                    velocyto_dir <- path(integratedProjectSavePath(), "output", "velocyto")
                     fs::dir_create(velocyto_dir)
-                    new_loom_path <- fs::path(velocyto_dir, fs::path_file(integratedProjectSavePath()))
+                    new_loom_path <- path(velocyto_dir, path_file(integratedProjectSavePath()))
                     # need to configure conda for line below
                     combine_looms(selectedProjects(), new_loom_path)
                 }
@@ -457,12 +408,7 @@ integrateProj <- function(input, output, session, proj_matrices, object, proj_di
 
 #' Change Embedding Parameters UI
 #'
-#' @param id
-#'
-#' @return
-#' @export
-#'
-#' @examples
+#' @noRd
 changeEmbedParamsui <- function(id) {
     ns <- NS(id)
 
@@ -478,15 +424,9 @@ changeEmbedParamsui <- function(id) {
 
 #' Change Embedding Parameters
 #'
-#' @param input
-#' @param output
-#' @param session
-#' @param object
+#' @param object a single cell object
 #'
-#' @return
-#' @export
-#'
-#' @examples
+#' @noRd
 changeEmbedParams <- function(input, output, session, object) {
     ns <- session$ns
 
@@ -497,12 +437,7 @@ changeEmbedParams <- function(input, output, session, object) {
 
 #' Plot Dimensional Reduduction UI
 #'
-#' @param id
-#'
-#' @return
-#' @export
-#'
-#' @examples
+#' @noRd
 plotDimRedui <- function(id) {
     ns <- NS(id)
     chevreulBox(
@@ -516,26 +451,20 @@ plotDimRedui <- function(id) {
         ),
         selectizeInput(ns("plottype"), "Variable to Plot", choices = NULL, multiple = TRUE),
         selectizeInput(ns("customFeature"), "Gene or transcript expression by which to color the plot; eg. 'RXRG' or 'ENST00000488147'", choices = NULL, multiple = TRUE),
-        plotly::plotlyOutput(ns("dplot"), height = 500),
+        plotlyOutput(ns("dplot"), height = 500),
         width = 6
     )
 }
 
 #' Plot Dimensional Reduduction
 #'
-#' @param input
-#' @param output
-#' @param session
-#' @param object
-#' @param plot_types
-#' @param featureType
-#' @param organism_type
-#' @param reductions
+#' @param object a single cell object
+#' @param plot_types plot types
+#' @param featureType gene or transcript
+#' @param organism_type human or mouse
+#' @param reductions embeddings
 #'
-#' @return
-#' @export
-#'
-#' @examples
+#' @noRd
 plotDimRed <- function(input, output, session, object, plot_types, featureType,
     organism_type, reductions) {
     ns <- session$ns
@@ -593,12 +522,12 @@ plotDimRed <- function(input, output, session, object, plot_types, featureType,
         req(prefill_feature())
         req(object())
         updateSelectizeInput(session, "customFeature",
-            choices = get_features(object(), assay = assay),
+            choices = get_features(object()),
             selected = prefill_feature(), server = TRUE
         )
     })
 
-    output$dplot <- plotly::renderPlotly({
+    output$dplot <- renderPlotly({
         req(input$plottype)
         req(object())
         req(input$embedding)
@@ -650,10 +579,7 @@ plotDimRed <- function(input, output, session, object, plot_types, featureType,
 #'
 #' @param id
 #'
-#' @return
-#' @export
-#'
-#' @examples
+#' @noRd
 tableSelectedui <- function(id) {
     ns <- NS(id)
     tagList(DT::DTOutput(ns("brushtable")))
@@ -661,20 +587,14 @@ tableSelectedui <- function(id) {
 
 #' Create Table of Selected Cells
 #'
-#' @param input
-#' @param output
-#' @param session
-#' @param object
+#' @param object a single cell object
 #'
-#' @return
-#' @export
-#'
-#' @examples
+#'@noRd
 tableSelected <- function(input, output, session, object) {
     ns <- session$ns
     brush <- reactive({
         req(object())
-        d <- plotly::event_data("plotly_selected")
+        d <- event_data("plotly_selected")
         if (is.null(d)) {
             msg <- "Click and drag events (i.e. select/lasso) appear here (double-click to clear)"
             return(d)
@@ -708,12 +628,7 @@ tableSelected <- function(input, output, session, object) {
 
 #' Differential Expression UI
 #'
-#' @param id
-#'
-#' @return
-#' @export
-#'
-#' @examples
+#' @noRd
 diffexui <- function(id) {
     ns <- NS(id)
     tagList(
@@ -803,12 +718,7 @@ diffexui <- function(id) {
 
 #' Title
 #'
-#' @param input
-#'
-#' @return
-#' @export
-#'
-#' @examples
+#' @noRd
 cells_selected <- function(input) {
     if (identical(input, character(0))) {
         "Please selected desired cells by clicking on the table"
@@ -819,18 +729,12 @@ cells_selected <- function(input) {
 
 #' Differential Expression
 #'
-#' @param input
-#' @param output
-#' @param session
-#' @param object
-#' @param featureType
-#' @param selected_cells
-#' @param tests
+#' @param object a single cell object
+#' @param featureType gene or transcript
+#' @param selected_cells selected cells
+#' @param tests tests to use
 #'
-#' @return
-#' @export
-#'
-#' @examples
+#' @noRd
 diffex <- function(input, output, session, object, featureType, selected_cells, tests = c("t-test" = "t", "wilcoxon rank-sum test" = "wilcox", "Likelihood-ratio test (bimodal)" = "bimod", "MAST" = "MAST")) {
     ns <- session$ns
 
@@ -853,7 +757,7 @@ diffex <- function(input, output, session, object, featureType, selected_cells, 
 
     brush <- reactive({
         req(object())
-        d <- plotly::event_data("plotly_selected")
+        d <- event_data("plotly_selected")
         if (is.null(d)) {
             msg <- "Click and drag events (i.e. select/lasso) appear here (double-click to clear)"
             return(d)
@@ -932,8 +836,8 @@ diffex <- function(input, output, session, object, featureType, selected_cells, 
     Volcano <- reactive({
         de_results()[[input$diffex_method]] %>%
             dplyr::distinct(symbol, .keep_all = TRUE) %>%
-            tibble::column_to_rownames("symbol") %>%
-            EnhancedVolcano::EnhancedVolcano(
+            column_to_rownames("symbol") %>%
+            EnhancedVolcano(
                 lab = rownames(.),
                 x = "avg_log2FC",
                 y = "p_val_adj",
@@ -972,12 +876,7 @@ diffex <- function(input, output, session, object, featureType, selected_cells, 
 
 #' Find Markers UI
 #'
-#' @param id
-#'
-#' @return
-#' @export
-#'
-#' @examples
+#' @noRd
 findMarkersui <- function(id) {
     ns <- NS(id)
     tagList(
@@ -987,14 +886,14 @@ findMarkersui <- function(id) {
             sliderInput(ns("resolution2"), label = "Resolution of clustering algorithm (affects number of clusters)", min = 0.2, max = 2, step = 0.2, value = 0.6),
             numericInput(ns("num_markers"), "Select Number of Markers to Plot for Each Value", value = 5, min = 2, max = 20),
             uiOutput(ns("valueSelect")),
-            radioButtons(ns("markerMethod"), "Method of Marker Selection", choices = c("presto", "genesorteR"), selected = "presto", inline = TRUE),
+            radioButtons(ns("markerMethod"), "Method of Marker Selection", choices = c("wilcox"), selected = "wilcox", inline = TRUE),
             sliderInput(ns("pValCutoff"), "P Value cutoff", min = 0.01, max = 1, value = 1),
             selectizeInput(ns("dotFeature"), "Feature for Marker Plot", choices = NULL),
             actionButton(ns("plotDots"), "Plot Markers!"),
             downloadButton(ns("downloadMarkerTable"), "Download Markers!"),
             checkboxInput(ns("uniqueMarkers"), "Make Markers Unique", value = FALSE),
             checkboxInput(ns("hidePobjectdo"), "Hide Pobjectdogenes", value = TRUE),
-            plotly::plotlyOutput(ns("markerplot"), height = 800),
+            plotlyOutput(ns("markerplot"), height = 800),
             width = 6
         )
     ) %>%
@@ -1003,15 +902,9 @@ findMarkersui <- function(id) {
 
 #' Find Markers
 #'
-#' @param input
-#' @param output
-#' @param session
-#' @param object
+#' @param object a single cell object
 #'
-#' @return
-#' @export
-#'
-#' @examples
+#' @noRd
 findMarkers <- function(input, output, session, object, plot_types, featureType) {
     ns <- session$ns
 
@@ -1039,21 +932,21 @@ findMarkers <- function(input, output, session, object, plot_types, featureType)
         }
     })
 
-    metavar <- reactive({
+    group_by <- reactive({
         req(input$plottype)
 
         if (input$plottype == "louvain") {
-            metavar <- paste0(assay(), "_snn_res.", input$resolution2)
+            group_by <- paste0(assay(), "_snn_res.", input$resolution2)
         } else {
-            metavar <- input$plottype
+            group_by <- input$plottype
         }
     })
 
     output$valueSelect <- renderUI({
         req(object())
-        req(metavar())
+        req(group_by())
 
-        choices <- levels(pull_metadata(object())[[metavar()]])
+        choices <- levels(pull_metadata(object())[[group_by()]])
 
         selectizeInput(ns("displayValues"), "Values to display", multiple = TRUE, choices = choices)
     })
@@ -1064,17 +957,17 @@ findMarkers <- function(input, output, session, object, plot_types, featureType)
     # })
 
     marker_plot_return <- eventReactive(input$plotDots, {
-        plot_markers(object(), metavar = metavar(), num_markers = input$num_markers, selected_values = input$displayValues, marker_method = input$markerMethod, object_assay = input$dotFeature, featureType = featureType(), hide_pobjectdo = input$hidePobjectdo, unique_markers = input$uniqueMarkers, p_val_cutoff = input$pValCutoff, return_plotly = TRUE)
+        plot_markers(object(), group_by = group_by(), num_markers = input$num_markers, selected_values = input$displayValues, marker_method = input$markerMethod, object_assay = input$dotFeature, featureType = featureType(), hide_pobjectdo = input$hidePobjectdo, unique_markers = input$uniqueMarkers, p_val_cutoff = input$pValCutoff, return_plotly = TRUE)
     })
 
-    output$markerplot <- plotly::renderPlotly({
+    output$markerplot <- renderPlotly({
         # req(input$displayClusters)
         marker_plot_return()$plot
     })
 
     output$downloadMarkerTable <- downloadHandler(
         filename = function() {
-            paste(metavar(), "_markers.csv", sep = "")
+            paste(group_by(), "_markers.csv", sep = "")
         },
         content = function(file) {
             write_csv(marker_plot_return()$markers, file)
@@ -1084,40 +977,28 @@ findMarkers <- function(input, output, session, object, plot_types, featureType)
 
 #' Plot Read Count UI
 #'
-#' @param id
-#' @param plot_types
-#'
-#' @return
-#' @export
-#'
-#' @examples
+#' @noRd
 plotReadCountui <- function(id) {
     ns <- NS(id)
     chevreulBox(
         title = "Histogram (Read Counts, etc.)",
-        uiOutput(ns("metavarui")),
+        uiOutput(ns("group_byui")),
         uiOutput(ns("colorbyui")),
         sliderInput(ns("resolution"), "Resolution of clustering algorithm (affects number of clusters)",
             min = 0.2, max = 2, step = 0.2, value = 0.6
         ),
         radioButtons(ns("yScale"), "Y axis transforamtion", choices = c("log", "linear"), selected = "linear", inline = TRUE),
-        plotly::plotlyOutput(ns("rcplot"), height = 500),
+        plotlyOutput(ns("rcplot"), height = 500),
         collapsed = TRUE
     )
 }
 
 #' Plot Read Count
 #'
-#' @param input
-#' @param output
-#' @param session
-#' @param object
-#' @param plot_types
+#' @param object a single cell object
+#' @param plot_types plot types
 #'
-#' @return
-#' @export
-#'
-#' @examples
+#' @noRd
 plotReadCount <- function(input, output, session, object, plot_types) {
     ns <- session$ns
 
@@ -1128,14 +1009,14 @@ plotReadCount <- function(input, output, session, object, plot_types) {
         )
     })
 
-    output$metavarui <- renderUI({
+    output$group_byui <- renderUI({
         req(object())
-        shiny::selectInput(ns("metavar"), "Variable for x-axis",
+        shiny::selectInput(ns("group_by"), "Variable for x-axis",
             choices = purrr::flatten_chr(plot_types()), selected = c("nCount_RNA"), multiple = FALSE
         )
     })
 
-    output$rcplot <- plotly::renderPlotly({
+    output$rcplot <- renderPlotly({
         req(object())
         req(input$colorby)
 
@@ -1147,21 +1028,16 @@ plotReadCount <- function(input, output, session, object, plot_types) {
             }
 
             louvain_resolution <- paste0(assay, "_snn_res.", input$resolution)
-            plot_readcount(object(), metavar = input$metavar, color.by = louvain_resolution, yscale = input$yScale, return_plotly = TRUE)
+            plot_readcount(object(), group_by = input$group_by, color.by = louvain_resolution, yscale = input$yScale, return_plotly = TRUE)
         } else if (input$colorby %in% purrr::flatten_chr(plot_types())) {
-            plot_readcount(object(), metavar = input$metavar, color.by = input$colorby, yscale = input$yScale, return_plotly = TRUE)
+            plot_readcount(object(), group_by = input$group_by, color.by = input$colorby, yscale = input$yScale, return_plotly = TRUE)
         }
     })
 }
 
 #' Cell Cycle Score UI
 #'
-#' @param id
-#'
-#' @return
-#' @export
-#'
-#' @examples
+#' @noRd
 ccScoreui <- function(id) {
     ns <- NS(id)
     tagList()
@@ -1169,14 +1045,8 @@ ccScoreui <- function(id) {
 
 #' Cell Cycle Score
 #'
-#' @param input
-#' @param output
-#' @param session
 #'
-#' @return
-#' @export
-#'
-#' @examples
+#' @noRd
 ccScore <- function(input, output, session) {
     ns <- session$ns
     output$rplot1 <- renderPlot({
@@ -1188,12 +1058,7 @@ ccScore <- function(input, output, session) {
 
 #' Plot All Transcripts UI Module
 #'
-#' @param id
-#'
-#' @return
-#' @export
-#'
-#' @examples
+#' @noRd
 allTranscriptsui <- function(id) {
     ns <- NS(id)
     tagList(
@@ -1204,7 +1069,7 @@ allTranscriptsui <- function(id) {
                 selectizeInput(ns("transcriptSelect"), "Transcript to Plot", choices = NULL),
                 downloadButton(ns("downloadPlot"), "Download Transcript Plots"),
                 selectizeInput(ns("embedding"), "Embedding", choices = NULL, selected = NULL),
-                plotly::plotlyOutput(ns("transcriptPlot")),
+                plotlyOutput(ns("transcriptPlot")),
                 # uiOutput(ns("plotlys")),
                 width = 6
             ),
@@ -1218,7 +1083,7 @@ allTranscriptsui <- function(id) {
                 actionButton(ns("plotComposition"), "Plot transcript composition"),
                 checkboxInput(ns("standardizeExpression"), "Standardize Expression", value = FALSE),
                 checkboxInput(ns("dropZero"), "Drop Zero Values", value = FALSE),
-                plotly::plotlyOutput(ns("compositionPlot")),
+                plotlyOutput(ns("compositionPlot")),
                 DT::DTOutput(ns("compositionDT")),
                 width = 6
             ),
@@ -1229,16 +1094,10 @@ allTranscriptsui <- function(id) {
 
 #' Plot All Transcripts Server
 #'
-#' @param input
-#' @param output
-#' @param session
-#' @param object
-#' @param featureType
+#' @param object a single cell object
+#' @param featureType gene or transcript
 #'
-#' @return
-#' @export
-#'
-#' @examples
+#' @noRd
 allTranscripts <- function(input, output, session, object,
     featureType, organism_type) {
     ns <- session$ns
@@ -1273,12 +1132,12 @@ allTranscripts <- function(input, output, session, object,
         plot_transcript_composition(object(), gene_symbol = input$compositionGene, group.by = input$groupby, standardize = input$standardizeExpression, drop_zero = input$dropZero)
     })
 
-    output$compositionPlot <- plotly::renderPlotly({
+    output$compositionPlot <- renderPlotly({
         composition_plot()$plot %>%
-            plotly::ggplotly(height = 400) %>%
+            ggplotly(height = 400) %>%
             plotly_settings() %>%
-            plotly::toWebGL() %>%
-            # plotly::partial_bundle() %>%
+            toWebGL() %>%
+            # partial_bundle() %>%
             identity()
     })
 
@@ -1297,12 +1156,12 @@ allTranscripts <- function(input, output, session, object,
         pList <- plot_all_transcripts(object(), transcripts(), input$embedding, from_gene = FALSE, combine = FALSE)
     })
 
-    output$transcriptPlot <- plotly::renderPlotly({
+    output$transcriptPlot <- renderPlotly({
         req(pList())
         pList()[[input$transcriptSelect]] %>%
-            plotly::ggplotly(height = 400) %>%
+            ggplotly(height = 400) %>%
             plotly_settings() %>%
-            plotly::toWebGL()
+            toWebGL()
     })
 
     output$downloadPlot <- downloadHandler(
@@ -1319,12 +1178,7 @@ allTranscripts <- function(input, output, session, object,
 
 #' RNA Velocity UI Module
 #'
-#' @param id
-#'
-#' @return
-#' @export
-#'
-#' @examples
+#' @noRd
 plotVelocityui <- function(id) {
     ns <- NS(id)
     tagList(
@@ -1364,16 +1218,10 @@ plotVelocityui <- function(id) {
 
 #' RNA Velocity Server Module
 #'
-#' @param input
-#' @param output
-#' @param session
-#' @param object
-#' @param loom_path
+#' @param object a single cell object
+#' @param loom_path path to a loom file
 #'
-#' @return
-#' @export
-#'
-#' @examples
+#' @noRd
 plotVelocity <- function(input, output, session, object, loom_path) {
     ns <- session$ns
 
@@ -1393,7 +1241,7 @@ plotVelocity <- function(input, output, session, object, loom_path) {
         req(object())
         withCallingHandlers(
             {
-                shinyjs::html("scveloMessages", "")
+                html("scveloMessages", "")
                 message("Beginning")
 
                 if (query_assay(object(), "integrated")) {
@@ -1408,7 +1256,7 @@ plotVelocity <- function(input, output, session, object, loom_path) {
                 message("scvelo Complete!")
             },
             message = function(m) {
-                shinyjs::html(id = "scveloMessages", html = paste0("Running scvelo: ", m$message), add = FALSE)
+                html(id = "scveloMessages", html = paste0("Running scvelo: ", m$message), add = FALSE)
             }
         )
     })
@@ -1523,466 +1371,9 @@ plotVelocity <- function(input, output, session, object, loom_path) {
 }
 
 
-#' Monocle UI Module
-#'
-#' @param id
-#'
-#' @return
-#' @export
-#'
-#' @examples
-monocleui <- function(id) {
-    ns <- NS(id)
-    tagList(
-        fluidRow(
-            chevreulBox(
-                title = "Seurat Data",
-                plotly::plotlyOutput(ns("objectdimplot"), height = 500),
-                width = 6
-                # plotDimRedui(ns("plotdimred")
-            ),
-            chevreulBox(
-                title = "Pobjectdotime Settings",
-                actionButton(ns("subsetSeurat"), "Subset Seurat before Pobjectdotime Calculation"),
-                actionButton(ns("calcCDS"), "Calculate Pobjectdotime"),
-                sliderInput(ns("cdsResolution"), "Resolution of clustering algorithm (affects number of clusters)",
-                    min = 0.2, max = 2, step = 0.2, value = 0.6
-                ),
-                actionButton(ns("subsetCells"), "Subset Monocle Object After Pobjectdotime Calculation"),
-                uiOutput(ns("rootCellsui")),
-                actionButton(ns("plotPobjectdotime"), "Calculate Pobjectdotime With Root Cells"),
-                downloadButton(ns("downloadPT"), "Export Pobjectdotime"),
-                checkboxInput(ns("flipPtime"), "Invert Pobjectdotime", value = TRUE),
-                width = 6
-            )
-        ),
-        chevreulBox(
-            title = "Embedding Plot",
-            selectizeInput(ns("plottype1"), "Variable to Plot", choices = c(Louvain = "louvain"), selected = "Louvain", multiple = TRUE),
-            selectizeInput(ns("customFeature1"), "Gene or transcript expression by which to color the plot",
-                choices = NULL, multiple = FALSE
-            ),
-            uiOutput(ns("moduleSelect1")),
-            plotly::plotlyOutput(ns("monoclePlot1")),
-            width = 6
-        ),
-        chevreulBox(
-            title = "Embedding Plot",
-            selectizeInput(ns("plottype2"), "Variable to Plot", choices = c(Louvain = "louvain"), selected = "Louvain", multiple = TRUE),
-            selectizeInput(ns("customFeature2"), "gene or transcript on which to color the plot",
-                choices = NULL, multiple = FALSE
-            ),
-            uiOutput(ns("moduleSelect2")),
-            plotly::plotlyOutput(ns("monoclePlot2")),
-            width = 6
-        ),
-        fluidRow(
-            chevreulBox(
-                title = "calculate pseudotime",
-                radioButtons(ns("diffexFeature"), "Feature for differential expression", choices = c("gene", "transcript")),
-                actionButton(ns("calcPtimeGenes"), "Find Pobjectdotime Correlated Genes"),
-                sliderInput(ns("qvalThreshold"), "Set q value threshold for module calculation", min = 0.01, 0.1, value = 0.05, step = 0.01),
-                textOutput("pseudotimeMessages"),
-                uiOutput(ns("partitionSelect")),
-                uiOutput(ns("genePlotQuery2")),
-                DT::DTOutput(ns("ptimeGenesDT")),
-                downloadButton(ns("downloadGenesDT"), "Download data as csv"),
-                # uiOutput(ns("ptimeGenes")),
-                width = 6
-            ),
-            chevreulBox(
-                title = "Plot Feature Expression over Pobjectdotime",
-                plotly::plotlyOutput(ns("ptimeGenesLinePlot")),
-                width = 6,
-                height = 650
-            )
-        ),
-        chevreulBox(
-            title = "Heatmap",
-            uiOutput(ns("colAnnoVarui")),
-            radioButtons(ns("heatmapRows"), "annotate heatmap rows by genes or modules?", choices = c("modules", "genes")),
-            downloadButton(ns("downloadPlot"), "Download Heatmap"),
-            downloadButton(ns("downloadCds"), "Download celldataset"),
-            plotOutput(ns("monocleHeatmap"), width = "800px", height = "1200px")
-        ),
-        chevreulBox(
-            title = "Modules",
-            plotOutput(ns("modulePlot")),
-            div(DT::dataTableOutput(ns("moduleTable")), style = "font-size: 75%")
-        )
-    )
-}
-
-#' Monocle Server Module
-#'
-#' @param input
-#' @param output
-#' @param session
-#' @param cds
-#' @param object
-#' @param plot_types
-#' @param resolution
-#'
-#' @return
-#' @export
-#'
-#' @examples
-monocle <- function(input, output, session, object, plot_types, featureType,
-    organism_type, reductions) {
-    ns <- session$ns
-
-    # markermarker
-    w <- waiter::Waiter$new(ns("monocleHeatmap"),
-        html = waiter::spin_loaders(id = 1, color = "black", style = "position:relative;margin:auto;"),
-        color = waiter::transparent(.5)
-    )
-
-    output$colAnnoVarui <- renderUI({
-        req(object())
-
-        selectizeInput(ns("colAnnoVar"), "Column Annotation(s)",
-            choices = colnames(pull_metadata(object())), selected = "batch", multiple = TRUE
-        )
-    })
-
-    cds_rvs <- reactiveValues(selected = c(traj = TRUE, ptime = FALSE, diff_features = FALSE))
-    cds_plot_types <- reactiveVal(c(Pobjectdotime = "pseudotime", Module = "module"))
-    myplot_types <- reactive({
-        c(purrr::flatten_chr(plot_types()), cds_plot_types())
-    })
-
-    # to be able to subset, create a new copy of the object
-
-    object_monocle <- reactiveVal()
-
-    observe({
-        req(object())
-        object_monocle(object())
-    })
-
-    louvain_resolution <- reactive({
-        if (query_assay(object(), "integrated")) {
-            assay <- "integrated"
-        } else {
-            assay <- "gene"
-        }
-
-        paste0(assay, "_snn_res.", input$cdsResolution)
-    })
-
-    objectdimplot <- reactive({
-        req(object_monocle())
-
-        plot_var(object_monocle(), embedding = "umap", group = louvain_resolution(), return_plotly = TRUE)
-    })
-
-    output$objectdimplot <- plotly::renderPlotly({
-        objectdimplot()
-    })
-
-    # callModule(plotDimRed, "plotdimred", object, plot_types, featureType,
-    #            organism_type, reductions)
-
-
-    observeEvent(input$subsetSeurat, {
-        req(object_monocle())
-
-        d <- plotly::event_data("plotly_selected", priority = "event")
-        if (is.null(d)) {
-            msg <- "Click and drag events (i.e. select/lasso) appear here (double-click to clear)"
-            print(d)
-        } else {
-            print(d$key)
-            print(d)
-            subset_monocle <- object_monocle()[, d$key]
-            object_monocle(subset_monocle)
-        }
-    })
-
-    observeEvent(input$calcCDS, {
-        req(object_monocle())
-        cds_rvs$selected <- c(traj = TRUE, ptime = FALSE, diff_features = FALSE)
-        cds <- convert_object_to_cds(object(), resolution = input$cdsResolution)
-        # cds <- convert_object_to_cds(object_monocle(), resolution = input$cdsResolution)
-        cds <- cds[, colnames(cds) %in% colnames(object_monocle())]
-
-        cds <- threshold_monocle_genes(object_monocle(), cds)
-
-        cds <- learn_graph_by_resolution(cds, object_monocle(),
-            resolution = input$cdsResolution
-        )
-        updateSelectizeInput(session, "plottype1", selected = "louvain", choices = myplot_types())
-        updateSelectizeInput(session, "customFeature1", choices = rownames(cds), server = TRUE)
-        updateSelectizeInput(session, "plottype2", selected = "louvain", choices = myplot_types())
-        updateSelectizeInput(session, "customFeature2", choices = rownames(cds), server = TRUE)
-        cds_rvs$traj <- cds
-    })
-
-    selected_plot <- reactiveVal()
-
-    output$monoclePlot1 <- plotly::renderPlotly({
-        req(input$plottype1)
-        req(cds_rvs$traj)
-        w$show()
-        print(cds_rvs$selected)
-        if (input$plottype1 == "louvain") {
-            cluster_resolution <- reactive({
-                if (any(stringr::str_detect(colnames(colData(cds_rvs$traj)), "integrated"))) {
-                    paste0("integrated", "_snn_res.", input$cdsResolution)
-                } else {
-                    paste0("gene", "_snn_res.", input$cdsResolution)
-                }
-            })
-            plot_cds(cds_rvs$traj, color_cells_by = cluster_resolution())
-        } else if (input$plottype1 == "pseudotime") {
-            plot_pseudotime(cds_rvs$traj, color_cells_by = "pseudotime", resolution = input$cdsResolution)
-        } else if (input$plottype1 == "feature") {
-            plot_monocle_features(cds_rvs$traj, genes = input$customFeature1, monocle_heatmap()$agg_mat)
-        } else if (input$plottype1 == "module") {
-            print(monocle_heatmap()$module_table)
-            print(input$plotModule1)
-            genes <- monocle_heatmap()$module_table %>%
-                filter(module %in% input$plotModule1) %>%
-                dplyr::mutate(module = factor(module))
-            plot_monocle_features(cds_rvs$traj, genes = genes, monocle_heatmap()$agg_mat)
-        } else {
-            plot_cds(cds_rvs$traj, color_cells_by = input$plottype1)
-        }
-    })
-
-    output$monoclePlot2 <- plotly::renderPlotly({
-        req(input$plottype2)
-        req(cds_rvs$traj)
-        w$show()
-        print(cds_rvs$selected)
-        if (input$plottype2 == "louvain") {
-            cluster_resolution <- reactive({
-                if (any(stringr::str_detect(colnames(colData(cds_rvs$traj)), "integrated"))) {
-                    paste0("integrated", "_snn_res.", input$cdsResolution)
-                } else {
-                    paste0("gene", "_snn_res.", input$cdsResolution)
-                }
-            })
-            plot_cds(cds_rvs$traj, color_cells_by = cluster_resolution())
-        } else if (input$plottype2 == "pseudotime") {
-            plot_pseudotime(cds_rvs$traj, color_cells_by = "pseudotime", resolution = input$cdsResolution)
-        } else if (input$plottype2 == "feature") {
-            plot_monocle_features(cds_rvs$traj, genes = input$customFeature2, monocle_heatmap()$agg_mat)
-        } else if (input$plottype2 == "module") {
-            print(monocle_heatmap()$module_table)
-            print(input$plotModule2)
-
-            genes <- monocle_heatmap()$module_table %>%
-                filter(module %in% input$plotModule2) %>%
-                dplyr::mutate(module = factor(module))
-            plot_monocle_features(cds_rvs$traj, genes = genes, monocle_heatmap()$agg_mat)
-        } else {
-            plot_cds(cds_rvs$traj, color_cells_by = input$plottype2)
-        }
-    })
-
-    cdsbrush <- reactive({
-        req(cds_rvs$traj)
-        d <- plotly::event_data("plotly_selected")
-        if (is.null(d)) {
-            msg <- "Click and drag events (i.e. select/lasso) appear here (double-click to clear)"
-            return(d)
-        } else {
-            # selected_cells <- colnames(cds_rvs$traj)[as.numeric(d$key)]
-            d$key
-        }
-    })
-
-    observeEvent(input$subsetCells, {
-        req(cds_rvs$traj)
-        print(cdsbrush())
-        cds_rvs$traj <- cds_rvs$traj[, cdsbrush()]
-    })
-
-    output$rootCellsui <- renderUI({
-        selectizeInput(ns("rootCells"), "Choose Root Cells", choices = c("Choose Root Cells" = "", colnames(cds_rvs$traj)), multiple = TRUE)
-    })
-
-    exported_pseudotime <- reactiveVal()
-
-    observeEvent(input$plotPobjectdotime, {
-        req(cds_rvs$traj)
-        req(input$rootCells)
-        cds_rvs$traj <- monocle3::order_cells(cds_rvs$traj, root_cells = input$rootCells)
-
-        # # select only first partition
-        # cds_rvs$traj <- cds_rvs$traj[, monocle3::partitions(cds_rvs$traj) == 1]
-
-
-        if (input$flipPtime) {
-            cds_rvs$traj <- flip_pseudotime(cds_rvs$traj)
-        }
-        updateSelectizeInput(session, "plottype1", selected = "pseudotime", choices = myplot_types())
-        updateSelectizeInput(session, "plottype2", selected = "pseudotime", choices = myplot_types())
-        cds_rvs$selected <- c(traj = FALSE, ptime = TRUE, diff_features = FALSE)
-        # markermarker
-
-        exported_pseudotime(export_pseudotime(cds_rvs$traj, input$rootCells))
-    })
-
-
-    output$downloadPT <- downloadHandler(
-        filename = function() {
-            paste("pseudotime-", Sys.Date(), ".csv", sep = "")
-        },
-        content = function(file) {
-            readr::write_csv(exported_pseudotime(), file)
-        }
-    )
-
-    # markermarker
-    observeEvent(input$calcPtimeGenes, {
-        req(input$diffexFeature)
-        if (req(cds_rvs$selected["ptime"])) {
-            # markermarker
-            # cds_rvs$traj  <- swap_counts_from_feature(cds_rvs$traj, input$diffexFeature)
-
-            showModal(modalDialog(
-                title = "Calculating Pobjectdotime Correlated Features",
-                "This may take a few minutes!"
-            ))
-            cds_rvs$traj@metadata[["diff_features"]] <- monocle3::graph_test(cds_rvs$traj, neighbor_graph = "principal_graph", cores = 4, expression_family = "negbinom")
-
-            cds_rvs$selected <- c(traj = FALSE, ptime = FALSE, diff_features = TRUE)
-
-            removeModal()
-        }
-    })
-
-    cds_pr_test_res <- reactive({
-        if (req(cds_rvs$selected["diff_features"])) {
-            cds_rvs$traj@metadata$diff_features %>%
-                # subset(q_value < 0.05) %>%
-                dplyr::arrange(q_value) %>%
-                dplyr::select(-status) %>%
-                # dplyr::filter %>%
-                identity()
-        }
-    })
-
-    observe({
-        req(cds_pr_test_res())
-        if (req(cds_rvs$selected["diff_features"])) {
-            output$genePlotQuery2 <- renderUI({
-                selectizeInput(ns("genePlotQuery1"), "Pick Gene to Plot on Pobjectdotime", choices = rownames(cds_pr_test_res()), multiple = TRUE, selected = rownames(cds_pr_test_res())[1])
-            })
-
-            output$partitionSelect <- renderUI({
-                selectizeInput(ns("partitions"), "Select a Partition to Plot", choices = levels(monocle3::partitions(cds_rvs$traj)), multiple = FALSE)
-            })
-        }
-    })
-
-    observe({
-        req(cds_pr_test_res())
-        req(input$genePlotQuery1)
-        if (req(cds_rvs$selected["diff_features"])) {
-            output$ptimeGenesLinePlot <- plotly::renderPlotly({
-                genes_in_pseudotime <- prep_plot_genes_in_pseudotime(cds_rvs$traj, input$genePlotQuery1, input$cdsResolution)
-                genes_in_pseudotime <-
-                    genes_in_pseudotime %>%
-                    plotly::ggplotly(height = 600) %>%
-                    plotly_settings() %>%
-                    plotly::toWebGL() %>%
-                    # plotly::partial_bundle() %>%
-                    identity()
-            })
-
-            output$ptimeGenesDT <- DT::renderDT({
-                DT::datatable(cds_pr_test_res(),
-                    extensions = "Buttons",
-                    options = list(dom = "Bftp", buttons = c("copy", "csv"), scrollX = "100px", scrollY = "400px", pageLength = 200, paging = TRUE)
-                )
-            })
-
-            output$downloadGenesDT <- downloadHandler(
-                filename = function() {
-                    paste("diffex_ptime-", Sys.Date(), ".csv", sep = "")
-                },
-                content = function(file) {
-                    write.csv(cds_pr_test_res(), file)
-                }
-            )
-        }
-    })
-
-    monocle_heatmap <- reactive({
-        req(cds_rvs$traj)
-        req(input$colAnnoVar)
-
-        heatmap_genes <- cds_pr_test_res() %>%
-            dplyr::filter(q_value < input$qvalThreshold)
-
-        monocle_module_heatmap(cds_rvs$traj, rownames(heatmap_genes), input$cdsResolution, collapse_rows = input$heatmapRows, group.by = input$colAnnoVar)
-    }) %>%
-        bindCache(cds_rvs$traj, input$cdsResolution, input$heatmapRows)
-
-    module_choices <- reactive({
-        module_choices <- as.character(unique(monocle_heatmap()$module_table$module))
-        # names(module_choices) <- paste("Module", module_choices)
-    })
-
-    output$moduleSelect1 <- renderUI({
-        selectizeInput(ns("plotModule1"), "gene module to plot (if computed)", choices = module_choices(), multiple = TRUE)
-    })
-    output$moduleSelect2 <- renderUI({
-        selectizeInput(ns("plotModule2"), "gene module to plot (if computed)", choices = module_choices(), multiple = TRUE)
-    })
-
-    observe({
-        output$monocleHeatmap <- renderPlot({
-            monocle_heatmap()$module_heatmap
-        })
-
-        output$moduleTable <- DT::renderDT({
-            DT::datatable(monocle_heatmap()$module_table,
-                extensions = "Buttons",
-                options = list(dom = "Bft", buttons = c(
-                    "copy",
-                    "csv"
-                ), scrollX = "100px", scrollY = "400px")
-            )
-        })
-
-        output$modulePlot <- renderPlot({
-            ggplot(monocle_heatmap()$module_table, aes(dim_1, dim_2, color = module)) +
-                geom_point()
-        })
-    })
-
-    output$downloadPlot <- downloadHandler(
-        filename = function() {
-            paste("heatmap", ".pdf", sep = "")
-        },
-        content = function(file) {
-            ggsave(file, ggplotify::as.ggplot(monocle_heatmap()$module_heatmap), width = 16, height = 12)
-        }
-    )
-
-    output$downloadCds <- downloadHandler(
-        filename = function() {
-            paste("cds", ".rds", sep = "")
-        },
-        content = function(file) {
-            saveRDS(cds_rvs$traj, file)
-        }
-    )
-}
-
-
 #' Title
 #'
-#' @param id
-#'
-#' @return
-#' @export
-#'
-#' @examples
+#' @noRd
 pathwayEnrichmentui <- function(id) {
     ns <- NS(id)
     chevreulBox(
@@ -1998,14 +1389,7 @@ pathwayEnrichmentui <- function(id) {
 
 #' pathway enrichment
 #'
-#' @param input
-#' @param output
-#' @param session
-#'
-#' @return
-#' @export
-#'
-#' @examples
+#' @noRd
 pathwayEnrichment <- function(input, output, session, object, featureType) {
     ns <- session$ns
 
@@ -2096,8 +1480,8 @@ pathwayEnrichment <- function(input, output, session, object, featureType) {
             input$enriched_pathways_by_cluster_select_cluster
         )
         choices <- enriched_pathways()$enrichr$by_cluster %>%
-            dplyr::filter(cluster == input$enriched_pathways_by_cluster_select_cluster) %>%
-            dplyr::pull(db) %>%
+            filter(cluster == input$enriched_pathways_by_cluster_select_cluster) %>%
+            pull(db) %>%
             intersect(., levels(.))
         selectInput(
             ns("enriched_pathways_by_cluster_select_db"),
@@ -2161,12 +1545,7 @@ pathwayEnrichment <- function(input, output, session, object, featureType) {
 
 #' Title
 #'
-#' @param id
-#'
-#' @return
-#' @export
-#'
-#' @examples
+#' @noRd
 techInfoui <- function(id) {
     ns <- NS(id)
     fluidRow(
@@ -2180,16 +1559,9 @@ techInfoui <- function(id) {
 
 #' Title
 #'
-#' @param input
-#' @param output
-#' @param session
-#' @param object
+#' @param object a single cell object
 #'
-#' @return
-#' @export
-#'
-#' @examples
-
+#' @noRd
 techInfo <- function(input, output, session, object) {
   ns <- session$ns
   ## ----------------------------------------------------------------------------##
@@ -2199,11 +1571,11 @@ techInfo <- function(input, output, session, object) {
   misc <- reactive({
     req(object())
     ## SCE
-    if(class(object() == "SingleCellExperiment")){
+    if(class(object())== "SingleCellExperiment"){
       S4Vectors::metadata(object())
     }
     ## Seurat
-    if(class(object() == "Seurat")){
+    if(class(object()) == "Seurat"){
       Seurat::Misc(object())
     }
   })
@@ -2319,12 +1691,7 @@ techInfo <- function(input, output, session, object) {
 
 #' Title
 #'
-#' @param id
-#'
-#' @return
-#' @export
-#'
-#' @examples
+#' @noRd
 plotCoverage_UI <- function(id) {
     ns <- NS(id)
     tagList(
@@ -2355,18 +1722,12 @@ plotCoverage_UI <- function(id) {
 
 #' Plot Coverage Module
 #'
-#' @param input
-#' @param output
-#' @param session
-#' @param object
-#' @param plot_types
-#' @param bigwig_dir
-#' @param organism_type
+#' @param object a single cell object
+#' @param plot_types plot types
+#' @param bigwig_dir bigwig directory
+#' @param organism_type human or mouse
 #'
-#' @return
-#' @export
-#'
-#' @examples
+#' @noRd
 plotCoverage <- function(input, output, session, object, plot_types, proj_dir, organism_type = "human", bigwig_db = "~/.cache/chevreul/bw-files.db") {
     ns <- session$ns
 
@@ -2408,7 +1769,7 @@ plotCoverage <- function(input, output, session, object, plot_types, proj_dir, o
             genes_of_interest = input$geneSelect,
             cell_metadata = pull_metadata(object()),
             bigwig_tbl = bigwig_tbl(),
-            var_of_interest = input$varSelect,
+            group_by = input$varSelect,
             values_of_interest = input$displayvalues,
             organism = Misc(object())$experiment$organism,
             mean_only = input$meanCoverage,
@@ -2441,4 +1802,207 @@ plotCoverage <- function(input, output, session, object, plot_types, proj_dir, o
             ggsave(file, coverage_return()$plot, width = 16, height = 12)
         }
     )
+}
+
+#' Reformat Seurat Object Metadata UI
+#'
+#' @noRd
+reformatMetadataDRui <- function(id) {
+  ns <- NS(id)
+  tagList(
+    chevreulBox(
+      title = "Reformat Metadata",
+      checkboxInput(ns("header"), "Header", TRUE),
+      fileInput(ns("metaFile"), "Choose CSV File of metadata with cell names in first column",
+                accept = c(
+                  "text/csv",
+                  "text/comma-separated-values,text/plain",
+                  ".csv"
+                )
+      ),
+      actionButton(ns("updateMetadata"), "Update Metadata"),
+      radioButtons(ns("updateMethod"), "Update By:", choices = c("table (below)" = "spreadsheet", "uploaded file" = "file"), inline = TRUE),
+      width = 12,
+      dataSelectUI(ns("select1")),
+      dataFilterUI(ns("filter1")),
+      hidden(actionButton(ns("sync"), label = NULL, icon = icon("sync"))),
+      dataOutputUI(ns("output-active")),
+      dataOutputUI(ns("output-update"), icon = "file-download"),
+      hidden(actionButton(ns("cut"), label = NULL, icon = icon("cut"))),
+      dataEditUI(ns("edit1"))
+    ) %>%
+      default_helper(type = "markdown", content = "reformatMetadata")
+  )
+}
+
+#' Reformat Seurat Object Metadata Server
+#'
+#' @param object a single cell object
+#'
+#' @noRd
+reformatMetadataDR <- function(input, output, session, object, featureType = "gene",
+                               col_bind = NULL,
+                               col_edit = TRUE,
+                               col_options = NULL,
+                               col_stretch = FALSE,
+                               col_names = TRUE,
+                               col_readonly = NULL,
+                               col_factor = FALSE,
+                               row_bind = NULL,
+                               row_edit = TRUE,
+                               save_as = NULL,
+                               title = NULL,
+                               logo = NULL,
+                               logo_size = 30,
+                               logo_side = "left",
+                               viewer = "dialog",
+                               viewer_height = 800,
+                               viewer_width = 2000,
+                               theme = "yeti",
+                               read_fun = "read.csv",
+                               read_args = NULL,
+                               write_fun = "write.csv",
+                               write_args = NULL,
+                               quiet = FALSE,
+                               code = FALSE,
+                               hide = FALSE) {
+  ns <- session$ns
+
+  table_out <- reactive({
+    req(object())
+    pull_metadata(object())
+  })
+
+  values <- reactiveValues(
+    data = NULL, data_active = NULL,
+    rows = NULL, columns = NULL, cut = FALSE
+  )
+
+  observeEvent(table_out(), {
+    values$rows <- NULL
+    values$columns <- NULL
+
+    values$data <- table_out() %>%
+      data_bind_rows(row_bind = row_bind) %>%
+      data_bind_cols(col_bind = col_bind) %>%
+      identity()
+  })
+
+  data_select <- dataSelectServer("select1",
+                                  data = reactive(values$data),
+                                  hide = hide
+  )
+  data_filter <- dataFilterServer("filter1",
+                                  data = reactive(values$data),
+                                  hide = hide
+  )
+  observe({
+    values$rows <- data_filter$rows()
+    values$columns <- data_select$columns()
+  })
+
+  observe({
+    if (length(values$rows) == 0 & length(values$columns) == 0) {
+      values$data_active <- values$data
+    } else {
+      if (length(values$rows) != 0 & length(values$columns) == 0) {
+        values$data_active <- values$data[values$rows, , drop = FALSE]
+      } else if (length(values$rows) == 0 & length(values$columns) != 0) {
+        values$data_active <- values$data[, values$columns, drop = FALSE]
+      } else if (length(values$rows) != 0 & length(values$columns) != 0) {
+        values$data_active <- values$data[values$rows, values$columns, drop = FALSE]
+      }
+    }
+  })
+
+  data_update <- dataEditServer("edit1",
+                                data = reactive({
+                                  values$data_active
+                                }),
+                                col_bind = NULL, col_edit = col_edit, col_options = col_options,
+                                col_stretch = col_stretch, col_names = col_names,
+                                col_readonly = col_readonly, col_factor = col_factor,
+                                row_bind = NULL, row_edit = row_edit, quiet = quiet, height = viewer_height, width = viewer_width
+  )
+  observe({
+    values$data_active <- data_update()
+  })
+
+  observeEvent(input$updateMetadata, {
+    if (input$updateMethod == "file") {
+      inFile <- input$metaFile
+
+      if (is.null(inFile)) {
+        return(NULL)
+      }
+
+      reformatted_object <- format_new_metadata(object(), inFile$datapath)
+      object(reformatted_object)
+    } else if (input$updateMethod == "spreadsheet") {
+      reformatted_object <- propagate_spreadsheet_changes(values$data_active, object())
+      object(reformatted_object)
+    }
+  })
+
+
+  observeEvent(input$sync, {
+    if (length(values$rows) == 0 & length(values$columns) == 0) {
+      values$data <- values$data_active
+    } else {
+      if (length(values$rows) != 0 & length(values$columns) == 0) {
+        values$data[values$rows, ] <- values$data_active
+      } else if (length(values$rows) == 0 & length(values$columns) != 0) {
+        values$data[, values$columns] <- values$data_active
+      } else if (length(values$rows) != 0 & length(values$columns) != 0) {
+        values$data[values$rows, values$columns] <- values$data_active
+      }
+      if (!is.null(values$data_active)) {
+        if (!all(rownames(values$data_active) == rownames(values$data)[values$rows])) {
+          rownames(values$data)[values$rows] <- rownames(values$data_active)
+        }
+        if (!all(colnames(values$data_active) == colnames(values$data)[values$columns])) {
+          colnames(values$data)[values$columns] <- colnames(values$data_active)
+        }
+      }
+    }
+  })
+
+  dataOutputServer("output-active",
+                   data = reactive({
+                     values$data_active
+                   }), save_as = "metadata.csv", write_fun = write_fun, write_args = write_args,
+                   hide = hide
+  )
+  dataOutputServer("output-update",
+                   data = reactive({
+                     values$data
+                   }), save_as = "metadata.csv", write_fun = write_fun, write_args = write_args,
+                   hide = hide
+  )
+
+  # SAVE AS
+  if (!hide & !is.null(save_as)) {
+    do.call(
+      write_fun,
+      c(list(x_edit, save_as), write_args)
+    )
+  }
+
+  observeEvent(input$cut, {
+    if (values$cut) {
+      values$cut <- FALSE
+      updateButton(session, "cut", NULL,
+                   block = FALSE,
+                   style = "danger"
+      )
+    } else {
+      values$cut <- TRUE
+      updateButton(session, "cut", NULL,
+                   block = FALSE,
+                   style = "success"
+      )
+    }
+  })
+
+  return(object)
 }

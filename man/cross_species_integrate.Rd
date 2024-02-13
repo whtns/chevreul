@@ -16,6 +16,9 @@ cross_species_integrate(
 
 \item{human_object_list}{Human Seurat object}
 }
+\value{
+a single cell object
+}
 \description{
 Integrate Seurat Objects from Mouse to Human
 }

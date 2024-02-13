@@ -18,15 +18,21 @@ dockerSeuratApp(
 
 \item{loom_path}{path to a loom file}
 
-\item{futureMb}{#' @param bigwigb  path to sqlite database listing bigwig files for cells in the obect object}
+\item{appTitle}{a title for the app}
+
+\item{organism_type}{human or mouse}
+
+\item{futureMb}{the megabytes available for the future package
+#' @param bigwigb  path to sqlite database listing bigwig files for cells in the obect object}
+}
+\value{
+a dockerized shiny app
 }
 \description{
 Create a obect app on a shinyproxy docker instance
 }
 \examples{
-
-/dontrun{
-dockerSeuratApp(panc8)
+\dontrun{dockerSeuratApp(panc8)
 }
 
 }

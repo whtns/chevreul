@@ -6,11 +6,11 @@
 \usage{
 plot_markers(
   object,
-  metavar = "batch",
+  group_by = "batch",
   num_markers = 5,
   selected_values = NULL,
   return_plotly = FALSE,
-  marker_method = "presto",
+  marker_method = "wilcox",
   object_assay = "gene",
   hide_technical = NULL,
   unique_markers = FALSE,
@@ -21,29 +21,32 @@ plot_markers(
 \arguments{
 \item{object}{a object}
 
-\item{metavar}{the metadata variable from which to pick clusters}
+\item{group_by}{the metadata variable from which to pick clusters}
 
 \item{num_markers}{default is 5}
 
+\item{selected_values}{selected values to display}
+
 \item{return_plotly}{whether to return an interactive ploly plot}
 
-\item{marker_method}{either "presto" or "genesorteR"}
+\item{marker_method}{"wilcox"}
 
 \item{hide_technical}{whether to exclude mitochondrial or ribosomal genes}
 
-\item{...}{}
+\item{...}{extra parameters passed to ggplot2}
+
+\item{featureType}{gene or transcript}
+}
+\value{
+a ggplot with marker genes from group_by
 }
 \description{
 Plot a dot plot of n marker features grouped by cell metadata
-available methods are wilcoxon rank-sum test implemented in
-\href{https://github.com/immunogenomics/presto}{presto} and specificity scores implemented in \href{https://github.com/mahmoudibrahim/genesorteR}{genesorteR}
+available methods are wilcoxon rank-sum test
 }
 \examples{
 
-# interactive mode using "presto"
-plot_markers(human_gene_transcript_object, metavar = "tech", marker_method = "presto", return_plotly = TRUE)
-
-# static mode using "presto"
-plot_markers(human_gene_transcript_object, metavar = "tech", marker_method = "genesorteR", return_plotly = FALSE)
+interactive mode using "wilcox"
+\dontrun{plot_markers(human_gene_transcript_object, group_by = "tech", marker_method = "wilcox", return_plotly = TRUE)}
 
 }

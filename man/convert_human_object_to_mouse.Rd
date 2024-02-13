@@ -11,6 +11,9 @@ convert_human_object_to_mouse(object, ...)
 
 \item{...}{to be passed to \code{convert_symbols_by_species}}
 }
+\value{
+a single cell object
+}
 \description{
 Convert Seurat Objects from Human to Mouse
 }

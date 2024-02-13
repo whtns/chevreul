@@ -9,6 +9,9 @@ transcripts_to_genes(transcripts, organism = "human")
 \arguments{
 \item{transcripts}{}
 }
+\value{
+a vector of gene symbols
+}
 \description{
 convert ensembl transcript ids to hgnc gene symbols
 }

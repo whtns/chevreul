@@ -1,15 +1,14 @@
 #' Default Shiny Helper
 #'
-#' @param ui_element
-#' @param title
-#' @param content
-#' @param type
-#' @param ...
+#' @param ui_element a shiny ui element
+#' @param title a title for the helper
+#' @param content content from an rmarkdown file
+#' @param type style of the helper
+#' @param ... extra params to shinyhelper::helper
 #'
-#' @return
-#' @export
+#' @return a shinyhelper object
 #'
-#' @examples
+#' @noRd
 default_helper <- function(ui_element, title = "", content = "test", type = "inline", ...) {
     shinyhelper::helper(ui_element,
         type = type,
@@ -21,15 +20,14 @@ default_helper <- function(ui_element, title = "", content = "test", type = "inl
 
 #' custom collapsible box
 #'
-#' @param content
-#' @param title
+#' @param content interactive content
+#' @param title a title for the UI box
 #'
-#' @return
-#' @export
+#' @return a ui box with standard parameters
 #'
-#' @examples
+#' @noRd
 chevreulBox <- function(title = "", ...) {
-    shinydashboard::box(
+    box(
         title = title,
         status = "primary",
         solidHeader = TRUE,
@@ -40,14 +38,13 @@ chevreulBox <- function(title = "", ...) {
 
 #' Custom Dropdown Button
 #'
-#' @param content
-#' @param title
+#' @param content interactive content
+#' @param title a title
 #' @param ...
 #'
-#' @return
-#' @export
+#' @return a dropdown button
 #'
-#' @examples
+#' @noRd
 dropdownButton <- function(inputId, ...) {
     tagList(
         shinyWidgets::dropdownButton(

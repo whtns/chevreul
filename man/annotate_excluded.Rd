@@ -12,6 +12,9 @@ annotate_excluded(object, ...)
 \item{excluded_cells}{a named list of cells to be excluded of the form list(set1 = c(cell1, celll2), set2 = c(cell3, cell4))
 all other cells will be marked NA in a column titled "excluded_because"}
 }
+\value{
+a single cell obejct with cell metadata column containing exclusion criteria
+}
 \description{
 Annotate Exclusion Criteria
 }

@@ -15,6 +15,9 @@ record_experiment_data(
 
 \item{organism}{}
 }
+\value{
+a single cell object
+}
 \description{
 Records miscellaneous data
 }

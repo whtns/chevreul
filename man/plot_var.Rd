@@ -16,7 +16,7 @@ plot_var(
 )
 }
 \arguments{
-\item{object}{}
+\item{object}{A Seurat object}
 
 \item{group}{Name of one or more metadata columns to group (color) cells by.}
 
@@ -30,10 +30,10 @@ plot_var(
 
 \item{return_plotly}{Convert plot to interactive web-based graph}
 
-\item{...}{}
+\item{...}{extra parameters passed to ggplot}
 }
 \value{
-object metadata
+a ggplot
 }
 \description{
 Plots static or interactive plot where each point represents a cell metadata
@@ -41,16 +41,16 @@ variable whose position on the map depends on cell embeddings determined by the
 reduction technique used
 }
 \examples{
-
-
-
 # static mode
-plot_var(human_gene_transcript_object, group = "batch", return_plotly  = FALSE)
+\dontrun{
+plot_var(human_gene_transcript_object, group = "batch", return_plotly = FALSE)
+}
 
 # interactive plotly plot
+\dontrun{
 plotly_plot <- plot_var(human_gene_transcript_object, group = "batch")
+}
+\dontrun{
 print(plotly_plot)
-
-Pull object metadata
-
+}
 }

@@ -9,6 +9,9 @@ prep_armor_meta(proj_dir)
 \arguments{
 \item{proj_dir}{}
 }
+\value{
+a path to a tsv
+}
 \description{
 prep armor metadata file
 }

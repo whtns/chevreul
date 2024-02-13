@@ -9,6 +9,9 @@ update_exp_meta(original_meta, corrected_meta)
 \arguments{
 \item{corrected_meta}{}
 }
+\value{
+a cell-level metadata tibble
+}
 \description{
 Update experiment Metadata
 }

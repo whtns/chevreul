@@ -10,7 +10,6 @@ pyplot <- NULL
     matplotlib <<- reticulate::import("matplotlib", convert = TRUE)
     matplotlib$use("Agg", force = TRUE)
     pyplot <<- reticulate::import("matplotlib.pyplot", delay_load = TRUE)
-    # human_gene_transcript_object <- RunUMAP(human_gene_transcript_object, dims = 1:30)
 
     loadRData <- function(fileName){
       #loads an RData file, and returns it
@@ -20,6 +19,10 @@ pyplot <- NULL
 
     human_gene_transcript_seu <<- loadRData(url("http://cobrinik-1.saban-chla.usc.edu/human_gene_transcript_seu.rda"))
     human_gene_transcript_sce <<- loadRData(url("http://cobrinik-1.saban-chla.usc.edu/human_gene_transcript_sce.rda"))
+    human_fetal_retina_sce <<- readRDS(url("http://cobrinik-1.saban-chla.usc.edu/chevreuldata/human_fetal_retina_sce.rds"))
+    human_fetal_retina_seu <<- readRDS(url("http://cobrinik-1.saban-chla.usc.edu/chevreuldata/human_fetal_retina_seu.rds"))
+    baron2016singlecell <<- loadRData(url("http://cobrinik-1.saban-chla.usc.edu/chevreuldata/baron2016singlecell.rda"))
+    panc8 <<- loadRData(url("http://cobrinik-1.saban-chla.usc.edu/chevreuldata/panc8.rda"))
 }
 
 install_scvelo <- function(method = "auto", conda = "auto") {

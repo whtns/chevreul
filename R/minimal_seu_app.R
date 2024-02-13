@@ -2,11 +2,11 @@
 #'
 #' @param object a single cell object
 #' @param loom_path path to a loom file
-#' @param appTitle
+#' @param appTitle title for an app
 #' @param organism_type Organism
-#' @param futureMb
+#' @param futureMb megabytes available for future package
 #'
-#' @return
+#' @return a minimal chevreul app
 #' @export
 #'
 #' @examples
@@ -25,34 +25,34 @@ minimalSeuratApp <- function(single_cell_object = panc8, loom_path = NULL, appTi
         info = TRUE, searching = TRUE, autoWidth = F, ordering = TRUE,
         scrollX = TRUE, language = list(search = "Filter:")
     ))
-    header <- shinydashboard::dashboardHeader(title = appTitle)
-    sidebar <- shinydashboard::dashboardSidebar(
+    header <- dashboardHeader(title = appTitle)
+    sidebar <- dashboardSidebar(
         textOutput("appTitle"),
         uiOutput("featureType"),
-        shinydashboard::sidebarMenu(
-            shinydashboard::menuItem("Reformat Metadata",
+        sidebarMenu(
+            menuItem("Reformat Metadata",
                 tabName = "reformatMetadata", icon = icon("columns")
-            ), shinydashboard::menuItem("Plot Data",
+            ), menuItem("Plot Data",
                 tabName = "comparePlots", icon = icon("chart-bar"), selected = TRUE
-            ), shinydashboard::menuItem("Heatmap/Violin Plots",
+            ), menuItem("Heatmap/Violin Plots",
                 tabName = "violinPlots", icon = icon("sort")
-                # ), shinydashboard::menuItem("Coverage Plots",
+                # ), menuItem("Coverage Plots",
                 #   tabName = "coveragePlots", icon = icon("mountain")
-            ), shinydashboard::menuItem("Differential Expression",
+            ), menuItem("Differential Expression",
                 tabName = "diffex", icon = icon("magnet")
-                # ), shinydashboard::menuItem("Pathway Enrichment Analysis",
+                # ), menuItem("Pathway Enrichment Analysis",
                 #   tabName = "pathwayEnrichment", icon = icon("sitemap")
-            ), shinydashboard::menuItem("Find Markers",
+            ), menuItem("Find Markers",
                 tabName = "findMarkers", icon = icon("bullhorn")
-            ), shinydashboard::menuItem("Subset Seurat Input",
+            ), menuItem("Subset Seurat Input",
                 tabName = "subsetSeurat", icon = icon("filter")
-            ), shinydashboard::menuItem("All Transcripts",
+            ), menuItem("All Transcripts",
                 tabName = "allTranscripts", icon = icon("sliders-h")
-            ), shinydashboard::menuItem("Monocle",
+            ), menuItem("Monocle",
                 tabName = "monocle", icon = icon("bullseye")
-            ), shinydashboard::menuItem("Regress Features",
+            ), menuItem("Regress Features",
                 tabName = "regressFeatures", icon = icon("eraser")
-            ), shinydashboard::menuItem("Technical Information",
+            ), menuItem("Technical Information",
                 tabName = "techInfo", icon = icon("cogs")
             )
         ),
@@ -62,10 +62,10 @@ minimalSeuratApp <- function(single_cell_object = panc8, loom_path = NULL, appTi
         changeEmbedParamsui("changeembed"),
         width = 250
     )
-    body <- shinydashboard::dashboardBody(
+    body <- dashboardBody(
         waiter::use_waiter(),
-        shinydashboard::tabItems(
-            shinydashboard::tabItem(
+        tabItems(
+            tabItem(
                 tabName = "comparePlots",
                 h2("Compare Plots") %>%
                     default_helper(type = "markdown", content = "comparePlots"),
@@ -80,7 +80,7 @@ minimalSeuratApp <- function(single_cell_object = panc8, loom_path = NULL, appTi
                 ),
                 plotClustree_UI("clustreePlot")
             ),
-            shinydashboard::tabItem(
+            tabItem(
                 tabName = "violinPlots",
                 fluidRow(
                     plotHeatmapui("heatMap")
@@ -89,19 +89,19 @@ minimalSeuratApp <- function(single_cell_object = panc8, loom_path = NULL, appTi
                     plotViolinui("violinPlot")
                 )
             ),
-            shinydashboard::tabItem(
+            tabItem(
                 tabName = "coveragePlots",
                 fluidRow(
                     plotCoverage_UI("coverageplots")
                 )
             ),
-            shinydashboard::tabItem(
+            tabItem(
                 tabName = "reformatMetadata",
                 fluidRow(
                     reformatMetadataDRui("reformatMetadataDR")
                 )
             ),
-            shinydashboard::tabItem(
+            tabItem(
                 tabName = "subsetSeurat",
                 h2("Subset Seurat Input") %>%
                     default_helper(type = "markdown", content = "subsetSeurat"),
@@ -115,8 +115,8 @@ minimalSeuratApp <- function(single_cell_object = panc8, loom_path = NULL, appTi
                         "Upload .csv file with cells to include",
                         accept = c(".csv")
                     ),
-                    shinyjs::useShinyjs(),
-                    # shinyjs::runcodeUI(code = "shinyjs::alert('Hello!')"),
+                    useShinyjs(),
+                    # runcodeUI(code = "alert('Hello!')"),
                     textOutput("subsetMessages"),
                     width = 6
                 ),
@@ -124,32 +124,32 @@ minimalSeuratApp <- function(single_cell_object = panc8, loom_path = NULL, appTi
                     title = "Selected Cells", tableSelectedui("subset"),
                     width = 6
                 )
-            ), shinydashboard::tabItem(
+            ), tabItem(
                 tabName = "findMarkers",
                 h2("Find Markers"),
                 findMarkersui("findmarkers"),
                 plotDimRedui("markerScatter")
-            ), shinydashboard::tabItem(
+            ), tabItem(
                 tabName = "allTranscripts",
                 h2("All Transcripts"),
                 plotDimRedui("alltranscripts2"),
                 allTranscriptsui("alltranscripts1")
             ),
-            shinydashboard::tabItem(
+            tabItem(
                 tabName = "diffex",
                 h2("Differential Expression") %>%
                     default_helper(type = "markdown", content = "diffex"),
                 plotDimRedui("diffex"),
                 diffexui("diffex")
             ),
-            shinydashboard::tabItem(
+            tabItem(
                 tabName = "pathwayEnrichment",
                 h2("Pathway Enrichment"),
                 fluidRow(
                     pathwayEnrichmentui("pathwayEnrichment")
                 )
             ),
-            shinydashboard::tabItem(
+            tabItem(
                 tabName = "regressFeatures",
                 fluidRow(
                     chevreulBox(
@@ -178,11 +178,11 @@ minimalSeuratApp <- function(single_cell_object = panc8, loom_path = NULL, appTi
                     ) %>%
                         default_helper(type = "markdown", content = "regressFeatures")
                 )
-            ), shinydashboard::tabItem(
+            ), tabItem(
                 tabName = "monocle",
                 h2("Monocle"),
                 monocleui("monocle")
-            ), shinydashboard::tabItem(
+            ), tabItem(
                 tabName = "techInfo",
                 h2("Technical Information"),
                 techInfoui("techInfo")
@@ -329,7 +329,7 @@ minimalSeuratApp <- function(single_cell_object = panc8, loom_path = NULL, appTi
             req(subset_selected_cells())
             withCallingHandlers(
                 {
-                    shinyjs::html("subsetMessages", "")
+                    html("subsetMessages", "")
                     message("Beginning")
                     subset_object <- object()[, colnames(object()) %in% subset_selected_cells()]
                     object(subset_object)
@@ -347,7 +347,7 @@ minimalSeuratApp <- function(single_cell_object = panc8, loom_path = NULL, appTi
                     message("Complete!")
                 },
                 message = function(m) {
-                    shinyjs::html(id = "subsetMessages", html = paste0(
+                    html(id = "subsetMessages", html = paste0(
                         "Subsetting Seurat Object: ",
                         m$message
                     ), add = FALSE)
@@ -359,7 +359,7 @@ minimalSeuratApp <- function(single_cell_object = panc8, loom_path = NULL, appTi
             req(input$uploadCsv)
             withCallingHandlers(
                 {
-                    shinyjs::html("subsetMessages", "")
+                    html("subsetMessages", "")
                     message("Beginning")
                     subset_object <- subset_by_meta(
                         input$uploadCsv$datapath,
@@ -381,7 +381,7 @@ minimalSeuratApp <- function(single_cell_object = panc8, loom_path = NULL, appTi
                     message("Complete!")
                 },
                 message = function(m) {
-                    shinyjs::html(id = "subsetMessages", html = paste0(
+                    html(id = "subsetMessages", html = paste0(
                         "Subsetting Seurat Object: ",
                         m$message
                     ), add = FALSE)

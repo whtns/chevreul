@@ -1,42 +1,17 @@
-old_harmony_integrate <- function(object_list) {
-    object_list.integrated <- purrr::reduce(object_list, merge)
-    object_list.integrated <- object_preprocess(object_list.integrated)
-    object_list.integrated <- object_reduce_dimensions(object_list.integrated)
-    object_list.integrated <- RenameAssays(object_list.integrated,
-        gene = "RNA"
-    )
-    object_list.integrated@assays[["integrated"]] <- object_list.integrated@assays[["RNA"]]
-    object_list.integrated <- harmony::RunHarmony(object_list.integrated,
-        group.by.vars = "batch"
-    )
-    object_list.integrated <- RunUMAP(object_list.integrated,
-        reduction = "harmony",
-        dims = 1:30
-    )
-    object_list.integrated <- FindNeighbors(object_list.integrated,
-        reduction = "harmony", dims = 1:30
-    ) %>% FindClusters()
-    object_list.integrated <- RenameAssays(object_list.integrated,
-        RNA = "gene"
-    )
-    object_list.integrated
-}
-
 #' Integrate small datasets with harmony
 #'
 #' @param object_list List of two or more singlecell objectss to integrate
 #'
-#' @return
+#' @return an integrated single cell object
 #' @export
 #'
-#' @examples
 harmony_integrate <- function(object_list) {
     object_list.integrated <- purrr::reduce(object_list, merge)
     object_list.integrated@assays[["integrated"]] <- object_list.integrated@assays[["gene"]]
     DefaultAssay(object_list.integrated) <- "integrated"
     object_list.integrated <- object_preprocess(object_list.integrated)
     object_list.integrated <- object_reduce_dimensions(object_list.integrated)
-    object_list.integrated <- harmony::RunHarmony(object_list.integrated, group.by.vars = "batch", assay.use = "integrated")
+    object_list.integrated <- RunHarmony(object_list.integrated, group.by.vars = "batch", assay.use = "integrated")
     object_list.integrated <- RunUMAP(object_list.integrated, assay = "integrated", reduction = "harmony", dims = 1:30)
     object_list.integrated <- FindNeighbors(object_list.integrated, assay = "integrated", reduction = "harmony", dims = 1:30)
     object_list.integrated
@@ -44,12 +19,11 @@ harmony_integrate <- function(object_list) {
 
 #' Merge Small Seurat Objects
 #'
-#' @param object_list List of two or more singlecell objectss
+#' @param object_list List of two or more singlecell objects
 #'
-#' @return
+#' @return a single cell object
 #' @export
 #'
-#' @examples
 merge_small_objects <- function(object_list, k.filter = 50) {
     # check if any singlecell objectss are too small and if so merge with the first singlecell objects
     object_dims <- map(object_list, dim) %>%
@@ -65,16 +39,15 @@ merge_small_objects <- function(object_list, k.filter = 50) {
 }
 
 
-#' Batch Correct Multiple Seurat Objects
+#' Batch Correct Multiple Single Cell Objects
 #'
-#' @param object_list List of two or more singlecell objectss
+#' @param object_list List of two or more single cell objects
 #' @param method Default "cca"
 #' @param ...
 #'
-#' @return
+#' @return an integrated single cell object
 #' @export
 #'
-#' @examples
 seurat_integrate <- function(object_list, method = "cca", organism = "human", ...) {
     # To construct a reference we will identify ‘anchors’ between the individual datasets. First, we split the combined object into a list, with each dataset as an element.
 
@@ -146,10 +119,9 @@ seurat_integrate <- function(object_list, method = "cca", organism = "human", ..
 #' @param method Default "cca"
 #' @param ...
 #'
-#' @return
+#' @return an integrated single cell object
 #' @export
 #'
-#' @examples
 sce_integrate <- function(object_list, method = "cca", organism = "human", ...) {
   # To construct a reference we will identify ‘anchors’ between the individual datasets. First, we split the combined object into a list, with each dataset as an element.
 
@@ -224,10 +196,8 @@ sce_integrate <- function(object_list, method = "cca", organism = "human", ...) 
 #' @param reduction Set dimensional reduction object
 #' @param ...
 #'
-#' @return
+#' @return a single cell object with louvain clusters
 #' @export
-#'
-#' @examples
 setGeneric("object_cluster", function(object = object, resolution = 0.6, custom_clust = NULL, reduction = "pca", algorithm = 1, ...) standardGeneric("object_cluster"))
 
 setMethod(
@@ -247,9 +217,9 @@ setMethod(
         if (!is.null(custom_clust)) {
             object <- Seurat::StashIdent(object = object, save.name = "old.ident")
             clusters <- tibble::tibble(sample_id = rownames(pull_metadata(object))) %>%
-                tibble::rownames_to_column("order") %>%
+                rownames_to_column("order") %>%
                 dplyr::inner_join(custom_clust, by = "sample_id") %>%
-                dplyr::pull(cluster) %>%
+                pull(cluster) %>%
                 identity()
             Idents(object = object) <- clusters
             return(object)
@@ -288,7 +258,7 @@ setMethod(
         }
         # if (!is.null(custom_clust)) {
         #
-        #   clusters <- tibble::tibble(sample_id = rownames(pull_metadata(object))) %>% tibble::rownames_to_column("order") %>% dplyr::inner_join(custom_clust, by = "sample_id") %>% dplyr::pull(cluster) %>% identity()
+        #   clusters <- tibble::tibble(sample_id = rownames(pull_metadata(object))) %>% rownames_to_column("order") %>% dplyr::inner_join(custom_clust, by = "sample_id") %>% pull(cluster) %>% identity()
         #   Idents(object = object) <- clusters
         #   return(object)
         # }
@@ -300,16 +270,13 @@ setMethod(
 #' @param proj_dir path to project directory
 #' @param prefix default "unfiltered"
 #'
-#' @return
+#' @return a single cell object
 #' @export
-#'
-#'
-#' @examples
 load_object_path <- function(proj_dir = getwd(), prefix = "unfiltered") {
     object_regex <- paste0(paste0(".*/", prefix, "_object.rds"))
 
-    object_path <- fs::path(proj_dir, "output", "seurat") %>%
-        fs::dir_ls(regexp = object_regex)
+    object_path <- path(proj_dir, "output", "seurat") %>%
+        dir_ls(regexp = object_regex)
 
     if (!rlang::is_empty(object_path)) {
         return(object_path)
@@ -328,10 +295,7 @@ load_object_path <- function(proj_dir = getwd(), prefix = "unfiltered") {
 #' @param proj_dir
 #' @param ...
 #'
-#' @return
-#' @export
-#'
-#' @examples
+#' @return a single cell object
 setGeneric("load_object_from_proj", function(proj_dir, ...) standardGeneric("load_object_from_proj"))
 
 setMethod(
@@ -362,10 +326,8 @@ setMethod(
 #' @param legacy_settings Use legacy settings
 #' @param ... Extra parameters passed to object_reduce_dimensions
 #'
-#' @return
+#' @return a single cell object with embeddings
 #' @export
-#'
-#' @examples
 setGeneric("object_reduce_dimensions", function(object, assay = "gene", reduction = "pca", legacy_settings = FALSE, ...) standardGeneric("object_reduce_dimensions"))
 
 setMethod(
@@ -389,7 +351,7 @@ setMethod(
             object <- Seurat::RunPCA(object = object, assay = assay, features = Seurat::VariableFeatures(object = object), do.print = FALSE, npcs = npcs, ...)
         }
         if (reduction == "harmony") {
-            object <- harmony::RunHarmony(object, "batch")
+            object <- RunHarmony(object, "batch")
         }
         if ((ncol(object) - 1) > 3 * 30) {
             object <- Seurat::RunTSNE(object = object, assay = assay, reduction = reduction, dims = 1:30)
@@ -429,7 +391,7 @@ setMethod(
             }
         }
         if (reduction == "harmony") {
-            object <- harmony::RunHarmony(object, "batch")
+            object <- RunHarmony(object, "batch")
         }
         if ((ncol(object) - 1) > 3 * 30) {
             if ("gene" == assay) {
@@ -447,37 +409,30 @@ setMethod(
     }
 )
 #'
-#' Give a new project name to a singlecell objects
+#' Give a new project name to a single cell object
 #'
 #' @param object A Seurat object
 #' @param new_name New name to assign
 #'
-#' @return
+#' @return a renamed single cell object
 #' @export
-#'
-#' @examples
-rename_object <- function(object, new_name) {
-    object@project.name <- new_name
-    return(object)
-}
+setGeneric("rename_object", function (object, new_name)  standardGeneric("rename_object"))
 
-#' Reset default assay
-#'
-#' Function to reset the default assay of a singlecell objects
-#'
-#' @param object A singlecell objects
-#' @param new_assay Assay to set as default assay
-#'
-#' @return
-#' @export
-#'
-#' @examples
-SetDefaultAssay <- function(object, new_assay) {
-    Seurat::DefaultAssay(object) <- new_assay
-    return(object)
-}
+setMethod("rename_object", "Seurat",
+          function (object, new_name)
+          {
+            object@project.name <- new_name
+            return(object)
+          }
+)
 
-
+setMethod("rename_object", "SingleCellExperiment",
+          function (object, new_name)
+          {
+            metadata(object)["project.name"] <- new_name
+            return(object)
+          }
+)
 
 #' Filter a List of Seurat Objects
 #'
@@ -488,10 +443,8 @@ SetDefaultAssay <- function(object, new_assay) {
 #' @param filter_val
 #' @param .drop
 #'
-#' @return
+#' @return a list of single cell objects
 #' @export
-#'
-#' @examples
 filter_merged_objects <- function(objects, filter_var, filter_val, .drop = F) {
     objects <- map(objects, ~ filter_merged_object(object = .x, filter_var = filter_var, filter_val = filter_val, .drop = .drop))
 }
@@ -504,10 +457,8 @@ filter_merged_objects <- function(objects, filter_var, filter_val, .drop = F) {
 #' @param filter_val
 #' @param .drop
 #'
-#' @return
+#' @return a single cell object
 #' @export
-#'
-#' @examples
 filter_merged_object <- function(object, filter_var, filter_val, .drop = .drop) {
     if (.drop) {
         mycells <- pull_metadata(object)[[filter_var]] == filter_val
@@ -530,12 +481,8 @@ filter_merged_object <- function(object, filter_var, filter_val, .drop = .drop) 
 #' @param suffix to be appended to file saved in output dir
 #' @param reduction to use default is pca
 #'
-#' @return
+#' @return a single cell object
 #' @export
-#'
-#' @examples
-#' panc8$batch <- panc8$gene$tech
-#' reintegrate_object(panc8)
 setGeneric("reintegrate_object", function (object, feature = "gene", suffix = "", reduction = "pca", algorithm = 1, ...)  standardGeneric("reintegrate_object"))
 
 setMethod("reintegrate_object", "Seurat",

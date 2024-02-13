@@ -6,7 +6,7 @@
 #' @param proj_dir Project directory
 #' @param numcols
 #'
-#' @return
+#' @return updated object metadata
 #' @export
 #'
 #' @examples
@@ -17,18 +17,18 @@ update_object_meta <- function(object, proj_dir, numcols) {
 
     common_cols <- intersect(colnames(object_meta), colnames(project_meta))
     object_meta <- mutate_at(object_meta, .vars = vars(one_of(numcols)), .funs = funs(as.numeric))
-    updated_object_meta <- dplyr::left_join(object_meta, project_meta, by = "sample_id")
+    updated_object_meta <- left_join(object_meta, project_meta, by = "sample_id")
 
     left_side_common <- paste0(common_cols, ".y")
     right_side_common <- paste0(common_cols, ".x")
 
-    left_side_columns <- dplyr::select(updated_object_meta, one_of(left_side_common))
+    left_side_columns <- select(updated_object_meta, one_of(left_side_common))
     colnames(left_side_columns) <- gsub("\\.y$", "", colnames(left_side_columns))
 
     updated_object_meta <- cbind(updated_object_meta, left_side_columns) %>%
-        dplyr::select(-one_of(right_side_common)) %>%
-        dplyr::select(-one_of(left_side_common)) %>%
-        dplyr::select(Sample_ID, everything())
+        select(-one_of(right_side_common)) %>%
+        select(-one_of(left_side_common)) %>%
+        select(Sample_ID, everything())
 }
 
 
@@ -37,7 +37,7 @@ update_object_meta <- function(object, proj_dir, numcols) {
 #' @param object A object
 #' @param new_meta new object
 #'
-#' @return
+#' @return a single cell object with new metadata
 #' @export
 #'
 #' @examples

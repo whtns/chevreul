@@ -19,6 +19,9 @@ append_to_project_db(
 
 \item{verbose}{}
 }
+\value{
+a sqlite database with single cell objects
+}
 \description{
 Append projects to datatbase
 }

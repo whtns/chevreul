@@ -34,8 +34,8 @@ test_that("heatmap is ordered by pseudotime", {
 
     cds_pr_test_res %>%
         subset(q_value < 0.05) %>%
-        dplyr::arrange(q_value) %>%
-        dplyr::select(-status)
+        arrange(q_value) %>%
+        select(-status)
 
     test0 <- monocle_module_heatmap(cds, rownames(cds_pr_test_res), 1.6, collapse_rows = TRUE, group.by = "batch")
 

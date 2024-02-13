@@ -9,6 +9,9 @@ reorg_object_files(projects_db = "~/.cache/chevreul/single-cell-projects.db")
 \arguments{
 \item{proj_dir}{}
 }
+\value{
+a list of single cell objects
+}
 \description{
 Reorganize objects to a multimodal format
 }

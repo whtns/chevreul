@@ -2,13 +2,16 @@
 % Please edit documentation in R/enrichment.R
 \name{format_pathway_table}
 \alias{format_pathway_table}
-\title{Title}
+\title{Enrichment by Cluster}
 \usage{
 format_pathway_table(enrich_by_cluster, cluster, db)
 }
 \arguments{
 \item{enrich_by_cluster}{}
 }
+\value{
+a dataframe of enrichment scores
+}
 \description{
-Title
+Enrichment by Cluster
 }

@@ -11,6 +11,9 @@ reset_object_meta(object, new_meta)
 
 \item{new_meta}{new object}
 }
+\value{
+a single cell object with new metadata
+}
 \description{
 Reset Seurat Metadata
 }

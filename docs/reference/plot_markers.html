@@ -74,7 +74,7 @@ available methods are wilcoxon rank-sum test implemented in
 <span>  num_markers <span class="op">=</span> <span class="fl">5</span>,</span>
 <span>  selected_values <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  return_plotly <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  marker_method <span class="op">=</span> <span class="st">"presto"</span>,</span>
+<span>  marker_method <span class="op">=</span> <span class="st">"wilcox"</span>,</span>
 <span>  seurat_assay <span class="op">=</span> <span class="st">"gene"</span>,</span>
 <span>  hide_technical <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  unique_markers <span class="op">=</span> <span class="cn">FALSE</span>,</span>
@@ -102,7 +102,7 @@ available methods are wilcoxon rank-sum test implemented in
 
 
 <dt>marker_method</dt>
-<dd><p>either "presto" or "genesorteR"</p></dd>
+<dd><p>either "wilcox" or "genesorteR"</p></dd>
 
 
 <dt>hide_technical</dt>
@@ -117,10 +117,10 @@ available methods are wilcoxon rank-sum test implemented in
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span></span>
-<span><span class="co"># interactive mode using "presto"</span></span>
-<span><span class="fu">plot_markers</span><span class="op">(</span><span class="va">panc8</span>, metavar <span class="op">=</span> <span class="st">"tech"</span>, marker_method <span class="op">=</span> <span class="st">"presto"</span>, return_plotly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="co"># interactive mode using "wilcox"</span></span>
+<span><span class="fu">plot_markers</span><span class="op">(</span><span class="va">panc8</span>, metavar <span class="op">=</span> <span class="st">"tech"</span>, marker_method <span class="op">=</span> <span class="st">"wilcox"</span>, return_plotly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># static mode using "presto"</span></span>
+<span><span class="co"># static mode using "wilcox"</span></span>
 <span><span class="fu">plot_markers</span><span class="op">(</span><span class="va">panc8</span>, metavar <span class="op">=</span> <span class="st">"tech"</span>, marker_method <span class="op">=</span> <span class="st">"genesorteR"</span>, return_plotly <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span></span></code></pre></div>
     </div>

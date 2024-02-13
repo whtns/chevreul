@@ -13,7 +13,18 @@ run_enrichmentbrowser(
 )
 }
 \arguments{
-\item{de_results}{}
+\item{object}{a single cell object}
+
+\item{cluster_list}{a list of clusters}
+
+\item{de_results}{differential expression results}
+
+\item{enrichment_method}{enrichment method}
+
+\item{...}{extra arguments passed to ggplot}
+}
+\value{
+a list of enrichmentbrowser output
 }
 \description{
 Run Enrichment Browser on Differentially Expressed Genes

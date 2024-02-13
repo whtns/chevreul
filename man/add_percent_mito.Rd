@@ -13,10 +13,9 @@ add_percent_mito(object, organism = "human", object_assay = "gene")
 
 \item{object_assay}{gene}
 }
+\value{
+a single cell obejct with cell metadata column containing mitochondrial percentage
+}
 \description{
 Add a Read Count Categorical Variable to Seurat Object (based on nCount_RNA)
-}
-\examples{
-add_percent_mito(panc8)
-add_percent_mito(baron2016singlecell, organism = "mouse")
 }

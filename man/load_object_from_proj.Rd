@@ -9,6 +9,9 @@ load_object_from_proj(proj_dir, ...)
 \arguments{
 \item{...}{}
 }
+\value{
+a single cell object
+}
 \description{
 Load Seurat Files from a signle project path
 }

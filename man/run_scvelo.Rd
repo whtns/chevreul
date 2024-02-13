@@ -20,6 +20,9 @@ run_scvelo(
 
 \item{...}{}
 }
+\value{
+a single cell object with RNA velocity calculated
+}
 \description{
 run scvelo on a gene or transcript level object
 }

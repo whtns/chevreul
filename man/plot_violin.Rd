@@ -22,7 +22,10 @@ plot_violin(
 
 \item{assay}{Name of assay to use, defaults to the active assay}
 
-\item{...}{}
+\item{...}{extra parameters passed to ggplot2}
+}
+\value{
+a violin plot
 }
 \description{
 Plots a Violin plot of a single data (gene expression, metrics, etc.)

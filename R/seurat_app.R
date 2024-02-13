@@ -2,16 +2,14 @@
 #'
 #'
 #'
-#' @param object
-#' @param cluster1
-#' @param cluster2
-#' @param resolution
-#' @param diffex_scheme
+#' @param object single cell object
+#' @param cluster1 cluster 1
+#' @param cluster2 cluster 2
+#' @param resolution resolution
+#' @param diffex_scheme scheme for differential expression
 #'
-#' @return
+#' @return a dataframe with differential expression information
 #' @export
-#'
-#' @examples
 setGeneric("run_object_de", function(object, cluster1, cluster2, resolution, diffex_scheme = "louvain", featureType, tests = c("t", "wilcox", "bimod")) standardGeneric("run_object_de"))
 
 setMethod(
@@ -43,22 +41,22 @@ setMethod(
             if (featureType == "transcript") {
                 de_cols <- c("enstxp", "ensgene", "symbol", "p_val", "avg_log2FC", "pct.1", "pct.2", "p_val_adj")
                 de <- de %>%
-                    tibble::rownames_to_column("enstxp") %>%
-                    dplyr::left_join(annotables::grch38_tx2gene, by = "enstxp") %>%
-                    dplyr::left_join(annotables::grch38, by = "ensgene")
+                    rownames_to_column("enstxp") %>%
+                    left_join(annotables::grch38_tx2gene, by = "enstxp") %>%
+                    left_join(annotables::grch38, by = "ensgene")
                 if ("avg_logFC" %in% colnames(de)) {
-                    de <- dplyr::mutate(de, avg_log2FC = log(exp(avg_logFC), 2))
+                    de <- mutate(de, avg_log2FC = log(exp(avg_logFC), 2))
                 }
-                de <- dplyr::select(de, any_of(de_cols))
+                de <- select(de, any_of(de_cols))
             } else if (featureType == "gene") {
                 de_cols <- c("ensgene", "symbol", "p_val", "avg_log2FC", "pct.1", "pct.2", "p_val_adj")
                 de <- de %>%
-                    tibble::rownames_to_column("symbol") %>%
-                    dplyr::left_join(annotables::grch38, by = "symbol")
+                    rownames_to_column("symbol") %>%
+                    left_join(annotables::grch38, by = "symbol")
                 if ("avg_logFC" %in% colnames(de)) {
-                    de <- dplyr::mutate(de, avg_log2FC = log(exp(avg_logFC), 2))
+                    de <- mutate(de, avg_log2FC = log(exp(avg_logFC), 2))
                 }
-                de <- dplyr::select(de, any_of(de_cols))
+                de <- select(de, any_of(de_cols))
             }
             test_list[[match(test, tests)]] <- de
         }
@@ -101,23 +99,23 @@ setMethod(
                 de_cols <- c("enstxp", "ensgene", "symbol", "p_val" = "p.value", "avg_log2FC", "pct.1", "pct.2", "p_val_adj" = "FDR")
                 de <- de[[1]] %>%
                     as.data.frame() %>%
-                    tibble::rownames_to_column("enstxp") %>%
-                    dplyr::left_join(annotables::grch38_tx2gene, by = "enstxp") %>%
-                    dplyr::left_join(annotables::grch38, by = "ensgene")
+                    rownames_to_column("enstxp") %>%
+                    left_join(annotables::grch38_tx2gene, by = "enstxp") %>%
+                    left_join(annotables::grch38, by = "ensgene")
                 if ("summary.logFC" %in% colnames(de)) {
-                    de <- dplyr::mutate(de, avg_log2FC = log(exp(summary.logFC), 2))
+                    de <- mutate(de, avg_log2FC = log(exp(summary.logFC), 2))
                 }
-                de <- dplyr::select(de, any_of(de_cols))
+                de <- select(de, any_of(de_cols))
             } else if (featureType == "gene") {
                 de_cols <- c("ensgene", "symbol", "p_val" = "p.value", "avg_log2FC", "pct.1", "pct.2", "p_val_adj" = "FDR")
                 de <- de[[1]] %>%
                     as.data.frame() %>%
-                    tibble::rownames_to_column("symbol") %>%
-                    dplyr::left_join(annotables::grch38, by = "symbol")
+                    rownames_to_column("symbol") %>%
+                    left_join(annotables::grch38, by = "symbol")
                 if ("summary.logFC" %in% colnames(de)) {
-                    de <- dplyr::mutate(de, avg_log2FC = log(exp(summary.logFC), 2))
+                    de <- mutate(de, avg_log2FC = log(exp(summary.logFC), 2))
                 }
-                de <- dplyr::select(de, any_of(de_cols))
+                de <- select(de, any_of(de_cols))
             }
             test_list[[match(test, tests)]] <- de
         }
@@ -131,13 +129,13 @@ setMethod(
 
 #' Run Enrichment Browser on Differentially Expressed Genes
 #'
-#' @param object
-#' @param enrichment_method
-#' @param ...
-#' @param cluster_list
-#' @param de_results
+#' @param object a single cell object
+#' @param cluster_list a list of clusters
+#' @param de_results differential expression results
+#' @param enrichment_method enrichment method
+#' @param ... extra arguments passed to ggplot
 #'
-#' @return
+#' @return a list of enrichmentbrowser output
 #' @export
 #'
 #' @examples
@@ -146,10 +144,10 @@ run_enrichmentbrowser <- function(object, cluster_list, de_results, enrichment_m
     cluster2_cells <- cluster_list$cluster2
 
     test_diffex_results <- de_results$t %>%
-        dplyr::mutate(FC = log2(exp(avg_log2FC))) %>%
-        dplyr::mutate(ADJ.PVAL = p_val_adj) %>%
-        dplyr::distinct(symbol, .keep_all = TRUE) %>%
-        tibble::column_to_rownames("symbol") %>%
+        mutate(FC = log2(exp(avg_log2FC))) %>%
+        mutate(ADJ.PVAL = p_val_adj) %>%
+        distinct(symbol, .keep_all = TRUE) %>%
+        column_to_rownames("symbol") %>%
         identity()
 
     # subset by supplied cell ids
@@ -184,68 +182,57 @@ run_enrichmentbrowser <- function(object, cluster_list, de_results, enrichment_m
 
     se$GROUP <- forcats::fct_inseq(Idents(object))
 
-    # se <- EnrichmentBrowser::deAna(se, grp = se$GROUP, de.method = "edgeR")
-    se <- EnrichmentBrowser::idMap(se, org = "hsa", from = "SYMBOL", to = "ENTREZID")
+    se <- idMap(se, org = "hsa", from = "SYMBOL", to = "ENTREZID")
 
-    outdir <- fs::path("www", "enrichmentbrowser")
-
-    # hsa.grn <- EnrichmentBrowser::compileGRN(org="hsa", db="kegg")
-
-    # EnrichmentBrowser::ebrowser( meth=c("ora", "ggea"), perm=0, comb=TRUE,
-    #           exprs=se, gs=go.gs, grn=hsa.grn, org="hsa", nr.show=3,
-    #           out.dir=outdir, report.name=report.name, browse = FALSE)
-
+    outdir <- path("www", "enrichmentbrowser")
 
     enrichment.res <- list()
 
     if ("ora" %in% enrichment_method) {
-        enrichment.res$ora <- EnrichmentBrowser::sbea(
+        enrichment.res$ora <- sbea(
             method = "ora", se = se, gs = go.gs, perm = 0,
             alpha = 0.1
         )
         results <- enrichment.res$ora
         report.name <- "ora.html"
-        EnrichmentBrowser::eaBrowse(results,
+        eaBrowse(results,
             html.only = TRUE, out.dir = outdir, graph.view = hsa.grn,
             report.name = report.name
         )
     }
 
     if ("gsea" %in% enrichment_method) {
-        enrichment.res$gsea <- EnrichmentBrowser::sbea(
+        enrichment.res$gsea <- sbea(
             method = "gsea", se = se, gs = msigdb.gs, perm = 100,
             alpha = 0.1
         )
         results <- enrichment.res$gsea
         report.name <- "gsea.html"
-        EnrichmentBrowser::eaBrowse(results,
+        eaBrowse(results,
             html.only = TRUE, out.dir = outdir, graph.view = hsa.grn,
             report.name = report.name
         )
     }
 
     if ("nbea" %in% enrichment_method) {
-        enrichment.res$nbea <- EnrichmentBrowser::nbea(method = "ggea", se = se, gs = go.gs, grn = hsa.grn)
+        enrichment.res$nbea <- nbea(method = "ggea", se = se, gs = go.gs, grn = hsa.grn)
 
         results <- enrichment.res$nbea
         report.name <- "nbea.html"
-        EnrichmentBrowser::eaBrowse(results,
+        eaBrowse(results,
             html.only = TRUE, out.dir = outdir, graph.view = hsa.grn,
             report.name = report.name
         )
     }
 
-    return(list(report = fs::path("enrichmentbrowser", report.name), results = results$res.tbl))
+    return(list(report = path("enrichmentbrowser", report.name), results = results$res.tbl))
 }
 
 #' Prep Slider Values
 #'
 #' @param default_val
 #'
-#' @return
-#' @export
-#'
-#' @examples
+#' @noRd
 prep_slider_values <- function(default_val) {
     min <- round(default_val * 0.25, digits = 1)
     max <- round(default_val * 2.0, digits = 1)
@@ -260,14 +247,13 @@ prep_slider_values <- function(default_val) {
 #' @param preset_project A preloaded project to start the app with
 #' @param appTitle A title of the App
 #' @param futureMb amount of Mb allocated to future package
-#' @param preset_project
-#' @param organism_type
+#' @param preset_project preset project
+#' @param organism_type human or mouse
 #'
-#' @return
+#' @return a shiny app
 #' @export
 #'
-#' @examples
-objectApp <- function(preset_project, appTitle = "chevreul", organism_type = "human", db_path = "~/.cache/chevreul/single-cell-projects.db", futureMb = 13000) {
+chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "human", db_path = "~/.cache/chevreul/single-cell-projects.db", futureMb = 13000) {
     print(packageVersion("chevreul"))
     future::plan(strategy = "multicore", workers = 6)
     future_size <- futureMb * 1024^2
@@ -278,8 +264,8 @@ objectApp <- function(preset_project, appTitle = "chevreul", organism_type = "hu
         info = TRUE, searching = TRUE, autoWidth = F, ordering = TRUE,
         scrollX = TRUE, language = list(search = "Filter:")
     ))
-    header <- shinydashboard::dashboardHeader(title = appTitle)
-    sidebar <- shinydashboard::dashboardSidebar(
+    header <- dashboardHeader(title = appTitle)
+    sidebar <- dashboardSidebar(
         uiOutput("projInput"),
         actionButton("loadProject", "Load Selected Project") %>%
             default_helper(type = "markdown", content = "overview"),
@@ -298,34 +284,34 @@ objectApp <- function(preset_project, appTitle = "chevreul", organism_type = "hu
             filetype = list(rds = "rds")
         ),
         verbatimTextOutput("savefile"),
-        shinydashboard::sidebarMenu(
-            shinydashboard::menuItem("Integrate Projects",
+        sidebarMenu(
+            menuItem("Integrate Projects",
                 tabName = "integrateProjects", icon = icon("object-group")
-            ), shinydashboard::menuItem("Reformat Metadata",
+            ), menuItem("Reformat Metadata",
                 tabName = "reformatMetadataDR", icon = icon("columns")
-            ), shinydashboard::menuItem("Plot Data",
+            ), menuItem("Plot Data",
                 tabName = "comparePlots", icon = icon("chart-bar"), selected = TRUE
-            ), shinydashboard::menuItem("Heatmap/Violin Plots",
+            ), menuItem("Heatmap/Violin Plots",
                 tabName = "violinPlots", icon = icon("sort")
-            ), shinydashboard::menuItem("Coverage Plots",
+            ), menuItem("Coverage Plots",
                 tabName = "coveragePlots", icon = icon("mountain")
-            ), shinydashboard::menuItem("Differential Expression",
+            ), menuItem("Differential Expression",
                 tabName = "diffex", icon = icon("magnet")
-                # ), shinydashboard::menuItem("Pathway Enrichment Analysis",
+                # ), menuItem("Pathway Enrichment Analysis",
                 #   tabName = "pathwayEnrichment", icon = icon("sitemap")
-            ), shinydashboard::menuItem("Find Markers",
+            ), menuItem("Find Markers",
                 tabName = "findMarkers", icon = icon("bullhorn")
-            ), shinydashboard::menuItem("Subset Seurat Input",
+            ), menuItem("Subset Seurat Input",
                 tabName = "subsetSeurat", icon = icon("filter")
-            ), shinydashboard::menuItem("All Transcripts",
+            ), menuItem("All Transcripts",
                 tabName = "allTranscripts", icon = icon("sliders-h")
-            ), shinydashboard::menuItem("RNA Velocity",
+            ), menuItem("RNA Velocity",
                 tabName = "plotVelocity", icon = icon("tachometer-alt")
-            ), shinydashboard::menuItem("Monocle",
+            ), menuItem("Monocle",
                 tabName = "monocle", icon = icon("bullseye")
-            ), shinydashboard::menuItem("Regress Features",
+            ), menuItem("Regress Features",
                 tabName = "regressFeatures", icon = icon("eraser")
-            ), shinydashboard::menuItem("Technical Information",
+            ), menuItem("Technical Information",
                 tabName = "techInfo", icon = icon("cogs")
             )
         ),
@@ -335,10 +321,10 @@ objectApp <- function(preset_project, appTitle = "chevreul", organism_type = "hu
         changeEmbedParamsui("changeembed"),
         width = 250
     )
-    body <- shinydashboard::dashboardBody(
+    body <- dashboardBody(
         waiter::use_waiter(),
-        shinydashboard::tabItems(
-            shinydashboard::tabItem(
+        tabItems(
+            tabItem(
                 tabName = "comparePlots",
                 h2("Compare Plots") %>%
                     default_helper(type = "markdown", content = "comparePlots"),
@@ -353,7 +339,7 @@ objectApp <- function(preset_project, appTitle = "chevreul", organism_type = "hu
                 ),
                 plotClustree_UI("clustreePlot")
             ),
-            shinydashboard::tabItem(
+            tabItem(
                 tabName = "violinPlots",
                 fluidRow(
                     plotHeatmapui("heatMap")
@@ -362,26 +348,26 @@ objectApp <- function(preset_project, appTitle = "chevreul", organism_type = "hu
                     plotViolinui("violinPlot")
                 )
             ),
-            shinydashboard::tabItem(
+            tabItem(
                 tabName = "coveragePlots",
                 fluidRow(
                     plotCoverage_UI("coverageplots")
                 )
             ),
-            shinydashboard::tabItem(
+            tabItem(
                 tabName = "integrateProjects",
                 fluidRow(
                     integrateProjui("integrateproj"),
                     width = 12
                 )
             ),
-            shinydashboard::tabItem(
+            tabItem(
                 tabName = "reformatMetadataDR",
                 fluidRow(
                     reformatMetadataDRui("reformatMetadataDR")
                 )
             ),
-            shinydashboard::tabItem(
+            tabItem(
                 tabName = "subsetSeurat",
                 h2("Subset Seurat Input") %>%
                     default_helper(type = "markdown", content = "subsetSeurat"),
@@ -395,8 +381,8 @@ objectApp <- function(preset_project, appTitle = "chevreul", organism_type = "hu
                         "Upload .csv file with cells to include",
                         accept = c(".csv")
                     ),
-                    shinyjs::useShinyjs(),
-                    # shinyjs::runcodeUI(code = "shinyjs::alert('Hello!')"),
+                    useShinyjs(),
+                    # runcodeUI(code = "alert('Hello!')"),
                     textOutput("subsetMessages"),
                     width = 6
                 ),
@@ -404,39 +390,39 @@ objectApp <- function(preset_project, appTitle = "chevreul", organism_type = "hu
                     title = "Selected Cells", tableSelectedui("subset"),
                     width = 6
                 )
-            ), shinydashboard::tabItem(
+            ), tabItem(
                 tabName = "findMarkers",
                 h2("Find Markers"),
                 findMarkersui("findmarkers"),
                 plotDimRedui("markerScatter")
-            ), shinydashboard::tabItem(
+            ), tabItem(
                 tabName = "allTranscripts",
                 h2("All Transcripts"),
                 plotDimRedui("alltranscripts2"),
                 allTranscriptsui("alltranscripts1")
             ),
-            shinydashboard::tabItem(
+            tabItem(
                 tabName = "plotVelocity",
                 h2("RNA Velocity"),
                 fluidRow(
                     plotVelocityui("plotvelocity"),
                 )
             ),
-            shinydashboard::tabItem(
+            tabItem(
                 tabName = "diffex",
                 h2("Differential Expression") %>%
                     default_helper(type = "markdown", content = "diffex"),
                 plotDimRedui("diffex"),
                 diffexui("diffex")
             ),
-            # shinydashboard::tabItem(
+            # tabItem(
             #   tabName = "pathwayEnrichment",
             #   h2("Pathway Enrichment"),
             #   fluidRow(
             #     pathwayEnrichmentui("pathwayEnrichment")
             #   )
             # ),
-            shinydashboard::tabItem(
+            tabItem(
                 tabName = "regressFeatures",
                 fluidRow(
                     chevreulBox(
@@ -465,11 +451,11 @@ objectApp <- function(preset_project, appTitle = "chevreul", organism_type = "hu
                     ) %>%
                         default_helper(type = "markdown", content = "regressFeatures")
                 )
-            ), shinydashboard::tabItem(
+            ), tabItem(
                 tabName = "monocle",
                 h2("Monocle"),
                 monocleui("monocle")
-            ), shinydashboard::tabItem(
+            ), tabItem(
                 tabName = "techInfo",
                 h2("Technical Information"),
                 h3(paste0("chevreul version: ", packageVersion("chevreul"))),
@@ -485,7 +471,7 @@ objectApp <- function(preset_project, appTitle = "chevreul", organism_type = "hu
         )
     }
     server <- function(input, output, session) {
-        # shinyjs::runcodeServer()
+        # runcodeServer()
         # observe({
         #   list_of_inputs <- reactiveValuesToList(input)
         #   list_of_inputs <<- reactiveValuesToList(input)
@@ -514,7 +500,7 @@ objectApp <- function(preset_project, appTitle = "chevreul", organism_type = "hu
         # projects_db <- "/dataVolume/storage/single_cell_projects/single_cell_projects.db"
 
         con <- reactive({
-            DBI::dbConnect(
+            dbConnect(
                 RSQLite::SQLite(),
                 db_path
             )
@@ -561,12 +547,12 @@ objectApp <- function(preset_project, appTitle = "chevreul", organism_type = "hu
         })
         output$appTitle <- renderText({
             req(proj_dir())
-            paste0("Loaded Project: ", fs::path_file(proj_dir()))
+            paste0("Loaded Project: ", path_file(proj_dir()))
         })
         dataset_volumes <- reactive({
             print(proj_dir())
             dataset_volumes <- c(
-                Home = fs::path(
+                Home = path(
                     proj_dir(),
                     "output", "seurat"
                 ), "R Installation" = R.home(),
@@ -624,7 +610,7 @@ objectApp <- function(preset_project, appTitle = "chevreul", organism_type = "hu
             req(dataset_volumes())
             shinyFiles::shinyFileSave(input, "saveSeurat",
                 # roots = dataset_volumes(),
-                roots = c(Home = fs::path(
+                roots = c(Home = path(
                     proj_dir(),
                     "output", "seurat"
                 )),
@@ -667,7 +653,7 @@ objectApp <- function(preset_project, appTitle = "chevreul", organism_type = "hu
             proj_dir(integration_path)
             newintegrated_project <- purrr::set_names(
                 integration_path,
-                fs::path_file(integration_path)
+                path_file(integration_path)
             )
             newprojList <- c(projList(), newintegrated_project)
         })
@@ -742,7 +728,7 @@ objectApp <- function(preset_project, appTitle = "chevreul", organism_type = "hu
             req(subset_selected_cells())
             withCallingHandlers(
                 {
-                    shinyjs::html("subsetMessages", "")
+                    html("subsetMessages", "")
                     message("Beginning")
 
                     subset_object <- object()[, colnames(object()) %in% subset_selected_cells()]
@@ -762,7 +748,7 @@ objectApp <- function(preset_project, appTitle = "chevreul", organism_type = "hu
                     message("Complete!")
                 },
                 message = function(m) {
-                    shinyjs::html(id = "subsetMessages", html = paste0(
+                    html(id = "subsetMessages", html = paste0(
                         "Subsetting Seurat Object: ",
                         m$message
                     ), add = FALSE)
@@ -774,7 +760,7 @@ objectApp <- function(preset_project, appTitle = "chevreul", organism_type = "hu
             req(input$uploadCsv)
             withCallingHandlers(
                 {
-                    shinyjs::html("subsetMessages", "")
+                    html("subsetMessages", "")
                     message("Beginning")
                     subset_object <- subset_by_meta(
                         input$uploadCsv$datapath,
@@ -802,7 +788,7 @@ objectApp <- function(preset_project, appTitle = "chevreul", organism_type = "hu
                     message("Complete!")
                 },
                 message = function(m) {
-                    shinyjs::html(id = "subsetMessages", html = paste0(
+                    html(id = "subsetMessages", html = paste0(
                         "Subsetting Seurat Object: ",
                         m$message
                     ), add = FALSE)
@@ -911,12 +897,12 @@ objectApp <- function(preset_project, appTitle = "chevreul", organism_type = "hu
             req(uploadSeuratPath())
             req(object())
 
-            proj_path <- stringr::str_replace(uploadSeuratPath(), "output.*", "")
+            proj_path <- str_replace(uploadSeuratPath(), "output.*", "")
 
-            proj_name <- fs::path_file(proj_path)
+            proj_name <- path_file(proj_path)
             print(proj_name)
 
-            loom_path <- fs::path(proj_path, "output", "velocyto", paste0(proj_name, ".loom"))
+            loom_path <- path(proj_path, "output", "velocyto", paste0(proj_name, ".loom"))
             print(loom_path)
             # need to check if this file exists
 
@@ -929,10 +915,10 @@ objectApp <- function(preset_project, appTitle = "chevreul", organism_type = "hu
         output$sessionId <- renderText(paste0("Session id: ", sessionId))
         session$onSessionEnded(function() {
             cat(paste0("Ended: ", sessionId))
-            observe(DBI::dbConnect(con()))
+            observe(dbConnect(con()))
         })
     }
 
-    # onStop(function() DBI::dbDisconnect(con))
+    # onStop(function() dbDisconnect(con))
     shinyApp(ui, server, enableBookmarking = "url")
 }

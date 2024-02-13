@@ -6,7 +6,7 @@
 \usage{
 stash_marker_features(
   object,
-  metavar,
+  group_by,
   object_assay = "gene",
   top_n = 200,
   p_val_cutoff = 0.5
@@ -15,7 +15,7 @@ stash_marker_features(
 \arguments{
 \item{object}{A object}
 
-\item{metavar}{A metadata variable to group by}
+\item{group_by}{A metadata variable to group by}
 
 \item{object_assay}{An assay to use}
 
@@ -23,11 +23,14 @@ stash_marker_features(
 
 \item{p_val_cutoff}{p value cut-off, Default value is "0.5"}
 }
+\value{
+a single cell object with marker genes
+}
 \description{
 Marker Genes will be stored in slot \verb{@misc$markers}
 }
 \examples{
 
-object <- stash_marker_features(metavar = "batch", object, object_assay = "gene")
+object <- stash_marker_features(group_by = "batch", object, object_assay = "gene")
 
 }

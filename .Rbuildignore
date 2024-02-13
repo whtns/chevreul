@@ -13,3 +13,7 @@
 ^vignettes/articles$
 ^dev$
 ^codecov\.yml$
+.here
+.dockerignore
+^R/monocle\.R$
+^R/monocle2\.R$

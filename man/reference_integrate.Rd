@@ -15,6 +15,9 @@ reference_integrate(
 \arguments{
 \item{...}{}
 }
+\value{
+a single cell object
+}
 \description{
 Transfer labels between gene or transcript objects
 }

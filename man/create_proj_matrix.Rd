@@ -9,6 +9,9 @@ create_proj_matrix(proj_list)
 \arguments{
 \item{proj_list}{List of projects}
 }
+\value{
+a tibble of single cell projects
+}
 \description{
 Uses a list of projects to create a matrix of single cell projects
 }

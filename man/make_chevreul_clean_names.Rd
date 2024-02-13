@@ -9,6 +9,9 @@ make_chevreul_clean_names(myvec)
 \arguments{
 \item{myvec}{A vector of object names}
 }
+\value{
+a clean vector of object names
+}
 \description{
 Cleans names of objects provided in a vector form
 }

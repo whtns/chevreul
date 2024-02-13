@@ -1,30 +1,25 @@
-# integration workflow ------------------------------
-
+#' Integration Workflow
+#'
+#' Integrate multiple objects and save to file
+#'
+#' @param batches objects for all batches provided as a list. If named, the resulting integrated object will be identified with corresponding values in 'batch' metadata
+#' @param excluded_cells named list of cells to exclude
+#' @param resolution value(s) to control the clustering resolution via `Seurat::FindMarkers`
+#' @param experiment_name arbitrary name to identify experiment
+#' @param organism either "human" or "mouse"
+#' @param ...
+#'
+#' @return an integrated single cell object
+#' @export
+#'
+#' @examples
 setGeneric("integration_workflow", function(batches, excluded_cells = NULL, resolution = seq(0.2, 2.0, by = 0.2), experiment_name = "default_experiment", organism = "human", ...) {
     standardGeneric("integration_workflow")
 })
 
-#' Integration Workflow
-#'
-#' Integrate multiple objects and save to file
-#'
-#' @param batches objects for all batches provided as a list. If named, the resulting integrated object will be identified with corresponding values in 'batch' metadata
-#' @param excluded_cells named list of cells to exclude
-#' @param resolution value(s) to control the clustering resolution via `Seurat::FindMarkers`
-#' @param experiment_name arbitrary name to identify experiment
-#' @param organism either "human" or "mouse"
-#' @param ...
-#'
-#' @return
-#' @export
-#'
-#' @examples
 setMethod(
     "integration_workflow", "Seurat",
     function(batches, excluded_cells = NULL, resolution = seq(0.2, 2.0, by = 0.2), experiment_name = "default_experiment", organism = "human", ...) {
-        checkmate::check_list(batches)
-
-        checkmate::check_character(excluded_cells)
 
         # organisms <- map(batches, Misc, c("experiment", "organism"))
 
@@ -64,27 +59,9 @@ setMethod(
     }
 )
 
-#' Integration Workflow
-#'
-#' Integrate multiple objects and save to file
-#'
-#' @param batches objects for all batches provided as a list. If named, the resulting integrated object will be identified with corresponding values in 'batch' metadata
-#' @param excluded_cells named list of cells to exclude
-#' @param resolution value(s) to control the clustering resolution via `Seurat::FindMarkers`
-#' @param experiment_name arbitrary name to identify experiment
-#' @param organism either "human" or "mouse"
-#' @param ...
-#'
-#' @return
-#' @export
-#'
-#' @examples
 setMethod(
     "integration_workflow", "SingleCellExperiment",
     function(batches, excluded_cells = NULL, resolution = seq(0.2, 2.0, by = 0.2), experiment_name = "default_experiment", organism = "human", ...) {
-        checkmate::check_list(batches)
-
-        checkmate::check_character(excluded_cells)
 
         # organisms <- map(batches, Misc, c("experiment", "organism"))
 
@@ -123,12 +100,6 @@ setMethod(
         return(merged_batches)
     }
 )
-
-
-# clustering workflow ------------------------------
-
-
-
 
 #' Clustering Workflow
 #'
@@ -141,7 +112,7 @@ setMethod(
 #' @param experiment_name
 #' @param ...
 #'
-#' @return
+#' @return a clustered single cell object
 #' @export
 #'
 #' @examples

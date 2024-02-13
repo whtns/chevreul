@@ -16,18 +16,22 @@ minimalSeuratApp(
 \arguments{
 \item{loom_path}{path to a loom file}
 
+\item{appTitle}{title for an app}
+
 \item{organism_type}{Organism}
 
-\item{futureMb}{}
+\item{futureMb}{megabytes available for future package}
 
 \item{object}{a single cell object}
+}
+\value{
+a minimal chevreul app
 }
 \description{
 Create a minimal object app
 }
 \examples{
-
-/dontrun{
+\dontrun{
 minimalSeuratApp(panc8)
 }
 

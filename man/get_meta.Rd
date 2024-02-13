@@ -9,6 +9,9 @@ get_meta(proj_path)
 \arguments{
 \item{proj_path}{}
 }
+\value{
+a filepath to a project metadata file
+}
 \description{
 Get Metadata for a project
 }
