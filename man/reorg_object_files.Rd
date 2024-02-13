@@ -7,7 +7,7 @@
 reorg_object_files(projects_db = "~/.cache/chevreul/single-cell-projects.db")
 }
 \arguments{
-\item{proj_dir}{}
+\item{proj_dir}{project directory}
 }
 \value{
 a list of single cell objects

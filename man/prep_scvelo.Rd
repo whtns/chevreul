@@ -16,7 +16,7 @@ prep_scvelo(
 
 \item{loom_path}{path to matching loom file}
 
-\item{...}{}
+\item{...}{extra args passed to run_scvelo}
 
 \item{group.by}{metadata to color plot}
 

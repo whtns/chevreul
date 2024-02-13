@@ -9,7 +9,11 @@ filter_merged_object(object, filter_var, filter_val, .drop = .drop)
 \arguments{
 \item{object}{A singlecell objects}
 
-\item{.drop}{}
+\item{filter_var}{filter variable}
+
+\item{filter_val}{filter values}
+
+\item{.drop}{whether to drop values}
 }
 \value{
 a single cell object

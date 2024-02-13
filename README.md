@@ -17,7 +17,7 @@ There are also convenient functions for:
 - <a href="https://satijalab.org/seurat/archive/v3.0/integration.html" target="_blank" rel="noopener noreferrer">Integration
   and Label Transfer</a>
 - Louvain Clustering at a Range of Resolutions
-- Cell cycle state regression and labeling
+- Cell cycle state regression and labelingz
 - RNA velocity calculation with
   <a href="https://velocyto.org/" target="_blank" rel="noopener noreferrer">Velocyto.R</a>
   and

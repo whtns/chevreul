@@ -13,11 +13,15 @@ append_to_project_db(
 )
 }
 \arguments{
+\item{new_project_path}{new project path}
+
+\item{projects_dir}{project directory}
+
 \item{cache_location}{Path to cache "~/.cache/chevreul"}
 
 \item{sqlite_db}{sqlite db}
 
-\item{verbose}{}
+\item{verbose}{print messages}
 }
 \value{
 a sqlite database with single cell objects

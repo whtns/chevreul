@@ -9,9 +9,11 @@ regress_by_features(object, feature_set, set_name, regress = TRUE, ...)
 \arguments{
 \item{object}{A object}
 
+\item{feature_set}{a set of features}
+
 \item{set_name}{as a string}
 
-\item{regress}{}
+\item{regress}{whether to regress}
 }
 \value{
 a single cell object with features regressed

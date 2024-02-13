@@ -12,7 +12,6 @@
 #' @return an integrated single cell object
 #' @export
 #'
-#' @examples
 setGeneric("integration_workflow", function(batches, excluded_cells = NULL, resolution = seq(0.2, 2.0, by = 0.2), experiment_name = "default_experiment", organism = "human", ...) {
     standardGeneric("integration_workflow")
 })
@@ -109,13 +108,11 @@ setMethod(
 #' @param excluded_cells named list of cells to exclude
 #' @param resolution resolution(s) to use for clustering cells
 #' @param organism Organism
-#' @param experiment_name
-#' @param ...
+#' @param experiment_name name of the experiment
+#' @param ... extra args passed to object_pipeline
 #'
 #' @return a clustered single cell object
 #' @export
-#'
-#' @examples
 setGeneric("clustering_workflow", function(object, excluded_cells, resolution = seq(0.2, 2.0, by = 0.2), organism = "human", experiment_name = "default_experiment", ...) {
     standardGeneric("clustering_workflow")
 })

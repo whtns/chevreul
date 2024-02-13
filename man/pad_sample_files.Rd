@@ -7,7 +7,7 @@
 pad_sample_files(proj_dir)
 }
 \arguments{
-\item{proj_dir}{}
+\item{proj_dir}{project directory}
 }
 \value{
 a list of fastq files

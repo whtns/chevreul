@@ -20,7 +20,9 @@ clustering_workflow(
 
 \item{organism}{Organism}
 
-\item{...}{}
+\item{experiment_name}{name of the experiment}
+
+\item{...}{extra args passed to object_pipeline}
 
 \item{feature_objects}{list of objects named according to feature of interest ("gene" or "transcript")}
 }

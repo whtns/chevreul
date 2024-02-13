@@ -278,8 +278,6 @@ getEnrichedPathways <- function(object,
 #'
 #' @return a dataframe of enrichment scores
 #' @export
-#'
-#' @examples
 format_pathway_table <- function(enrich_by_cluster, cluster, db) {
     enrich_by_cluster <-
         enrich_by_cluster %>%

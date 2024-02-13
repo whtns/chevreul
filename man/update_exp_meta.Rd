@@ -7,7 +7,9 @@
 update_exp_meta(original_meta, corrected_meta)
 }
 \arguments{
-\item{corrected_meta}{}
+\item{original_meta}{original metadata}
+
+\item{corrected_meta}{corrected metadata}
 }
 \value{
 a cell-level metadata tibble

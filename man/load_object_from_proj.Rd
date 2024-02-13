@@ -7,7 +7,9 @@
 load_object_from_proj(proj_dir, ...)
 }
 \arguments{
-\item{...}{}
+\item{proj_dir}{project directory}
+
+\item{...}{extra args passed to load_object_path}
 }
 \value{
 a single cell object

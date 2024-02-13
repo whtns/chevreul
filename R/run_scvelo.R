@@ -4,14 +4,11 @@
 #'
 #' @param object a object
 #' @param loom_path path to matching loom file
-#' @param fit.quantile
-#' @param ...
+#' @param fit.quantile how to fit velocity
 #'
 #' @return a single cell object with RNA velocity calculated
 #' @export
-#'
-#' @examples
-run_scvelo <- function(object, loom_path, assay = "gene", fit.quantile = 0.05, check_loom = FALSE, ...) {
+run_scvelo <- function(object, loom_path, assay = "gene", fit.quantile = 0.05, check_loom = FALSE) {
     # if(DefaultAssay(object) == "SCT"){
     #   object <-
     #     object %>%
@@ -84,12 +81,10 @@ convert_to_h5ad <- function(object, file_path) {
 #' @param loom_path path to matching loom file
 #' @param group.by metadata to color plot
 #' @param plot_method plotting method to use from scvelo
-#' @param ...
+#' @param ... extra args passed to run_scvelo
 #'
 #' @return a single cell object with velocity calculated
 #' @export
-#'
-#' @examples
 prep_scvelo <- function(object, loom_path, velocity_mode = c("deterministic", "stochastic", "dynamical"), ...) {
     h5ad_path <- fs::path_ext_set(loom_path, ".h5ad")
     message(h5ad_path)
@@ -134,14 +129,13 @@ prep_scvelo <- function(object, loom_path, velocity_mode = c("deterministic", "s
 
 #' Plot scvelo on embedding plot
 #'
-#' @param adata
-#' @param group.by
-#' @param plot_method
+#' @param adata anndata object
+#' @param group.by grouping variable
+#' @param plot_method arrows or stream
+#' @param ... extra args passed to velocity_embedding_stream
 #'
 #' @return a matplotlib of RNA velocity
 #' @export
-#'
-#' @examples
 plot_scvelo <- function(adata, group.by = "batch", basis = "umap", plot_method = c("stream", "arrow", "dynamics"), ...) {
     num_cols <- length(unique(adata$obs[[group.by]]))
 

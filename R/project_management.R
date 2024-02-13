@@ -6,7 +6,6 @@
 #'
 #' @return a tibble of single cell projects
 #'
-#' @examples
 create_proj_matrix <- function(proj_list) {
     proj_list <- unlist(proj_list)
 
@@ -45,7 +44,6 @@ create_proj_matrix <- function(proj_list) {
 #'
 #' @return a single cell object
 #'
-#' @examples
 subset_by_meta <- function(meta_path, object) {
     upload_meta <- readr::read_csv(meta_path, col_names = "sample_id") %>%
         filter(!is.na(sample_id) & !sample_id == "sample_id") %>%
@@ -64,13 +62,11 @@ subset_by_meta <- function(meta_path, object) {
 
 #' Combine Loom Files
 #'
-#' @param projectPaths
-#' @param newProjectPath
+#' @param projectPaths project paths
+#' @param newProjectPath new project path
 #'
 #' @return a combined loom file
 #' @export
-#'
-#' @examples
 combine_looms <- function(projectPaths, newProjectPath) {
     # loom combine
     loompy <- reticulate::import("loompy")

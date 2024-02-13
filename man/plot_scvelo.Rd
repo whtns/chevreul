@@ -13,7 +13,13 @@ plot_scvelo(
 )
 }
 \arguments{
-\item{plot_method}{}
+\item{adata}{anndata object}
+
+\item{group.by}{grouping variable}
+
+\item{plot_method}{arrows or stream}
+
+\item{...}{extra args passed to velocity_embedding_stream}
 }
 \value{
 a matplotlib of RNA velocity

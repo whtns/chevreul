@@ -7,7 +7,7 @@
 genes_from_object(object, ...)
 }
 \arguments{
-\item{object}{an object}
+\item{object}{a single cell object}
 }
 \value{
 a vector of genes in a single cell object

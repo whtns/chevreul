@@ -7,7 +7,9 @@
 rename_from_x_notation(cell_ids, batch_id)
 }
 \arguments{
-\item{batch_id}{}
+\item{cell_ids}{cell ids}
+
+\item{batch_id}{bath id}
 }
 \value{
 a vector of cell ids

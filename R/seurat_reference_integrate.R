@@ -1,32 +1,26 @@
 #' Transfer Labels Between Seurat Objects
 #'
-#' @param ref_object
-#' @param query_object
-#' @param ref_name
-#' @param query_name
-#' @param ...
+#' @param ref_object reference object
+#' @param query_object query object
+#' @param ref_name reference name
+#' @param query_name query name
 #'
 #' @return a single cell object
 #' @export
-#'
-#' @examples
-label_transfer <- function(ref_object, query_object, ref_name = NULL, query_name = NULL, ...) {
+label_transfer <- function(ref_object, query_object, ref_name = NULL, query_name = NULL) {
     label_transerred <- purrr::map2(ref_object, query_object, reference_integrate, query_name = query_name, ref_name = ref_name)
 }
 
 #' Transfer labels between gene or transcript objects
 #'
-#' @param ref_object
-#' @param query_object
-#' @param query_name
-#' @param ref_name
-#' @param ...
+#' @param ref_object reference object
+#' @param query_object query object
+#' @param query_name query name
+#' @param ref_name reference name
 #'
 #' @return a single cell object
 #' @export
-#'
-#' @examples
-reference_integrate <- function(ref_object, query_object, query_name = "fetal", ref_name = "organoid", ...) {
+reference_integrate <- function(ref_object, query_object, query_name = "fetal", ref_name = "organoid") {
     object.anchors <- FindTransferAnchors(reference = ref_object, query = query_object, dims = 1:30, project.query = TRUE)
 
     reference_clusters <- colnames(ref_object[[]])[grepl(paste0("gene", "_snn_res."), colnames(ref_object[[]]))]
@@ -65,8 +59,6 @@ reference_integrate <- function(ref_object, query_object, query_name = "fetal", 
 #'
 #' @return a single cell object
 #' @export
-#'
-#' @examples
 find_markers <- function(object, num_features) {
     markers <- Seurat::FindAllMarkers(object, only.pos = TRUE, min.pct = 0.25, logfc.threshold = 0.25)
     markers %>%

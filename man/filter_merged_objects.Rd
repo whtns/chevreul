@@ -7,7 +7,13 @@
 filter_merged_objects(objects, filter_var, filter_val, .drop = F)
 }
 \arguments{
-\item{.drop}{}
+\item{objects}{single cell projects}
+
+\item{filter_var}{filter variable}
+
+\item{filter_val}{filter values}
+
+\item{.drop}{whether to drop from single cell object}
 }
 \value{
 a list of single cell objects

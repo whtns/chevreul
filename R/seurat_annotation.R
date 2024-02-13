@@ -46,7 +46,7 @@ setMethod(
 #'
 #' @param genes
 #'
-#' @returna a vector of transcripts
+#' @return a vector of transcripts
 #' @export
 #'
 #' @examples

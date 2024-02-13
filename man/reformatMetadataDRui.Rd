@@ -7,7 +7,7 @@
 reformatMetadataDRui(id)
 }
 \arguments{
-\item{id}{}
+\item{id}{id}
 }
 \value{
 UI to reformat the metadata of a single cell object

@@ -20,6 +20,8 @@ plot_transcript_composition(
 \item{group.by}{Name of one or more metadata columns to annotate columns by
 (for example, orig.ident)}
 
+\item{standardize}{whether to standardize values}
+
 \item{drop_zero}{Drop zero values}
 }
 \value{

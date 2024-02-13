@@ -13,7 +13,9 @@ record_experiment_data(
 \arguments{
 \item{object}{A object}
 
-\item{organism}{}
+\item{experiment_name}{name of the experiment}
+
+\item{organism}{human or mouse}
 }
 \value{
 a single cell object

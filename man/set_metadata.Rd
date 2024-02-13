@@ -7,7 +7,7 @@
 set_metadata(object, meta.data)
 }
 \arguments{
-\item{object}{}
+\item{object}{a single cell object}
 }
 \value{
 object metadata

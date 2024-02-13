@@ -18,6 +18,8 @@ plot_violin(
 
 \item{plot_var}{Variable to group (color) cells by}
 
+\item{plot_vals}{plot values}
+
 \item{features}{Features to plot}
 
 \item{assay}{Name of assay to use, defaults to the active assay}

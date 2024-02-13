@@ -7,11 +7,11 @@
 object_calcn(object, assay = "gene", slot = "counts")
 }
 \arguments{
-\item{object}{A object}
+\item{object}{A single cell object}
 
 \item{assay}{Assay to use, Default = "gene"}
 
-\item{slot}{}
+\item{slot}{slot for data}
 }
 \value{
 a single cell object with nfeatures and ngenes stored in metadata
