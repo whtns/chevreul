@@ -4,9 +4,9 @@
 \name{chevreul-package}
 \alias{chevreul}
 \alias{chevreul-package}
-\title{chevreul: Tools for Managing Seurat Objects}
+\title{chevreul: Tools for managing SingleCellExperiment objects as projects.}
 \description{
-Tools for using seurat with single cell projects
+Tools for managing SingleCellExperiment objects as projects.
 }
 \seealso{
 Useful links:

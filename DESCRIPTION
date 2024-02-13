@@ -1,6 +1,6 @@
 Type: Package
 Package: chevreul
-Title: Tools for Managing Seurat Objects
+Title: Tools for managing SingleCellExperiment objects as projects.
 Version: 0.5.0
 Authors@R: c(
     person("Kevin", "Stachelek", , "kevin.stachelek@gmail.com", role = c("aut", "cre")),
@@ -8,7 +8,7 @@ Authors@R: c(
     person("Roman", "Hillje", role = "ctb",
            comment = "Author of included Cerebro fragments")
   )
-Description: Tools for using seurat with single cell projects
+Description: Tools for managing SingleCellExperiment objects as projects.
 License: MIT + file LICENSE
 URL: https://github.com/whtns/chevreul,
     https://whtns.github.io/chevreul/
@@ -70,7 +70,11 @@ Imports:
     EnrichmentBrowser,
     harmony,
     scuttle,
-    dtw
+    dtw,
+    grDevices,
+    graphics,
+    stats,
+    utils
 Suggests:
     BiocStyle,
     knitr,
