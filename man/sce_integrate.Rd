@@ -11,7 +11,7 @@ sce_integrate(object_list, method = "cca", organism = "human", ...)
 
 \item{method}{Default "cca"}
 
-\item{...}{}
+\item{...}{extra args passed to object_reduce_dimensions}
 }
 \value{
 an integrated single cell object

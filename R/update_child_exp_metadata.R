@@ -1,11 +1,9 @@
 #' Get Metadata for a project
 #'
-#' @param proj_path
+#' @param proj_path a project path
 #'
 #' @return a filepath to a project metadata file
 #' @export
-#'
-#' @examples
 get_meta <- function(proj_path) {
     meta_path <- path(proj_path, "data", gsub("_proj", "_metadata.csv", fs::path_file(proj_path)))
 }
@@ -13,13 +11,11 @@ get_meta <- function(proj_path) {
 
 #' Update experiment Metadata
 #'
-#' @param original_meta
-#' @param corrected_meta
+#' @param original_meta original metadata
+#' @param corrected_meta corrected metadata
 #'
 #' @return a cell-level metadata tibble
 #' @export
-#'
-#' @examples
 update_exp_meta <- function(original_meta, corrected_meta) {
     coltypes <- sapply(corrected_meta, is.numeric)
     numcols <- colnames(corrected_meta)[coltypes]

@@ -1,6 +1,6 @@
 #' Reformat Seurat Object Metadata UI
 #'
-#' @param id
+#' @param id id
 #'
 #' @return UI to reformat the metadata of a single cell object
 reformatMetadataDRui <- function(id) {
@@ -33,12 +33,9 @@ reformatMetadataDRui <- function(id) {
 
 #' Reformat Seurat Object Metadata Server
 #'
-#' @param input
-#' @param output
-#' @param session
-#' @param object
+#' @param object single cell object
 #'
-#' @return a shiny server
+#'@noRd
 reformatMetadataDR <- function(input, output, session, object, featureType = "gene",
     col_bind = NULL,
     col_edit = TRUE,

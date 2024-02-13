@@ -7,7 +7,7 @@
 get_features(object, ...)
 }
 \arguments{
-\item{object}{}
+\item{object}{a single cell object}
 }
 \value{
 variable features from a single cell object

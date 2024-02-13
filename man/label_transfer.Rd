@@ -4,16 +4,16 @@
 \alias{label_transfer}
 \title{Transfer Labels Between Seurat Objects}
 \usage{
-label_transfer(
-  ref_object,
-  query_object,
-  ref_name = NULL,
-  query_name = NULL,
-  ...
-)
+label_transfer(ref_object, query_object, ref_name = NULL, query_name = NULL)
 }
 \arguments{
-\item{...}{}
+\item{ref_object}{reference object}
+
+\item{query_object}{query object}
+
+\item{ref_name}{reference name}
+
+\item{query_name}{query name}
 }
 \value{
 a single cell object

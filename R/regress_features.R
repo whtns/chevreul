@@ -1,9 +1,9 @@
 #' Regress Seurat Object by Given Set of Genes
 #'
 #' @param object A object
-#' @param feature_set
+#' @param feature_set a set of features
 #' @param set_name as a string
-#' @param regress
+#' @param regress whether to regress
 #'
 #' @return a single cell object with features regressed
 #' @export

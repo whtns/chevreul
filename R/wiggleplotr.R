@@ -2,13 +2,11 @@
 #'
 #' Create a sqlite database of bigwig files matching cell ids in objects
 #'
-#' @param bam_files
-#' @param bigwig_db
+#' @param bam_files bam files
+#' @param bigwig_db bigwig database
 #'
 #' @return a path to a bigwig file sqlite database
 #' @export
-#'
-#' @examples
 build_bigwig_db <- function(bam_files, bigwig_db = "~/.cache/chevreul/bw-files.db") {
     bam_files <- fs::path_abs(bam_files)
 
@@ -34,8 +32,6 @@ build_bigwig_db <- function(bam_files, bigwig_db = "~/.cache/chevreul/bw-files.d
 #'
 #' @return a vector of bigwigs file paths
 #' @export
-#'
-#' @examples
 load_bigwigs <- function(object, bigwig_db = "~/.cache/chevreul/bw-files.db") {
     con <- dbConnect(RSQLite::SQLite(), dbname = bigwig_db)
 
@@ -65,16 +61,14 @@ load_bigwigs <- function(object, bigwig_db = "~/.cache/chevreul/bw-files.db") {
 #' @param cell_metadata a dataframe with cell metadata from object
 #' @param bigwig_tbl a tibble with colnames "name", "bigWig", and "sample_id" matching the filename, absolute path, and sample name of each cell in the cell_metadata
 #' @param group_by Variable to color by
-#' @param values_of_interest
+#' @param values_of_interest values of interest
 #' @param organism Organism
 #' @param edb ensembldb object
 #' @param heights The heights of each row in the grid of plot
-#' @param ...
+#' @param ... extra arguments passed to plotCoverageFromEnsembldb
 #'
 #' @return a ggplot with coverage faceted by group_by
 #' @export
-#'
-#' @examples
 plot_gene_coverage_by_var <- function(genes_of_interest = "RXRG",
     cell_metadata,
     bigwig_tbl,

@@ -162,7 +162,7 @@ plotly_settings <- function(plotly_plot, width = 600, height = 700) {
 #'
 #' @param object A Seurat object
 #' @param plot_var Variable to group (color) cells by
-#' @param plot_vals
+#' @param plot_vals plot values
 #' @param features Features to plot
 #' @param assay Name of assay to use, defaults to the active assay
 #' @param ... extra parameters passed to ggplot2
@@ -758,7 +758,7 @@ setMethod(
 #' @param gene_symbol Gene symbol of gene of intrest
 #' @param group.by Name of one or more metadata columns to annotate columns by
 #' (for example, orig.ident)
-#' @param standardize
+#' @param standardize whether to standardize values
 #' @param drop_zero Drop zero values
 #'
 #' @return a stacked barplot of transcript counts

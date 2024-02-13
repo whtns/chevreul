@@ -7,7 +7,7 @@
 pull_metadata(object)
 }
 \arguments{
-\item{object}{}
+\item{object}{a single cell object}
 }
 \value{
 object metadata

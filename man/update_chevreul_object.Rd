@@ -15,7 +15,11 @@ update_chevreul_object(
 \arguments{
 \item{object_path}{Path to a object}
 
-\item{...}{}
+\item{feature}{gene or transcript of interest}
+
+\item{resolution}{resolution for louvain clustering}
+
+\item{...}{extra args passed to object_cluster}
 }
 \value{
 a single cell object

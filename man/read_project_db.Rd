@@ -12,11 +12,13 @@ read_project_db(
 )
 }
 \arguments{
+\item{projects_dir}{project directory}
+
 \item{cache_location}{Path to cache "~/.cache/chevreul"}
 
 \item{sqlite_db}{sqlite db}
 
-\item{verbose}{}
+\item{verbose}{print messages}
 }
 \value{
 a tibble with single cell objects

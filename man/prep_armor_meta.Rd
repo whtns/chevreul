@@ -7,7 +7,7 @@
 prep_armor_meta(proj_dir)
 }
 \arguments{
-\item{proj_dir}{}
+\item{proj_dir}{project directory}
 }
 \value{
 a path to a tsv

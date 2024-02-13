@@ -7,8 +7,6 @@
 #'
 #' @return a single cell object
 #' @export
-#'
-#' @examples
 setGeneric("format_new_metadata", function(object, datapath) {
     standardGeneric("format_new_metadata")
 })
@@ -64,8 +62,6 @@ setMethod(
 #'
 #' @return updated cell level metadata
 #' @export
-#'
-#' @examples
 setGeneric("combine_cols", function(object, cols, new_col) {
     standardGeneric("combine_cols")
 })
@@ -144,13 +140,12 @@ setMethod(
 #'
 #' Records miscellaneous data
 #' @param object A object
-#' @param experiment_name
-#' @param organism
+#' @param experiment_name name of the experiment
+#' @param organism human or mouse
 #'
 #' @return a single cell object
 #' @export
 #'
-#' @examples
 #' @importFrom purrr %||%
 setGeneric("record_experiment_data", function(object, experiment_name = "default_experiment", organism = "human") {
     standardGeneric("record_experiment_data")
@@ -261,14 +256,12 @@ setMethod(
 #' Update a chevreul Object
 #'
 #' @param object_path Path to a object
-#' @param feature
-#' @param resolution
-#' @param ...
+#' @param feature gene or transcript of interest
+#' @param resolution resolution for louvain clustering
+#' @param ... extra args passed to object_cluster
 #'
 #' @return a single cell object
 #' @export
-#'
-#' @examples
 setGeneric("update_chevreul_object", function(object_path, feature, resolution = seq(0.2, 2.0, by = 0.2), return_object = TRUE, ...) {
     standardGeneric("update_chevreul_object")
 })
@@ -439,14 +432,12 @@ setMethod(
 #'
 #' Recalculate counts/features per cell for a object
 #'
-#' @param object A object
+#' @param object A single cell object
 #' @param assay Assay to use, Default = "gene"
-#' @param slot
+#' @param slot slot for data
 #'
 #' @return a single cell object with nfeatures and ngenes stored in metadata
 #' @export
-#'
-#' @examples
 setGeneric("object_calcn", function(object, assay = "gene", slot = "counts") standardGeneric("object_calcn"))
 
 setMethod(
@@ -476,13 +467,11 @@ setMethod(
 
 #' Propagate Metadata Changes
 #'
-#' @param updated_table
-#' @param object
+#' @param updated_table updated metadata
+#' @param object a single cell object
 #'
 #' @return a single cell object
 #' @export
-#'
-#' @examples
 propagate_spreadsheet_changes <- function(updated_table, object) {
     meta <- updated_table
 
@@ -505,12 +494,10 @@ propagate_spreadsheet_changes <- function(updated_table, object) {
 #'
 #' @param cache_location Path to cache "~/.cache/chevreul"
 #' @param sqlite_db Database to be created
-#' @param verbose
+#' @param verbose print messages
 #'
 #' @return a sqlite database with single cell objects
 #' @export
-#'
-#' @examples
 setGeneric("create_project_db", function(cache_location = "~/.cache/chevreul", sqlite_db = "single-cell-projects.db", verbose = TRUE) standardGeneric("create_project_db"))
 
 setMethod(
@@ -561,12 +548,10 @@ setMethod(
 #' @param projects_dir The project directory to be updated
 #' @param cache_location Path to cache "~/.cache/chevreul"
 #' @param sqlite_db sqlite db
-#' @param verbose
+#' @param verbose print messages
 #'
 #' @return a sqlite database with single cell objects
 #' @export
-#'
-#' @examples
 update_project_db <- function(projects_dir = NULL,
     cache_location = "~/.cache/chevreul",
     sqlite_db = "single-cell-projects.db",
@@ -602,17 +587,15 @@ update_project_db <- function(projects_dir = NULL,
 #'
 #' Append projects to datatbase
 #'
-#' @param new_project_path
-#' @param projects_dir
+#' @param new_project_path new project path
+#' @param projects_dir project directory
 #' @param cache_location Path to cache "~/.cache/chevreul"
 #' @param sqlite_db sqlite db
-#' @param verbose
+#' @param verbose print messages
 #'
 #'
 #' @return a sqlite database with single cell objects
 #' @export
-#'
-#' @examples
 append_to_project_db <- function(new_project_path, projects_dir = NULL,
     cache_location = "~/.cache/chevreul",
     sqlite_db = "single-cell-projects.db",
@@ -647,15 +630,13 @@ append_to_project_db <- function(new_project_path, projects_dir = NULL,
 #'
 #' Reads database of chevreul projects to a data frame
 #'
-#' @param projects_dir
+#' @param projects_dir project directory
 #' @param cache_location Path to cache "~/.cache/chevreul"
 #' @param sqlite_db sqlite db
-#' @param verbose
+#' @param verbose print messages
 #'
 #' @return a tibble with single cell objects
 #' @export
-#'
-#' @examples
 read_project_db <- function(projects_dir = NULL,
     cache_location = "~/.cache/chevreul",
     sqlite_db = "single-cell-projects.db",
@@ -683,8 +664,6 @@ read_project_db <- function(projects_dir = NULL,
 #'
 #' @return a sqlite database of bigwig files for cells in a single cell object
 #' @export
-#'
-#' @examples
 make_bigwig_db <- function(new_project = NULL, cache_location = "~/.cache/chevreul/", sqlite_db = "bw-files.db") {
     new_bigwigfiles <- dir_ls(new_project, glob = "*.bw", recurse = TRUE) %>%
         purrr::set_names(path_file(.)) %>%
@@ -707,13 +686,11 @@ make_bigwig_db <- function(new_project = NULL, cache_location = "~/.cache/chevre
 
 #' Retrieve Metadata from Batch
 #'
-#' @param batch
+#' @param batch batch
 #' @param projects_dir path to project dir
 #' @param db_path path to .db file
 #'
 #' @return a tibble with cell level metadata from a single cell object
-#'
-#' @examples
 metadata_from_batch <- function(batch, projects_dir = "/dataVolume/storage/single_cell_projects",
     db_path = "single-cell-projects.db") {
     mydb <- dbConnect(RSQLite::SQLite(), path(projects_dir, db_path))
@@ -734,12 +711,10 @@ metadata_from_batch <- function(batch, projects_dir = "/dataVolume/storage/singl
 
 #' convert object list to multimodal object
 #'
-#' @param object_list
+#' @param object_list a list of objects
 #'
 #' @return a list of single cell objects
 #' @export
-#'
-#' @examples
 convert_object_list_to_multimodal <- function(object_list) {
     colnames(object_list[["gene"]]@meta.data) <- gsub("RNA_", "gene_", colnames(object_list[["gene"]]@meta.data))
 
@@ -776,8 +751,6 @@ convert_object_list_to_multimodal <- function(object_list) {
 #'
 #' @return a clean vector of object names
 #' @export
-#'
-#' @examples
 make_chevreul_clean_names <- function(myvec) {
     myvec %>%
         purrr::set_names(stringr::str_to_title(stringr::str_replace_all(., "[^[:alnum:][:space:]\\.]", " ")))
@@ -830,12 +803,10 @@ convert_v3_to_v5 <- function(seurat_v3) {
 #'
 #' Get genes from the object
 #'
-#' @param object an object
+#' @param object a single cell object
 #'
 #' @return a vector of genes in a single cell object
 #' @export
-#'
-#' @examples
 setGeneric("genes_from_object", function(object, ...) {
     standardGeneric("genes_from_object")
 })
@@ -857,8 +828,6 @@ setMethod("genes_from_object", "SingleCellExperiment", function(object) {
 #'
 #' @return a tibble with metadata from a single cell object
 #' @export
-#'
-#' @examples
 setGeneric("metadata_from_object", function(object) {
     standardGeneric("metadata_from_object")
 })
@@ -871,16 +840,16 @@ setMethod("metadata_from_object", "SingleCellExperiment", function(object) {
     colnames(colData(object))
 })
 
-# convert_seurat_to_sce <- function(seu) {
-#     sce <- as.SingleCellExperiment(seu, assay = DefaultAssay(seu))
-#
-#     alt_exp_names <- Seurat::Assays(seu)[!Seurat::Assays(seu) == DefaultAssay(seu)]
-#
-#     for (i in alt_exp_names) {
-#         altExp(sce, i) <- as.SingleCellExperiment(seu, assay = i)
-#     }
-#
-#     sce@metadata <- seu@misc
-#
-#     return(sce)
-# }
+convert_seurat_to_sce <- function(seu) {
+    sce <- as.SingleCellExperiment(seu, assay = DefaultAssay(seu))
+
+    alt_exp_names <- Seurat::Assays(seu)[!Seurat::Assays(seu) == DefaultAssay(seu)]
+
+    for (i in alt_exp_names) {
+        altExp(sce, i) <- as.SingleCellExperiment(seu, assay = i)
+    }
+
+    sce@metadata <- seu@misc
+
+    return(sce)
+}

@@ -137,8 +137,6 @@ setMethod(
 #'
 #' @return a list of enrichmentbrowser output
 #' @export
-#'
-#' @examples
 run_enrichmentbrowser <- function(object, cluster_list, de_results, enrichment_method = c("ora"), ...) {
     cluster1_cells <- cluster_list$cluster1
     cluster2_cells <- cluster_list$cluster2

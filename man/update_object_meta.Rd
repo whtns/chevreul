@@ -11,7 +11,7 @@ update_object_meta(object, proj_dir, numcols)
 
 \item{proj_dir}{Project directory}
 
-\item{numcols}{}
+\item{numcols}{number of columns}
 }
 \value{
 updated object metadata

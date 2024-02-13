@@ -18,7 +18,7 @@ update_project_db(
 
 \item{sqlite_db}{sqlite db}
 
-\item{verbose}{}
+\item{verbose}{print messages}
 }
 \value{
 a sqlite database with single cell objects

@@ -7,7 +7,7 @@
 convert_object_list_to_multimodal(object_list)
 }
 \arguments{
-\item{object_list}{}
+\item{object_list}{a list of objects}
 }
 \value{
 a list of single cell objects

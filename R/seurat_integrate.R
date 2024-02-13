@@ -43,7 +43,7 @@ merge_small_objects <- function(object_list, k.filter = 50) {
 #'
 #' @param object_list List of two or more single cell objects
 #' @param method Default "cca"
-#' @param ...
+#' @param ... extra args passed to object_reduce_dimensions
 #'
 #' @return an integrated single cell object
 #' @export
@@ -117,7 +117,7 @@ seurat_integrate <- function(object_list, method = "cca", organism = "human", ..
 #'
 #' @param object_list List of two or more singlecell objects
 #' @param method Default "cca"
-#' @param ...
+#' @param ... extra args passed to object_reduce_dimensions
 #'
 #' @return an integrated single cell object
 #' @export
@@ -192,9 +192,9 @@ sce_integrate <- function(object_list, method = "cca", organism = "human", ...) 
 #'
 #' @param object A single cell objects
 #' @param resolution Clustering resolution
-#' @param custom_clust
+#' @param custom_clust custom cluster
 #' @param reduction Set dimensional reduction object
-#' @param ...
+#' @param ... extra args passed to single cell packages
 #'
 #' @return a single cell object with louvain clusters
 #' @export
@@ -292,8 +292,8 @@ load_object_path <- function(proj_dir = getwd(), prefix = "unfiltered") {
 
 #' Load Seurat Files from a signle project path
 #'
-#' @param proj_dir
-#' @param ...
+#' @param proj_dir project directory
+#' @param ... extra args passed to load_object_path
 #'
 #' @return a single cell object
 setGeneric("load_object_from_proj", function(proj_dir, ...) standardGeneric("load_object_from_proj"))
@@ -438,10 +438,10 @@ setMethod("rename_object", "SingleCellExperiment",
 #'
 #' Filter Seurat Objects by custom variable and reset assay to uncorrected "gene"
 #'
-#' @param objects
-#' @param filter_var
-#' @param filter_val
-#' @param .drop
+#' @param objects single cell projects
+#' @param filter_var filter variable
+#' @param filter_val filter values
+#' @param .drop whether to drop from single cell object
 #'
 #' @return a list of single cell objects
 #' @export
@@ -453,9 +453,9 @@ filter_merged_objects <- function(objects, filter_var, filter_val, .drop = F) {
 #' Filter a Single Seurat Object
 #'
 #' @param object A singlecell objects
-#' @param filter_var
-#' @param filter_val
-#' @param .drop
+#' @param filter_var filter variable
+#' @param filter_val filter values
+#' @param .drop whether to drop values
 #'
 #' @return a single cell object
 #' @export

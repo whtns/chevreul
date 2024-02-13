@@ -7,7 +7,9 @@
 combine_looms(projectPaths, newProjectPath)
 }
 \arguments{
-\item{newProjectPath}{}
+\item{projectPaths}{project paths}
+
+\item{newProjectPath}{new project path}
 }
 \value{
 a combined loom file

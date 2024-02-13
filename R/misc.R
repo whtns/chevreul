@@ -1,7 +1,7 @@
 #' Rename cell ids from annoying old notation
 #'
-#' @param cell_ids
-#' @param batch_id
+#' @param cell_ids cell ids
+#' @param batch_id bath id
 #'
 #' @return a vector of cell ids
 rename_from_x_notation <- function(cell_ids, batch_id) {
@@ -11,7 +11,7 @@ rename_from_x_notation <- function(cell_ids, batch_id) {
 
 #' Reorganize objects to a multimodal format
 #'
-#' @param proj_dir
+#' @param proj_dir project directory
 #'
 #' @return a list of single cell objects
 #' @export
@@ -59,7 +59,7 @@ reorg_object_files <- function(projects_db = "~/.cache/chevreul/single-cell-proj
 
 #' pad sample numbers to prep for armor
 #'
-#' @param proj_dir
+#' @param proj_dir project directory
 #'
 #' @return a list of fastq files
 pad_sample_files <- function(proj_dir) {
@@ -78,7 +78,7 @@ pad_sample_files <- function(proj_dir) {
 
 #' prep armor metadata file
 #'
-#' @param proj_dir
+#' @param proj_dir project directory
 #'
 #' @return a path to a tsv
 prep_armor_meta <- function(proj_dir) {

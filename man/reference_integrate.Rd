@@ -8,12 +8,17 @@ reference_integrate(
   ref_object,
   query_object,
   query_name = "fetal",
-  ref_name = "organoid",
-  ...
+  ref_name = "organoid"
 )
 }
 \arguments{
-\item{...}{}
+\item{ref_object}{reference object}
+
+\item{query_object}{query object}
+
+\item{query_name}{query name}
+
+\item{ref_name}{reference name}
 }
 \value{
 a single cell object

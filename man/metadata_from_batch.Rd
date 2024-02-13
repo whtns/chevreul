@@ -11,6 +11,8 @@ metadata_from_batch(
 )
 }
 \arguments{
+\item{batch}{batch}
+
 \item{projects_dir}{path to project dir}
 
 \item{db_path}{path to .db file}

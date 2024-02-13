@@ -7,7 +7,9 @@
 build_bigwig_db(bam_files, bigwig_db = "~/.cache/chevreul/bw-files.db")
 }
 \arguments{
-\item{bigwig_db}{}
+\item{bam_files}{bam files}
+
+\item{bigwig_db}{bigwig database}
 }
 \value{
 a path to a bigwig file sqlite database

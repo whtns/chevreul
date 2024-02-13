@@ -15,7 +15,7 @@ create_project_db(
 
 \item{sqlite_db}{Database to be created}
 
-\item{verbose}{}
+\item{verbose}{print messages}
 }
 \value{
 a sqlite database with single cell objects

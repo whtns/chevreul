@@ -9,7 +9,6 @@
 #'
 #' @return plot_types a list of category_vars or continuous_vars
 #' @export
-#' @examples
 setGeneric("list_plot_types", function(object) {
     standardGeneric("list_plot_types")
 })
@@ -98,11 +97,10 @@ setMethod(
 
 #' Pull object metadata
 #'
-#' @param object
+#' @param object a single cell object
 #'
 #' @return object metadata
 #' @export
-#' @examples
 setGeneric("pull_metadata", function(object) {
     standardGeneric("pull_metadata")
 })
@@ -126,11 +124,10 @@ setMethod(
 
 #' Get variable features
 #'
-#' @param object
+#' @param object a single cell object
 #'
 #' @return variable features from a single cell object
 #' @export
-#' @examples
 setGeneric("get_variable_features", function(object, ...) {
     standardGeneric("get_variable_features")
 })
@@ -153,11 +150,10 @@ setMethod(
 
 #' Get feature names
 #'
-#' @param object
+#' @param object a single cell object
 #'
 #' @return variable features from a single cell object
 #' @export
-#' @examples
 setGeneric("get_features", function(object, ...) {
     standardGeneric("get_features")
 })
@@ -181,11 +177,10 @@ setMethod(
 
 #' Pull object metadata
 #'
-#' @param object
+#' @param object a single cell object
 #'
 #' @return object metadata
 #' @export
-#' @examples
 setGeneric("set_metadata", function(object, meta.data) {
     standardGeneric("set_metadata")
 })

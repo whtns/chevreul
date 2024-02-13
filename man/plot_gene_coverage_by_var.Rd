@@ -30,13 +30,15 @@ plot_gene_coverage_by_var(
 
 \item{group_by}{Variable to color by}
 
+\item{values_of_interest}{values of interest}
+
 \item{organism}{Organism}
 
 \item{edb}{ensembldb object}
 
 \item{heights}{The heights of each row in the grid of plot}
 
-\item{...}{}
+\item{...}{extra arguments passed to plotCoverageFromEnsembldb}
 }
 \value{
 a ggplot with coverage faceted by group_by

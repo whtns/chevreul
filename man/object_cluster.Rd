@@ -18,9 +18,11 @@ object_cluster(
 
 \item{resolution}{Clustering resolution}
 
+\item{custom_clust}{custom cluster}
+
 \item{reduction}{Set dimensional reduction object}
 
-\item{...}{}
+\item{...}{extra args passed to single cell packages}
 }
 \value{
 a single cell object with louvain clusters
