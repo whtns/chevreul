@@ -1571,11 +1571,11 @@ techInfo <- function(input, output, session, object) {
   misc <- reactive({
     req(object())
     ## SCE
-    if(class(object())== "SingleCellExperiment"){
+    if(is(object(), "SingleCellExperiment")){
       S4Vectors::metadata(object())
     }
     ## Seurat
-    if(class(object()) == "Seurat"){
+    if(is(object(), "Seurat")){
       Seurat::Misc(object())
     }
   })

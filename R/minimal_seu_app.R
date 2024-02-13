@@ -236,9 +236,9 @@ minimalSeuratApp <- function(single_cell_object = panc8, loom_path = NULL, appTi
         reductions <- reactive({
             req(object())
 
-            if (class(object()) == "Seurat") {
+            if (is(object(), "Seurat")) {
                 names(object()@reductions)
-            } else if (class(object()) == "SingleCellExperiment") {
+            } else if(is(object(), "SingleCellExperiment")) {
                 SingleCellExperiment::reducedDimNames(object)
             }
         })
