@@ -512,6 +512,7 @@ setMethod(
 #' @param color.by Variable to color bins by. Default set to "batch"
 #' @param yscale Scale of y axis. Default set to "linear"
 #' @param return_plotly whether to return an interactive ploly plot. Default set to FALSE
+#' @param ... extra args passed to ggplot2
 #'
 #' @return a histogram of read counts
 #' @export
@@ -588,7 +589,6 @@ setMethod(
 #' @export
 #'
 #' @examples
-#' plot top 50 variable genes
 #' \dontrun{top_50_features <- get_variable_features(human_gene_transcript_object)[1:50]}
 #' \dontrun{make_complex_heatmap(human_gene_transcript_object, features = top_50_features)}
 #'
@@ -765,7 +765,8 @@ setMethod(
 #' @export
 #'
 #' @examples
-#' \dontrun{plot_transcript_composition(human_gene_transcript_object, "RXRG", group.by = "gene_snn_res.0.6")}
+#' \dontrun{plot_transcript_composition(human_gene_transcript_object, "RXRG",
+#' group.by = "gene_snn_res.0.6")}
 #'
 setGeneric("plot_transcript_composition", function(object, gene_symbol, group.by = "batch", standardize = FALSE, drop_zero = FALSE) standardGeneric("plot_transcript_composition"))
 
@@ -854,6 +855,7 @@ setMethod(
 #' @param features gene or vector of transcripts
 #' @param embedding umap
 #' @param from_gene whether to look up transcripts for an input gene
+#' @param combine TRUE
 #'
 #' @return a list of embedding plots colored by a feature of interest
 #' @export

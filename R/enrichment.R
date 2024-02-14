@@ -274,7 +274,9 @@ getEnrichedPathways <- function(object,
 
 #' Enrichment by Cluster
 #'
-#' @param enrich_by_cluster
+#' @param enrich_by_cluster table of enrichment values
+#' @param cluster which cluster
+#' @param db database
 #'
 #' @return a dataframe of enrichment scores
 #' @export

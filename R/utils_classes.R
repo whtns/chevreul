@@ -178,6 +178,7 @@ setMethod(
 #' Pull object metadata
 #'
 #' @param object a single cell object
+#' @param meta.data new metadata
 #'
 #' @return object metadata
 #' @export

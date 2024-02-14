@@ -43,6 +43,7 @@ merge_small_objects <- function(object_list, k.filter = 50) {
 #'
 #' @param object_list List of two or more single cell objects
 #' @param method Default "cca"
+#' @param organism human or mouse
 #' @param ... extra args passed to object_reduce_dimensions
 #'
 #' @return an integrated single cell object
@@ -117,6 +118,7 @@ seurat_integrate <- function(object_list, method = "cca", organism = "human", ..
 #'
 #' @param object_list List of two or more singlecell objects
 #' @param method Default "cca"
+#' @param organism human or mouse
 #' @param ... extra args passed to object_reduce_dimensions
 #'
 #' @return an integrated single cell object
@@ -194,6 +196,7 @@ sce_integrate <- function(object_list, method = "cca", organism = "human", ...) 
 #' @param resolution Clustering resolution
 #' @param custom_clust custom cluster
 #' @param reduction Set dimensional reduction object
+#' @param algorithm 1
 #' @param ... extra args passed to single cell packages
 #'
 #' @return a single cell object with louvain clusters

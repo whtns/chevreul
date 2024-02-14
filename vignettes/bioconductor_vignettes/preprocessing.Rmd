@@ -49,7 +49,8 @@ First step is to load Chevreul package and all other packages required
 
 ```{r packages }
 devtools::load_all()
-
+library(scran)
+library(scuttle)
 library(Seurat)
 library(tidyverse)
 library(ggraph)
@@ -99,11 +100,11 @@ minimalSceApp(clustered_sce_object)
 We start with a gene by cell matrix of count/UMI values and a table of cell metadata
 
 ```{r, eval=FALSE}
-load(url("http://cobrinik-1.saban-chla.usc.edu/human_count.rda"))
+#load(url("http://cobrinik-1.saban-chla.usc.edu/human_count.rda"))
 
 human_count[1:5, 1:5]
 
-load(url("http://cobrinik-1.saban-chla.usc.edu/human_meta.rda"))
+#load(url("http://cobrinik-1.saban-chla.usc.edu/human_meta.rda"))
 
 head(human_meta)
 ```
@@ -148,10 +149,10 @@ This single function includes sub-functions that normalize, identify highly vari
 
 ## Perform dimension reduction
 
-Chevreul also implements a standardized dimension reduction step to select variable features at a user-specified threshold and perform PCA, tSNE, and UMAP. The default assay the dimension reduction is being run on is "gene".
+Chevreul also includes a function `object_reduce_dimentions()` which implements a standardized dimension reduction step to select variable features at a user-specified threshold and perform PCA, tSNE, and UMAP. The default assay the dimension reduction is being run on is "gene".
 
 ```{r, results=FALSE}
-myobject <- object_reduce_dimensions(myobject, assay = "gene")
+myobject <- object_reduce_dimensions(myobject)
 DimPlot(myobject)
 ```
 
@@ -160,10 +161,9 @@ This function includes existing object functions which performs dimension reduct
 -   Perform PCA: Runs a PCA dimensionality reduction.
 
 ```{r, results=FALSE}
-Dim_Red_object <- runPCA(myobject,
-    features = VariableFeatures(myobject),
-    do.print = FALSE
-)
+Dim_Red_object <- runPCA(x = myobject, 
+                         subset_row = getTopHVGs(stats = object), 
+                         do.print = FALSE, ..)
 ```
 
 -   Perform UMAP: Runs the Uniform Manifold Approximation and Projection (UMAP) dimensional reduction technique.
@@ -174,17 +174,12 @@ Dim_Red_object <- runUMAP(Dim_Red_object, dims = 1:30)
 
 ## Community detection by clustering
 
-Clustering analysis is performed via Louvain(default) or alternative algorithms available in Seurat. Clustering is performed at a range of resolutions with default value ranging from 0.2 to 2 and pca reduction
+Clustering of scRNA-seq data is performed by Chevreul using the `object_cluster()` function. Clustering analysis is performed via Louvain algorithms, using exsiting functions that perform graph-based clustering. Clustering is performed at a range of resolutions with default value ranging from 0.2 to 2 and pca reduction
 
 ```{r, results=FALSE, eval=TRUE}
 object <- object_cluster(object = Dim_Red_object, resolution = seq(0.2, 2, by = 0.2))
 ```
 
-This function produces clustering analysis via two steps performed using two different sub-functions
-
--   `FindNeighbours`: This function computes the nearest neighbors for a given dataset using k-nearest neighbor algorithm.
-
--   `FindClusters`: The output from FindNeighbours is then used to identify clusters of cells based on clustering algorithm.  
 
 
 
