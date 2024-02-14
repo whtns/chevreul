@@ -93,13 +93,13 @@ setMethod(
     }
 )
 
-# pull_metadata ------------------------------
+# Pull metadata
 
-#' Pull object metadata
+#' Pull the metadata from a given object
 #'
 #' @param object a single cell object
 #'
-#' @return object metadata
+#' @return dataframe containing object metadata
 #' @export
 setGeneric("pull_metadata", function(object) {
     standardGeneric("pull_metadata")
@@ -173,9 +173,9 @@ setMethod(
 )
 
 
-# set_metadata ------------------------------
+# Set metadata ------------------------------
 
-#' Pull object metadata
+#' Add new metadata to the object metadata
 #'
 #' @param object a single cell object
 #' @param meta.data new metadata
