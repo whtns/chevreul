@@ -4,7 +4,9 @@
 #'
 #' @param object a object
 #' @param loom_path path to matching loom file
+#' @param assay gene
 #' @param fit.quantile how to fit velocity
+#' @param check_loom FALSE
 #'
 #' @return a single cell object with RNA velocity calculated
 #' @export
@@ -79,8 +81,7 @@ convert_to_h5ad <- function(object, file_path) {
 #'
 #' @param object a object
 #' @param loom_path path to matching loom file
-#' @param group.by metadata to color plot
-#' @param plot_method plotting method to use from scvelo
+#' @param velocity_mode deterministic, stochastis, or dynamical
 #' @param ... extra args passed to run_scvelo
 #'
 #' @return a single cell object with velocity calculated

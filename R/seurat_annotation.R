@@ -44,7 +44,7 @@ setMethod(
 #'
 #' convert hgnc gene symbols to ensembl transcript ids
 #'
-#' @param genes
+#' @param genes genes
 #'
 #' @return a vector of transcripts
 #' @export
@@ -76,7 +76,7 @@ genes_to_transcripts <- function(genes, organism = "human") {
 #'
 #' convert ensembl transcript ids to hgnc gene symbols
 #'
-#' @param transcripts
+#' @param transcripts transcripts
 #'
 #' @return a vector of gene symbols
 #' @export

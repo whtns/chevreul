@@ -12,7 +12,7 @@
 #' @param resolution Range of resolution
 #' @param algorithm Algorithm for modularity optimization. Default 1:original Louvain algorithm
 #' @param organism Default "human"
-#' @param ...
+#' @param ... extra args passed to object_integrate
 #'
 #' @return an integrated single cell object
 #' @export

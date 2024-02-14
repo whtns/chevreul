@@ -13,7 +13,13 @@
 ^vignettes/articles$
 ^dev$
 ^codecov\.yml$
-.here
-.dockerignore
 ^R/monocle\.R$
 ^R/monocle2\.R$
+^\.here$
+^\.dockerignore$
+^convert_function_to_method\.R$
+^euler$
+^figures$
+^convert_cyclone_pairs_to_symbol\.R$
+^README_cache$
+^README_docs$

@@ -7,7 +7,7 @@
 #' @param normalize Perform normalization
 #' @param features Identify highly variable features
 #' @param legacy_settings Use legacy settings
-#' @param ...
+#' @param ... extra args passed to scaling functions
 #'
 #' @return a preprocessed single cell object
 #' @export
@@ -83,7 +83,7 @@ setMethod("object_preprocess", "SingleCellExperiment",
 #' @param object An object.
 #' @param group_by A metadata variable to group by.
 #' @param object_assay Assay to use, Default "gene".
-#' @param ...
+#' @param ... extra args passed to stash_marker_features
 #'
 #' @return a single cell object containing marker genes
 #' @export

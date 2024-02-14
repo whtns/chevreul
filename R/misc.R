@@ -11,7 +11,7 @@ rename_from_x_notation <- function(cell_ids, batch_id) {
 
 #' Reorganize objects to a multimodal format
 #'
-#' @param proj_dir project directory
+#' @param projects_db project directory
 #'
 #' @return a list of single cell objects
 #' @export

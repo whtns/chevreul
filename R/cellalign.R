@@ -1,6 +1,6 @@
 #' Align two trajectories via cellalign
 #'
-#' cell align
+#' Performs alignment of two given trajectory
 #'
 #' @param exp_ref reference experiment
 #' @param exp_query query experiment

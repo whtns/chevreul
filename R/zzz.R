@@ -28,6 +28,8 @@ pyplot <- NULL
     human_fetal_retina_seu <<- readRDS(url("http://cobrinik-1.saban-chla.usc.edu/chevreuldata/human_fetal_retina_seu.rds"))
     baron2016singlecell <<- loadRData(url("http://cobrinik-1.saban-chla.usc.edu/chevreuldata/baron2016singlecell.rda"))
     panc8 <<- loadRData(url("http://cobrinik-1.saban-chla.usc.edu/chevreuldata/panc8.rda"))
+    human_count <<- loadRData(url("http://cobrinik-1.saban-chla.usc.edu/human_count.rda"))
+    human_meta <<- loadRData(url("http://cobrinik-1.saban-chla.usc.edu/human_meta.rda"))
 }
 
 install_scvelo <- function(method = "auto", conda = "auto") {

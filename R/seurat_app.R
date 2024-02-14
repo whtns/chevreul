@@ -7,6 +7,9 @@
 #' @param cluster2 cluster 2
 #' @param resolution resolution
 #' @param diffex_scheme scheme for differential expression
+#' @param featureType gene or transcript
+#' @param tests t wicox or bimod
+#'
 #'
 #' @return a dataframe with differential expression information
 #' @export
