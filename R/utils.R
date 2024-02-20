@@ -145,8 +145,6 @@ setMethod(
 #'
 #' @return a single cell object
 #' @export
-#'
-#' @importFrom purrr %||%
 setGeneric("record_experiment_data", function(object, experiment_name = "default_experiment", organism = "human") {
     standardGeneric("record_experiment_data")
 })
@@ -258,6 +256,7 @@ setMethod(
 #' @param object_path Path to a object
 #' @param feature gene or transcript of interest
 #' @param resolution resolution for louvain clustering
+#' #' @param return_object whether to return the single cell object
 #' @param ... extra args passed to object_cluster
 #'
 #' @return a single cell object
@@ -811,7 +810,7 @@ setGeneric("genes_from_object", function(object, ...) {
     standardGeneric("genes_from_object")
 })
 
-setMethod("genes_from_object", "Seurat", function(object, assay) {
+setMethod("genes_from_object", "Seurat", function(object) {
     #rownames(object@assays[[assay]])
      rownames(object)
 })

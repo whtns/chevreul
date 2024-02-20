@@ -6,6 +6,7 @@
 #' @param databases Databases to search.
 #' @param URL_API URL to send requests to (Enrichr API).
 #' See http://amp.pharm.mssm.edu/Enrichr/ for available databases.
+#' @importFrom future.apply future_sapply
 #' @export
 #' @return Returns a data frame of enrichment terms, p-values, ...
 #' @author Wajid Jawaid, modified by Roman Hillje
@@ -37,7 +38,7 @@
     httr::GET(url = "http://amp.pharm.mssm.edu/Enrichr/share")
     dfSAF <- options()$stringsAsFactors
     options(stringsAsFactors = FALSE)
-    result <- future.apply::future_sapply(databases,
+    result <- future_sapply(databases,
         USE.NAMES = TRUE,
         simplify = FALSE, function(x) {
             r <- httr::GET(
@@ -81,12 +82,13 @@
 #' Misc(object)$enriched_pathways$enrichr
 #' @import dplyr
 #' @importFrom rlang .data
+#' @importFrom future.apply future_sapply
 #' @author Roman Hillje, modified by Kevin Stachelek
 #' @examples
-#' pbmc <- readRDS(system.file("extdata/v1.2/object_pbmc.rds",
+#' \dontrun{pbmc <- readRDS(system.file("extdata/v1.2/object_pbmc.rds",
 #'     package = "cerebroApp"
-#' ))
-#' pbmc <- getEnrichedPathways(
+#' ))}
+#' \dontrun{pbmc <- getEnrichedPathways(
 #'     object = pbmc,
 #'     column_sample = "sample",
 #'     column_cluster = "object_clusters",
@@ -94,7 +96,7 @@
 #'     adj_p_cutoff = 0.01,
 #'     max_terms = 100,
 #'     URL_API = "http://amp.pharm.mssm.edu/Enrichr/enrich"
-#' )
+#' )}
 getEnrichedPathways <- function(object,
     column_cluster = "group",
     databases = c(
@@ -154,7 +156,7 @@ getEnrichedPathways <- function(object,
 
             cluster_names <- names(markers_by_cluster)
 
-            results_by_cluster <- future.apply::future_sapply(
+            results_by_cluster <- future_sapply(
                 cluster_names,
                 USE.NAMES = TRUE, simplify = FALSE,
                 future.globals = FALSE, function(x) {

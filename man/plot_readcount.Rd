@@ -23,6 +23,8 @@ plot_readcount(
 \item{yscale}{Scale of y axis. Default set to "linear"}
 
 \item{return_plotly}{whether to return an interactive ploly plot. Default set to FALSE}
+
+\item{...}{extra args passed to ggplot2}
 }
 \value{
 a histogram of read counts
@@ -31,10 +33,9 @@ a histogram of read counts
 Draw a box plot for read count data of a metadata variable
 }
 \examples{
-interactive plotly
+# interactive plotly
 \dontrun{plot_readcount(human_gene_transcript_object, return_plotly = TRUE)}
 
-static plot
+# static plot
 \dontrun{plot_readcount(human_gene_transcript_object, return_plotly = FALSE)}
-
 }

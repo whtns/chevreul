@@ -16,9 +16,15 @@ reintegrate_object(
 \arguments{
 \item{object}{A singlecell objects}
 
+\item{feature}{gene or transcript}
+
 \item{suffix}{to be appended to file saved in output dir}
 
 \item{reduction}{to use default is pca}
+
+\item{algorithm}{1}
+
+\item{...}{extra args passed to object_integration_pipeline}
 }
 \value{
 a single cell object

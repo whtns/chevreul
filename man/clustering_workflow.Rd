@@ -14,6 +14,8 @@ clustering_workflow(
 )
 }
 \arguments{
+\item{object}{a single cell object}
+
 \item{excluded_cells}{named list of cells to exclude}
 
 \item{resolution}{resolution(s) to use for clustering cells}
@@ -23,8 +25,6 @@ clustering_workflow(
 \item{experiment_name}{name of the experiment}
 
 \item{...}{extra args passed to object_pipeline}
-
-\item{feature_objects}{list of objects named according to feature of interest ("gene" or "transcript")}
 }
 \value{
 a clustered single cell object

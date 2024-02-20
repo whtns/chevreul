@@ -47,10 +47,10 @@ in marker gene sets of samples and clusters.
 Get enriched pathways based on marker genes from EnrichR.
 }
 \examples{
-pbmc <- readRDS(system.file("extdata/v1.2/object_pbmc.rds",
+\dontrun{pbmc <- readRDS(system.file("extdata/v1.2/object_pbmc.rds",
     package = "cerebroApp"
-))
-pbmc <- getEnrichedPathways(
+))}
+\dontrun{pbmc <- getEnrichedPathways(
     object = pbmc,
     column_sample = "sample",
     column_cluster = "object_clusters",
@@ -58,7 +58,7 @@ pbmc <- getEnrichedPathways(
     adj_p_cutoff = 0.01,
     max_terms = 100,
     URL_API = "http://amp.pharm.mssm.edu/Enrichr/enrich"
-)
+)}
 }
 \author{
 Roman Hillje, modified by Kevin Stachelek

@@ -14,6 +14,8 @@ global_cellalign(exp_ref, exp_query, traj_ref, traj_query, numPts = 200)
 \item{traj_ref}{reference trajectory}
 
 \item{traj_query}{query trajectory}
+
+\item{numPts}{number of points for alignment}
 }
 \value{
 a list containing an alignment and an alignment plot

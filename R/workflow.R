@@ -7,7 +7,7 @@
 #' @param resolution value(s) to control the clustering resolution via `Seurat::FindMarkers`
 #' @param experiment_name arbitrary name to identify experiment
 #' @param organism either "human" or "mouse"
-#' @param ...
+#' @param ... extra args passed to object_integration_pipeline
 #'
 #' @return an integrated single cell object
 #' @export
@@ -104,7 +104,7 @@ setMethod(
 #'
 #' Cluster and Reduce Dimensions of a object
 #'
-#' @param feature_objects list of objects named according to feature of interest ("gene" or "transcript")
+#' @param object a single cell object
 #' @param excluded_cells named list of cells to exclude
 #' @param resolution resolution(s) to use for clustering cells
 #' @param organism Organism

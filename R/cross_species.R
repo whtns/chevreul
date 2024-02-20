@@ -94,8 +94,8 @@ convert_symbols_by_species <- function(src_genes, src_species) {
 
 #' Integrate Seurat Objects from Mouse to Human
 #'
-#' @param mouse_object_list Mouse Seurat object
-#' @param human_object_list Human Seurat object
+#' @param mouse_object_list List of mouse single cell objects
+#' @param human_object_list List of human single cell objects
 #'
 #' @return a single cell object
 #' @export
@@ -104,7 +104,7 @@ convert_symbols_by_species <- function(src_genes, src_species) {
 #'
 #' cross_species_integrate(list(baron2016singlecell = baron2016singlecell), list(panc8 = panc8))
 #'
-cross_species_integrate <- function(mouse_object_list, human_object_list, excluded_cells = NULL, ...) {
+cross_species_integrate <- function(mouse_object_list, human_object_list){
     mouse_object_list <- map(mouse_object_list, convert_mouse_object_to_human)
 
     object_list <- c(mouse_object_list, human_object_list)
@@ -122,12 +122,6 @@ cross_species_integrate <- function(mouse_object_list, human_object_list, exclud
 
     integrated_object <- annotate_cell_cycle(integrated_object, feature = "gene")
 
-    # annotate excluded cells
-
-    if (!is.null(excluded_cells)) {
-        integrated_object <- annotate_excluded(integrated_object, excluded_cells)
-    }
-
     # add marker genes to objects
 
     integrated_object <- find_all_markers(integrated_object)
@@ -142,9 +136,10 @@ cross_species_integrate <- function(mouse_object_list, human_object_list, exclud
 #'
 #' @return a single cell object
 #' @export
+#' @importFrom EnsDb.Hsapiens.v86 EnsDb.Hsapiens.v86
 update_human_gene_symbols <- function(object, assay = "gene") {
 
-    ensdb <- EnsDb.Hsapiens.v86::EnsDb.Hsapiens.v86
+    ensdb <- EnsDb.Hsapiens.v86
 
     symbols <- rownames(object[[assay]])
 

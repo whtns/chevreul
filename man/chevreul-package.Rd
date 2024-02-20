@@ -4,7 +4,7 @@
 \name{chevreul-package}
 \alias{chevreul}
 \alias{chevreul-package}
-\title{chevreul: Tools for managing SingleCellExperiment objects as projects.}
+\title{chevreul: Tools for managing SingleCellExperiment objects as projects}
 \description{
 Tools for managing SingleCellExperiment objects as projects.
 }

@@ -10,8 +10,6 @@ object_from_tximport(txi, meta_tbl)
 \item{txi}{output from load_counts_by_tximport}
 
 \item{meta_tbl}{a tibble of cell metadata with cell ids as the first column}
-
-\item{feature}{the feature level on which to summarize counts gene or transcript}
 }
 \value{
 a single cell object

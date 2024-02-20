@@ -33,5 +33,5 @@ local_cellalign(
 a list containing an alignment and an alignment plot
 }
 \description{
-cell align
+Performs alignment of two given trajectory
 }

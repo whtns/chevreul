@@ -13,7 +13,7 @@ find_all_markers(object, group_by = NULL, object_assay = "gene", ...)
 
 \item{object_assay}{Assay to use, Default "gene".}
 
-\item{...}{}
+\item{...}{extra args passed to stash_marker_features}
 }
 \value{
 a single cell object containing marker genes

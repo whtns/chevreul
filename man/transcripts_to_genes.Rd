@@ -7,7 +7,9 @@
 transcripts_to_genes(transcripts, organism = "human")
 }
 \arguments{
-\item{transcripts}{}
+\item{transcripts}{transcripts}
+
+\item{organism}{human or mouse}
 }
 \value{
 a vector of gene symbols

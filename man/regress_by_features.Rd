@@ -4,7 +4,7 @@
 \alias{regress_by_features}
 \title{Regress Seurat Object by Given Set of Genes}
 \usage{
-regress_by_features(object, feature_set, set_name, regress = TRUE, ...)
+regress_by_features(object, feature_set, set_name, regress = TRUE)
 }
 \arguments{
 \item{object}{A object}

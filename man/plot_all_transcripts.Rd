@@ -20,6 +20,8 @@ plot_all_transcripts(
 \item{embedding}{umap}
 
 \item{from_gene}{whether to look up transcripts for an input gene}
+
+\item{combine}{TRUE}
 }
 \value{
 a list of embedding plots colored by a feature of interest

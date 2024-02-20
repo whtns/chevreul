@@ -56,6 +56,7 @@ reference_integrate <- function(ref_object, query_object, query_name = "fetal", 
 #' Find Cell Type Markers in a Seurat Object
 #'
 #' @param object A object
+#' @param num_features number of features to retrieve for marker genes
 #'
 #' @return a single cell object
 #' @export

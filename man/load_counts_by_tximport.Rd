@@ -18,7 +18,7 @@ load_counts_by_tximport(
 
 \item{countsFromAbundance}{argument provided to tximport}
 
-\item{edb}{}
+\item{edb}{ensembldb reference}
 }
 \value{
 a list of feature count matrices for gene symbols and transcripts

@@ -14,10 +14,10 @@
 #'
 #'@importFrom scran modelGeneVar
 #'@importFrom batchelor regressBatches
-setGeneric("regress_by_features", function (object, feature_set, set_name, regress = TRUE, ...)  standardGeneric("regress_by_features"))
+setGeneric("regress_by_features", function (object, feature_set, set_name, regress = TRUE)  standardGeneric("regress_by_features"))
 
 setMethod("regress_by_features", "Seurat",
-          function (object, feature_set, set_name, regress = TRUE, ...)
+          function (object, feature_set, set_name, regress = TRUE)
           {
             message(paste0("regressing objects by ", set_name))
             if (!is.list(feature_set))
@@ -49,7 +49,7 @@ setMethod("regress_by_features", "Seurat",
 )
 
 setMethod("regress_by_features", "SingleCellExperiment",
-          function (object, feature_set, set_name, regress = TRUE, ...)
+          function (object, feature_set, set_name, regress = TRUE)
           {
             message(paste0("regressing objects by ", set_name))
             if (!is.list(feature_set))

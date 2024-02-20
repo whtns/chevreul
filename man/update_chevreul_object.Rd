@@ -17,7 +17,8 @@ update_chevreul_object(
 
 \item{feature}{gene or transcript of interest}
 
-\item{resolution}{resolution for louvain clustering}
+\item{resolution}{resolution for louvain clustering
+#' @param return_object whether to return the single cell object}
 
 \item{...}{extra args passed to object_cluster}
 }

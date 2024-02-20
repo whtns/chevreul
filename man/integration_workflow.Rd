@@ -24,7 +24,7 @@ integration_workflow(
 
 \item{organism}{either "human" or "mouse"}
 
-\item{...}{}
+\item{...}{extra args passed to object_integration_pipeline}
 }
 \value{
 an integrated single cell object

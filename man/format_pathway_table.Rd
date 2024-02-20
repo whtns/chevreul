@@ -7,7 +7,11 @@
 format_pathway_table(enrich_by_cluster, cluster, db)
 }
 \arguments{
-\item{enrich_by_cluster}{}
+\item{enrich_by_cluster}{table of enrichment values}
+
+\item{cluster}{which cluster}
+
+\item{db}{database}
 }
 \value{
 a dataframe of enrichment scores

@@ -2,17 +2,17 @@
 #'
 #' Annotate Cell Cycle for Gene and Transcript Seurat Objects
 #'
-#' @param object A object
-#' @param organism organism. Default "human"
+#' @param object A single cell object
+#' @param organism organism. Human or mouse, default "human"
 #'
 #' @return a single cell object
 #' @export
 #'
-setGeneric("annotate_cell_cycle", function(object, organism = "human", ...) standardGeneric("annotate_cell_cycle"))
+setGeneric("annotate_cell_cycle", function(object, organism = "human") standardGeneric("annotate_cell_cycle"))
 
 setMethod(
     "annotate_cell_cycle", "Seurat",
-    function(object, organism = "human", ...) {
+    function(object, organism = "human") {
         s_genes <- cc.genes$s.genes
         g2m_genes <- cc.genes$g2m.genes
         if (organism == "mouse") {
@@ -26,7 +26,7 @@ setMethod(
 
 setMethod(
     "annotate_cell_cycle", "SingleCellExperiment",
-    function(object, organism = "human", ...) {
+    function(object, organism = "human") {
         hs_pairs0 <- cc.genes.cyclone
         if (organism == "mouse") {
             s_genes <- filter(human_to_mouse_homologs, HGNC.symbol %in% s_genes) %>% pull(MGI.symbol)
@@ -52,15 +52,17 @@ setMethod(
 #' @examples
 #'
 #' genes_to_transcripts("RXRG")
-#'
+#' @importFrom EnsDb.Hsapiens.v86 EnsDb.Hsapiens.v86
+#' @importFrom EnsDb.Mmusculus.v79 EnsDb.Mmusculus.v79
+#' @importFrom ensembldb transcripts
 genes_to_transcripts <- function(genes, organism = "human") {
     if (organism == "human") {
-        feature_table <- ensembldb::transcripts(EnsDb.Hsapiens.v86::EnsDb.Hsapiens.v86,
+        feature_table <- transcripts(EnsDb.Hsapiens.v86,
             columns = c("gene_name", "gene_biotype", "gene_id"),
             return.type = "DataFrame"
         )
     } else if (organism == "mouse") {
-        feature_table <- ensembldb::transcripts(EnsDb.Mmusculus.v79::EnsDb.Mmusculus.v79,
+        feature_table <- transcripts(EnsDb.Mmusculus.v79,
             columns = c("gene_name", "gene_biotype", "gene_id"),
             return.type = "DataFrame"
         )
@@ -77,6 +79,7 @@ genes_to_transcripts <- function(genes, organism = "human") {
 #' convert ensembl transcript ids to hgnc gene symbols
 #'
 #' @param transcripts transcripts
+#' @param organism human or mouse
 #'
 #' @return a vector of gene symbols
 #' @export
@@ -164,46 +167,3 @@ setMethod(
         return(object)
     }
 )
-
-#' Annotate Exclusion Criteria
-#'
-#' @param object A object
-#' @param excluded_cells a named list of cells to be excluded of the form list(set1 = c(cell1, celll2), set2 = c(cell3, cell4))
-#' all other cells will be marked NA in a column titled "excluded_because"
-#'
-#' @return a single cell obejct with cell metadata column containing exclusion criteria
-#' @export
-#'
-annotate_excluded <- function(object, ...) {
-    # consider replacing
-    # mutate(coalesce_var = coalesce(!!! syms(vars_select(names(.), dplyr::starts_with("my")))))
-
-    excluded_cells <- list(...)
-
-    excluded_cells <- purrr::map2(excluded_cells, names(excluded_cells), ~ rep(.y, length(.x))) %>%
-        unlist() %>%
-        purrr::set_names(unlist(excluded_cells)) %>%
-        enframe("sample_id", "excluded_because")
-
-    excluded_because <- tibble::as_tibble(object[["nCount_RNA"]], rownames = "sample_id") %>%
-        dplyr::full_join(excluded_cells, by = "sample_id")
-
-    if ("excluded_because.x" %in% colnames(excluded_because)) {
-        excluded_because <- dplyr::coalesce(excluded_because, excluded_because.x, excluded_because.y) %>%
-            select(-nCount_RNA) %>%
-            tibble::deframe() %>%
-            identity()
-    } else {
-        excluded_because <- select(excluded_because, -nCount_RNA) %>%
-            tibble::deframe() %>%
-            identity()
-    }
-
-    object <- Seurat::AddMetaData(
-        object = object,
-        metadata = excluded_because,
-        col.name = "excluded_because"
-    )
-
-    return(object)
-}

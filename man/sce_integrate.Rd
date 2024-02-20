@@ -11,6 +11,8 @@ sce_integrate(object_list, method = "cca", organism = "human", ...)
 
 \item{method}{Default "cca"}
 
+\item{organism}{human or mouse}
+
 \item{...}{extra args passed to object_reduce_dimensions}
 }
 \value{

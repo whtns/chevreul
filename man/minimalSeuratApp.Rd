@@ -14,6 +14,8 @@ minimalSeuratApp(
 )
 }
 \arguments{
+\item{single_cell_object}{a single cell object}
+
 \item{loom_path}{path to a loom file}
 
 \item{appTitle}{title for an app}
@@ -21,8 +23,6 @@ minimalSeuratApp(
 \item{organism_type}{Organism}
 
 \item{futureMb}{megabytes available for future package}
-
-\item{object}{a single cell object}
 }
 \value{
 a minimal chevreul app

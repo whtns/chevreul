@@ -58,6 +58,7 @@ local_cellalign <- function(exp_ref, exp_query, traj_ref, traj_query, Thresh = 0
 #' @param exp_query query experiment
 #' @param traj_ref reference trajectory
 #' @param traj_query query trajectory
+#' @param numPts number of points for alignment
 #'
 #' @return a list containing an alignment and an alignment plot
 #' @export

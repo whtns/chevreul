@@ -22,6 +22,8 @@ object_cluster(
 
 \item{reduction}{Set dimensional reduction object}
 
+\item{algorithm}{1}
+
 \item{...}{extra args passed to single cell packages}
 }
 \value{

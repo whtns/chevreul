@@ -4,17 +4,12 @@
 \alias{cross_species_integrate}
 \title{Integrate Seurat Objects from Mouse to Human}
 \usage{
-cross_species_integrate(
-  mouse_object_list,
-  human_object_list,
-  excluded_cells = NULL,
-  ...
-)
+cross_species_integrate(mouse_object_list, human_object_list)
 }
 \arguments{
-\item{mouse_object_list}{Mouse Seurat object}
+\item{mouse_object_list}{List of mouse single cell objects}
 
-\item{human_object_list}{Human Seurat object}
+\item{human_object_list}{List of human single cell objects}
 }
 \value{
 a single cell object

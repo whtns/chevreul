@@ -22,8 +22,9 @@ dockerSeuratApp(
 
 \item{organism_type}{human or mouse}
 
-\item{futureMb}{the megabytes available for the future package
-#' @param bigwigb  path to sqlite database listing bigwig files for cells in the obect object}
+\item{futureMb}{the megabytes available for the future package}
+
+\item{bigwigb}{path to sqlite database listing bigwig files for cells in the obect object}
 }
 \value{
 a dockerized shiny app

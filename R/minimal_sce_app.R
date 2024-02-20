@@ -1,6 +1,6 @@
 #' Create a minimal chevreul app using SingleCellExperiment input
 #'
-#' @param object a singlecell object
+#' @param single_cell_object a singlecell object
 #' @param loom_path path to a loom file
 #' @param appTitle a title for the app
 #' @param organism_type human or mouse
@@ -14,7 +14,7 @@
 #' minimalSceApp(panc8)
 #' }
 #'
-minimalSceApp <- function(input_object = panc8, loom_path = NULL, appTitle = NULL, organism_type = "human", futureMb = 13000, bigwig_db = "~/.cache/chevreul/bw-files.db") {
+minimalSceApp <- function(single_cell_object = panc8, loom_path = NULL, appTitle = NULL, organism_type = "human", futureMb = 13000, bigwig_db = "~/.cache/chevreul/bw-files.db") {
     future::plan(strategy = "multicore", workers = 6)
     future_size <- futureMb * 1024^2
     options(future.globals.maxSize = future_size)
@@ -205,7 +205,7 @@ minimalSceApp <- function(input_object = panc8, loom_path = NULL, appTitle = NUL
 
         object <- reactiveVal(NULL)
         observe({
-            object(input_object)
+            object(single_cell_object)
         })
 
         organism_type <- reactive({

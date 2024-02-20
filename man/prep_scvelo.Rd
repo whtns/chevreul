@@ -16,11 +16,9 @@ prep_scvelo(
 
 \item{loom_path}{path to matching loom file}
 
+\item{velocity_mode}{deterministic, stochastis, or dynamical}
+
 \item{...}{extra args passed to run_scvelo}
-
-\item{group.by}{metadata to color plot}
-
-\item{plot_method}{plotting method to use from scvelo}
 }
 \value{
 a single cell object with velocity calculated

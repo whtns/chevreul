@@ -20,5 +20,4 @@ convert a object to an on-disk anndata object
 \examples{
 
 convert_to_h5ad(human_gene_transcript_object, "inst/extdata/object.rds")
-
 }

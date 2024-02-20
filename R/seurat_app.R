@@ -140,6 +140,8 @@ setMethod(
 #'
 #' @return a list of enrichmentbrowser output
 #' @export
+#' @importFrom SummarizedExperiment SummarizedExperiment
+#' @importFrom forcats fct_inseq
 run_enrichmentbrowser <- function(object, cluster_list, de_results, enrichment_method = c("ora"), ...) {
     cluster1_cells <- cluster_list$cluster1
     cluster2_cells <- cluster_list$cluster2
@@ -176,12 +178,12 @@ run_enrichmentbrowser <- function(object, cluster_list, de_results, enrichment_m
 
     colData <- as.data.frame(pull_metadata(object))
 
-    se <- SummarizedExperiment::SummarizedExperiment(
+    se <- SummarizedExperiment(
         assays = list(counts = counts),
         rowData = rowData, colData = colData
     )
 
-    se$GROUP <- forcats::fct_inseq(Idents(object))
+    se$GROUP <- fct_inseq(Idents(object))
 
     se <- idMap(se, org = "hsa", from = "SYMBOL", to = "ENTREZID")
 
@@ -250,6 +252,8 @@ prep_slider_values <- function(default_val) {
 #' @param futureMb amount of Mb allocated to future package
 #' @param preset_project preset project
 #' @param organism_type human or mouse
+#' @param db_path sqlite database with list of saved single cell objects
+#' @param futureMb megabytes for use with future package
 #'
 #' @return a shiny app
 #' @export

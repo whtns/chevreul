@@ -32,6 +32,7 @@
 #' @importFrom fs path_dir
 #' @importFrom fs path_expand
 #' @importFrom fs path_ext_remove
+#' @importFrom fs path_ext_set
 #' @importFrom fs path_file
 #' @importFrom graphics points
 #' @importFrom graphics text

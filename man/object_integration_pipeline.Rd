@@ -27,7 +27,11 @@ object_integration_pipeline(
 
 \item{organism}{Default "human"}
 
-\item{...}{}
+\item{annotate_cell_cycle}{whether to score cell cycle phases}
+
+\item{reduction}{pca, umap, or tsne}
+
+\item{...}{extra args passed to object_integrate}
 }
 \value{
 an integrated single cell object
