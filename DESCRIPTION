@@ -30,19 +30,16 @@ Imports:
     dplyr,
     DT,
     ensembldb,
-    formattable,
     fs,
     future,
     glue,
     ggplotify,
-    tximport,
     ggpubr,
     httr,
     janitor,
     magrittr,
     megadepth,
     methods,
-    Nebulosa,
     patchwork,
     plotly,
     Rcpp,
@@ -61,7 +58,6 @@ Imports:
     batchelor,
     stringr,
     tibble,
-    EnsDb.Hsapiens.v86,
     cellAlign,
     ggplot2,
     scran,
@@ -75,6 +71,17 @@ Imports:
     graphics,
     stats,
     utils,
+    future.apply,
+    pillar,
+    tximport,
+    formattable,
+    forcats,
+    cluster,
+    circlize,
+    bluster,
+    SummarizedExperiment,
+    SeuratDisk,
+    EnsDb.Hsapiens.v86,
     EnsDb.Mmusculus.v79
 Suggests:
     BiocStyle,
@@ -83,7 +90,8 @@ Suggests:
     RefManageR,
     rmarkdown,
     SeuratWrappers (>= 0.2.0),
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
+    Nebulosa
 VignetteBuilder:
     knitr
 Remotes:

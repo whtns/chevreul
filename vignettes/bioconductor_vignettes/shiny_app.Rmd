@@ -20,146 +20,198 @@ vignette: >
   %\VignetteEncoding{UTF-8}  
 ---
 
-```{r setup, include = FALSE}
+
+```{r, include = FALSE}
 knitr::opts_chunk$set(
     collapse = TRUE,
     comment = "#>",
+    # dev.args = list(png = list(type = "cairo")),
+    dpi = 900,
+    out.width = "100%",
+    message = FALSE,
+    warning = FALSE,
     crop = NULL ## Related to https://stat.ethz.ch/pipermail/bioc-devel/2020-April/016656.html
 )
+
+library(kableExtra)
 ```
 
 
-```{r vignetteSetup, echo=FALSE, message=FALSE, warning = FALSE}
-## Track time spent on making the vignette
-startTime <- Sys.time()
+Chevreul allows exploratory data analysis of a single cell dataset processed using `Seurat` with the command `minimalSeuratApp()`
 
-## Bib setup
-library("RefManageR")
+Here we'll provide a brief tour of this app organized by section with app functions organized as tabs along the sidebar upon startup.
 
-## Write bibliography information
-bib <- c(
-    R = citation(),
-    BiocStyle = citation("BiocStyle")[1],
-    knitr = citation("knitr")[1],
-    RefManageR = citation("RefManageR")[1],
-    rmarkdown = citation("rmarkdown")[1],
-    sessioninfo = citation("sessioninfo")[1],
-    testthat = citation("testthat")[1],
-    chevreul = citation("chevreul")[1]
-)
-```
+### Reformat Metadata 
 
-# Basics
+<!-- ** Make spreadsheet smaller in the app** -->
+Arbitrary variables can be appended to the cell metadata based on the results of exploratory data analysis. 
+<!-- **** where is the split by option in the app? -->
+Metadata addition can be executed by uploading a csv with row names matching cell ids with new variables as columns. Metadata editing can also be accomplished using a built-in spreadsheet tool. 
 
-## Install `chevreul`
+### Plot Data
 
-`R` is an open-source statistical environment which can be easily modified to enhance its functionality via packages. `r Biocpkg("chevreul")` is a `R` package available via the [Bioconductor](http://bioconductor.org) repository for packages. `R` can be installed on any operating system from [CRAN](https://cran.r-project.org/) after which you can install `r Biocpkg("chevreul")` by using the following commands in your `R` session:
+#### Dimensional reduction plots 
+chevreul provides visualization of embeddings in PCA, tSNE, and UMAP for scRNAseq data summarized at the gene and transcript level. 
+Plots can be customized to display cell metadata and the results of community detection clustering by Louvain or Leiden algorithms as implemented in Seurat. 
+In addition, gene and transcript feature expression can be overlaid on embedding plots both at the gene and transcript level. 
 
-```{r "install", eval = FALSE}
-if (!requireNamespace("BiocManager", quietly = TRUE)) {
-      install.packages("BiocManager")
-  }
+![](images/louvain_and_feature_umap_plot.png)
 
-BiocManager::install("chevreul")
+#### read/UMI count histograms 
+To facilitate quality control, cell-level summarized umi and read count values can also be overlaid with cell metadata and clustering results.   
 
-## Check that you have a valid Bioconductor installation
-BiocManager::valid()
-```
+![](images/pair_of_histograms.png)
 
-## Required knowledge
+#### Clustering trees
 
-`r Biocpkg("chevreul")` is based on many other packages and in particular in those that have implemented the infrastructure needed for dealing with RNA-seq data (EDIT!). That is, packages like `r Biocpkg("SummarizedExperiment")` (EDIT!).
+A cluster tree of cell identities is displayed using [scclustviz](https://lazappi.github.io/clustree/articles/clustree.html). 
+This plot can be used to help establish an optimal clustering resolution. 
 
-If you are asking yourself the question "Where do I start using Bioconductor?" you might be interested in [this blog post](http://lcolladotor.github.io/2014/10/16/startbioc/#.VkOKbq6rRuU).
+![](images/clustree.png)
 
-## Asking for help
+### Heat Maps/Violin Plots
 
-As package developers, we try to explain clearly how to use our packages and in which order to use the functions. But `R` and `Bioconductor` have a steep learning curve so it is critical to learn where to ask for help. The blog post quoted above mentions some but we would like to highlight the [Bioconductor support site](https://support.bioconductor.org/) as the main resource for getting help: remember to use the `chevreul` tag and check [the older posts](https://support.bioconductor.org/tag/chevreul/). Other alternatives are available such as creating GitHub issues and tweeting. However, please note that if you want to receive help you should adhere to the [posting guidelines](http://www.bioconductor.org/help/support/posting-guide/). It is particularly critical that you provide a small reproducible example and your session information so package developers can track down the source of the error.
+#### _Heat Maps_
 
-## Citing `chevreul`
+When plotting the heat map, gene/transcript expression values for each cell are normalized by that cell's total expression then multiplied by 10,000 and natural-log transformed before plotting. 
 
-We hope that `r Biocpkg("chevreul")` will be useful for your research. Please use the following information to cite the package and the overall approach. Thank you!
+Clustering model or metadata for column arrangement is taken as a parameter to produce a complex heat map.
 
-```{r "citation"}
-## Citation info
-citation("chevreul")
-```
+By default, 50 most highly variable genes are displayed. However, an arbitrary lists of genes can be plotted for comparison. The genes/transcripts are displayed in the order they are listed. 
 
-# Quick start to using `chevreul`
+![](images/Heatmap2.0.png)
 
-```{r "start", message=FALSE}
-library("chevreul")
-```
+#### _Violin Plots_
 
-Edit this as you see fit =)
+Feature (gene or transcript) expression can be viewed by violin plot based on sample metadata
 
-Here is an example of you can cite your package inside the vignette:
+Violin plots are a hybrid of density and box plots. It shows the probability density of the data at different values providing a visual representation of distribution of expression level of a feature in different groups of cell. The horizontal line is a marker for the median of the data and the box shows the interquartile ranges.
 
-* `r Biocpkg("chevreul")` `r Citep(bib[["chevreul"]])`
+The parameters that could to be chosen here are:
+1. 'Grouping variable'
+2. 'Data Type (Transformed/Raw)'
 
+![](images/violinPlot.png)
 
+### Differential expression
 
-# Reproducibility
+Chevreul provides different methods of differential expression analysis that users can choose from to determine differential expression of gene. DE methods included in Chevreul are t-test, Wilcoxon rank-sum test, Likelihood ratio test, and MAST
 
-The `r Biocpkg("chevreul")` package `r Citep(bib[["chevreul"]])` was made possible thanks to:
+Running DE testing results in a data frame containing the following information:
+*  p_val : Unadjusted p-value 
+*  avg_log2FC : log fold-change of the average expression between the two groups.
+*  pct.1 : The percentage of cells where the feature is detected in the first group
+*  pct.2 : The percentage of cells where the feature is detected in the second group
+*  p_val_adj : Adjusted p-value, based on bonferroni correction using all features in the dataset.
 
-* R `r Citep(bib[["R"]])`
-* `r Biocpkg("BiocStyle")` `r Citep(bib[["BiocStyle"]])`
-* `r CRANpkg("knitr")` `r Citep(bib[["knitr"]])`
-* `r CRANpkg("RefManageR")` `r Citep(bib[["RefManageR"]])`
-* `r CRANpkg("rmarkdown")` `r Citep(bib[["rmarkdown"]])`
-* `r CRANpkg("sessioninfo")` `r Citep(bib[["sessioninfo"]])`
-* `r CRANpkg("testthat")` `r Citep(bib[["testthat"]])`
-
-This package was developed using `r BiocStyle::Biocpkg("biocthis")`.
-
-
-Code for creating the vignette
-
-```{r createVignette, eval=FALSE}
-## Create the vignette
-library("rmarkdown")
-system.time(render("shiny_app.Rmd", "BiocStyle::html_document"))
-
-## Extract the R code
-library("knitr")
-knit("shiny_app.Rmd", tangle = TRUE)
-```
-
-Date the vignette was generated.
-
-```{r reproduce1, echo=FALSE}
-## Date the vignette was generated
-Sys.time()
-```
-
-Wallclock time spent generating the vignette.
-
-```{r reproduce2, echo=FALSE}
-## Processing time in seconds
-totalTime <- diff(c(startTime, Sys.time()))
-round(totalTime, digits = 3)
-```
-
-`R` session information.
-
-```{r reproduce3, echo=FALSE}
-## Session info
-library("sessioninfo")
-options(width = 120)
-session_info()
+```{r, eval = FALSE}
+d1 <- read.csv("Dominic.csv", header = TRUE)
 ```
 
 
 
-# Bibliography
+### Find Markers
 
-This vignette was generated using `r Biocpkg("BiocStyle")` `r Citep(bib[["BiocStyle"]])`
-with `r CRANpkg("knitr")` `r Citep(bib[["knitr"]])` and `r CRANpkg("rmarkdown")` `r Citep(bib[["rmarkdown"]])` running behind the scenes.
+Marker features based on louvain/leiden cluster identities or cell metadata can be defined based on results of wilcoxon rank-sum test via [presto](https://www.biorxiv.org/content/10.1101/653253v1) or measures of cluster specificity with genesorteR (Ibrahim, 2020) . Variable numbers of marker genes per cell group can be specified based on adjusted p value and thresholded log fold change.
 
-Citations made with `r CRANpkg("RefManageR")` `r Citep(bib[["RefManageR"]])`.
+![](images/marker_gene_plot.png)
 
-```{r vignetteBiblio, results = "asis", echo = FALSE, warning = FALSE, message = FALSE}
-## Print bibliography
-PrintBibliography(bib, .opts = list(hyperlink = "to.doc", style = "html"))
-```
+### Subset Seurat Input
+
+It is often useful to subset a single cell data set based on cell metadata whether experimentally determined (age, collection method, etc.) or derived from analysis (quality control metrics, annotated cell type)
+
+chevreul makes it simple to subset a dataset consisting of a single batch or batch-integrated dataset. Subsetting can be accomplished either in a graphical setting by lasso-selection from a dimensionally reduced plot or by by specification of a formatted .csv file. 
+
+Subsetting of single or batch integrated data will trigger renewal of all relevant preprocessing steps including dimensional reduction, clustering, marker gene, and pathway enrichment as well as integration based on a 'batch' variable
+
+### All Transcripts
+
+If expression is summarized with both gene and transcript assays, it is possible to plot all constituent transcripts (labeled by ensembl transcript ids) making up a given gene.
+
+The two parameters that must be chosen are:
+
+1. dimensional reduction method: PCA, UMAP or tSNE
+2. The name of the gene of interest 
+
+![](images/unnamed-chunk-9-1.png)
+
+Direct comparison of the contribution of individual transcripts can be achieved using stacked bar plots to answer the question: What contribution does each transcript make for each gene expression?
+
+![](images/transcript_composisiont.png)
+
+
+### Pobjectdotime Analysis by [Monocle 3](https://cole-trapnell-lab.github.io/monocle3/)
+
+Pobjectdotime analysis is broken into several steps, mirroring a typical command-line workflow. 
+1. Users can subset an embedded dataset then calculate a trajectory graph. 
+1. Root cells can be specified and cells ordered in pseudotime with monocle3. 
+2. Features that vary significantly over pseudotime based on autocorrelation can then be determined and grouped into modules that vary similarly over pseudotime. 
+
+![](images/monocle_first_steps.png)
+
+Heat maps and scatter plots are available at gene and module levels.
+
+![](images/monocle_final_steps.png)
+
+### Regress Features
+
+To correct for expression variation in analysis due to phenomena unrelated to focus of the study,
+rather than excluding count values attributable to such process, we can adjust the expression of all remaining genes or transcripts in each cell based on the sum score of relevant genes, to regress out cell-cycle effects, for [example](https://satijalab.org/seurat/v3.0/cell_cycle_vignette.html)
+
+Such regression can be performed for any arbitrary gene set. Some preset gene lists are included in `Chevreul` including cell-cycle, mitochondrial, and apoptosis related gene sets.
+
+![](images/Screenshot_2023-08-25_at_1.40.35_PM.png)
+
+### Technical information
+
+Technical information regarding upstream processing, software version numbers, and dataset features can be viewed. 
+
+![](images/Screenshot_2023-08-25_at_1.40.57_PM.png)
+
+
+
+## Server Mode
+If we want work with objects interactively and save the results of our exploratory data analysis we need to operate chevreul in *server mode*. When operating in this manner it is possible to carry out basic project management tasks including:
+* Loading saved objects 
+* Saving objects after making changes in the app such as :
+  * Reformatting metadata 
+  * Subsetting to remove cells
+  * Regressing feature expression as well as
+* Integrating multiple saved objects 
+
+Finally, server mode is necessary for some expanded functionality including:
+* Coverage plotting
+* RNA velocity
+
+*server mode* requires access to a few sqlite databases with file path details stored in `~/.cache/chevreul`. `single_cell_projects.db` and `bigwig_files.db` allowing dynamic loading of objects and bigwig (.bw) sample coverage files for each cell. These are initialized upon package installation using the `creat_project_db` function.
+
+The following sections will give details on this expanded functionality.
+
+### Integrate Projects
+
+While operating Chevreul in server mode, separate sequencing batches can be [integrated](https://www.cell.com/cell/fulltext/S0092-8674(19)30559-8) and compared to validate sample processing steps and exclude technical variation in favor of relevant biological variation. 
+
+This section includes a list of projects that can be selected, integrated, and saved for future analysis.
+
+### Coverage plots
+
+Fine-grained analysis of isoform contributions can be achieved by plotting absolute read coverage plots across a given gene. 
+
+indicate the **read depths across all transcripts for different groups of cells within a genomic region. 
+
+The three user input parameters are:
+1. 'Select a gene'- Select a gene of interest
+2. 'Color by variable'- Select a variable by which to group the cells by
+3. 'Groups to display'- Select the groups to be displayed
+
+![](images/PlotCoverage2.0.png){width=80% height=80%}
+
+### RNA Velocity
+
+RNA velocity can be used to forecast the future state of a given cell in a developmental or time-dependent process. Chevreul provides visualization and processing functionality using [velocyto](https://velocyto.org/). Velocity can be represented on UMAP or tSNE plots in multiple formats and exported as needed. 
+
+RNA velocity necessitates the calculation of spliced and unspliced transcript counts as implemented on the command-line in velocyto. As a result integration within Chevreul demands some familiarity with the command-line and the availability of a properly formatted [loom](https://velocyto.org/velocyto.py/tutorial/cli.html#about-the-output-loom-file) file. To enable plotting of RNA velocity, the path to the corresponding loom file must be provided.
+
+![](images/Screenshot_2023-08-25_at_1.28.26_PM.png)
+
+

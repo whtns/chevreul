@@ -23,3 +23,6 @@
 ^convert_cyclone_pairs_to_symbol\.R$
 ^README_cache$
 ^README_docs$
+^Dockerfile$
+^cache$
+^rsconnect$
