@@ -52,6 +52,7 @@
 #' @importFrom plotly style
 #' @importFrom plotly toWebGL
 #' @importFrom purrr map
+#' @importFrom purrr map_chr
 #' @importFrom purrr map_if
 #' @importFrom purrr set_names
 #' @importFrom scran cyclone

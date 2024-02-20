@@ -17,5 +17,5 @@ convert hgnc gene symbols to ensembl transcript ids
 }
 \examples{
 
-genes_to_transcripts("RXRG")
+genes_to_transcripts("NRL")
 }

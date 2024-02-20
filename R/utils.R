@@ -73,7 +73,7 @@ setMethod(
         drop_cols <- cols[!cols == new_col]
         na_cols <- purrr::map_lgl(cols, ~ all(is.na(object[[.x]])))
         cols <- cols[!na_cols]
-        meta <- rownames_to_column(pull_metadata(object)) %>%
+        meta <- rownames_to_column(get_cell_metadata(object)) %>%
             dplyr::mutate_at(vars(one_of(cols)), as.character) %>%
             mutate(`:=`(!!new_col, dplyr::coalesce(!!!syms(cols)))) %>%
             select(-drop_cols) %>%
@@ -89,7 +89,7 @@ setMethod(
         drop_cols <- cols[!cols == new_col]
         na_cols <- purrr::map_lgl(cols, ~ all(is.na(object[[.x]])))
         cols <- cols[!na_cols]
-        meta <- rownames_to_column(pull_metadata(object)) %>%
+        meta <- rownames_to_column(get_cell_metadata(object)) %>%
             dplyr::mutate_at(vars(one_of(cols)), as.character) %>%
             mutate(`:=`(!!new_col, dplyr::coalesce(!!!syms(cols)))) %>%
             select(-drop_cols) %>%
@@ -111,7 +111,7 @@ setMethod(
 #'
 #' @examples
 #'
-#' RXRG_transcripts <- get_transcripts_from_object(human_gene_transcript_object, "RXRG")
+#' NRL_transcripts <- get_transcripts_from_object(human_gene_transcript_object, "NRL")
 #'
 setGeneric("get_transcripts_from_object", function(object, gene, organism = "human") {
     standardGeneric("get_transcripts_from_object")
@@ -286,7 +286,7 @@ setMethod(
             object <- convert_v3_to_v5(object)
         }
 
-        object <- propagate_spreadsheet_changes(pull_metadata(object), object)
+        object <- propagate_spreadsheet_changes(get_cell_metadata(object), object)
 
         # set appropriate assay
         if ("integrated" %in% names(object@assays)) {
@@ -299,13 +299,13 @@ setMethod(
 
         cluster_tag <- glue::glue("{DefaultAssay(object)}_snn_res\\.")
 
-        cluster_names <- str_subset(names(pull_metadata(object)), cluster_tag)
+        cluster_names <- str_subset(names(get_cell_metadata(object)), cluster_tag)
         new_cluster_names <- str_replace(cluster_names, cluster_tag, "cluster_resolution_")
 
-        new_cluster_cols <- pull_metadata(object)[cluster_names]
+        new_cluster_cols <- get_cell_metadata(object)[cluster_names]
         names(new_cluster_cols) <- new_cluster_names
 
-        new_meta <- cbind(pull_metadata(object), new_cluster_cols)
+        new_meta <- cbind(get_cell_metadata(object), new_cluster_cols)
 
         object <- set_metadata(object, new_meta)
 
@@ -323,7 +323,7 @@ setMethod(
 
         if (chevreul_version < getNamespaceVersion("chevreul")) {
             message(paste0(object_path, " is out of date! updating..."))
-            if (!any(grepl("_snn_res", colnames(pull_metadata(object))))) {
+            if (!any(grepl("_snn_res", colnames(get_cell_metadata(object))))) {
                 object <- object_cluster(object = object, resolution = resolution, reduction = "pca", ...)
             }
 
@@ -367,7 +367,7 @@ setMethod(
             object <- convert_v3_to_v5(object)
         }
 
-        object <- propagate_spreadsheet_changes(pull_metadata(object), object)
+        object <- propagate_spreadsheet_changes(get_cell_metadata(object), object)
 
         # set appropriate assay
         if ("integrated" %in% names(object@assays)) {
@@ -380,13 +380,13 @@ setMethod(
 
         cluster_tag <- glue::glue("{DefaultAssay(object)}_snn_res\\.")
 
-        cluster_names <- str_subset(names(pull_metadata(object)), cluster_tag)
+        cluster_names <- str_subset(names(get_cell_metadata(object)), cluster_tag)
         new_cluster_names <- str_replace(cluster_names, cluster_tag, "cluster_resolution_")
 
-        new_cluster_cols <- pull_metadata(object)[cluster_names]
+        new_cluster_cols <- get_cell_metadata(object)[cluster_names]
         names(new_cluster_cols) <- new_cluster_names
 
-        new_meta <- cbind(pull_metadata(object), new_cluster_cols)
+        new_meta <- cbind(get_cell_metadata(object), new_cluster_cols)
 
         object <- set_metadata(object, new_meta)
 
@@ -404,7 +404,7 @@ setMethod(
 
         if (chevreul_version < getNamespaceVersion("chevreul")) {
             message(paste0(object_path, " is out of date! updating..."))
-            if (!any(grepl("_snn_res", colnames(pull_metadata(object))))) {
+            if (!any(grepl("_snn_res", colnames(get_cell_metadata(object))))) {
                 object <- object_cluster(object = object, resolution = resolution, reduction = "pca", ...)
             }
 

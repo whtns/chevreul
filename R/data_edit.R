@@ -66,7 +66,7 @@ reformatMetadataDR <- function(input, output, session, object, featureType = "ge
 
     table_out <- reactive({
         req(object())
-        pull_metadata(object())
+        get_cell_metadata(object())
     })
 
     values <- reactiveValues(

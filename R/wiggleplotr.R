@@ -76,7 +76,7 @@ load_bigwigs <- function(object, bigwig_db = "~/.cache/chevreul/bw-files.db") {
 #' @export
 #' @importFrom EnsDb.Hsapiens.v86 EnsDb.Hsapiens.v86
 #' @importFrom EnsDb.Mmusculus.v79 EnsDb.Mmusculus.v79
-plot_gene_coverage_by_var <- function(genes_of_interest = "RXRG",
+plot_gene_coverage_by_var <- function(genes_of_interest = "NRL",
     cell_metadata,
     bigwig_tbl,
     group_by = "batch",

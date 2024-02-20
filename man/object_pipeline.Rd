@@ -8,7 +8,7 @@ object_pipeline(
   object,
   assay = "gene",
   resolution = 0.6,
-  reduction = "pca",
+  reduction = "PCA",
   organism = "human",
   ...
 )

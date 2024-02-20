@@ -13,7 +13,7 @@ add_census_slot <- function(object, assay = "gene", slot = "counts") {
 
     data <- floor(data)
 
-    pd <- new("AnnotatedDataFrame", data = pull_metadata(object))
+    pd <- new("AnnotatedDataFrame", data = get_cell_metadata(object))
 
     fData <- data.frame(gene_short_name = row.names(data), row.names = row.names(data))
     fd <- new("AnnotatedDataFrame", data = fData)
@@ -62,7 +62,7 @@ convert_objectv3_to_monoclev2 <- function(object, assay = "gene", slot = "data",
 
     data <- floor(data)
 
-    pd <- new("AnnotatedDataFrame", data = pull_metadata(object))
+    pd <- new("AnnotatedDataFrame", data = get_cell_metadata(object))
 
     fData <- data.frame(gene_short_name = row.names(data), row.names = row.names(data))
     fd <- new("AnnotatedDataFrame", data = fData)
@@ -221,7 +221,7 @@ convert_monoclev2_to_objectv3 <- function(object, assay = "gene", slot = "data",
 
     data <- floor(data)
 
-    pd <- new("AnnotatedDataFrame", data = pull_metadata(object))
+    pd <- new("AnnotatedDataFrame", data = get_cell_metadata(object))
 
     fData <- data.frame(gene_short_name = row.names(data), row.names = row.names(data))
     fd <- new("AnnotatedDataFrame", data = fData)
@@ -629,7 +629,7 @@ arrange_ptime_heatmaps <- function(cds_list, cds_name) {
 #' @export
 #'
 #' @examples
-plot_feature_in_ref_query_ptime <- function(cds_list, selected_cds, features = c("RXRG"), color_by = "State", relative_expr = FALSE, min_expr = 0.5, trend_df = 3, ...) {
+plot_feature_in_ref_query_ptime <- function(cds_list, selected_cds, features = c("NRL"), color_by = "State", relative_expr = FALSE, min_expr = 0.5, trend_df = 3, ...) {
     sub_cds_list <- map(cds_list, ~ .x$monocle_cds[features, ])
 
     string_NA_meta <- function(cds) {
@@ -988,13 +988,7 @@ run_census <- function(sce, census_output_file) {
 #' @return
 #'
 #' @examples
-setGeneric("filter_rows_to_top", function(df, column, values) {
-  standardGeneric("filter_rows_to_top")
-})
-
-setMethod(
-  "filter_rows_to_top", "Seurat",
-  function(df, column, values) {
+filter_rows_to_top <- function(df, column, values) {
     matched_df <- df[df[[column]] %in% values, ]
 
     matched_df <- matched_df[match(values, matched_df[[column]]), ]
@@ -1006,23 +1000,6 @@ setMethod(
 
     return(total_df)
   }
-)
-
-setMethod(
-  "filter_rows_to_top", "SingleCellExperiment",
-  function(df, column, values) {
-    matched_df <- df[df[[column]] %in% values, ]
-
-    matched_df <- matched_df[match(values, matched_df[[column]]), ]
-
-    unmatched_df <- df[!(df[[column]] %in% values), ]
-
-    total_df <- list(matched_df = matched_df, unmatched_df = unmatched_df)
-    total_df <- bind_rows(total_df)
-
-    return(total_df)
-  }
-)
 
 #' Plot monocle pseudotime over multiple branches
 #'
@@ -1049,11 +1026,7 @@ setMethod(
 #' @return a heatmap with multiple branches
 #'
 #' @examples
-setGeneric("plot_multiple_branches_heatmap", function(cds, branches, branches_name = NULL, cluster_rows = TRUE, hclust_method = "ward.D2", num_clusters = 6, hmcols = NULL, add_annotation_row = NULL, add_annotation_col = NULL, show_rownames = FALSE, use_gene_short_name = TRUE, norm_method = c("vstExprs", "log"), scale_max = 3, scale_min = -3, trend_formula = "~sm.ns(Pobjectdotime, df=3)", return_heatmap = FALSE, cores = 1) standardGeneric("plot_multiple_branches_heatmap"))
-
-setMethod(
-  "plot_multiple_branches_heatmap", "cell_data_set",
-  function(cds, branches, branches_name = NULL, cluster_rows = TRUE, hclust_method = "ward.D2", num_clusters = 6, hmcols = NULL, add_annotation_row = NULL, add_annotation_col = NULL, show_rownames = FALSE, use_gene_short_name = TRUE, norm_method = c("vstExprs", "log"), scale_max = 3, scale_min = -3, trend_formula = "~sm.ns(Pobjectdotime, df=3)", return_heatmap = FALSE, cores = 1) {
+plot_multiple_branches_heatmap <- function(cds, branches, branches_name = NULL, cluster_rows = TRUE, hclust_method = "ward.D2", num_clusters = 6, hmcols = NULL, add_annotation_row = NULL, add_annotation_col = NULL, show_rownames = FALSE, use_gene_short_name = TRUE, norm_method = c("vstExprs", "log"), scale_max = 3, scale_min = -3, trend_formula = "~sm.ns(Pobjectdotime, df=3)", return_heatmap = FALSE, cores = 1) {
     pobjectdocount <- 1
     if (!(all(branches %in% Biobase::pData(cds)$State)) & length(branches) == 1) {
       stop("This function only allows to make multiple branch plots where branches is included in the pData")
@@ -1150,4 +1123,3 @@ setMethod(
       return(ph_res)
     }
   }
-)

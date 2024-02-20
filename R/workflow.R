@@ -1,3 +1,20 @@
+
+splitByCol <- function(x, f) {
+
+  f <- colData(x)[[f]]
+
+  i <- split(seq_along(f), f)
+
+  v <- vector(mode = "list", length = length(i))
+
+  names(v) <- names(i)
+
+  for (n in names(i)) { v[[n]] <- x[, i[[n]]] }
+
+  return(v)
+
+}
+
 #' Integration Workflow
 #'
 #' Integrate multiple objects and save to file
@@ -11,14 +28,8 @@
 #'
 #' @return an integrated single cell object
 #' @export
-#'
-setGeneric("integration_workflow", function(batches, excluded_cells = NULL, resolution = seq(0.2, 2.0, by = 0.2), experiment_name = "default_experiment", organism = "human", ...) {
-    standardGeneric("integration_workflow")
-})
-
-setMethod(
-    "integration_workflow", "Seurat",
-    function(batches, excluded_cells = NULL, resolution = seq(0.2, 2.0, by = 0.2), experiment_name = "default_experiment", organism = "human", ...) {
+#' @examples
+integration_workflow <-  function(batches, excluded_cells = NULL, resolution = seq(0.2, 2.0, by = 0.2), experiment_name = "default_experiment", organism = "human", ...) {
 
         # organisms <- map(batches, Misc, c("experiment", "organism"))
 
@@ -37,68 +48,20 @@ setMethod(
 
         batches <- purrr::pmap(list(batches, experiment_names, organisms), record_experiment_data)
 
-        batch_organisms <- map_chr(batches, list("misc", "experiment", "organism"))
+        merged_batches <- object_integration_pipeline(batches, resolution = resolution, organism = "human", ...)
+        Misc(merged_batches)$batches <- names(batches)
 
-        if (all(batch_organisms == "mouse")) {
-            merged_batches <- purrr::imap(batches, object_integration_pipeline, resolution = resolution, organism = "mouse", ...)
-            Misc(merged_batches)$batches <- names(batches)
-        } else if (all(batch_organisms == "human")) {
-            merged_batches <- object_integration_pipeline(batches, resolution = resolution, organism = "human", ...)
-            Misc(merged_batches)$batches <- names(batches)
-        } else {
-            mouse_object_list <- batches[names(organisms[organisms == "mouse"])]
-            human_object_list <- batches[names(organisms[organisms == "human"])]
-            merged_batches <- cross_species_integrate(mouse_object_list = mouse_object_list, human_object_list = human_object_list)
-            Misc(merged_batches)$batches <- names(batches)
-        }
+        # # cross species
+        # mouse_object_list <- batches[names(organisms[organisms == "mouse"])]
+        # human_object_list <- batches[names(organisms[organisms == "human"])]
+        # merged_batches <- cross_species_integrate(mouse_object_list = mouse_object_list, human_object_list = human_object_list)
+        # Misc(merged_batches)$batches <- names(batches)
 
         merged_batches <- record_experiment_data(merged_batches, experiment_name, organism)
 
         return(merged_batches)
     }
-)
 
-setMethod(
-    "integration_workflow", "SingleCellExperiment",
-    function(batches, excluded_cells = NULL, resolution = seq(0.2, 2.0, by = 0.2), experiment_name = "default_experiment", organism = "human", ...) {
-
-        # organisms <- map(batches, Misc, c("experiment", "organism"))
-
-        organisms <- map(batches, list("meta.data", "organism", 1))
-
-        if (any(purrr::map_lgl(organisms, is.null))) {
-            organisms <- case_when(
-                grepl("Hs", names(batches)) ~ "human",
-                grepl("Mm", names(batches)) ~ "mouse",
-                TRUE ~ "human"
-            )
-            names(organisms) <- names(batches)
-        }
-
-        experiment_names <- names(batches)
-
-        batches <- purrr::pmap(list(batches, experiment_names, organisms), record_experiment_data)
-
-        batch_organisms <- map_chr(batches, list("misc", "experiment", "organism"))
-
-        if (all(batch_organisms == "mouse")) {
-            merged_batches <- purrr::imap(batches, object_integration_pipeline, resolution = resolution, organism = "mouse", ...)
-            Misc(merged_batches)$batches <- names(batches)
-        } else if (all(batch_organisms == "human")) {
-            merged_batches <- object_integration_pipeline(batches, resolution = resolution, organism = "human", ...)
-            Misc(merged_batches)$batches <- names(batches)
-        } else {
-            mouse_object_list <- batches[names(organisms[organisms == "mouse"])]
-            human_object_list <- batches[names(organisms[organisms == "human"])]
-            merged_batches <- cross_species_integrate(mouse_object_list = mouse_object_list, human_object_list = human_object_list)
-            Misc(merged_batches)$batches <- names(batches)
-        }
-
-        merged_batches <- record_experiment_data(merged_batches, experiment_name, organism)
-
-        return(merged_batches)
-    }
-)
 
 #' Clustering Workflow
 #'
@@ -113,28 +76,11 @@ setMethod(
 #'
 #' @return a clustered single cell object
 #' @export
-setGeneric("clustering_workflow", function(object, excluded_cells, resolution = seq(0.2, 2.0, by = 0.2), organism = "human", experiment_name = "default_experiment", ...) {
-    standardGeneric("clustering_workflow")
-})
-
-setMethod(
-    "clustering_workflow", "Seurat",
-    function(object, excluded_cells, resolution = seq(0.2, 2.0, by = 0.2), organism = "human", experiment_name = "default_experiment", ...) {
+clustering_workflow <-  function(object, excluded_cells, resolution = seq(0.2, 2.0, by = 0.2), organism = "human", experiment_name = "default_experiment", ...) {
         object <- object_pipeline(object, resolution = resolution, organism = organism, ...)
 
         object <- record_experiment_data(object, experiment_name, organism)
 
         # save_object(feature_objects, proj_dir = proj_dir, ...)
     }
-)
 
-setMethod(
-    "clustering_workflow", "SingleCellExperiment",
-    function(object, excluded_cells, resolution = seq(0.2, 2.0, by = 0.2), organism = "human", experiment_name = "default_experiment", ...) {
-        object <- object_pipeline(object, resolution = resolution, organism = organism, ...)
-
-        object <- record_experiment_data(object, experiment_name, organism)
-
-        # save_object(feature_objects, proj_dir = proj_dir, ...)
-    }
-)

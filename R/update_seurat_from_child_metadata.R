@@ -9,7 +9,7 @@
 #' @return updated object metadata
 #' @export
 update_object_meta <- function(object, proj_dir, numcols) {
-    object_meta <- as.data.frame(pull_metadata(object))
+    object_meta <- as.data.frame(get_cell_metadata(object))
 
     project_meta <- readr::read_csv(get_meta(proj_dir))
 

@@ -37,7 +37,7 @@ convert_object_to_cds <- function(object, resolution = 1, min_expression = 0.05)
     )
 
     # part one, cell information
-    cell_metadata <- pull_metadata(object)[colnames(count_matrix), ]
+    cell_metadata <- get_cell_metadata(object)[colnames(count_matrix), ]
 
     # drop metadata column 'sample_name' for monocle plotting functions if present
     if (any(stringr::str_detect(colnames(cell_metadata), "sample_name"))) {
@@ -1175,7 +1175,7 @@ monocle <- function(input, output, session, object, plot_types, featureType,
     req(object())
 
     selectizeInput(ns("colAnnoVar"), "Column Annotation(s)",
-                   choices = colnames(pull_metadata(object())), selected = "batch", multiple = TRUE
+                   choices = colnames(get_cell_metadata(object())), selected = "batch", multiple = TRUE
     )
   })
 

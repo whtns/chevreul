@@ -7,7 +7,7 @@
 plot_all_transcripts(
   object,
   features,
-  embedding = "umap",
+  embedding = "UMAP",
   from_gene = TRUE,
   combine = TRUE
 )
@@ -31,8 +31,6 @@ plot expression all transcripts for an input gene superimposed on an embedding
 }
 \examples{
 
-\dontrun{processed_object <- clustering_workflow(human_gene_transcript_object)
-transcripts_to_plot <- genes_to_transcripts("RXRG")
-plot_all_transcripts(processed_object, features = transcripts_to_plot)}
+plot_all_transcripts(human_gene_transcript_sce, "NRL")
 
 }

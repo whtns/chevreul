@@ -48,6 +48,6 @@ available methods are wilcoxon rank-sum test
 }
 \examples{
 
-\dontrun{plot_markers(human_gene_transcript_object, group_by = "tech", marker_method = "wilcox", return_plotly = TRUE)}
+plot_markers(human_gene_transcript_sce, group_by = "gene_snn_res.0.2")
 
 }

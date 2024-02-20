@@ -34,8 +34,8 @@ Draw a box plot for read count data of a metadata variable
 }
 \examples{
 # interactive plotly
-\dontrun{plot_readcount(human_gene_transcript_object, return_plotly = TRUE)}
+plot_readcount((human_gene_transcript_sce), return_plotly = TRUE)
 
 # static plot
-\dontrun{plot_readcount(human_gene_transcript_object, return_plotly = FALSE)}
+plot_readcount((human_gene_transcript_sce), return_plotly = FALSE)
 }

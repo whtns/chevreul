@@ -50,65 +50,27 @@ merge_small_objects <- function(object_list, k.filter = 50) {
 #' @return an integrated single cell object
 #' @export
 #'
-seurat_integrate <- function(object_list, method = "cca", organism = "human", ...) {
+object_integrate <- function(object_list, method = "cca", organism = "human", ...) {
     # To construct a reference we will identify ‘anchors’ between the individual datasets. First, we split the combined object into a list, with each dataset as an element.
 
     # Prior to finding anchors, we perform standard preprocessing (log-normalization), and identify variable features individually for each. Note that Seurat v3 implements an improved method for variable feature selection based on a variance stabilizing transformation ("vst")
 
-    for (i in 1:length(x = object_list)) {
-        object_list[[i]][["gene"]] <- object_preprocess(object_list[[i]][["gene"]], scale = TRUE)
+  universe <-
+    map(object_list, rownames) %>%
+    purrr::reduce(intersect) %>%
+    identity()
 
-        object_list[[i]]$batch <- names(object_list)[[i]]
-    }
+  # object_list <- merge_small_objects(object_list)
+  combined <- correctExperiments(object_list)
 
-    object_list <- merge_small_objects(object_list)
+  combined <- object_pre
 
-    if (method == "rpca") {
-        # scale and run pca for each separate batch in order to use reciprocal pca instead of cca
-        features <- SelectIntegrationFeatures(object.list = object_list)
-        object_list <- map(object_list, Seurat::ScaleData, features = features)
-        object_list <- map(object_list, Seurat::RunPCA, features = features)
-        object_list.anchors <- FindIntegrationAnchors(object.list = object_list, reduction = "rpca", dims = 1:30)
-    } else if (method == "cca") {
-        # Next, we identify anchors using the FindIntegrationAnchors function, which takes a list of Seurat objects as input.
-        object_list.anchors <- Seurat::FindIntegrationAnchors(object.list = object_list, dims = 1:30, k.filter = 50)
-    }
 
-    # proceed with integration
-    # object_list.integrated <- IntegrateData(anchorset = object_list.anchors, dims = 1:30)
 
     # see https://github.com/satijalab/seurat/issues/6341------------------------------
     cells_per_batch <- sapply(object_list, ncol)
     min_k_weight <- min(cells_per_batch) - 1
     min_k_weight <- ifelse(min_k_weight < 100, min_k_weight, 100)
-
-    object_list.integrated <- tryCatch(IntegrateData(anchorset = object_list.anchors, dims = 1:30, k.weight = min_k_weight), error = function(e) e)
-    run_harmony <- any(class(object_list.integrated) == "error")
-    if (run_harmony) {
-        object_list.integrated <- harmony_integrate(object_list)
-    }
-
-    #   enriched_object <- tryCatch(getEnrichedPathways(object), error = function(e) e)
-    #   enrichr_available <- !any(class(enriched_object) == "error")
-    #   if(enrichr_available){
-    #     object <- enriched_object
-    #   }
-
-    # Next, we identify anchors using the FindIntegrationAnchors function, which takes a list of Seurat objects as input.
-
-    # #stash batches
-    Idents(object_list.integrated) <- "batch"
-    object_list.integrated[["batch"]] <- Idents(object_list.integrated)
-
-    # switch to integrated assay. The variable features of this assay are
-    # automatically set during IntegrateData
-    Seurat::DefaultAssay(object = object_list.integrated) <- "integrated"
-
-    # if not integrated with harmony run the standard workflow for visualization and clustering
-    if (!"harmony" %in% names(object_list.integrated@reductions)) {
-        object_list.integrated <- Seurat::ScaleData(object = object_list.integrated, verbose = FALSE)
-        object_list.integrated <- object_reduce_dimensions(object_list.integrated, ...)
-    }
 
     object_list.integrated <- record_experiment_data(object_list.integrated, experiment_name = "integrated", organism = organism)
 
@@ -203,39 +165,7 @@ sce_integrate <- function(object_list, method = "cca", organism = "human", ...) 
 #' @return a single cell object with louvain clusters
 #' @export
 #' @importFrom bluster NNGraphParam
-setGeneric("object_cluster", function(object = object, resolution = 0.6, custom_clust = NULL, reduction = "pca", algorithm = 1, ...) standardGeneric("object_cluster"))
-
-setMethod(
-    "object_cluster", "Seurat",
-    function(object = object, resolution = 0.6, custom_clust = NULL, reduction = "pca", algorithm = 1, ...) {
-        message(paste0("[", format(Sys.time(), "%H:%M:%S"), "] Clustering Cells..."))
-        object <- FindNeighbors(object = object, dims = 1:30, reduction = reduction)
-        if (length(resolution) > 1) {
-            for (i in resolution) {
-                message(paste0("clustering at ", i, " resolution"))
-                object <- Seurat::FindClusters(object = object, resolution = i, algorithm = algorithm, ...)
-            }
-        } else if (length(resolution) == 1) {
-            message(paste0("clustering at ", resolution, " resolution"))
-            object <- Seurat::FindClusters(object = object, resolution = resolution, algorithm = algorithm, ...)
-        }
-        if (!is.null(custom_clust)) {
-            object <- Seurat::StashIdent(object = object, save.name = "old.ident")
-            clusters <- tibble::tibble(sample_id = rownames(pull_metadata(object))) %>%
-                rownames_to_column("order") %>%
-                dplyr::inner_join(custom_clust, by = "sample_id") %>%
-                pull(cluster) %>%
-                identity()
-            Idents(object = object) <- clusters
-            return(object)
-        }
-        return(object)
-    }
-)
-
-setMethod(
-    "object_cluster", "SingleCellExperiment",
-    function(object = object, resolution = 0.6, custom_clust = NULL, reduction = "PCA", algorithm = 1, ...) {
+object_cluster <- function(object = object, resolution = 0.6, custom_clust = NULL, reduction = "PCA", algorithm = 1, ...) {
         message(paste0("[", format(Sys.time(), "%H:%M:%S"), "] Clustering Cells..."))
         # return list of graph object with KNN (SNN?)
         # object <- scran::buildKNNGraph(x = object, use.dimred = reduction)
@@ -263,13 +193,13 @@ setMethod(
         }
         # if (!is.null(custom_clust)) {
         #
-        #   clusters <- tibble::tibble(sample_id = rownames(pull_metadata(object))) %>% rownames_to_column("order") %>% dplyr::inner_join(custom_clust, by = "sample_id") %>% pull(cluster) %>% identity()
+        #   clusters <- tibble::tibble(sample_id = rownames(get_cell_metadata(object))) %>% rownames_to_column("order") %>% dplyr::inner_join(custom_clust, by = "sample_id") %>% pull(cluster) %>% identity()
         #   Idents(object = object) <- clusters
         #   return(object)
         # }
         return(object)
     }
-)
+
 #' Read in Gene and Transcript Seurat Objects
 #'
 #' @param proj_dir path to project directory
@@ -333,42 +263,7 @@ setMethod(
 #'
 #' @return a single cell object with embeddings
 #' @export
-setGeneric("object_reduce_dimensions", function(object, assay = "gene", reduction = "pca", legacy_settings = FALSE, ...) standardGeneric("object_reduce_dimensions"))
-
-setMethod(
-    "object_reduce_dimensions", "Seurat",
-    function(object, assay = "gene", reduction = "pca", legacy_settings = FALSE, ...) {
-        if ("integrated" %in% names(object@assays)) {
-            assay <- "integrated"
-        } else {
-            assay <- "gene"
-        }
-        num_samples <- dim(object)[[2]]
-        if (num_samples < 50) {
-            npcs <- num_samples - 1
-        } else {
-            npcs <- 50
-        }
-        if (legacy_settings) {
-            message("using legacy settings")
-            object <- Seurat::RunPCA(object, assay = assay, features = rownames(object))
-        } else {
-            object <- Seurat::RunPCA(object = object, assay = assay, features = Seurat::VariableFeatures(object = object), do.print = FALSE, npcs = npcs, ...)
-        }
-        if (reduction == "harmony") {
-            object <- RunHarmony(object, "batch")
-        }
-        if ((ncol(object) - 1) > 3 * 30) {
-            object <- Seurat::RunTSNE(object = object, assay = assay, reduction = reduction, dims = 1:30)
-            object <- Seurat::RunUMAP(object = object, assay = assay, reduction = reduction, dims = 1:30)
-        }
-        return(object)
-    }
-)
-
-setMethod(
-    "object_reduce_dimensions", "SingleCellExperiment",
-    function(object, assay = "gene", reduction = "PCA", legacy_settings = FALSE, ...) {
+object_reduce_dimensions <- function(object, assay = "gene", reduction = "PCA", legacy_settings = FALSE, ...) {
         if ("integrated" %in% names(object@assays)) {
             assay <- "integrated"
         } else {
@@ -412,7 +307,7 @@ setMethod(
         }
         return(object)
     }
-)
+
 #'
 #' Give a new project name to a single cell object
 #'
@@ -421,23 +316,11 @@ setMethod(
 #'
 #' @return a renamed single cell object
 #' @export
-setGeneric("rename_object", function (object, new_name)  standardGeneric("rename_object"))
-
-setMethod("rename_object", "Seurat",
-          function (object, new_name)
-          {
-            object@project.name <- new_name
-            return(object)
-          }
-)
-
-setMethod("rename_object", "SingleCellExperiment",
-          function (object, new_name)
+rename_object <- function (object, new_name)
           {
             metadata(object)["project.name"] <- new_name
             return(object)
           }
-)
 
 #' Filter a List of Seurat Objects
 #'
@@ -466,9 +349,9 @@ filter_merged_objects <- function(objects, filter_var, filter_val, .drop = F) {
 #' @export
 filter_merged_object <- function(object, filter_var, filter_val, .drop = .drop) {
     if (.drop) {
-        mycells <- pull_metadata(object)[[filter_var]] == filter_val
+        mycells <- get_cell_metadata(object)[[filter_var]] == filter_val
     } else {
-        mycells <- pull_metadata(object)[[filter_var]] == filter_val | is.na(pull_metadata(object)[[filter_var]])
+        mycells <- get_cell_metadata(object)[[filter_var]] == filter_val | is.na(get_cell_metadata(object)[[filter_var]])
     }
     mycells <- colnames(object)[mycells]
     object <- object[, mycells]
@@ -491,23 +374,7 @@ filter_merged_object <- function(object, filter_var, filter_val, .drop = .drop) 
 #'
 #' @return a single cell object
 #' @export
-setGeneric("reintegrate_object", function (object, feature = "gene", suffix = "", reduction = "pca", algorithm = 1, ...)  standardGeneric("reintegrate_object"))
-
-setMethod("reintegrate_object", "Seurat",
-          function (object, feature = "gene", suffix = "", reduction = "pca", algorithm = 1, ...)
-          {
-            Seurat::DefaultAssay(object) <- "gene"
-            organism <- Misc(object)$experiment$organism
-            experiment_name <- Misc(object)$experiment$experiment_name
-            object <- Seurat::DietSeurat(object, counts = TRUE, data = TRUE, scale.data = FALSE)
-            objects <- Seurat::SplitObject(object, split.by = "batch")
-            object <- object_integration_pipeline(objects, feature = feature, suffix = suffix, algorithm = algorithm, ...)
-            object <- record_experiment_data(object, experiment_name, organism)
-          }
-)
-
-setMethod("reintegrate_object", "SingleCellExperiment",
-          function (object, feature = "gene", suffix = "", reduction = "PCA", algorithm = 1, ...)
+reintegrate_object <- function (object, feature = "gene", suffix = "", reduction = "PCA", algorithm = 1, ...)
           {
             # Seurat::DefaultAssay(object) <- "gene"
             organism <- metadata(object)$experiment$organism
@@ -517,4 +384,3 @@ setMethod("reintegrate_object", "SingleCellExperiment",
             object <- object_integration_pipeline(objects, feature = feature, suffix = suffix, algorithm = algorithm, ...)
             object <- record_experiment_data(object, experiment_name, organism)
           }
-)

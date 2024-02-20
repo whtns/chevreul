@@ -8,7 +8,7 @@ reintegrate_object(
   object,
   feature = "gene",
   suffix = "",
-  reduction = "pca",
+  reduction = "PCA",
   algorithm = 1,
   ...
 )

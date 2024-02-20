@@ -2,7 +2,7 @@
 % Please edit documentation in R/seurat_cluster.R
 \name{enframe_markers}
 \alias{enframe_markers}
-\title{Title}
+\title{Enframe Markers}
 \usage{
 enframe_markers(marker_table)
 }
@@ -13,5 +13,5 @@ enframe_markers(marker_table)
 a table of marker genes
 }
 \description{
-Title
+Enframe Markers
 }

@@ -1,8 +1,3 @@
-# get_feature_types ------------------------------
-
-
-# list_plot_types ------------------------------
-
 #' Collate list of variables to be plotted
 #'
 #' @param object a single cell object
@@ -10,53 +5,7 @@
 #' @return plot_types a list of category_vars or continuous_vars
 #' @export
 #' @importFrom pillar new_pillar_type
-setGeneric("list_plot_types", function(object) {
-    standardGeneric("list_plot_types")
-})
-
-setMethod(
-    "list_plot_types", "Seurat",
-    function(object) {
-        meta_types <- tibble::tibble(
-            vars = colnames(pull_metadata(object)),
-            var_type = purrr::map_chr(map(pull_metadata(object), new_pillar_type), 1),
-            num_levels = unlist(map(pull_metadata(object), ~ length(unique(.x))))
-        )
-
-        meta_types <- meta_types %>%
-            filter(!grepl("_snn_res", vars)) %>%
-            mutate(meta_type = case_when(
-                var_type %in% c("int", "dbl") ~ "continuous",
-                var_type %in% c("chr", "fct", "ord", "lgl") ~ "category"
-            )) %>%
-            mutate(meta_type = ifelse(meta_type == "continuous" & num_levels < 30, "category", meta_type)) %>%
-            filter(num_levels > 1) %>%
-            identity()
-
-        continuous_vars <- meta_types %>%
-            filter(meta_type == "continuous") %>%
-            pull(vars)
-
-        continuous_vars <- c("feature", continuous_vars) %>%
-            purrr::set_names(stringr::str_to_title(stringr::str_replace_all(., "[[:punct:]]", " ")))
-
-
-        category_vars <- meta_types %>%
-            filter(meta_type == "category") %>%
-            pull(vars) %>%
-            purrr::set_names(stringr::str_to_title(stringr::str_replace_all(., "[^[:alnum:][:space:]\\.]", " ")))
-
-        plot_types <- list(category_vars = category_vars, continuous_vars = continuous_vars)
-
-
-
-        return(plot_types)
-    }
-)
-
-setMethod(
-    "list_plot_types", "SingleCellExperiment",
-    function(object) {
+list_plot_types <- function(object) {
         meta_types <- tibble::tibble(
             vars = colnames(colData(object)),
             var_type = purrr::map_chr(map(colData(object), new_pillar_type), 1),
@@ -92,7 +41,6 @@ setMethod(
 
         return(plot_types)
     }
-)
 
 # Pull metadata
 
@@ -101,27 +49,21 @@ setMethod(
 #' @param object a single cell object
 #'
 #' @return dataframe containing object metadata
-#' @export
-setGeneric("pull_metadata", function(object) {
-    standardGeneric("pull_metadata")
-})
-
-setMethod(
-    "pull_metadata", "Seurat",
-    function(object) {
-        object[[]]
-    }
-)
-
-setMethod(
-    "pull_metadata", "SingleCellExperiment",
-    function(object) {
+get_cell_metadata <- function(object) {
         colData(object) %>%
             as.data.frame()
     }
-)
 
-# get variable features ------------------------------
+#' Get object metadata
+#'
+#' @param object a single cell object
+#' @param ... extra args passed to seurat class method
+#'
+#' @return variable features from a single cell object
+#' @export
+get_object_metadata <- function(object, ...) {
+    metadata(object)
+  }
 
 #' Get variable features
 #'
@@ -130,23 +72,9 @@ setMethod(
 #'
 #' @return variable features from a single cell object
 #' @export
-setGeneric("get_variable_features", function(object, ...) {
-    standardGeneric("get_variable_features")
-})
-
-setMethod(
-    "get_variable_features", "Seurat",
-    function(object, ...) {
-        VariableFeatures(object, ...)
-    }
-)
-
-setMethod(
-    "get_variable_features", "SingleCellExperiment",
-    function(object, ...) {
+get_variable_features <- function(object, ...) {
         scran::getTopHVGs(object)
     }
-)
 
 # get feature names ------------------------------
 
@@ -157,26 +85,10 @@ setMethod(
 #'
 #' @return variable features from a single cell object
 #' @export
-setGeneric("get_features", function(object, ...) {
-    standardGeneric("get_features")
-})
-
-setMethod(
-    "get_features", "Seurat",
-    function(object, ...) {
-        Features(object, ...)
-    }
-)
-
-setMethod(
-    "get_features", "SingleCellExperiment",
-    function(object, ...) {
+get_features <- function(object, ...) {
         rownames(object)
     }
-)
 
-
-# Set metadata ------------------------------
 
 #' Add new metadata to the object metadata
 #'
@@ -185,54 +97,22 @@ setMethod(
 #'
 #' @return object metadata
 #' @export
-setGeneric("set_metadata", function(object, meta.data) {
-    standardGeneric("set_metadata")
-})
-
-setMethod(
-    "set_metadata", "Seurat",
-    function(object, meta.data) {
-        object@meta.data <- meta.data
-        return(object)
-    }
-)
-
-setMethod(
-    "set_metadata", "SingleCellExperiment",
-    function(object, meta.data) {
+set_metadata <- function(object, meta.data) {
         colData(object) <- meta.data
         return(object)
     }
-)
 
 # get_feature_types ------------------------------
 
-setGeneric("get_feature_types", function(object) {
-    standardGeneric("get_feature_types")
-})
-
-setMethod("get_feature_types", "Seurat", function(object) {
-    sort(names(object@assays))
-})
-
-setMethod("get_feature_types", "SingleCellExperiment", function(object) {
+get_feature_types <- function(object) {
     sort(c(mainExpName(object), altExpNames(object)))
-})
-
-setGeneric("set_feature_types", function(object, feature_type) {
-  standardGeneric("set_feature_types")
-})
-
-setMethod("set_feature_types", "Seurat", function(object, feature_type) {
-  DefaultAssay(object) <- feature_type
-})
-
-setMethod("set_feature_types", "SingleCellExperiment", function(object, feature_type) {
+}
+set_feature_types <- function(object, feature_type) {
   if(feature_type %in% altExpNames(object)){
     object <- swapAltExp(object, feature_type, saved = mainExpName(object), withColData = TRUE)
   }
   return(object)
-})
+}
 
 # check_integrated ------------------------------
 

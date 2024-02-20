@@ -21,6 +21,6 @@ Get transcript ids in objects for one or more gene of interest
 }
 \examples{
 
-RXRG_transcripts <- get_transcripts_from_object(human_gene_transcript_object, "RXRG")
+NRL_transcripts <- get_transcripts_from_object(human_gene_transcript_object, "NRL")
 
 }
