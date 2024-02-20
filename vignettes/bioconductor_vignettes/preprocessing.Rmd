@@ -163,25 +163,15 @@ scater::plotUMAP(myobject_red, color_by = "nFeature_gene")
 
 This function includes existing object functions which performs dimension reduction techniques. 
 
-
-
 ## Community detection by clustering
 
 A separate Chevreul function, `object_cluster()`, can be used to perform clustering of scRNA-seq data. Here, clustering analysis is performed via Louvain algorithms, using exsisting functions that perform graph-based clustering. Clustering is performed at a range of resolutions with default value ranging from 0.2 to 2 and PCA reduction.
 
 ```{r, results=FALSE, eval=TRUE}
-object <- object_cluster(object = myobject, 
-                         resolution = seq(0.2, 2, by = 0.2))
-object
+object <- object_cluster(object = myobject_red, 
+                         resolution = seq(0.2, 2, by = 0.2), reduction = "PCA")
+scater::plotPCA(object, color_by = "nFeature_gene")
 ```
-
-
-
-
-
-
-
-
 
 
 ## `R` session information.
