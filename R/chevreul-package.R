@@ -93,7 +93,6 @@
 #' @import ggplot2
 #' @import Seurat
 #' @import SingleCellExperiment
-#' @import Seurat
 #' @import shiny
 NULL
 

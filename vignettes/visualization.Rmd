@@ -114,6 +114,7 @@ Marker genes of louvain clusters or additional experimental metadata can be plot
 
 
 ```{r}
+
 plot_markers(human_gene_transcript_sce,
     group_by = "gene_snn_res.0.2",
     marker_method = "wilcox"

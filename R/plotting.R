@@ -364,13 +364,13 @@ setMethod(
     function(object, group_by = "batch", num_markers = 5, selected_values = NULL, return_plotly = FALSE, marker_method = "wilcox", object_assay = "gene", hide_technical = NULL, unique_markers = FALSE, p_val_cutoff = 1, ...) {
         Idents(object) <- pull_metadata(object)[[group_by]]
         object <- find_all_markers(object, group_by, object_assay = object_assay, p_val_cutoff = p_val_cutoff)
-        marker_table <- Misc(object)$markers[[group_by]][[marker_method]]
+        marker_table <- Misc(object)$markers[[group_by]]
         markers <- marker_table %>%
             enframe_markers() %>%
             mutate(dplyr::across(.fns = as.character))
         if (!is.null(hide_technical)) {
             markers <- map(markers, c)
-            if (hide_technical == "pobjectdo") {
+            if (hide_technical == "pseudo") {
                 markers <- map(markers, ~ .x[!.x %in% pobjectdogenes[[object_assay]]])
             } else if (hide_technical == "mito_ribo") {
                 markers <- map(markers, ~ .x[!str_detect(.x, "^MT-")])
@@ -436,7 +436,7 @@ setMethod(
     function(object, group_by = "batch", num_markers = 5, selected_values = NULL, return_plotly = FALSE, marker_method = "wilcox", object_assay = "gene", hide_technical = NULL, unique_markers = FALSE, p_val_cutoff = 1, ...) {
         # Idents(object) <- pull_metadata(object)[[group_by]]
         object <- find_all_markers(object, group_by, object_assay = object_assay, p_val_cutoff = p_val_cutoff)
-        marker_table <- metadata(object)$markers[[group_by]][[marker_method]]
+        marker_table <- metadata(object)$markers[[group_by]]
         markers <- marker_table %>%
             enframe_markers() %>%
             mutate(dplyr::across(.fns = as.character))

@@ -195,9 +195,9 @@ setMethod(
 setMethod(
     "stash_marker_features", "SingleCellExperiment",
     function(object, group_by, object_assay = "gene", top_n = 200, p_val_cutoff = 0.5) {
-        message(paste0("stashing presto markers for ", group_by))
+        message(paste0("stashing markers for ", group_by))
         markers <- list()
-        markers$presto <-
+        markers <-
           scran::findMarkers(object, test.type = "t", groups = colData(object)[[group_by]]) %>%
           map(as.data.frame) %>%
           map(rownames_to_column, "feature") %>%
