@@ -125,7 +125,10 @@ head(human_meta) %>%
 Then using these 2 datasets we can create a SingleCellExperiment object in the usual manner using the `SingleCellExperiment` function
 
 ```{r}
-myobject <- SingleCellExperiment::SingleCellExperiment(assays = list(counts = human_count), colData = human_meta, mainExpName = "gene")
+myobject <- SingleCellExperiment::SingleCellExperiment(
+  assays = list(counts = human_count), 
+  colData = human_meta, 
+  mainExpName = "gene")
 myobject
 ```
 
@@ -135,6 +138,8 @@ Chevreul includes a handy function `object_preprocess()` that performs standard 
 
 ```{r}
 myobject0 <- object_preprocess(myobject)
+scater::plotPCA(myobject0, color_by = "nFeature_gene")
+
 ```
 
 This single function includes sub-functions that normalize, identify highly variable features and scale the data:
@@ -149,35 +154,25 @@ This single function includes sub-functions that normalize, identify highly vari
 
 ## Perform dimension reduction
 
-Chevreul also includes a function `object_reduce_dimentions()` which implements a standardized dimension reduction step to select variable features at a user-specified threshold and perform PCA, tSNE, and UMAP. The default assay the dimension reduction is being run on is "gene".
+Chevreul also includes a separate function `object_reduce_dimentions()` capable of implementing a standardized dimension reduction step to select variable features at a user-specified threshold. This function performs tSNE and UMAP in addition to PCA. The default assay the dimension reduction is being run on is "gene".
 
 ```{r, results=FALSE}
-myobject <- object_reduce_dimensions(myobject)
-DimPlot(myobject)
+myobject_red <- object_reduce_dimensions(myobject0)
+scater::plotUMAP(myobject_red, color_by = "nFeature_gene")
 ```
 
-This function includes existing object functions which performs dimension reduction techniques.
+This function includes existing object functions which performs dimension reduction techniques. 
 
--   Perform PCA: Runs a PCA dimensionality reduction.
 
-```{r, results=FALSE}
-Dim_Red_object <- runPCA(x = myobject, 
-                         subset_row = getTopHVGs(stats = object), 
-                         do.print = FALSE, ..)
-```
-
--   Perform UMAP: Runs the Uniform Manifold Approximation and Projection (UMAP) dimensional reduction technique.
-
-```{r, results=FALSE}
-Dim_Red_object <- runUMAP(Dim_Red_object, dims = 1:30)
-```
 
 ## Community detection by clustering
 
-Clustering of scRNA-seq data is performed by Chevreul using the `object_cluster()` function. Clustering analysis is performed via Louvain algorithms, using exsiting functions that perform graph-based clustering. Clustering is performed at a range of resolutions with default value ranging from 0.2 to 2 and pca reduction
+A separate Chevreul function, `object_cluster()`, can be used to perform clustering of scRNA-seq data. Here, clustering analysis is performed via Louvain algorithms, using exsisting functions that perform graph-based clustering. Clustering is performed at a range of resolutions with default value ranging from 0.2 to 2 and PCA reduction.
 
 ```{r, results=FALSE, eval=TRUE}
-object <- object_cluster(object = Dim_Red_object, resolution = seq(0.2, 2, by = 0.2))
+object <- object_cluster(object = myobject, 
+                         resolution = seq(0.2, 2, by = 0.2))
+object
 ```
 
 
@@ -189,11 +184,11 @@ object <- object_cluster(object = Dim_Red_object, resolution = seq(0.2, 2, by = 
 
 
 
-`R` session information.
+## `R` session information.
 
 ```{r reproduce3, echo=FALSE}
 ## Session info
 library("sessioninfo")
 options(width = 120)
-session_info()
+session_info()$platform
 ```
