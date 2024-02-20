@@ -1,4 +1,4 @@
-#' Reformat Seurat Object Metadata UI
+#' Reformat SingleCellExeriment Object Metadata UI
 #'
 #' @param id id
 #'
@@ -31,7 +31,7 @@ reformatMetadataDRui <- function(id) {
     )
 }
 
-#' Reformat Seurat Object Metadata Server
+#' Reformat SingleCellExeriment Object Metadata Server
 #'
 #' @param object single cell object
 #'

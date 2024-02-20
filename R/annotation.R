@@ -36,7 +36,7 @@ genes_to_transcripts <- function(genes, organism = "human") {
 
 #' Ensembl Transcript Ids to Gene Symbols
 #'
-#' convert ensembl transcript ids to hgnc gene symbols
+#' Convert ensembl transcript ids to hgnc gene symbols
 #'
 #' @param transcripts transcripts
 #' @param organism human or mouse
@@ -65,35 +65,6 @@ transcripts_to_genes <- function(transcripts, organism = "human") {
         pull("symbol") %>%
         identity()
 }
-
-#' Annotate Low Read Count Category
-#'
-#' Add a Read Count Categorical Variable to Seurat Object (based on nCount_RNA)
-#'
-#' @param object A object
-#' @param thresh Set a threshold for low read count
-#'
-#' @return a single cell obejct with cell metadata column containing read counts
-#' @export
-setGeneric("add_read_count_col", function(object, thresh = 1e+05) standardGeneric("add_read_count_col"))
-
-setMethod(
-    "add_read_count_col", "Seurat",
-    function(object, thresh = 1e+05) {
-        rc <- object[["nCount_gene"]] < thresh
-        object <- Seurat::AddMetaData(object = object, metadata = rc, col.name = "low_read_count")
-    }
-)
-
-setMethod(
-    "add_read_count_col", "SingleCellExperiment",
-    function(object, thresh = 1e+05) {
-        rc <- object[["nCount_gene"]] < thresh
-
-
-        # object <- Seurat::AddMetaData(object = object, metadata = rc, col.name = "low_read_count")
-    }
-)
 
 #' Annotate percent mitochondrial reads per cell
 #'

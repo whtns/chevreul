@@ -17,7 +17,7 @@ harmony_integrate <- function(object_list) {
     object_list.integrated
 }
 
-#' Merge Small Seurat Objects
+#' Merge Small SingleCellExeriment Objects
 #'
 #' @param object_list List of two or more singlecell objects
 #' @param k.filter minimum cell number for integration
@@ -48,12 +48,10 @@ merge_small_objects <- function(object_list, k.filter = 50) {
 #' @param ... extra args passed to object_reduce_dimensions
 #'
 #' @return an integrated single cell object
+#' @importFrom batchelor correctExperiments
 #' @export
 #'
 object_integrate <- function(object_list, method = "cca", organism = "human", ...) {
-    # To construct a reference we will identify ‘anchors’ between the individual datasets. First, we split the combined object into a list, with each dataset as an element.
-
-    # Prior to finding anchors, we perform standard preprocessing (log-normalization), and identify variable features individually for each. Note that Seurat v3 implements an improved method for variable feature selection based on a variance stabilizing transformation ("vst")
 
   universe <-
     map(object_list, rownames) %>%
@@ -61,13 +59,9 @@ object_integrate <- function(object_list, method = "cca", organism = "human", ..
     identity()
 
   # object_list <- merge_small_objects(object_list)
-  combined <- correctExperiments(object_list)
+  object_list.integrated <- batchelor::correctExperiments(object_list)
 
-  combined <- object_pre
-
-
-
-    # see https://github.com/satijalab/seurat/issues/6341------------------------------
+      # see https://github.com/satijalab/seurat/issues/6341------------------------------
     cells_per_batch <- sapply(object_list, ncol)
     min_k_weight <- min(cells_per_batch) - 1
     min_k_weight <- ifelse(min_k_weight < 100, min_k_weight, 100)
@@ -231,24 +225,10 @@ load_object_path <- function(proj_dir = getwd(), prefix = "unfiltered") {
 #' @param ... extra args passed to load_object_path
 #'
 #' @return a single cell object
-setGeneric("load_object_from_proj", function(proj_dir, ...) standardGeneric("load_object_from_proj"))
-
-setMethod(
-    "load_object_from_proj", "Seurat",
-    function(proj_dir, ...) {
+load_object_from_proj <- function(proj_dir, ...) {
         object_file <- load_object_path(proj_dir, ...)
         object_file <- readRDS(object_file)
     }
-)
-
-setMethod(
-    "load_object_from_proj", "SingleCellExperiment",
-    function(proj_dir, ...) {
-        object_file <- load_object_path(proj_dir, ...)
-        object_file <- readRDS(object_file)
-    }
-)
-
 
 #' Dimensional Reduction
 #'

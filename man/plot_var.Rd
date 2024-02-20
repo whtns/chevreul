@@ -42,15 +42,9 @@ reduction technique used
 }
 \examples{
 # static mode
-\dontrun{
-plot_var(human_gene_transcript_object, group = "batch", return_plotly = FALSE)
-}
+plot_var(human_gene_transcript_sce, "batch", return_plotly = FALSE)
 
 # interactive plotly plot
-\dontrun{
-plotly_plot <- plot_var(human_gene_transcript_object, group = "batch")
-}
-\dontrun{
-print(plotly_plot)
-}
+plot_var(human_gene_transcript_sce, "batch", return_plotly = TRUE)
+
 }

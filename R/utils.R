@@ -7,33 +7,7 @@
 #'
 #' @return a single cell object
 #' @export
-setGeneric("format_new_metadata", function(object, datapath) {
-    standardGeneric("format_new_metadata")
-})
-
-setMethod(
-    "format_new_metadata", "Seurat",
-    function(object, datapath) {
-        new_meta <- read_csv(datapath) %>%
-            mutate(across(contains("snn"), as.factor))
-
-        rowname_col <- colnames(new_meta)[1]
-
-        new_meta <- column_to_rownames(new_meta, rowname_col)
-
-        object <- Seurat::AddMetaData(object, new_meta)
-        DefaultAssay(object) <- "gene"
-        ncalc <- Seurat:::CalcN(object)
-        object$nFeature_RNA <- ncalc$nFeature
-        object$nCount_RNA <- ncalc$nCount
-
-        return(object)
-    }
-)
-
-setMethod(
-    "format_new_metadata", "SingleCellExperiment",
-    function(object, datapath) {
+format_new_metadata <- function(object, datapath) {
         new_meta <- read_csv(datapath) %>%
             mutate(across(contains("snn"), as.factor))
 
@@ -50,7 +24,6 @@ setMethod(
 
         return(object)
     }
-)
 
 #' Reformat object Metadata
 #'
@@ -62,13 +35,7 @@ setMethod(
 #'
 #' @return updated cell level metadata
 #' @export
-setGeneric("combine_cols", function(object, cols, new_col) {
-    standardGeneric("combine_cols")
-})
-
-setMethod(
-    "combine_cols", "Seurat",
-    function(object, cols, new_col) {
+combine_cols <- function(object, cols, new_col) {
         new_col <- janitor::make_clean_names(new_col)
         drop_cols <- cols[!cols == new_col]
         na_cols <- purrr::map_lgl(cols, ~ all(is.na(object[[.x]])))
@@ -80,23 +47,6 @@ setMethod(
             column_to_rownames(var = "rowname") %>%
             identity()
     }
-)
-
-setMethod(
-    "combine_cols", "SingleCellExperiment",
-    function(object, cols, new_col) {
-        new_col <- janitor::make_clean_names(new_col)
-        drop_cols <- cols[!cols == new_col]
-        na_cols <- purrr::map_lgl(cols, ~ all(is.na(object[[.x]])))
-        cols <- cols[!na_cols]
-        meta <- rownames_to_column(get_cell_metadata(object)) %>%
-            dplyr::mutate_at(vars(one_of(cols)), as.character) %>%
-            mutate(`:=`(!!new_col, dplyr::coalesce(!!!syms(cols)))) %>%
-            select(-drop_cols) %>%
-            column_to_rownames(var = "rowname") %>%
-            identity()
-    }
-)
 
 #' Get Transcripts in object
 #'
@@ -113,27 +63,11 @@ setMethod(
 #'
 #' NRL_transcripts <- get_transcripts_from_object(human_gene_transcript_object, "NRL")
 #'
-setGeneric("get_transcripts_from_object", function(object, gene, organism = "human") {
-    standardGeneric("get_transcripts_from_object")
-})
-
-setMethod(
-    "get_transcripts_from_object", "Seurat",
-    function(object, gene, organism = "human") {
+get_transcripts_from_object <- function(object, gene, organism = "human") {
         transcripts <- genes_to_transcripts(gene, organism)
 
         transcripts <- transcripts[transcripts %in% rownames(retrieve_assay(object, "transcript"))]
     }
-)
-
-setMethod(
-    "get_transcripts_from_object", "SingleCellExperiment",
-    function(object, gene, organism = "human") {
-        transcripts <- genes_to_transcripts(gene, organism)
-
-        transcripts <- transcripts[transcripts %in% rownames(retrieve_assay(object, "transcript"))]
-    }
-)
 
 
 #' Record Experiment Metadata
@@ -145,64 +79,7 @@ setMethod(
 #'
 #' @return a single cell object
 #' @export
-setGeneric("record_experiment_data", function(object, experiment_name = "default_experiment", organism = "human") {
-    standardGeneric("record_experiment_data")
-})
-
-setMethod(
-    "record_experiment_data", "Seurat",
-    function(object, experiment_name = "default_experiment", organism = "human") {
-        if (!requireNamespace("Seurat", quietly = TRUE)) {
-            stop("Package 'object' needed for this function to work. Please install it.",
-                call. = FALSE
-            )
-        }
-
-        organism <- Misc(object, "experiment")[["organism"]] %||% organism
-
-        experiment_name <- Misc(object, "experiment")[["experiment_name"]] %||% experiment_name
-
-        message(paste0("[", format(Sys.time(), "%H:%M:%S"), "] Logging Technical Details..."))
-        experiment <- list(
-            experiment_name = experiment_name,
-            organism = organism
-        )
-        experiment$date_of_export <- Sys.Date()
-        experiment$date_of_analysis <- Sys.Date()
-
-        experiment$parameters <- list(
-            gene_nomenclature = "gene_symbol",
-            discard_genes_expressed_in_fewer_cells_than = 10,
-            keep_mitochondrial_genes = TRUE,
-            variables_to_regress_out = "nCount_RNA",
-            number_PCs = 30,
-            tSNE_perplexity = 30,
-            cluster_resolution = seq(0.2, 2.0, by = 0.2)
-        )
-        experiment$filtering <- list(
-            UMI_min = 50,
-            genes_min = 10
-        )
-        experiment$sessionInfo <- list(
-            capture.output(sessionInfo())
-        )
-
-        if (!is.null(object@version)) {
-            experiment$seurat_version <- object@version
-        }
-
-        experiment$chevreul_version <- utils::packageVersion("chevreul")
-
-
-        Misc(object, slot = "experiment") <- experiment
-
-        return(object)
-    }
-)
-
-setMethod(
-    "record_experiment_data", "SingleCellExperiment",
-    function(object, experiment_name = "default_experiment", organism = "human") {
+record_experiment_data <- function(object, experiment_name = "default_experiment", organism = "human") {
         if (!requireNamespace("Seurat", quietly = TRUE)) {
             stop("Package 'object' needed for this function to work. Please install it.",
                 call. = FALSE
@@ -249,7 +126,6 @@ setMethod(
 
         return(object)
     }
-)
 
 #' Update a chevreul Object
 #'
@@ -261,13 +137,7 @@ setMethod(
 #'
 #' @return a single cell object
 #' @export
-setGeneric("update_chevreul_object", function(object_path, feature, resolution = seq(0.2, 2.0, by = 0.2), return_object = TRUE, ...) {
-    standardGeneric("update_chevreul_object")
-})
-
-setMethod(
-    "update_chevreul_object", "Seurat",
-    function(object_path, feature, resolution = seq(0.2, 2.0, by = 0.2), return_object = TRUE, ...) {
+update_chevreul_object <- function(object_path, feature, resolution = seq(0.2, 2.0, by = 0.2), return_object = TRUE, ...) {
         message(object_path)
         object <- readRDS(object_path)
 
@@ -344,88 +214,6 @@ setMethod(
             saveRDS(object, object_path)
         }
     }
-)
-
-setMethod(
-    "update_chevreul_object", "SingleCellExperiment",
-    function(object_path, feature, resolution = seq(0.2, 2.0, by = 0.2), return_object = TRUE, ...) {
-        message(object_path)
-        object <- readRDS(object_path)
-
-        if (is.list(object)) {
-            object <- convert_object_list_to_multimodal(object)
-            # object <- Seurat::UpdateSeuratObject(object)
-        } else if (all(names(object@assays) == "RNA")) {
-            object <- RenameAssays(object, RNA = "gene")
-        } else if (identical(names(object@assays), c("RNA", "integrated"))) {
-            object <- RenameAssays(object, RNA = "gene")
-        }
-
-        seurat_version <- Misc(object)$experiment$seurat_version
-
-        if (packageVersion("Seurat") == "5.0.0" & (seurat_version < 5 || is.null(seurat_version))) {
-            object <- convert_v3_to_v5(object)
-        }
-
-        object <- propagate_spreadsheet_changes(get_cell_metadata(object), object)
-
-        # set appropriate assay
-        if ("integrated" %in% names(object@assays)) {
-            default_assay <- "integrated"
-        } else {
-            default_assay <- "gene"
-        }
-
-        DefaultAssay(object) <- default_assay
-
-        cluster_tag <- glue::glue("{DefaultAssay(object)}_snn_res\\.")
-
-        cluster_names <- str_subset(names(get_cell_metadata(object)), cluster_tag)
-        new_cluster_names <- str_replace(cluster_names, cluster_tag, "cluster_resolution_")
-
-        new_cluster_cols <- get_cell_metadata(object)[cluster_names]
-        names(new_cluster_cols) <- new_cluster_names
-
-        new_meta <- cbind(get_cell_metadata(object), new_cluster_cols)
-
-        object <- set_metadata(object, new_meta)
-
-        chevreul_version <- Misc(object)$experiment$chevreul_version
-
-        chevreul_version <- ifelse(is.null(chevreul_version), 0.1, chevreul_version)
-
-        # update human gene symbols to grch38
-        old_symbol <- "CTC-378H22.2"
-        if (old_symbol %in% rownames(object[["gene"]])) {
-            for (i in names(object@assays)[names(object@assays) %in% c("gene", "integrated")]) {
-                # object <- update_human_gene_symbols(object, assay = i)
-            }
-        }
-
-        if (chevreul_version < getNamespaceVersion("chevreul")) {
-            message(paste0(object_path, " is out of date! updating..."))
-            if (!any(grepl("_snn_res", colnames(get_cell_metadata(object))))) {
-                object <- object_cluster(object = object, resolution = resolution, reduction = "pca", ...)
-            }
-
-            for (i in names(object@assays)[names(object@assays) %in% c("gene", "integrated")]) {
-                object <- find_all_markers(object, object_assay = i)
-            }
-
-            object <- record_experiment_data(object, ...)
-            object <- object_calcn(object)
-        }
-
-
-        if (return_object) {
-            return(object)
-        } else {
-            message(paste0("saving ", object_path))
-            # saveRDS(object, gsub(".rds", "_multimodal.rds", object_path))
-            saveRDS(object, object_path)
-        }
-    }
-)
 
 #' Calculate Read Count Metrics for a object
 #'
@@ -437,11 +225,7 @@ setMethod(
 #'
 #' @return a single cell object with nfeatures and ngenes stored in metadata
 #' @export
-setGeneric("object_calcn", function(object, assay = "gene", slot = "counts") standardGeneric("object_calcn"))
-
-setMethod(
-    "object_calcn", "Seurat",
-    function(object, assay = "gene", slot = "counts") {
+object_calcn <- function(object, assay = "gene", slot = "counts") {
         n.calc <- Seurat:::CalcN(object = GetAssay(object, assay))
         if (!is.null(x = n.calc)) {
             names(x = n.calc) <- paste(names(x = n.calc), assay, sep = "_")
@@ -449,19 +233,6 @@ setMethod(
         }
         return(object)
     }
-)
-
-setMethod(
-    "object_calcn", "SingleCellExperiment",
-    function(object, assay = "gene", slot = "counts") {
-        n.calc <- Seurat:::CalcN(object = GetAssay(object, assay))
-        if (!is.null(x = n.calc)) {
-            names(x = n.calc) <- paste(names(x = n.calc), assay, sep = "_")
-            object[[names(x = n.calc)]] <- n.calc
-        }
-        return(object)
-    }
-)
 
 
 #' Propagate Metadata Changes
@@ -497,11 +268,7 @@ propagate_spreadsheet_changes <- function(updated_table, object) {
 #'
 #' @return a sqlite database with single cell objects
 #' @export
-setGeneric("create_project_db", function(cache_location = "~/.cache/chevreul", sqlite_db = "single-cell-projects.db", verbose = TRUE) standardGeneric("create_project_db"))
-
-setMethod(
-    "create_project_db", "Seurat",
-    function(cache_location = "~/.cache/chevreul", sqlite_db = "single-cell-projects.db", verbose = TRUE) {
+create_project_db <- function(cache_location = "~/.cache/chevreul", sqlite_db = "single-cell-projects.db", verbose = TRUE) {
         if (!dir.exists(cache_location)) {
             dir.create(cache_location)
         }
@@ -517,29 +284,8 @@ setMethod(
         }, finally = {
         })
         dbDisconnect(con)
-    }
-)
+}
 
-setMethod(
-    "create_project_db", "SingleCellExperiment",
-    function(cache_location = "~/.cache/chevreul", sqlite_db = "single-cell-projects.db", verbose = TRUE) {
-        if (!dir.exists(cache_location)) {
-            dir.create(cache_location)
-        }
-        con <- dbConnect(RSQLite::SQLite(), path(cache_location, sqlite_db))
-        projects_tbl <- tibble::tibble(project_name = character(), project_path = character(), project_slug = character(), project_type = character(), )
-        message(paste0("building table of chevreul projects at ", path(cache_location, sqlite_db)))
-        tryCatch({
-            dbWriteTable(con, "projects_tbl", projects_tbl)
-        }, warning = function(w) {
-            message(sprintf("Warning in %s: %s", deparse(w[["call"]]), w[["message"]]))
-        }, error = function(e) {
-            message("projects db already exists!")
-        }, finally = {
-        })
-        dbDisconnect(con)
-    }
-)
 #' Update a database of chevreul projects
 #'
 #' Add new/update existing projects to the database by recursing fully
@@ -806,18 +552,9 @@ convert_v3_to_v5 <- function(seurat_v3) {
 #'
 #' @return a vector of genes in a single cell object
 #' @export
-setGeneric("genes_from_object", function(object, ...) {
-    standardGeneric("genes_from_object")
-})
-
-setMethod("genes_from_object", "Seurat", function(object) {
-    #rownames(object@assays[[assay]])
-     rownames(object)
-})
-
-setMethod("genes_from_object", "SingleCellExperiment", function(object) {
+genes_from_object <- function(object) {
     rownames(object)
-})
+}
 
 #' Get metadata from object
 #'
@@ -827,17 +564,9 @@ setMethod("genes_from_object", "SingleCellExperiment", function(object) {
 #'
 #' @return a tibble with metadata from a single cell object
 #' @export
-setGeneric("metadata_from_object", function(object) {
-    standardGeneric("metadata_from_object")
-})
-
-setMethod("metadata_from_object", "Seurat", function(object) {
-    colnames(object[[]])
-})
-
-setMethod("metadata_from_object", "SingleCellExperiment", function(object) {
+metadata_from_object <- function(object) {
     colnames(colData(object))
-})
+}
 
 convert_seurat_to_sce <- function(seu) {
     sce <- as.SingleCellExperiment(seu, assay = DefaultAssay(seu))
