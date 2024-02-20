@@ -78,7 +78,7 @@ clustered_sce_object <- clustering_workflow(human_gene_transcript_sce,
 ```
 
 ```{r, results=FALSE, echo=FALSE}
-clustered_sce_object <- readRDS("clustered_sc_object.rds")
+clustered_sce_object <- human_gene_transcript_sce
 ```
 
 
