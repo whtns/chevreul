@@ -24,6 +24,10 @@ run_object_de(
 \item{resolution}{resolution}
 
 \item{diffex_scheme}{scheme for differential expression}
+
+\item{featureType}{gene or transcript}
+
+\item{tests}{t wicox or bimod}
 }
 \value{
 a dataframe with differential expression information

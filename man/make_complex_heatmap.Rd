@@ -48,8 +48,6 @@ a complexheatmap
 Plot Annotated Complexheatmap from Seurat object
 }
 \examples{
-plot top 50 variable genes
 \dontrun{top_50_features <- get_variable_features(human_gene_transcript_object)[1:50]}
 \dontrun{make_complex_heatmap(human_gene_transcript_object, features = top_50_features)}
-
 }

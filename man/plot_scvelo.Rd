@@ -17,6 +17,8 @@ plot_scvelo(
 
 \item{group.by}{grouping variable}
 
+\item{basis}{umap, tsne, or pca}
+
 \item{plot_method}{arrows or stream}
 
 \item{...}{extra args passed to velocity_embedding_stream}

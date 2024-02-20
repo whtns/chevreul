@@ -31,6 +31,7 @@ a stacked barplot of transcript counts
 plot the proportion of reads of a given gene map to each transcript
 }
 \examples{
-\dontrun{plot_transcript_composition(human_gene_transcript_object, "RXRG", group.by = "gene_snn_res.0.6")}
+\dontrun{plot_transcript_composition(human_gene_transcript_object, "RXRG",
+group.by = "gene_snn_res.0.6")}
 
 }

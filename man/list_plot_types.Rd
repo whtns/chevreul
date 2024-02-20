@@ -7,7 +7,7 @@
 list_plot_types(object)
 }
 \arguments{
-\item{object}{}
+\item{object}{a single cell object}
 }
 \value{
 plot_types a list of category_vars or continuous_vars

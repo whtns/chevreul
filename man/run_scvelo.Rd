@@ -17,7 +17,11 @@ run_scvelo(
 
 \item{loom_path}{path to matching loom file}
 
+\item{assay}{gene}
+
 \item{fit.quantile}{how to fit velocity}
+
+\item{check_loom}{FALSE}
 }
 \value{
 a single cell object with RNA velocity calculated

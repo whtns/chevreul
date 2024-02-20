@@ -2,16 +2,18 @@
 % Please edit documentation in R/utils_classes.R
 \name{set_metadata}
 \alias{set_metadata}
-\title{Pull object metadata}
+\title{Add new metadata to the object metadata}
 \usage{
 set_metadata(object, meta.data)
 }
 \arguments{
 \item{object}{a single cell object}
+
+\item{meta.data}{new metadata}
 }
 \value{
 object metadata
 }
 \description{
-Pull object metadata
+Add new metadata to the object metadata
 }

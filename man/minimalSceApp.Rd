@@ -5,7 +5,7 @@
 \title{Create a minimal chevreul app using SingleCellExperiment input}
 \usage{
 minimalSceApp(
-  input_object = panc8,
+  single_cell_object = panc8,
   loom_path = NULL,
   appTitle = NULL,
   organism_type = "human",
@@ -14,6 +14,8 @@ minimalSceApp(
 )
 }
 \arguments{
+\item{single_cell_object}{a singlecell object}
+
 \item{loom_path}{path to a loom file}
 
 \item{appTitle}{a title for the app}
@@ -21,8 +23,6 @@ minimalSceApp(
 \item{organism_type}{human or mouse}
 
 \item{futureMb}{the megabytes available for the future package}
-
-\item{object}{a singlecell object}
 }
 \value{
 a minimal chevreul app

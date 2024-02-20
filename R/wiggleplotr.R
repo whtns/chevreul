@@ -65,10 +65,17 @@ load_bigwigs <- function(object, bigwig_db = "~/.cache/chevreul/bw-files.db") {
 #' @param organism Organism
 #' @param edb ensembldb object
 #' @param heights The heights of each row in the grid of plot
+#' @param scale_y whether to scale coverage
+#' @param reverse_x whether to reverse x axis
+#' @param start start coordinates
+#' @param end end coordinates
+#' @param summarize_transcripts whether to summarize transcript counts
 #' @param ... extra arguments passed to plotCoverageFromEnsembldb
 #'
 #' @return a ggplot with coverage faceted by group_by
 #' @export
+#' @importFrom EnsDb.Hsapiens.v86 EnsDb.Hsapiens.v86
+#' @importFrom EnsDb.Mmusculus.v79 EnsDb.Mmusculus.v79
 plot_gene_coverage_by_var <- function(genes_of_interest = "RXRG",
     cell_metadata,
     bigwig_tbl,
@@ -84,9 +91,9 @@ plot_gene_coverage_by_var <- function(genes_of_interest = "RXRG",
     summarize_transcripts = FALSE,
     ...) {
     if (organism == "mouse") {
-        edb <- EnsDb.Mmusculus.v79::EnsDb.Mmusculus.v79
+        edb <- EnsDb.Mmusculus.v79
     } else {
-        edb <- EnsDb.Hsapiens.v86::EnsDb.Hsapiens.v86
+        edb <- EnsDb.Hsapiens.v86
     }
 
     cell_metadata["sample_id"] <- NULL

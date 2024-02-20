@@ -31,11 +31,13 @@ plot_markers(
 
 \item{marker_method}{"wilcox"}
 
+\item{object_assay}{assay to plot default gene}
+
 \item{hide_technical}{whether to exclude mitochondrial or ribosomal genes}
 
-\item{...}{extra parameters passed to ggplot2}
+\item{unique_markers}{whether to plot only unique marker genes for each group}
 
-\item{featureType}{gene or transcript}
+\item{...}{extra parameters passed to ggplot2}
 }
 \value{
 a ggplot with marker genes from group_by
@@ -46,7 +48,6 @@ available methods are wilcoxon rank-sum test
 }
 \examples{
 
-interactive mode using "wilcox"
 \dontrun{plot_markers(human_gene_transcript_object, group_by = "tech", marker_method = "wilcox", return_plotly = TRUE)}
 
 }

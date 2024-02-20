@@ -20,12 +20,13 @@ harmony_integrate <- function(object_list) {
 #' Merge Small Seurat Objects
 #'
 #' @param object_list List of two or more singlecell objects
+#' @param k.filter minimum cell number for integration
 #'
 #' @return a single cell object
 #' @export
 #'
 merge_small_objects <- function(object_list, k.filter = 50) {
-    # check if any singlecell objectss are too small and if so merge with the first singlecell objects
+    # check if any singlecell objects are too small and if so merge with the first singlecell objects
     object_dims <- map(object_list, dim) %>%
         purrr::map_lgl(~ .x[[2]] < k.filter)
 
@@ -201,6 +202,7 @@ sce_integrate <- function(object_list, method = "cca", organism = "human", ...) 
 #'
 #' @return a single cell object with louvain clusters
 #' @export
+#' @importFrom bluster NNGraphParam
 setGeneric("object_cluster", function(object = object, resolution = 0.6, custom_clust = NULL, reduction = "pca", algorithm = 1, ...) standardGeneric("object_cluster"))
 
 setMethod(
@@ -243,7 +245,7 @@ setMethod(
                 # object <- Seurat::FindClusters(object = object, resolution = i, algorithm = algorithm, ...)
                 cluster_labels <- scran::clusterCells(object,
                     use.dimred = reduction,
-                    BLUSPARAM = bluster::NNGraphParam(cluster.fun = "louvain", cluster.args = list(resolution = i))
+                    BLUSPARAM = NNGraphParam(cluster.fun = "louvain", cluster.args = list(resolution = i))
                 )
                 # colLabels(object) <- cluster_labels
                 colData(object)[[glue::glue("gene_snn_res.{i}")]] <- cluster_labels
@@ -253,7 +255,7 @@ setMethod(
             # object <- Seurat::FindClusters(object = object, resolution = resolution, algorithm = algorithm, ...)
             cluster_labels <- scran::clusterCells(object,
                 use.dimred = reduction,
-                BLUSPARAM = bluster::NNGraphParam(cluster.fun = "louvain", cluster.args = list(resolution = resolution))
+                BLUSPARAM = NNGraphParam(cluster.fun = "louvain", cluster.args = list(resolution = resolution))
             )
 
 
@@ -481,8 +483,11 @@ filter_merged_object <- function(object, filter_var, filter_val, .drop = .drop) 
 #' 3) run integration pipeline and save
 #'
 #' @param object A singlecell objects
+#' @param feature gene or transcript
 #' @param suffix to be appended to file saved in output dir
 #' @param reduction to use default is pca
+#' @param algorithm 1
+#' @param ... extra args passed to object_integration_pipeline
 #'
 #' @return a single cell object
 #' @export

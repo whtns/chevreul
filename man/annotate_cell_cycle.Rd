@@ -4,12 +4,12 @@
 \alias{annotate_cell_cycle}
 \title{Annotate Cell Cycle}
 \usage{
-annotate_cell_cycle(object, organism = "human", ...)
+annotate_cell_cycle(object, organism = "human")
 }
 \arguments{
-\item{object}{A object}
+\item{object}{A single cell object}
 
-\item{organism}{organism. Default "human"}
+\item{organism}{organism. Human or mouse, default "human"}
 }
 \value{
 a single cell object

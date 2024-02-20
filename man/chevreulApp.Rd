@@ -19,7 +19,9 @@ chevreulApp(
 
 \item{organism_type}{human or mouse}
 
-\item{futureMb}{amount of Mb allocated to future package}
+\item{db_path}{sqlite database with list of saved single cell objects}
+
+\item{futureMb}{megabytes for use with future package}
 }
 \value{
 a shiny app

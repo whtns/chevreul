@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils_classes.R
 \name{pull_metadata}
 \alias{pull_metadata}
-\title{Pull object metadata}
+\title{Pull the metadata from a given object}
 \usage{
 pull_metadata(object)
 }
@@ -10,8 +10,8 @@ pull_metadata(object)
 \item{object}{a single cell object}
 }
 \value{
-object metadata
+dataframe containing object metadata
 }
 \description{
-Pull object metadata
+Pull the metadata from a given object
 }

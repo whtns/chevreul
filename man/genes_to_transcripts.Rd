@@ -7,7 +7,7 @@
 genes_to_transcripts(genes, organism = "human")
 }
 \arguments{
-\item{genes}{}
+\item{genes}{genes}
 }
 \value{
 a vector of transcripts
@@ -18,5 +18,4 @@ convert hgnc gene symbols to ensembl transcript ids
 \examples{
 
 genes_to_transcripts("RXRG")
-
 }

@@ -180,12 +180,14 @@ setMethod(
     function(object, group_by, object_assay = "gene", top_n = 200, p_val_cutoff = 0.5) {
         message(paste0("stashing presto markers for ", group_by))
         markers <- list()
-        markers$presto <- presto::wilcoxauc(object, group_by, seurat_assay = object_assay) %>%
-            group_by(group) %>%
-            filter(padj < p_val_cutoff) %>%
-            dplyr::top_n(n = top_n, wt = logFC) %>%
-            arrange(group, desc(logFC)) %>%
-            select(Gene.Name = feature, Average.Log.Fold.Change = logFC, Adjusted.pvalue = padj, avgExpr, Cluster = group)
+        markers$presto <- FindAllMarkers(object, method = "t", group.by = group_by, assay = object_assay) %>%
+          dplyr::rename(group = cluster) %>%
+          group_by(group) %>%
+          filter(p_val_adj < p_val_cutoff) %>%
+          dplyr::top_n(n = top_n, wt = avg_log2FC) %>%
+          arrange(group, desc(avg_log2FC)) %>%
+          select(Gene.Name = gene, Average.Log.Fold.Change = avg_log2FC, Adjusted.pvalue = p_val_adj, Cluster = group) %>%
+          identity()
         return(markers)
     }
 )
@@ -195,12 +197,17 @@ setMethod(
     function(object, group_by, object_assay = "gene", top_n = 200, p_val_cutoff = 0.5) {
         message(paste0("stashing presto markers for ", group_by))
         markers <- list()
-        markers$presto <- presto::wilcoxauc(object, group_by, seurat_assay = object_assay) %>%
-            group_by(group) %>%
-            filter(padj < p_val_cutoff) %>%
-            dplyr::top_n(n = top_n, wt = logFC) %>%
-            arrange(group, desc(logFC)) %>%
-            select(Gene.Name = feature, Average.Log.Fold.Change = logFC, Adjusted.pvalue = padj, avgExpr, Cluster = group)
+        markers$presto <-
+          scran::findMarkers(object, test.type = "t", groups = colData(object)[[group_by]]) %>%
+          map(as.data.frame) %>%
+          map(rownames_to_column, "feature") %>%
+          bind_rows(.id = "group") %>%
+          group_by(group) %>%
+          filter(FDR < p_val_cutoff) %>%
+          dplyr::top_n(n = top_n, wt = summary.logFC) %>%
+          arrange(group, desc(summary.logFC)) %>%
+          select(Gene.Name = feature, Average.Log.Fold.Change = summary.logFC, Adjusted.pvalue = FDR, Cluster = group) %>%
+          identity()
         return(markers)
     }
 )

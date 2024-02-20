@@ -63,16 +63,17 @@ run_scvelo <- function(object, loom_path, assay = "gene", fit.quantile = 0.05, c
 #' @examples
 #'
 #' convert_to_h5ad(human_gene_transcript_object, "inst/extdata/object.rds")
-#'
+#' @importFrom SeuratDisk SaveH5Seurat
+#' @importFrom SeuratDisk Convert
 convert_to_h5ad <- function(object, file_path) {
-    h5object_path <- fs::path_ext_set(file_path, ".h5Seurat")
+    h5object_path <- path_ext_set(file_path, ".h5Seurat")
     message(h5object_path)
-    SeuratDisk::SaveH5Seurat(object, filename = h5object_path, overwrite = TRUE)
+    SaveH5Seurat(object, filename = h5object_path, overwrite = TRUE)
 
-    h5ad_path <- fs::path_ext_set(file_path, ".h5ad")
+    h5ad_path <- path_ext_set(file_path, ".h5ad")
 
     message(h5ad_path)
-    SeuratDisk::Convert(h5object_path, dest = h5ad_path, overwrite = TRUE)
+    Convert(h5object_path, dest = h5ad_path, overwrite = TRUE)
 }
 
 #' scvelo_assay
@@ -132,6 +133,7 @@ prep_scvelo <- function(object, loom_path, velocity_mode = c("deterministic", "s
 #'
 #' @param adata anndata object
 #' @param group.by grouping variable
+#' @param basis umap, tsne, or pca
 #' @param plot_method arrows or stream
 #' @param ... extra args passed to velocity_embedding_stream
 #'

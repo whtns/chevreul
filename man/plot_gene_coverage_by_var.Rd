@@ -38,6 +38,16 @@ plot_gene_coverage_by_var(
 
 \item{heights}{The heights of each row in the grid of plot}
 
+\item{scale_y}{whether to scale coverage}
+
+\item{reverse_x}{whether to reverse x axis}
+
+\item{start}{start coordinates}
+
+\item{end}{end coordinates}
+
+\item{summarize_transcripts}{whether to summarize transcript counts}
+
 \item{...}{extra arguments passed to plotCoverageFromEnsembldb}
 }
 \value{

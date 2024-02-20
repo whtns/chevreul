@@ -21,6 +21,10 @@ plot_feature(
 \item{features}{Features to plot}
 
 \item{dims}{Dimensions to plot, must be a two-length numeric vector}
+
+\item{return_plotly}{return plotly object}
+
+\item{pt.size}{size of points in ggplot}
 }
 \value{
 an embedding colored by a feature of interest

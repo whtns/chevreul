@@ -1,6 +1,6 @@
 #' Create a minimal object app
 #'
-#' @param object a single cell object
+#' @param single_cell_object a single cell object
 #' @param loom_path path to a loom file
 #' @param appTitle title for an app
 #' @param organism_type Organism

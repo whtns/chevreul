@@ -1562,6 +1562,7 @@ techInfoui <- function(id) {
 #' @param object a single cell object
 #'
 #' @noRd
+#' @importFrom S4Vectors metadata
 techInfo <- function(input, output, session, object) {
   ns <- session$ns
   ## ----------------------------------------------------------------------------##
@@ -1572,7 +1573,7 @@ techInfo <- function(input, output, session, object) {
     req(object())
     ## SCE
     if(is(object(), "SingleCellExperiment")){
-      S4Vectors::metadata(object())
+      metadata(object())
     }
     ## Seurat
     if(is(object(), "Seurat")){

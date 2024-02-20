@@ -8,6 +8,8 @@ find_markers(object, num_features)
 }
 \arguments{
 \item{object}{A object}
+
+\item{num_features}{number of features to retrieve for marker genes}
 }
 \value{
 a single cell object

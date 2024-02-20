@@ -860,7 +860,9 @@ threshold_monocle_genes <- function(object, cds, min_expression = 0.05) {
     return(cds)
 }
 
-#' Title
+#' Find Modules from monocle
+#'
+#' Find modules in monocle cell data set
 #'
 #' @param cds
 #' @param cells
@@ -877,9 +879,9 @@ threshold_monocle_genes <- function(object, cds, min_expression = 0.05) {
 #' @param mm_col_dend
 #' @param ...
 #'
-#' @return
+#' @importFrom circlize colorRamp2
 #'
-#' @examples
+#' @return
 monocle_module_heatmap <- function(cds, pr_deg_ids, object_resolution, cells = NULL, collapse_rows = TRUE,
     resolution = 10^seq(-6, -1), group.by = "batch", group.bar.height = 0.01,
     cluster_columns = FALSE, cluster_rows = TRUE,
@@ -984,7 +986,7 @@ monocle_module_heatmap <- function(cds, pr_deg_ids, object_resolution, cells = N
     ha_cols.numeric <- NULL
     if (length(groups.use.numeric) > 0) {
         numeric_col_fun <- function(myvec, color) {
-            circlize::colorRamp2(range(myvec), c("white", color))
+            colorRamp2(range(myvec), c("white", color))
         }
         ha_col_names.numeric <- names(groups.use.numeric)
         ha_col_hues.numeric <- (scales::hue_pal())(length(ha_col_names.numeric))

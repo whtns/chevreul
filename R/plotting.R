@@ -216,6 +216,8 @@ setMethod(
 #' @param embedding Dimensional reduction technique to be used
 #' @param features Features to plot
 #' @param dims Dimensions to plot, must be a two-length numeric vector
+#' @param return_plotly return plotly object
+#' @param pt.size size of points in ggplot
 #'
 #' @return an embedding colored by a feature of interest
 #' @export
@@ -337,13 +339,15 @@ setMethod(
 #' available methods are wilcoxon rank-sum test
 #'
 #' @param object a object
-#' @param marker_method "wilcox"
 #' @param group_by the metadata variable from which to pick clusters
 #' @param num_markers default is 5
 #' @param selected_values selected values to display
 #' @param return_plotly whether to return an interactive ploly plot
-#' @param featureType gene or transcript
+#' @param marker_method "wilcox"
+#' @param object_assay assay to plot default gene
 #' @param hide_technical whether to exclude mitochondrial or ribosomal genes
+#' @param unique_markers whether to plot only unique marker genes for each group
+#'
 #' @param ... extra parameters passed to ggplot2
 #'
 #' @return a ggplot with marker genes from group_by
@@ -351,7 +355,6 @@ setMethod(
 #'
 #' @examples
 #'
-#' interactive mode using "wilcox"
 #' \dontrun{plot_markers(human_gene_transcript_object, group_by = "tech", marker_method = "wilcox", return_plotly = TRUE)}
 #'
 setGeneric("plot_markers", function(object, group_by = "batch", num_markers = 5, selected_values = NULL, return_plotly = FALSE, marker_method = "wilcox", object_assay = "gene", hide_technical = NULL, unique_markers = FALSE, p_val_cutoff = 1, ...) standardGeneric("plot_markers"))
@@ -515,16 +518,15 @@ setMethod(
 #' @param ... extra args passed to ggplot2
 #'
 #' @return a histogram of read counts
+#' @importFrom ggplot2 ggplot aes geom_bar theme labs scale_y_log10
 #' @export
 #'
 #' @examples
-#' interactive plotly
+#' # interactive plotly
 #' \dontrun{plot_readcount(human_gene_transcript_object, return_plotly = TRUE)}
 #'
-#' static plot
+#' # static plot
 #' \dontrun{plot_readcount(human_gene_transcript_object, return_plotly = FALSE)}
-#'
-#' @importFrom ggplot2 ggplot aes geom_bar theme labs scale_y_log10
 setGeneric("plot_readcount", function(object, group_by = "nCount_RNA", color.by = "batch", yscale = "linear", return_plotly = FALSE, ...) standardGeneric("plot_readcount"))
 
 setMethod(
@@ -586,12 +588,14 @@ setMethod(
 #' @param ... additional arguments passed to ComplexHeatmap::Heatmap
 #'
 #' @return a complexheatmap
+#' @importFrom SummarizedExperiment assay
+#' @importFrom cluster agnes
+#' @importFrom circlize colorRamp2
 #' @export
 #'
 #' @examples
 #' \dontrun{top_50_features <- get_variable_features(human_gene_transcript_object)[1:50]}
 #' \dontrun{make_complex_heatmap(human_gene_transcript_object, features = top_50_features)}
-#'
 setGeneric("make_complex_heatmap", function(object, features = NULL, group.by = "ident", cells = NULL, layer = "scale.data", assay = NULL, group.bar.height = 0.01, column_split = NULL, col_arrangement = "ward.D2", mm_col_dend = 30, ...) standardGeneric("make_complex_heatmap"))
 
 setMethod(
@@ -627,7 +631,7 @@ setMethod(
                     hclust(col_arrangement)
             } else {
                 message("pca not computed for this dataset; cells will be clustered by displayed features")
-                cluster_columns <- function(m) as.dendrogram(cluster::agnes(m), method = col_arrangement)
+                cluster_columns <- function(m) as.dendrogram(agnes(m), method = col_arrangement)
             }
         } else {
             cells <- object %>%
@@ -656,7 +660,7 @@ setMethod(
         ha_cols.numeric <- NULL
         if (length(groups.use.numeric) > 0) {
             numeric_col_fun <- function(myvec, color) {
-                circlize::colorRamp2(range(myvec), c("white", color))
+                colorRamp2(range(myvec), c("white", color))
             }
             ha_col_names.numeric <- names(groups.use.numeric)
             ha_col_hues.numeric <- (scales::hue_pal())(length(ha_col_names.numeric))
@@ -688,7 +692,7 @@ setMethod(
         }
         features <- features %||% scran::getTopHVGs(object)
         features <- rev(unique(features))
-        possible.features <- rownames(x = SummarizedExperiment::assay(object, assay_method))
+        possible.features <- rownames(x = assay(object, assay_method))
         if (any(!features %in% possible.features)) {
             bad.features <- features[!features %in% possible.features]
             features <- features[features %in% possible.features]
@@ -708,7 +712,7 @@ setMethod(
                     hclust(col_arrangement)
             } else {
                 message("pca not computed for this dataset; cells will be clustered by displayed features")
-                cluster_columns <- function(m) as.dendrogram(cluster::agnes(m), method = col_arrangement)
+                cluster_columns <- function(m) as.dendrogram(agnes(m), method = col_arrangement)
             }
         } else {
             cells <- colData(object)[col_arrangement] %>%
@@ -737,7 +741,7 @@ setMethod(
         ha_cols.numeric <- NULL
         if (length(groups.use.numeric) > 0) {
             numeric_col_fun <- function(myvec, color) {
-                circlize::colorRamp2(range(myvec), c("white", color))
+                colorRamp2(range(myvec), c("white", color))
             }
             ha_col_names.numeric <- names(groups.use.numeric)
             ha_col_hues.numeric <- (scales::hue_pal())(length(ha_col_names.numeric))

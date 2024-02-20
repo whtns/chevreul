@@ -5,10 +5,11 @@
 
 #' Collate list of variables to be plotted
 #'
-#' @param object
+#' @param object a single cell object
 #'
 #' @return plot_types a list of category_vars or continuous_vars
 #' @export
+#' @importFrom pillar new_pillar_type
 setGeneric("list_plot_types", function(object) {
     standardGeneric("list_plot_types")
 })
@@ -18,7 +19,7 @@ setMethod(
     function(object) {
         meta_types <- tibble::tibble(
             vars = colnames(pull_metadata(object)),
-            var_type = purrr::map_chr(map(pull_metadata(object), pillar::new_pillar_type), 1),
+            var_type = purrr::map_chr(map(pull_metadata(object), new_pillar_type), 1),
             num_levels = unlist(map(pull_metadata(object), ~ length(unique(.x))))
         )
 
@@ -58,7 +59,7 @@ setMethod(
     function(object) {
         meta_types <- tibble::tibble(
             vars = colnames(colData(object)),
-            var_type = purrr::map_chr(map(colData(object), pillar::new_pillar_type), 1),
+            var_type = purrr::map_chr(map(colData(object), new_pillar_type), 1),
             num_levels = unlist(map(colData(object), ~ length(unique(.x))))
         )
 
@@ -125,6 +126,7 @@ setMethod(
 #' Get variable features
 #'
 #' @param object a single cell object
+#' @param ... extra args passed to seurat class method
 #'
 #' @return variable features from a single cell object
 #' @export
@@ -151,6 +153,7 @@ setMethod(
 #' Get feature names
 #'
 #' @param object a single cell object
+#' @param ... extra args passed to seurat class method
 #'
 #' @return variable features from a single cell object
 #' @export

@@ -24,7 +24,7 @@ object_preprocess(
 
 \item{legacy_settings}{Use legacy settings}
 
-\item{...}{}
+\item{...}{extra args passed to scaling functions}
 }
 \value{
 a preprocessed single cell object

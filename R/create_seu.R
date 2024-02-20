@@ -24,7 +24,7 @@ set_colnames_txi <- function(txi, colnames) {
 #' @param proj_dir project directory
 #' @param type stringtie or salmon
 #' @param countsFromAbundance argument provided to tximport
-#' @param edb
+#' @param edb ensembldb reference
 #'
 #' @return a list of feature count matrices for gene symbols and transcripts
 #' @export
@@ -92,7 +92,6 @@ load_meta <- function(proj_dir) {
 #'
 #' @param txi output from load_counts_by_tximport
 #' @param meta_tbl a tibble of cell metadata with cell ids as the first column
-#' @param feature the feature level on which to summarize counts gene or transcript
 #'
 #' @return a single cell object
 #' @export

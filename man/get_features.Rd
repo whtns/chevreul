@@ -8,6 +8,8 @@ get_features(object, ...)
 }
 \arguments{
 \item{object}{a single cell object}
+
+\item{...}{extra args passed to seurat class method}
 }
 \value{
 variable features from a single cell object
