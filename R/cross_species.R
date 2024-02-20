@@ -56,9 +56,9 @@ convert_human_object_to_mouse <- function(object, ...) {
 #'
 #' @examples
 #'
-#' convert_symbols_by_species("RXRG", "human")
+#' convert_symbols_by_species("NRL", "human")
 #'
-#' convert_symbols_by_species("Rxrg", "mouse")
+#' convert_symbols_by_species("NRL", "mouse")
 #'
 convert_symbols_by_species <- function(src_genes, src_species) {
     if (src_species == "human") {

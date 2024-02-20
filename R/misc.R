@@ -1,14 +1,3 @@
-#' Rename cell ids from annoying old notation
-#'
-#' @param cell_ids cell ids
-#' @param batch_id bath id
-#'
-#' @return a vector of cell ids
-rename_from_x_notation <- function(cell_ids, batch_id) {
-    cell_ids <- str_replace(cell_ids, "X", "")
-    cell_ids <- paste0(batch_id, stringr::str_pad(cell_ids, width = max(nchar(cell_ids)), pad = "0"))
-}
-
 #' Reorganize objects to a multimodal format
 #'
 #' @param projects_db project directory
@@ -83,7 +72,7 @@ pad_sample_files <- function(proj_dir) {
 #' @return a path to a tsv
 prep_armor_meta <- function(proj_dir) {
     object <- load_object_from_proj(proj_dir)
-    meta <- pull_metadata(object) %>%
+    meta <- get_cell_metadata(object) %>%
         mutate(names = sample_id) %>%
         mutate(type = "PE")
 

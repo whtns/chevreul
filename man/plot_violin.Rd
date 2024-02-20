@@ -8,7 +8,7 @@ plot_violin(
   object,
   plot_var = "batch",
   plot_vals = NULL,
-  features = "RXRG",
+  features = "NRL",
   assay = "gene",
   ...
 )

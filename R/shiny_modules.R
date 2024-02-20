@@ -39,7 +39,7 @@ plotViolinui <- function(id) {
             title = "Violin Plots",
             uiOutput(ns("vln_group")),
             selectizeInput(ns("customFeature"),
-                "Gene or transcript expression by which to color the plot eg. 'RXRG' or 'ENST00000488147'",
+                "Gene or transcript expression by which to color the plot eg. 'NRL' or 'ENST00000488147'",
                 choices = NULL, multiple = TRUE
             ),
             radioButtons(ns("slot"), "Data Type", choices = c("transformed" = "data", "raw counts" = "counts")),
@@ -72,9 +72,9 @@ plotViolin <- function(input, output, session, object, featureType, organism_typ
             }
         } else if (featureType() == "gene") {
             if (organism_type() == "human") {
-                "RXRG"
+                "NRL"
             } else if (organism_type() == "mouse") {
-                "Rxrg"
+                "NRL"
             }
         }
     })
@@ -114,7 +114,7 @@ plotViolin <- function(input, output, session, object, featureType, organism_typ
     output$vplot <- renderPlotly({
         req(object())
         req(input$vlnGroup)
-        exclude_trace_number <- length(unique(pull_metadata(object())[[input$vlnGroup]])) * 2
+        exclude_trace_number <- length(unique(get_cell_metadata(object())[[input$vlnGroup]])) * 2
 
         vln_plot <- ggplotly(vln_plot(), height = 700) %>%
             style(opacity = 0.5) %>%
@@ -141,7 +141,7 @@ plotHeatmapui <- function(id) {
             selectizeInput(ns("dendroSelect"), "Clustering algorithm or metadata for column arrangement", choices = NULL, selected = NULL, multiple = TRUE),
             actionButton(ns("actionHeatmap"), "Plot Heatmap"),
             downloadButton(ns("downloadPlot"), "Download Heatmap"),
-            selectizeInput(ns("customFeature"), "Gene or transcript expression by which to color the plot; eg. 'RXRG' or 'ENST00000488147'",
+            selectizeInput(ns("customFeature"), "Gene or transcript expression by which to color the plot; eg. 'NRL' or 'ENST00000488147'",
                 choices = NULL, multiple = TRUE
             ),
             plotOutput(ns("heatmap"), height = 750),
@@ -186,7 +186,7 @@ plotHeatmap <- function(input, output, session, object, featureType, organism_ty
     output$colAnnoVarui <- renderUI({
         req(object())
 
-        formatted_col_names <- colnames(pull_metadata(object())) %>%
+        formatted_col_names <- colnames(get_cell_metadata(object())) %>%
             make_chevreul_clean_names()
 
         selectizeInput(ns("colAnnoVar"), "Column Annotation(s)",
@@ -199,7 +199,7 @@ plotHeatmap <- function(input, output, session, object, featureType, organism_ty
 
         hclust_methods <- c("Ward" = "ward.D2", "single", "complete", "average")
 
-        updateSelectizeInput(session, "dendroSelect", choices = c(hclust_methods, colnames(pull_metadata(object()))), selected = "ward.D2")
+        updateSelectizeInput(session, "dendroSelect", choices = c(hclust_methods, colnames(get_cell_metadata(object()))), selected = "ward.D2")
     })
 
     heatmap_plot <- eventReactive(input$actionHeatmap, {
@@ -450,7 +450,7 @@ plotDimRedui <- function(id) {
             selectizeInput(ns("dim2"), "Dimension 2", choices = seq(1, 99), selected = 2)
         ),
         selectizeInput(ns("plottype"), "Variable to Plot", choices = NULL, multiple = TRUE),
-        selectizeInput(ns("customFeature"), "Gene or transcript expression by which to color the plot; eg. 'RXRG' or 'ENST00000488147'", choices = NULL, multiple = TRUE),
+        selectizeInput(ns("customFeature"), "Gene or transcript expression by which to color the plot; eg. 'NRL' or 'ENST00000488147'", choices = NULL, multiple = TRUE),
         plotlyOutput(ns("dplot"), height = 500),
         width = 6
     )
@@ -512,9 +512,9 @@ plotDimRed <- function(input, output, session, object, plot_types, featureType,
             }
         } else if (featureType() == "gene") {
             if (organism_type() == "human") {
-                "RXRG"
+                "NRL"
             } else if (organism_type() == "mouse") {
-                "Rxrg"
+                "NRL"
             }
         }
     })
@@ -607,7 +607,7 @@ tableSelected <- function(input, output, session, object) {
     output$brushtable <- DT::renderDT({
         req(object())
         req(brush())
-        selected_meta <- data.frame(pull_metadata(object())[brush(), ])
+        selected_meta <- data.frame(get_cell_metadata(object())[brush(), ])
 
         # selection = list(mode = 'multiple', selected = c(1, 3, 8), target = 'row'),
         DT::datatable(selected_meta,
@@ -619,7 +619,7 @@ tableSelected <- function(input, output, session, object) {
 
     selected_cells <- reactive({
         selected_rows <- input$brushtable_rows_selected
-        rownames(pull_metadata(object())[brush(), ])[selected_rows]
+        rownames(get_cell_metadata(object())[brush(), ])[selected_rows]
     })
 
     return(selected_cells)
@@ -781,7 +781,7 @@ diffex <- function(input, output, session, object, featureType, selected_cells, 
 
     output$cc1 <- DT::renderDT({
         req(custom_cluster1())
-        selected_meta <- data.frame(pull_metadata(object())[custom_cluster1(), ])
+        selected_meta <- data.frame(get_cell_metadata(object())[custom_cluster1(), ])
         DT::datatable(selected_meta,
             extensions = "Buttons",
             options = list(dom = "Bft", buttons = c(
@@ -792,7 +792,7 @@ diffex <- function(input, output, session, object, featureType, selected_cells, 
     })
     output$cc2 <- DT::renderDT({
         req(custom_cluster2())
-        selected_meta <- data.frame(pull_metadata(object())[custom_cluster2(), ])
+        selected_meta <- data.frame(get_cell_metadata(object())[custom_cluster2(), ])
         DT::datatable(selected_meta,
             extensions = "Buttons",
             options = list(dom = "Bft", buttons = c(
@@ -861,7 +861,7 @@ diffex <- function(input, output, session, object, featureType, selected_cells, 
 
     cluster_list <- reactive({
         if (input$diffex_scheme == "louvain") {
-            object_meta <- pull_metadata(object())[[paste0(DefaultAssay(object()), "_snn_res.", input$objectResolution)]]
+            object_meta <- get_cell_metadata(object())[[paste0(DefaultAssay(object()), "_snn_res.", input$objectResolution)]]
             cluster1_cells <- rownames(object_meta[object_meta == input$cluster1, , drop = FALSE])
             cluster2_cells <- rownames(object_meta[object_meta == input$cluster2, , drop = FALSE])
             list(cluster1 = cluster1_cells, cluster2 = cluster2_cells)
@@ -946,7 +946,7 @@ findMarkers <- function(input, output, session, object, plot_types, featureType)
         req(object())
         req(group_by())
 
-        choices <- levels(pull_metadata(object())[[group_by()]])
+        choices <- levels(get_cell_metadata(object())[[group_by()]])
 
         selectizeInput(ns("displayValues"), "Values to display", multiple = TRUE, choices = choices)
     })
@@ -1065,7 +1065,7 @@ allTranscriptsui <- function(id) {
         default_helper(
             chevreulBox(
                 title = "Transcript Expression per Gene",
-                selectizeInput(ns("embeddingGene"), "Gene or transcript expression by which to color the plot; eg. 'RXRG'", choices = NULL, selected = NULL),
+                selectizeInput(ns("embeddingGene"), "Gene or transcript expression by which to color the plot; eg. 'NRL'", choices = NULL, selected = NULL),
                 selectizeInput(ns("transcriptSelect"), "Transcript to Plot", choices = NULL),
                 downloadButton(ns("downloadPlot"), "Download Transcript Plots"),
                 selectizeInput(ns("embedding"), "Embedding", choices = NULL, selected = NULL),
@@ -1078,7 +1078,7 @@ allTranscriptsui <- function(id) {
         default_helper(
             chevreulBox(
                 title = "Transcript Expression per Gene",
-                selectizeInput(ns("compositionGene"), "Gene or transcript expression by which to color the plot; eg. 'RXRG'", choices = NULL, selected = NULL),
+                selectizeInput(ns("compositionGene"), "Gene or transcript expression by which to color the plot; eg. 'NRL'", choices = NULL, selected = NULL),
                 selectizeInput(ns("groupby"), "Group by:", choices = NULL, selected = NULL),
                 actionButton(ns("plotComposition"), "Plot transcript composition"),
                 checkboxInput(ns("standardizeExpression"), "Standardize Expression", value = FALSE),
@@ -1104,10 +1104,10 @@ allTranscripts <- function(input, output, session, object,
 
     observe({
         req(object())
-        updateSelectizeInput(session, "compositionGene", choices = get_features(object(), assay = "gene"), selected = "RXRG", server = TRUE)
-        updateSelectizeInput(session, "embeddingGene", choices = get_features(object(), assay = "gene"), selected = "RXRG", server = TRUE)
+        updateSelectizeInput(session, "compositionGene", choices = get_features(object(), assay = "gene"), selected = "NRL", server = TRUE)
+        updateSelectizeInput(session, "embeddingGene", choices = get_features(object(), assay = "gene"), selected = "NRL", server = TRUE)
 
-        formatted_col_names <- colnames(pull_metadata(object())) %>%
+        formatted_col_names <- colnames(get_cell_metadata(object())) %>%
             make_chevreul_clean_names()
 
         updateSelectizeInput(session, "groupby", choices = formatted_col_names, selected = "batch", server = TRUE)
@@ -1229,8 +1229,8 @@ plotVelocity <- function(input, output, session, object, loom_path) {
 
     observe({
         req(object())
-        updateSelectizeInput(session, "varSelect", choices = colnames(pull_metadata(object())), selected = "batch", server = TRUE)
-        updateSelectizeInput(session, "geneSelect", choices = get_features(object(), assay = "gene"), selected = "RXRG", server = TRUE)
+        updateSelectizeInput(session, "varSelect", choices = colnames(get_cell_metadata(object())), selected = "batch", server = TRUE)
+        updateSelectizeInput(session, "geneSelect", choices = get_features(object(), assay = "gene"), selected = "NRL", server = TRUE)
     })
 
     # reactive val adata ------------------------------
@@ -1698,7 +1698,7 @@ plotCoverage_UI <- function(id) {
     tagList(
         chevreulBox(
             title = "Plot Coverage",
-            selectizeInput(ns("geneSelect"), "Select a Gene", choices = NULL, selected = "RXRG", multiple = FALSE),
+            selectizeInput(ns("geneSelect"), "Select a Gene", choices = NULL, selected = "NRL", multiple = FALSE),
             selectizeInput(ns("varSelect"), "Color by Variable", choices = NULL, multiple = FALSE),
             actionButton(ns("plotCoverage"), "Plot Coverage"),
             downloadButton(ns("downloadPlot"), "Download Coverage Plot"),
@@ -1741,7 +1741,7 @@ plotCoverage <- function(input, output, session, object, plot_types, proj_dir, o
         req(object())
         updateSelectizeInput(session, "geneSelect", choices = get_features(object(), assay = "gene"), server = TRUE)
 
-        formatted_col_names <- colnames(pull_metadata(object())) %>%
+        formatted_col_names <- colnames(get_cell_metadata(object())) %>%
             make_chevreul_clean_names()
 
         updateSelectizeInput(session, "varSelect", choices = formatted_col_names, selected = "batch")
@@ -1768,7 +1768,7 @@ plotCoverage <- function(input, output, session, object, plot_types, proj_dir, o
 
         plot_gene_coverage_by_var(
             genes_of_interest = input$geneSelect,
-            cell_metadata = pull_metadata(object()),
+            cell_metadata = get_cell_metadata(object()),
             bigwig_tbl = bigwig_tbl(),
             group_by = input$varSelect,
             values_of_interest = input$displayvalues,
@@ -1871,7 +1871,7 @@ reformatMetadataDR <- function(input, output, session, object, featureType = "ge
 
   table_out <- reactive({
     req(object())
-    pull_metadata(object())
+    get_cell_metadata(object())
   })
 
   values <- reactiveValues(

@@ -8,7 +8,7 @@ object_cluster(
   object = object,
   resolution = 0.6,
   custom_clust = NULL,
-  reduction = "pca",
+  reduction = "PCA",
   algorithm = 1,
   ...
 )

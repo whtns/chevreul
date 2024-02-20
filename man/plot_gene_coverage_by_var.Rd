@@ -5,7 +5,7 @@
 \title{Plot BigWig Coverage for Genes of Interest by a Given Variable}
 \usage{
 plot_gene_coverage_by_var(
-  genes_of_interest = "RXRG",
+  genes_of_interest = "NRL",
   cell_metadata,
   bigwig_tbl,
   group_by = "batch",

@@ -7,7 +7,7 @@
 plot_var(
   object,
   group = "batch",
-  embedding = "umap",
+  embedding = "UMAP",
   dims = c(1, 2),
   highlight = NULL,
   pt.size = 1,

@@ -7,7 +7,7 @@
 object_reduce_dimensions(
   object,
   assay = "gene",
-  reduction = "pca",
+  reduction = "PCA",
   legacy_settings = FALSE,
   ...
 )

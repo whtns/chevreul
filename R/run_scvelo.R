@@ -155,8 +155,14 @@ plot_scvelo <- function(adata, group.by = "batch", basis = "umap", plot_method =
     # pyplot$show()
 }
 
-scvelo_expression <- function(adata, features = c("RXRG")) {
+scvelo_expression <- function(adata, features = c("NRL")) {
     scvelo$pl$velocity(adata, var_names = features, figsize = c(10, 10), dpi = 200)
 
     # pyplot$show()
 }
+# ## Tabulate important genes
+# scvelo_genes <- function(adata){
+#   scvelo$tl$rank_velocity_genes(adata, groupby='clusters_0.2', min_corr=.3)
+#   df = scvelo$DataFrame(adata.uns['rank_velocity_genes']['names'])
+#   df.head()
+# }
