@@ -102,7 +102,7 @@ enframe_markers <- function(marker_table) {
         select(-rn)
 }
 
-#' Stash Marker Genes in a Seurat Object
+#' Stash Marker Genes in a SingleCellExperiment Object
 #'
 #' Marker Genes will be stored in slot `@misc$markers`
 #'

@@ -4,7 +4,7 @@
 \alias{genes_from_object}
 \title{Get genes from Object}
 \usage{
-genes_from_object(object, ...)
+genes_from_object(object)
 }
 \arguments{
 \item{object}{a single cell object}

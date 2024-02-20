@@ -15,3 +15,8 @@ a single cell object
 \description{
 Annotate Cell Cycle for Gene and Transcript Seurat Objects
 }
+\examples{
+human_gene_phase<-annotate_cell_cycle(human_gene_transcript_sce)
+human_gene_phase$phases
+
+}

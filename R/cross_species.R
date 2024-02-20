@@ -115,9 +115,6 @@ cross_species_integrate <- function(mouse_object_list, human_object_list){
     # cluster merged objects
     integrated_object <- object_cluster(integrated_object, resolution = seq(0.2, 2.0, by = 0.2))
 
-    # add read count column
-    integrated_object <- add_read_count_col(integrated_object)
-
     # annotate cell cycle scoring to objects
 
     integrated_object <- annotate_cell_cycle(integrated_object, feature = "gene")

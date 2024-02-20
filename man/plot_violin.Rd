@@ -35,6 +35,6 @@ grouped by a metadata variable
 }
 \examples{
 
-plot_violin(human_gene_transcript_object, plot_var = "batch", features = c("NRL", "GNAT2"))
+plot_violin(human_gene_transcript_sce, plot_var = "batch", features = "NRL")
 
 }

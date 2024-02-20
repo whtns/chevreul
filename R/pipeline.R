@@ -54,9 +54,6 @@ object_integration_pipeline <- function(object_list, resolution = seq(0.2, 2.0, 
         #     integrated_object <- enriched_object
         #   }
 
-        # add read count column
-        integrated_object <- add_read_count_col(integrated_object)
-
         # annotate cell cycle scoring to objects
         if (annotate_cell_cycle) {
             integrated_object <- annotate_cell_cycle(integrated_object, ...)

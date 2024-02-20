@@ -17,3 +17,7 @@ an object with Idents formed from concatenation of group_bys
 \description{
 Unite metadata
 }
+\examples{
+unite_metadata(human_gene_transcript_sce, "nFeature_gene")
+
+}
