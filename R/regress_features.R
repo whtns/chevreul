@@ -24,22 +24,14 @@ regress_by_features <- function (object, feature_set, set_name, regress = TRUE)
               ctrl <- dim(object)[2]/10
             }
 
-            # object <- AddModuleScore(object, feature_set, name = set_name, ctrl = ctrl)
             set_name <- paste0(set_name, length(feature_set))
             message(paste0("Module score stored as ", set_name))
-            # if ("integrated" %in% names(object@experiments)) {
-            #   default_experiment <- "integrated"
-            # }
-            # else {
-            #   default_experiment <- "gene"
-            # }
-            # SingleCellExperiment::DefaultAssay(object) <- default_experiment
             if (regress) {
               dec.nocycle <- modelGeneVar(object, block=colData(object)[["Phase"]])
               reg.nocycle <- regressBatches(object, batch=colData(object)[["Phase"]])
-              # object <- ScaleData(object, vars.to.regress = set_name)
+
               reductions <- reducedDimNames(object)
-              resolutions <- stringr::str_extract(names(get_cell_metadata(object))[grepl("snn", names(get_cell_metadata(object)))], "[0-9].*$")
+              resolutions <- str_extract(names(get_cell_metadata(object))[grepl("snn", names(get_cell_metadata(object)))], "[0-9].*$")
               resolutions <- sort(unique(as.numeric(resolutions)))
               object <- object_reduce_dimensions(object)
               object <- object_cluster(object, resolution = resolutions)

@@ -4,12 +4,12 @@
 \alias{update_human_gene_symbols}
 \title{Update human gene symbols in object}
 \usage{
-update_human_gene_symbols(object, assay = "gene")
+update_human_gene_symbols(object, experiment = "gene")
 }
 \arguments{
 \item{object}{A SingleCellExperiment object}
 
-\item{assay}{Assay to use, Default = "gene"}
+\item{experiment}{Assay to use, Default = "gene"}
 }
 \value{
 a single cell object

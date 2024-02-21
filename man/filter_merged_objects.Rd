@@ -19,5 +19,5 @@ filter_merged_objects(objects, filter_var, filter_val, .drop = F)
 a list of single cell objects
 }
 \description{
-Filter SingleCellExperiment Objects by custom variable and reset assay to uncorrected "gene"
+Filter SingleCellExperiment Objects by custom variable and reset experiment to uncorrected "gene"
 }

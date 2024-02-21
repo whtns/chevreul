@@ -9,15 +9,15 @@
 #' @export
 #' @examples
 build_bigwig_db <- function(bam_files, bigwig_db = "~/.cache/chevreul/bw-files.db") {
-    bam_files <- fs::path_abs(bam_files)
+    bam_files <- normalizePath(bam_files)
 
-    bigwigfiles <- purrr::map_chr(bam_files, ~ megadepth::bam_to_bigwig(.x, prefix = fs::path_ext_remove(.x), overwrite = TRUE)) %>%
-        purrr::set_names(fs::path_file) %>%
+    bigwigfiles <- map_chr(bam_files, ~ megadepth::bam_to_bigwig(.x, prefix = fs::path_ext_remove(.x), overwrite = TRUE)) %>%
+        set_names(path_file) %>%
         enframe("name", "bigWig") %>%
         mutate(sample_id = str_remove(name, "_Aligned.sortedByCoord.out.bw")) %>%
         identity()
 
-    con <- dbConnect(RSQLite::SQLite(), dbname = bigwig_db)
+    con <- dbConnect(SQLite(), dbname = bigwig_db)
 
     dbWriteTable(con, "bigwigfiles", bigwigfiles, append = TRUE)
 
@@ -35,9 +35,9 @@ build_bigwig_db <- function(bam_files, bigwig_db = "~/.cache/chevreul/bw-files.d
 #' @export
 #' @examples
 load_bigwigs <- function(object, bigwig_db = "~/.cache/chevreul/bw-files.db") {
-    con <- dbConnect(RSQLite::SQLite(), dbname = bigwig_db)
+    con <- dbConnect(SQLite(), dbname = bigwig_db)
 
-    bigwigfiles <- DBI::dbReadTable(con, "bigwigfiles") %>%
+    bigwigfiles <- dbReadTable(con, "bigwigfiles") %>%
         filter(sample_id %in% colnames(object)) %>%
         identity()
 
@@ -111,7 +111,7 @@ plot_gene_coverage_by_var <- function(genes_of_interest = "NRL",
             colour_group = {{ group_by }},
             everything()
         ) %>%
-        mutate(scaling_factor = 1) %>% # scales::rescale(nCount_RNA)
+        mutate(scaling_factor = 1) %>% # rescale(nCount_RNA)
         mutate(condition = as.factor(condition), colour_group = as.factor(colour_group)) %>%
         left_join(bigwig_tbl, by = "sample_id") %>%
         filter(!is.na(bigWig)) %>%
@@ -135,7 +135,7 @@ plot_gene_coverage_by_var <- function(genes_of_interest = "NRL",
         track_data = new_track_data,
         heights = heights,
         alpha = 0.5,
-        fill_palette = scales::hue_pal()(length(levels(new_track_data$colour_group))),
+        fill_palette = hue_pal()(length(levels(new_track_data$colour_group))),
         return_subplots_list = TRUE,
         region_coords = region_coords,
         ...
@@ -144,12 +144,12 @@ plot_gene_coverage_by_var <- function(genes_of_interest = "NRL",
     if (scale_y == "log10") {
         coverage_plot_list$coverage_plot <-
             coverage_plot_list$coverage_plot +
-            scale_y_continuous(trans = scales::pobjectdo_log_trans(base = 10), breaks = 10^(0:4)) +
+            scale_y_continuous(trans = pseudo_log_trans(base = 10), breaks = 10^(0:4)) +
             NULL
     }
 
     if (reverse_x) {
-        transformed_x_lim <- ggplot2::ggplot_build(coverage_plot_list$coverage_plot)$layout$panel_params[[1]]$x.range
+        transformed_x_lim <- ggplot_build(coverage_plot_list$coverage_plot)$layout$panel_params[[1]]$x.range
         # transformed_x_lim[1] <- transformed_x_lim[1] - diff(transformed_x_lim)*0.2
 
         coverage_plot_list$coverage_plot <-
@@ -160,7 +160,7 @@ plot_gene_coverage_by_var <- function(genes_of_interest = "NRL",
             ) +
             NULL
 
-        transformed_x_lim <- ggplot2::ggplot_build(coverage_plot_list$tx_structure)$layout$panel_params[[1]]$x.range
+        transformed_x_lim <- ggplot_build(coverage_plot_list$tx_structure)$layout$panel_params[[1]]$x.range
         # transformed_x_lim[1] <- transformed_x_lim[1] - diff(transformed_x_lim)*0.2
 
         coverage_plot_list$tx_structure <-
@@ -173,7 +173,7 @@ plot_gene_coverage_by_var <- function(genes_of_interest = "NRL",
             NULL
     }
 
-    x_lim <- ggplot2::ggplot_build(coverage_plot_list$coverage_plot)$layout$panel_params[[1]]$x.range
+    x_lim <- ggplot_build(coverage_plot_list$coverage_plot)$layout$panel_params[[1]]$x.range
 
     base_coverage <- coverage_plot_list$coverage_plot$data %>%
         filter(!is.na(coverage)) %>%
@@ -182,7 +182,7 @@ plot_gene_coverage_by_var <- function(genes_of_interest = "NRL",
         mutate(sum = sum / diff(x_lim)) %>%
         identity()
 
-    coverage_plot <- patchwork::wrap_plots(coverage_plot_list, heights = heights, ncol = 1)
+    coverage_plot <- wrap_plots(coverage_plot_list, heights = heights, ncol = 1)
 
     return(list(plot = coverage_plot, table = base_coverage))
 }

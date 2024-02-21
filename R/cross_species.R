@@ -69,7 +69,7 @@ convert_symbols_by_species <- function(src_genes, src_species) {
             left_join(human_to_mouse_homologs, by = "HGNC.symbol") %>%
             distinct(HGNC.symbol, .keep_all = TRUE) %>%
             mutate(MGI.symbol = case_when(
-                is.na(MGI.symbol) ~ stringr::str_to_sentence(HGNC.symbol),
+                is.na(MGI.symbol) ~ str_to_sentence(HGNC.symbol),
                 TRUE ~ MGI.symbol
             )) %>%
             select(-gene_index) %>%
@@ -82,7 +82,7 @@ convert_symbols_by_species <- function(src_genes, src_species) {
             left_join(human_to_mouse_homologs, by = "MGI.symbol") %>%
             distinct(MGI.symbol, .keep_all = TRUE) %>%
             mutate(HGNC.symbol = case_when(
-                is.na(HGNC.symbol) ~ stringr::str_to_upper(MGI.symbol),
+                is.na(HGNC.symbol) ~ str_to_upper(MGI.symbol),
                 TRUE ~ HGNC.symbol
             )) %>%
             select(-gene_index) %>%
@@ -150,14 +150,14 @@ update_human_gene_symbols <- function(object, experiment = "gene") {
 
     rownames(new_rownames) <- new_rownames$old_symbol
 
-    object[[experiment]] <- SingleCellExperiment::AddMetaData(object[[experiment]], new_rownames)
+    object <- SingleCellExperiment::AddMetaData(object, new_rownames)
 
     new_rownames <-
         new_rownames %>%
         left_join(annotables::grch38, by = "ensgene") %>%
         distinct(old_symbol, .keep_all = TRUE) %>%
         mutate(new_symbol = symbol) %>%
-        mutate(symbol = dplyr::coalesce(new_symbol, old_symbol)) %>%
+        mutate(symbol = coalesce(new_symbol, old_symbol)) %>%
         identity()
 
     object_slots <- c("counts", "data", "scale.data", "meta.features")

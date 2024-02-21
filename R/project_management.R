@@ -9,24 +9,24 @@
 create_proj_matrix <- function(proj_list) {
     proj_list <- unlist(proj_list)
 
-    proj_tbl <- tibble::tibble(project_path = proj_list, project_name = path_file(proj_list))
+    proj_tbl <- tibble(project_path = proj_list, project_name = path_file(proj_list))
 
     patterns <- c("{date}-{user}-{note}-{species}_proj")
 
     proj_matrix <- unglue::unglue_data(proj_list, patterns) %>%
         mutate(date = path_file(date)) %>%
-        dplyr::bind_cols(proj_tbl) %>%
+        bind_cols(proj_tbl) %>%
         identity()
 
     primary_projects <-
         proj_matrix %>%
         filter(!grepl("integrated_projects", project_path)) %>%
-        filter(stringr::str_count(project_name, "_") == 1) %>%
+        filter(str_count(project_name, "_") == 1) %>%
         identity()
 
     integrated_projects <-
         proj_matrix %>%
-        dplyr::anti_join(primary_projects) %>%
+        anti_join(primary_projects) %>%
         identity()
 
     proj_matrices <- list(primary_projects = primary_projects, integrated_projects = integrated_projects)
@@ -45,7 +45,7 @@ create_proj_matrix <- function(proj_list) {
 #' @return a single cell object
 #'
 subset_by_meta <- function(meta_path, object) {
-    upload_meta <- readr::read_csv(meta_path, col_names = "sample_id") %>%
+    upload_meta <- read_csv(meta_path, col_names = "sample_id") %>%
         filter(!is.na(sample_id) & !sample_id == "sample_id") %>%
         mutate(name = sample_id) %>%
         column_to_rownames("sample_id") %>%

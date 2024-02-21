@@ -56,7 +56,7 @@ object_preprocess <- function (experiment, scale = TRUE, normalize = TRUE, featu
 #'
 #' @param object An object.
 #' @param group_by A metadata variable to group by.
-#' @param object_experiment Assay to use, Default "gene".
+#' @param experiment Assay to use, Default "gene".
 #' @param ... extra args passed to stash_marker_features
 #'
 #' @return a single cell object containing marker genes
@@ -66,21 +66,21 @@ object_preprocess <- function (experiment, scale = TRUE, normalize = TRUE, featu
 #' markers_stashed_object <- find_all_markers(human_gene_transcript_sce)
 #' marker_genes <- metadata(markers_stashed_object)[["markers"]]
 #' str(marker_genes)
-find_all_markers <- function(object, group_by = NULL, object_experiment = "gene", ...) {
+find_all_markers <- function(object, group_by = NULL, experiment = "gene", ...) {
         if (is.null(group_by)) {
-            resolutions <- colnames(get_cell_metadata(object))[grepl(paste0(object_experiment, "_snn_res."), colnames(get_cell_metadata(object)))]
-            cluster_index <- grepl(paste0(object_experiment, "_snn_res."), colnames(get_cell_metadata(object)))
+            resolutions <- colnames(get_cell_metadata(object))[grepl(paste0(experiment, "_snn_res."), colnames(get_cell_metadata(object)))]
+            cluster_index <- grepl(paste0(experiment, "_snn_res."), colnames(get_cell_metadata(object)))
             if (!any(cluster_index)) {
                 warning("no clusters found in metadata. runnings object_cluster")
                 object <- object_cluster(object, resolution = seq(0.2, 2, by = 0.2))
             }
             clusters <- get_cell_metadata(object)[, cluster_index]
-            cluster_levels <- purrr::map_int(clusters, ~ length(unique(.x)))
+            cluster_levels <- map_int(clusters, ~ length(unique(.x)))
             cluster_levels <- cluster_levels[cluster_levels > 1]
-            clusters <- select(clusters, dplyr::one_of(names(cluster_levels)))
+            clusters <- select(clusters, one_of(names(cluster_levels)))
             group_by <- names(clusters)
         }
-        new_markers <- map(group_by, ~ stash_marker_features(object, .x, object_experiment = object_experiment, ...))
+        new_markers <- map(group_by, ~ stash_marker_features(object, .x, experiment = experiment, ...))
         names(new_markers) <- group_by
         old_markers <- metadata(object)$markers[!names(metadata(object)[["markers"]]) %in% names(new_markers)]
         metadata(object)[["markers"]] <- c(old_markers, new_markers)
@@ -100,7 +100,7 @@ enframe_markers <- function(marker_table) {
     marker_table %>%
         select(Gene.Name, Cluster) %>%
         mutate(rn = row_number()) %>%
-        tidyr::pivot_wider(names_from = Cluster, values_from = Gene.Name) %>%
+        pivot_wider(names_from = Cluster, values_from = Gene.Name) %>%
         select(-rn)
 }
 
@@ -110,27 +110,28 @@ enframe_markers <- function(marker_table) {
 #'
 #' @param group_by A metadata variable to group by
 #' @param object A object
-#' @param object_experiment An experiment to use
+#' @param experiment An experiment to use
 #' @param top_n Use top n genes, Default "200"
 #' @param p_val_cutoff p value cut-off, Default value is "0.5"
 #'
 #' @return a single cell object with marker genes
+#' @importFrom scran findMarkers
 #'
 #' @examples
 #'
-#' object <- stash_marker_features(group_by = "batch", object, object_experiment = "gene")
+#' object <- stash_marker_features(group_by = "batch", object, experiment = "gene")
 #'
-stash_marker_features <- function(object, group_by, object_experiment = "gene", top_n = 200, p_val_cutoff = 0.5) {
+stash_marker_features <- function(object, group_by, experiment = "gene", top_n = 200, p_val_cutoff = 0.5) {
         message(paste0("stashing markers for ", group_by))
         markers <- list()
         markers <-
-          scran::findMarkers(object, test.type = "t", groups = colData(object)[[group_by]]) %>%
+          findMarkers(object, test.type = "t", groups = colData(object)[[group_by]]) %>%
           map(as.data.frame) %>%
           map(rownames_to_column, "feature") %>%
           bind_rows(.id = "group") %>%
           group_by(group) %>%
           filter(FDR < p_val_cutoff) %>%
-          dplyr::top_n(n = top_n, wt = summary.logFC) %>%
+          top_n(n = top_n, wt = summary.logFC) %>%
           arrange(group, desc(summary.logFC)) %>%
           select(Gene.Name = feature, Average.Log.Fold.Change = summary.logFC, Adjusted.pvalue = FDR, Cluster = group) %>%
           identity()

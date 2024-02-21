@@ -84,7 +84,7 @@ clustered_object <- clustering_workflow(human_gene_transcript_sce,
 ## Get a first look at a processed dataset using an interactive shiny app
 
 ``` r
-minimalSingleCellExperimentApp(human_gene_transcript_sce)
+minimalSceApp(human_gene_transcript_sce)
 ```
 
 ## Set up a object

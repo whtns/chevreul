@@ -7,7 +7,7 @@
 stash_marker_features(
   object,
   group_by,
-  object_assay = "gene",
+  experiment = "gene",
   top_n = 200,
   p_val_cutoff = 0.5
 )
@@ -17,7 +17,7 @@ stash_marker_features(
 
 \item{group_by}{A metadata variable to group by}
 
-\item{object_assay}{An assay to use}
+\item{experiment}{An experiment to use}
 
 \item{top_n}{Use top n genes, Default "200"}
 
@@ -31,6 +31,6 @@ Marker Genes will be stored in slot \verb{@misc$markers}
 }
 \examples{
 
-object <- stash_marker_features(group_by = "batch", object, object_assay = "gene")
+object <- stash_marker_features(group_by = "batch", object, experiment = "gene")
 
 }

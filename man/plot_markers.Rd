@@ -11,7 +11,7 @@ plot_markers(
   selected_values = NULL,
   return_plotly = FALSE,
   marker_method = "wilcox",
-  object_assay = "gene",
+  experiment = "gene",
   hide_technical = NULL,
   unique_markers = FALSE,
   p_val_cutoff = 1,
@@ -31,7 +31,7 @@ plot_markers(
 
 \item{marker_method}{"wilcox"}
 
-\item{object_assay}{assay to plot default gene}
+\item{experiment}{experiment to plot default gene}
 
 \item{hide_technical}{whether to exclude mitochondrial or ribosomal genes}
 

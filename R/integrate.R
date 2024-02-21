@@ -1,21 +1,29 @@
-#' Integrate small datasets with harmony
+#' Split SingleCellExperiment by colData variable
 #'
-#' @param object_list List of two or more singlecell objectss to integrate
+#' @param x single cell object
+#' @param f colData variable as a string
 #'
-#' @return an integrated single cell object
+#' @return a list of singlecellexperiments name by colData value
 #' @export
+#'
 #' @examples
-harmony_integrate <- function(object_list) {
-    object_list.integrated <- purrr::reduce(object_list, merge)
-    object_list.integrated@experiments[["integrated"]] <- object_list.integrated@experiments[["gene"]]
-    DefaultAssay(object_list.integrated) <- "integrated"
-    object_list.integrated <- object_preprocess(object_list.integrated)
-    object_list.integrated <- object_reduce_dimensions(object_list.integrated)
-    object_list.integrated <- RunHarmony(object_list.integrated, group.by.vars = "batch", experiment.use = "integrated")
-    object_list.integrated <- RunUMAP(object_list.integrated, experiment = "integrated", reduction = "harmony", dims = 1:30)
-    object_list.integrated <- FindNeighbors(object_list.integrated, experiment = "integrated", reduction = "harmony", dims = 1:30)
-    object_list.integrated
+#' splitByCol(human_gene_transcript_sce, "batch")
+splitByCol <- function(x, f = "batch") {
+
+  f <- colData(x)[[f]]
+
+  i <- split(seq_along(f), f)
+
+  v <- vector(mode = "list", length = length(i))
+
+  names(v) <- names(i)
+
+  for (n in names(i)) { v[[n]] <- x[, i[[n]]] }
+
+  return(v)
+
 }
+
 
 #' Merge Small SingleCellExeriment Objects
 #'
@@ -29,13 +37,13 @@ harmony_integrate <- function(object_list) {
 merge_small_objects <- function(object_list, k.filter = 50) {
     # check if any singlecell objects are too small and if so merge with the first singlecell objects
     object_dims <- map(object_list, dim) %>%
-        purrr::map_lgl(~ .x[[2]] < k.filter)
+        map_lgl(~ .x[[2]] < k.filter)
 
     small_objects <- object_list[object_dims]
 
     object_list <- object_list[!object_dims]
 
-    object_list[[1]] <- purrr::reduce(c(small_objects, object_list[[1]]), merge)
+    object_list[[1]] <- reduce(c(small_objects, object_list[[1]]), merge)
 
     return(object_list)
 }
@@ -52,85 +60,26 @@ merge_small_objects <- function(object_list, k.filter = 50) {
 #' @importFrom batchelor correctExperiments
 #' @export
 #' @examples
-object_integrate <- function(object_list, method = "cca", organism = "human", ...) {
+#' batches <- splitByCol(human_gene_transcript_sce, "Prep.Method")
+#' object_integrate(batches)
+object_integrate <- function(object_list, organism = "human", ...) {
 
-  universe <-
-    map(object_list, rownames) %>%
-    purrr::reduce(intersect) %>%
-    identity()
+    geneCorrected <- correctExperiments(object_list)
+    mainExpName(geneCorrected) <- "integrated"
 
-  # object_list <- merge_small_objects(object_list)
-  object_list.integrated <- batchelor::correctExperiments(object_list)
+    geneMerged <- correctExperiments(object_list)
 
-      # see https://github.com/satijalab/seurat/issues/6341------------------------------
-    cells_per_batch <- sapply(object_list, ncol)
-    min_k_weight <- min(cells_per_batch) - 1
-    min_k_weight <- ifelse(min_k_weight < 100, min_k_weight, 100)
+    transcriptBatches <- map(object_list, swapAltExp, "transcript")
 
-    object_list.integrated <- record_experiment_data(object_list.integrated, experiment_name = "integrated", organism = organism)
+    transcriptMerged <- correctExperiments(transcriptBatches, PARAM=NoCorrectParam())
 
-    return(object_list.integrated)
+    altExp(geneCorrected, "gene") <- geneMerged
+    altExp(geneCorrected, "transcript") <- transcriptMerged
+
+    geneCorrected <- record_experiment_data(geneCorrected, experiment_name = "integrated", organism = organism)
+
+    return(geneCorrected)
 }
-
-#' Batch Correct Multiple SingleCellExperiments
-#'
-#' @param object_list List of two or more singlecell objects
-#' @param method Default "cca"
-#' @param organism human or mouse
-#' @param ... extra args passed to object_reduce_dimensions
-#'
-#' @return an integrated single cell object
-#' @export
-#' @examples
-sce_integrate <- function(object_list, method = "cca", organism = "human", ...) {
-  # To construct a reference we will identify ‘anchors’ between the individual datasets. First, we split the combined object into a list, with each dataset as an element.
-
-  # Prior to finding anchors, we perform standard preprocessing (log-normalization), and identify variable features individually for each. Note that SingleCellExperiment v3 implements an improved method for variable feature selection based on a variance stabilizing transformation ("vst")
-
-  for (i in 1:length(x = object_list)) {
-    object_list[[i]] <- object_preprocess(object_list[[i]])
-    # object_list[[i]][["gene"]] <- object_preprocess(object_list[[i]][["gene"]], scale = TRUE)
-
-    object_list[[i]]$batch <- names(object_list)[[i]]
-  }
-
-  object_list <- merge_small_objects(object_list)
-
-  # proceed with integration
-  # object_list.integrated <- IntegrateData(anchorset = object_list.anchors, dims = 1:30)
-
-  # see https://github.com/satijalab/seurat/issues/6341------------------------------
-  cells_per_batch <- sapply(object_list, ncol)
-  min_k_weight <- min(cells_per_batch) - 1
-  min_k_weight <- ifelse(min_k_weight < 100, min_k_weight, 100)
-
-  #   enriched_object <- tryCatch(getEnrichedPathways(object), error = function(e) e)
-  #   enrichr_available <- !any(class(enriched_object) == "error")
-  #   if(enrichr_available){
-  #     object <- enriched_object
-  #   }
-
-  # Next, we identify anchors using the FindIntegrationAnchors function, which takes a list of SingleCellExperiment objects as input.
-
-  # #stash batches
-  Idents(object_list.integrated) <- "batch"
-  object_list.integrated[["batch"]] <- Idents(object_list.integrated)
-
-  # switch to integrated experiment. The variable features of this experiment are
-  # automatically set during IntegrateData
-  SingleCellExperiment::DefaultAssay(object = object_list.integrated) <- "integrated"
-
-  # if not integrated with harmony run the standard workflow for visualization and clustering
-  if (!"harmony" %in% names(object_list.integrated@reductions)) {
-    object_list.integrated <- SingleCellExperiment::ScaleData(object = object_list.integrated, verbose = FALSE)
-    object_list.integrated <- object_reduce_dimensions(object_list.integrated, ...)
-  }
-
-  object_list.integrated <- record_experiment_data(object_list.integrated, experiment_name = "integrated", organism = organism)
-
-  return(object_list.integrated)
-}
-
 
 #' Run Louvain Clustering at Multiple Resolutions
 #'
@@ -144,6 +93,8 @@ sce_integrate <- function(object_list, method = "cca", organism = "human", ...) 
 #' @return a single cell object with louvain clusters
 #' @export
 #' @importFrom bluster NNGraphParam
+#' @importFrom scran clusterCells
+#' @importFrom glue glue
 #' @examples
 object_cluster <- function(object = object, resolution = 0.6, custom_clust = NULL, reduction = "PCA", algorithm = 1, ...) {
         message(paste0("[", format(Sys.time(), "%H:%M:%S"), "] Clustering Cells..."))
@@ -152,18 +103,15 @@ object_cluster <- function(object = object, resolution = 0.6, custom_clust = NUL
         if (length(resolution) > 1) {
             for (i in resolution) {
                 message(paste0("clustering at ", i, " resolution"))
-                # object <- SingleCellExperiment::FindClusters(object = object, resolution = i, algorithm = algorithm, ...)
-                cluster_labels <- scran::clusterCells(object,
+                cluster_labels <- clusterCells(object,
                     use.dimred = reduction,
                     BLUSPARAM = NNGraphParam(cluster.fun = "louvain", cluster.args = list(resolution = i))
                 )
-                # colLabels(object) <- cluster_labels
-                colData(object)[[glue::glue("gene_snn_res.{i}")]] <- cluster_labels
+                colData(object)[[glue("gene_snn_res.{i}")]] <- cluster_labels
             }
         } else if (length(resolution) == 1) {
             message(paste0("clustering at ", resolution, " resolution"))
-            # object <- SingleCellExperiment::FindClusters(object = object, resolution = resolution, algorithm = algorithm, ...)
-            cluster_labels <- scran::clusterCells(object,
+            cluster_labels <- clusterCells(object,
                 use.dimred = reduction,
                 BLUSPARAM = NNGraphParam(cluster.fun = "louvain", cluster.args = list(resolution = resolution))
             )
@@ -171,12 +119,7 @@ object_cluster <- function(object = object, resolution = 0.6, custom_clust = NUL
 
             colData(object)[[glue("gene_snn_res.{resolution}")]] <- cluster_labels
         }
-        # if (!is.null(custom_clust)) {
-        #
-        #   clusters <- tibble::tibble(sample_id = rownames(get_cell_metadata(object))) %>% rownames_to_column("order") %>% dplyr::inner_join(custom_clust, by = "sample_id") %>% pull(cluster) %>% identity()
-        #   Idents(object = object) <- clusters
-        #   return(object)
-        # }
+
         return(object)
     }
 
@@ -232,12 +175,14 @@ load_object_from_proj <- function(proj_dir, ...) {
 #' @return a single cell object with embeddings
 #' @export
 #' @examples
+#' object_reduce_dimensions(human_gene_transcript_sce)
 object_reduce_dimensions <- function(object, experiment = "gene", reduction = "PCA", legacy_settings = FALSE, ...) {
-        if ("integrated" %in% names(object@experiments)) {
-            experiment <- "integrated"
-        } else {
-            experiment <- "gene"
-        }
+        # if (query_experiment(object, "integrated")){
+        #     experiment <- "integrated"
+        # } else {
+        #     experiment <- "gene"
+        # }
+
         num_samples <- dim(object)[[2]]
         if (num_samples < 50) {
             npcs <- num_samples - 1
@@ -247,31 +192,29 @@ object_reduce_dimensions <- function(object, experiment = "gene", reduction = "P
         if (legacy_settings) {
             message("using legacy settings")
 
-            if ("gene" == experiment) {
-                object <- scater::runPCA(x = object, subset_row = rownames(object))
+            if (experiment == "gene") {
+                object <- runPCA(x = object, subset_row = rownames(object))
             } else {
-                object <- scater::runPCA(x = object, altexp = experiment, subset_row = rownames(object))
+                object <- runPCA(x = object, altexp = experiment, subset_row = rownames(object))
             }
         } else {
             if ("gene" == experiment) {
-                object <- scater::runPCA(x = object, subset_row = scran::getTopHVGs(stats = object), ncomponents = npcs, ...)
+                object <- runPCA(x = object, subset_row = getTopHVGs(stats = object), ncomponents = npcs, ...)
             } else {
-                object <- scater::runPCA(x = object, altexp = experiment, subset_row = scran::getTopHVGs(stats = object), ncomponents = npcs, ...)
+                object <- runPCA(x = object, altexp = experiment, subset_row = getTopHVGs(stats = object), ncomponents = npcs, ...)
             }
         }
-        if (reduction == "harmony") {
-            object <- RunHarmony(object, "batch")
-        }
+
         if ((ncol(object) - 1) > 3 * 30) {
             if ("gene" == experiment) {
-                object <- scater::runTSNE(x = object, dimred = reduction, n_dimred = 1:30)
+                object <- runTSNE(x = object, dimred = reduction, n_dimred = 1:30)
             } else {
-                object <- scater::runTSNE(x = object, altexp = experiment, dimred = reduction, n_dimred = 1:30)
+                object <- runTSNE(x = object, altexp = experiment, dimred = reduction, n_dimred = 1:30)
             }
             if ("gene" == experiment) {
-                object <- scater::runUMAP(x = object, dimred = reduction, n_dimred = 1:30)
+                object <- runUMAP(x = object, dimred = reduction, n_dimred = 1:30)
             } else {
-                object <- scater::runUMAP(x = object, altexp = experiment, dimred = reduction, n_dimred = 1:30)
+                object <- runUMAP(x = object, altexp = experiment, dimred = reduction, n_dimred = 1:30)
             }
         }
         return(object)
@@ -349,11 +292,9 @@ filter_merged_object <- function(object, filter_var, filter_val, .drop = .drop) 
 #' @examples
 reintegrate_object <- function (object, feature = "gene", suffix = "", reduction = "PCA", algorithm = 1, ...)
           {
-            # SingleCellExperiment::DefaultAssay(object) <- "gene"
             organism <- metadata(object)$experiment$organism
             experiment_name <- metadata(object)$experiment$experiment_name
-            # object <- SingleCellExperiment::DietSingleCellExperiment(object, counts = TRUE, data = TRUE, scale.data = FALSE)
-            objects <- batchelor::divideIntoBatches(object, object$batch, byrow = FALSE, restrict = NULL)[["batches"]]
+            objects <- splitByCol(object, "batch")
             object <- object_integration_pipeline(objects, feature = feature, suffix = suffix, algorithm = algorithm, ...)
             object <- record_experiment_data(object, experiment_name, organism)
           }

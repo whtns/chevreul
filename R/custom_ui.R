@@ -4,13 +4,13 @@
 #' @param title a title for the helper
 #' @param content content from an rmarkdown file
 #' @param type style of the helper
-#' @param ... extra params to shinyhelper::helper
+#' @param ... extra params to helper
 #'
 #' @return a shinyhelper object
 #'
 #' @noRd
 default_helper <- function(ui_element, title = "", content = "test", type = "inline", ...) {
-    shinyhelper::helper(ui_element,
+    helper(ui_element,
         type = type,
         title = title,
         content = content,
@@ -44,10 +44,12 @@ chevreulBox <- function(title = "", ...) {
 #'
 #' @return a dropdown button
 #'
+#' @importFrom shinyWidgets dropdownButton
+#'
 #' @noRd
 dropdownButton <- function(inputId, ...) {
     tagList(
-        shinyWidgets::dropdownButton(
+        dropdownButton(
             inputId = inputId,
             ...,
             circle = TRUE, status = "info",

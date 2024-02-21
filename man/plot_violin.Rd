@@ -9,7 +9,7 @@ plot_violin(
   plot_var = "batch",
   plot_vals = NULL,
   features = "NRL",
-  assay = "gene",
+  experiment = "gene",
   ...
 )
 }
@@ -22,7 +22,7 @@ plot_violin(
 
 \item{features}{Features to plot}
 
-\item{assay}{Name of assay to use, defaults to the active assay}
+\item{experiment}{Name of experiment to use, defaults to the active experiment}
 
 \item{...}{extra parameters passed to ggplot2}
 }

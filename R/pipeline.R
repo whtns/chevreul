@@ -42,8 +42,8 @@ object_integration_pipeline <- function(object_list, resolution = seq(0.2, 2.0, 
         # cluster merged objects
         integrated_object <- object_cluster(integrated_object, resolution = resolution, algorithm = algorithm, reduction = reduction, ...)
 
-        object_experiment <- "gene"
-        integrated_object <- find_all_markers(integrated_object, object_experiment = object_experiment)
+        experiment <- "gene"
+        integrated_object <- find_all_markers(integrated_object, experiment = experiment)
 
         #   enriched_object <- tryCatch(getEnrichedPathways(integrated_object), error = function(e) e)
         #   enrichr_available <- !any(class(enriched_object) == "error")
@@ -88,12 +88,10 @@ object_integration_pipeline <- function(object_list, resolution = seq(0.2, 2.0, 
 #' processed_object <- object_pipeline(human_gene_transcript_sce)
 #'
 object_pipeline <- function(object, experiment = "gene", resolution = 0.6, reduction = "PCA", organism = "human", ...) {
-        experiments <- names(object@experiments)
 
-        experiments <- experiments[experiments %in% c("gene", "transcript")]
-
-        for (experiment in experiments) {
-            object[[experiment]] <- object_preprocess(object[[experiment]], scale = TRUE, ...)
+  object <- object_preprocess(object, scale = TRUE, ...)
+        for (experiment in altExpNames(object)) {
+            altExp(object, experiment) <- object_preprocess(altExp(object, experiment), scale = TRUE, ...)
         }
 
         # PCA
@@ -101,7 +99,7 @@ object_pipeline <- function(object, experiment = "gene", resolution = 0.6, reduc
 
         object <- object_cluster(object = object, resolution = resolution, reduction = reduction, ...)
 
-        object <- find_all_markers(object, object_experiment = "gene")
+        object <- find_all_markers(object, experiment = "gene")
 
         # if (feature == "gene"){
         #   enriched_object <- tryCatch(getEnrichedPathways(object), error = function(e) e)
@@ -110,7 +108,6 @@ object_pipeline <- function(object, experiment = "gene", resolution = 0.6, reduc
         #     object <- enriched_object
         #   }
         # }
-
 
 
         # annotate cell cycle scoring to objects

@@ -4,12 +4,12 @@
 \alias{object_calcn}
 \title{Calculate Read Count Metrics for a object}
 \usage{
-object_calcn(object, assay = "gene", slot = "counts")
+object_calcn(object, experiment = "gene", slot = "counts")
 }
 \arguments{
 \item{object}{A single cell object}
 
-\item{assay}{Assay to use, Default = "gene"}
+\item{experiment}{Assay to use, Default = "gene"}
 
 \item{slot}{slot for data}
 }

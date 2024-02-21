@@ -7,9 +7,9 @@
 #' @importFrom pillar new_pillar_type
 #' @examples
 list_plot_types <- function(object) {
-        meta_types <- tibble::tibble(
+        meta_types <- tibble(
             vars = colnames(colData(object)),
-            var_type = purrr::map_chr(map(colData(object), new_pillar_type), 1),
+            var_type = map_chr(map(colData(object), new_pillar_type), 1),
             num_levels = unlist(map(colData(object), ~ length(unique(.x))))
         )
 
@@ -28,13 +28,13 @@ list_plot_types <- function(object) {
             pull(vars)
 
         continuous_vars <- c("feature", continuous_vars) %>%
-            purrr::set_names(stringr::str_to_title(stringr::str_replace_all(., "[[:punct:]]", " ")))
+            set_names(str_to_title(str_replace_all(., "[[:punct:]]", " ")))
 
 
         category_vars <- meta_types %>%
             filter(meta_type == "category") %>%
             pull(vars) %>%
-            purrr::set_names(stringr::str_to_title(stringr::str_replace_all(., "[^[:alnum:][:space:]\\.]", " ")))
+            set_names(str_to_title(str_replace_all(., "[^[:alnum:][:space:]\\.]", " ")))
 
         plot_types <- list(category_vars = category_vars, continuous_vars = continuous_vars)
 
@@ -77,7 +77,7 @@ get_object_metadata <- function(object, ...) {
 #' @export
 #' @examples
 get_variable_features <- function(object, ...) {
-        scran::getTopHVGs(object)
+        getTopHVGs(object)
     }
 
 # get feature names ------------------------------

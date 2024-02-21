@@ -15,7 +15,7 @@
 #' }
 #'
 minimalSceApp <- function(single_cell_object = human_gene_transcript_sce, loom_path = NULL, appTitle = NULL, organism_type = "human", futureMb = 13000, bigwig_db = "~/.cache/chevreul/bw-files.db") {
-    future::plan(strategy = "multicore", workers = 6)
+    plan(strategy = "multicore", workers = 6)
     future_size <- futureMb * 1024^2
     options(future.globals.maxSize = future_size)
     options(shiny.maxRequestSize = 40 * 1024^2)
@@ -62,7 +62,7 @@ minimalSceApp <- function(single_cell_object = human_gene_transcript_sce, loom_p
         width = 250
     )
     body <- dashboardBody(
-        waiter::use_waiter(),
+        use_waiter(),
         tabItems(
             tabItem(
                 tabName = "comparePlots",
@@ -196,12 +196,10 @@ minimalSceApp <- function(single_cell_object = human_gene_transcript_sce, loom_p
         )
     }
     server <- function(input, output, session) {
-        w <- waiter::Waiter$new()
+        w <- Waiter$new()
 
-        shinyhelper::observe_helpers(help_dir = system.file("helpers", package = "chevreul", lib.loc = "/dataVolume/storage/rpkgs/devel_install/"))
+        observe_helpers(help_dir = system.file("helpers", package = "chevreul", lib.loc = "/dataVolume/storage/rpkgs/devel_install/"))
         options(warn = -1)
-        # shinylogs::track_usage(storage_mode = shinylogs::store_json(path = "logs/"))
-        # projects_db <- "/dataVolume/storage/single_cell_projects/single_cell_projects.db"
 
         object <- reactiveVal(NULL)
         observe({
@@ -238,7 +236,7 @@ minimalSceApp <- function(single_cell_object = human_gene_transcript_sce, loom_p
             if (is(object(), "SingleCellExperiment")) {
                 names(object()@reductions)
             } else if (is(object(), "SingleCellExperiment")) {
-                SingleCellExperiment::reducedDimNames(object())
+                reducedDimNames(object())
             }
 
             # asdf
@@ -456,8 +454,8 @@ minimalSceApp <- function(single_cell_object = human_gene_transcript_sce, loom_p
                 title = "Regressing out provided list of features",
                 "This process may take a minute or two!"
             ))
-            regressed_object <- chevreul::regress_by_features(object(),
-                feature_set = list(input$geneSet), set_name = janitor::make_clean_names(input$geneSetName),
+            regressed_object <- regress_by_features(object(),
+                feature_set = list(input$geneSet), set_name = make_clean_names(input$geneSetName),
                 regress = input$runRegression
             )
             object(regressed_object)

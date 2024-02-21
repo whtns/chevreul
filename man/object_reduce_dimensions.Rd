@@ -6,7 +6,7 @@
 \usage{
 object_reduce_dimensions(
   object,
-  assay = "gene",
+  experiment = "gene",
   reduction = "PCA",
   legacy_settings = FALSE,
   ...
@@ -15,7 +15,7 @@ object_reduce_dimensions(
 \arguments{
 \item{object}{A SingleCellExperiment object}
 
-\item{assay}{Assay of interest to be run on the singlecell objects}
+\item{experiment}{Assay of interest to be run on the singlecell objects}
 
 \item{reduction}{Set dimensional reduction object}
 
@@ -29,4 +29,7 @@ a single cell object with embeddings
 \description{
 Run PCA, TSNE and UMAP on a singlecell objects
 perplexity should not be bigger than 3 * perplexity < nrow(X) - 1, see details for interpretation
+}
+\examples{
+object_reduce_dimensions(human_gene_transcript_sce)
 }
