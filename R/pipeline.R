@@ -21,8 +21,7 @@
 #'
 #' @examples
 #'
-#' batches <- human_gene_transcript_sce %>%
-#'     SingleCellExperiment::SplitObject(split.by = "tech")
+#' batches <- batchelor::divideIntoBatches(human_gene_transcript_sce, batch = colData(human_gene_transcript_sce)$tech)$batch
 #'
 #' integrated_object <- object_integration_pipeline(batches)
 object_integration_pipeline <- function(object_list, resolution = seq(0.2, 2.0, by = 0.2), suffix = "", algorithm = 1, organism = "human", annotate_cell_cycle = FALSE, annotate_percent_mito = FALSE, reduction = "PCA", ...) {

@@ -48,8 +48,6 @@ dockerSingleCellExperimentApp <- function(object = human_gene_transcript_sce, lo
                 tabName = "subsetSingleCellExperiment", icon = icon("filter")
             ), menuItem("All Transcripts",
                 tabName = "allTranscripts", icon = icon("sliders-h")
-            ), menuItem("Monocle",
-                tabName = "monocle", icon = icon("bullseye")
             ), menuItem("Regress Features",
                 tabName = "regressFeatures", icon = icon("eraser")
             ), menuItem("Technical Information",
@@ -179,10 +177,6 @@ dockerSingleCellExperimentApp <- function(object = human_gene_transcript_sce, lo
                         default_helper(type = "markdown", content = "regressFeatures")
                 )
             ), tabItem(
-                tabName = "monocle",
-                h2("Monocle"),
-                monocleui("monocle")
-            ), tabItem(
                 tabName = "techInfo",
                 h2("Technical Information"),
                 techInfoui("techInfo")
@@ -233,12 +227,7 @@ dockerSingleCellExperimentApp <- function(object = human_gene_transcript_sce, lo
 
         reductions <- reactive({
             req(object())
-
-            if (is(object, "SingleCellExperiment")) {
-                names(object()@reductions)
-            } else if (is(object, "SingleCellExperiment")) {
-                reducedDimNames(object)
-            }
+          reducedDimNames(object)
         })
 
         observe({
@@ -445,14 +434,6 @@ dockerSingleCellExperimentApp <- function(object = human_gene_transcript_sce, lo
             )
             object(regressed_object)
             removeModal()
-        })
-
-        observe({
-            req(reductions())
-            callModule(
-                monocle, "monocle", object, plot_types, featureType,
-                organism_type, reductions
-            )
         })
 
         callModule(techInfo, "techInfo", object)

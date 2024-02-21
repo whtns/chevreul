@@ -155,7 +155,7 @@ plot_feature <- function(object, embedding = c("UMAP", "PCA", "TSNE"), features,
             fp <- plotReducedDim(object = object, color_by = features, dimred = embedding) +
                 aes(key = key, cellid = key, alpha = 0.7)
         } else if (length(features) > 1) {
-            nebulosa_plots <- Nebulosa::plot_density(object = object, features = features, dims = dims, reduction = embedding, size = pt.size, joint = TRUE, combine = FALSE)
+            nebulosa_plots <- plot_density(object = object, features = features, dims = dims, reduction = embedding, size = pt.size, joint = TRUE, combine = FALSE)
 
             fp <- last(nebulosa_plots) +
                 aes(key = key, cellid = key, alpha = 0.7)

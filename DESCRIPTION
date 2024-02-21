@@ -82,15 +82,15 @@ Imports:
     EnsDb.Hsapiens.v86,
     EnsDb.Mmusculus.v79,
     scales,
-    readr
+    readr,
+    Nebulosa
 Suggests:
     BiocStyle,
     knitr,
     monocle3 (>= 0.2.1),
     RefManageR,
     rmarkdown,
-    testthat (>= 3.0.0),
-    Nebulosa
+    testthat (>= 3.0.0)
 VignetteBuilder:
     knitr
 Remotes:

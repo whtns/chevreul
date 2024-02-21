@@ -264,8 +264,6 @@ chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "
                 tabName = "allTranscripts", icon = icon("sliders-h")
             ), menuItem("RNA Velocity",
                 tabName = "plotVelocity", icon = icon("tachometer-alt")
-            ), menuItem("Monocle",
-                tabName = "monocle", icon = icon("bullseye")
             ), menuItem("Regress Features",
                 tabName = "regressFeatures", icon = icon("eraser")
             ), menuItem("Technical Information",
@@ -408,10 +406,6 @@ chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "
                     ) %>%
                         default_helper(type = "markdown", content = "regressFeatures")
                 )
-            ), tabItem(
-                tabName = "monocle",
-                h2("Monocle"),
-                monocleui("monocle")
             ), tabItem(
                 tabName = "techInfo",
                 h2("Technical Information"),
@@ -627,8 +621,7 @@ chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "
 
         reductions <- reactive({
             req(object())
-            names(object()@reductions)
-            # c("PCA", "TSNE", "UMAP")
+            reducedDimNames(object())
         })
 
         observe({
@@ -837,15 +830,6 @@ chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "
             object(regressed_object)
             removeModal()
         })
-
-        observe({
-            req(reductions())
-            callModule(
-                monocle, "monocle", object, plot_types, featureType,
-                organism_type, reductions
-            )
-        })
-
 
         observe({
             req(uploadSingleCellExperimentPath())
