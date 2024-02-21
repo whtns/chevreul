@@ -1,5 +1,5 @@
 ---
-title: "Integration of Seurat objects"
+title: "Integration of SingleCellExperiment objects"
 ---
 
 ```{r, include = FALSE}
@@ -23,13 +23,13 @@ format_table <- function(mydf) {
 }
 ```
 
-When joint analysis of two or more single cell sequencing data is to be performed, we need to first integrate the individual datasets. In Chevreul, a single function `integration_workflow` is capable of integrating multiple Seurat objects provided as a list.
+When joint analysis of two or more single cell sequencing data is to be performed, we need to first integrate the individual datasets. In Chevreul, a single function `integration_workflow` is capable of integrating multiple SingleCellExperiment objects provided as a list.
 
 First step in this process is to load all the packages required
 
 ```{r setup, message = FALSE}
 library(chevreul)
-library(Seurat)
+library(SingleCellExperiment)
 library(tidyverse)
 library(ggraph)
 library(patchwork)
@@ -43,7 +43,7 @@ Here, we are using the `panc8` dataset, which is produced in two batches using d
 ```{r, eval=FALSE}
 batches <-
     human_gene_transcript_object[, !is.na(human_gene_transcript_object$Prep.Method)] %>%
-    Seurat::SplitObject(split.by = "Prep.Method") %>%
+    SingleCellExperiment::SplitObject(split.by = "Prep.Method") %>%
     identity()
 
 integrated_object <- integration_workflow(batches)
@@ -79,7 +79,7 @@ The `integration_workflow()` function can integrate datasets obtained from mouse
 
 The standard integration procedure in `integration_workflow()` includes multiple sub-functions responsible for performing different steps of integration.
 
-Prior to integration, `object_preprocess` performs standard preprocessing (log-normalization) and identifies variable features individually for each element in the list. Then, anchors are identified between the individual datasets using `FindIntegrationAnchors` which is then used by `IntegrateData`to return a Seurat object containing a new Assay, which holds an integrated expression matrix for all cells.
+Prior to integration, `object_preprocess` performs standard preprocessing (log-normalization) and identifies variable features individually for each element in the list. Then, anchors are identified between the individual datasets using `FindIntegrationAnchors` which is then used by `IntegrateData`to return a SingleCellExperiment object containing a new Assay, which holds an integrated expression matrix for all cells.
 
 Downstream analysis is performed on this integrated matrix by `object_integration_pipeline` sub-function which scales the integrated data, reduces the dimensions of object, performs clustering at different resolutions and identifies marker genes. 
 

@@ -2,7 +2,7 @@
 % Please edit documentation in R/cross_species.R
 \name{cross_species_integrate}
 \alias{cross_species_integrate}
-\title{Integrate Seurat Objects from Mouse to Human}
+\title{Integrate SingleCellExperiment Objects from Mouse to Human}
 \usage{
 cross_species_integrate(mouse_object_list, human_object_list)
 }
@@ -15,7 +15,7 @@ cross_species_integrate(mouse_object_list, human_object_list)
 a single cell object
 }
 \description{
-Integrate Seurat Objects from Mouse to Human
+Integrate SingleCellExperiment Objects from Mouse to Human
 }
 \examples{
 

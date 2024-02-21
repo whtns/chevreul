@@ -11,10 +11,10 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{dockerSeuratApp(panc8)
+#' \dontrun{dockerSingleCellExperimentApp(panc8)
 #' }
 #'
-dockerSeuratApp <- function(object = panc8, loom_path = NULL, appTitle = NULL,
+dockerSingleCellExperimentApp <- function(object = panc8, loom_path = NULL, appTitle = NULL,
     organism_type = "human", futureMb = 13000, bigwig_db = "~/.cache/chevreul/bw-files.db") {
     future::plan(strategy = "multicore", workers = 6)
     future_size <- futureMb * 1024^2
@@ -44,8 +44,8 @@ dockerSeuratApp <- function(object = panc8, loom_path = NULL, appTitle = NULL,
                 #   tabName = "pathwayEnrichment", icon = icon("sitemap")
             ), menuItem("Find Markers",
                 tabName = "findMarkers", icon = icon("bullhorn")
-            ), menuItem("Subset Seurat Input",
-                tabName = "subsetSeurat", icon = icon("filter")
+            ), menuItem("Subset SingleCellExperiment Input",
+                tabName = "subsetSingleCellExperiment", icon = icon("filter")
             ), menuItem("All Transcripts",
                 tabName = "allTranscripts", icon = icon("sliders-h")
             ), menuItem("Monocle",
@@ -102,9 +102,9 @@ dockerSeuratApp <- function(object = panc8, loom_path = NULL, appTitle = NULL,
                 )
             ),
             tabItem(
-                tabName = "subsetSeurat",
-                h2("Subset Seurat Input") %>%
-                    default_helper(type = "markdown", content = "subsetSeurat"),
+                tabName = "subsetSingleCellExperiment",
+                h2("Subset SingleCellExperiment Input") %>%
+                    default_helper(type = "markdown", content = "subsetSingleCellExperiment"),
                 plotDimRedui("subset"),
                 chevreulBox(
                     title = "Subset Settings",
@@ -156,7 +156,7 @@ dockerSeuratApp <- function(object = panc8, loom_path = NULL, appTitle = NULL,
                         title = "Regress Features",
                         actionButton(
                             "regressAction",
-                            "Regress Seurat Objects By Genes"
+                            "Regress SingleCellExperiment Objects By Genes"
                         ),
                         checkboxInput("runRegression",
                             "Run Regression?",
@@ -236,7 +236,7 @@ dockerSeuratApp <- function(object = panc8, loom_path = NULL, appTitle = NULL,
         reductions <- reactive({
             req(object())
 
-            if (is(object, "Seurat")) {
+            if (is(object, "SingleCellExperiment")) {
                 names(object()@reductions)
             } else if (is(object, "SingleCellExperiment")) {
                 SingleCellExperiment::reducedDimNames(object)
@@ -348,7 +348,7 @@ dockerSeuratApp <- function(object = panc8, loom_path = NULL, appTitle = NULL,
                 },
                 message = function(m) {
                     html(id = "subsetMessages", html = paste0(
-                        "Subsetting Seurat Object: ",
+                        "Subsetting SingleCellExperiment Object: ",
                         m$message
                     ), add = FALSE)
                 }
@@ -382,7 +382,7 @@ dockerSeuratApp <- function(object = panc8, loom_path = NULL, appTitle = NULL,
                 },
                 message = function(m) {
                     html(id = "subsetMessages", html = paste0(
-                        "Subsetting Seurat Object: ",
+                        "Subsetting SingleCellExperiment Object: ",
                         m$message
                     ), add = FALSE)
                 }

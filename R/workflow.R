@@ -21,14 +21,13 @@ splitByCol <- function(x, f) {
 #'
 #' @param batches objects for all batches provided as a list. If named, the resulting integrated object will be identified with corresponding values in 'batch' metadata
 #' @param excluded_cells named list of cells to exclude
-#' @param resolution value(s) to control the clustering resolution via `Seurat::FindMarkers`
+#' @param resolution value(s) to control the clustering resolution via `SingleCellExperiment::FindMarkers`
 #' @param experiment_name arbitrary name to identify experiment
 #' @param organism either "human" or "mouse"
 #' @param ... extra args passed to object_integration_pipeline
 #'
 #' @return an integrated single cell object
 #' @export
-#' @examples
 integration_workflow <-  function(batches, excluded_cells = NULL, resolution = seq(0.2, 2.0, by = 0.2), experiment_name = "default_experiment", organism = "human", ...) {
 
         # organisms <- map(batches, Misc, c("experiment", "organism"))

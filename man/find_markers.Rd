@@ -2,7 +2,7 @@
 % Please edit documentation in R/reference_integrate.R
 \name{find_markers}
 \alias{find_markers}
-\title{Find Cell Type Markers in a Seurat Object}
+\title{Find Cell Type Markers in a SingleCellExperiment Object}
 \usage{
 find_markers(object, num_features)
 }
@@ -15,5 +15,5 @@ find_markers(object, num_features)
 a single cell object
 }
 \description{
-Find Cell Type Markers in a Seurat Object
+Find Cell Type Markers in a SingleCellExperiment Object
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/update_seurat_from_child_metadata.R
 \name{update_object_meta}
 \alias{update_object_meta}
-\title{Update Seurat Metadata from Project}
+\title{Update SingleCellExperiment Metadata from Project}
 \usage{
 update_object_meta(object, proj_dir, numcols)
 }

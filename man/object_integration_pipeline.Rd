@@ -2,7 +2,7 @@
 % Please edit documentation in R/pipeline.R
 \name{object_integration_pipeline}
 \alias{object_integration_pipeline}
-\title{Run Seurat Integration}
+\title{Run SingleCellExperiment Integration}
 \usage{
 object_integration_pipeline(
   object_list,
@@ -47,7 +47,7 @@ Run batch correction, followed by:
 \examples{
 
 batches <- panc8 \%>\%
-    Seurat::SplitObject(split.by = "tech")
+    SingleCellExperiment::SplitObject(split.by = "tech")
 
 integrated_object <- object_integration_pipeline(batches)
 }

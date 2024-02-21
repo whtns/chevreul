@@ -1,6 +1,6 @@
 # seurat integration ------------------------------
 
-#' Run Seurat Integration
+#' Run SingleCellExperiment Integration
 #'
 #' Run batch correction, followed by:
 #' 1) stashing of batches in metadata 'batch'
@@ -22,7 +22,7 @@
 #' @examples
 #'
 #' batches <- panc8 %>%
-#'     Seurat::SplitObject(split.by = "tech")
+#'     SingleCellExperiment::SplitObject(split.by = "tech")
 #'
 #' integrated_object <- object_integration_pipeline(batches)
 object_integration_pipeline <- function(object_list, resolution = seq(0.2, 2.0, by = 0.2), suffix = "", algorithm = 1, organism = "human", annotate_cell_cycle = FALSE, annotate_percent_mito = FALSE, reduction = "pca", ...) {
@@ -72,12 +72,12 @@ object_integration_pipeline <- function(object_list, resolution = seq(0.2, 2.0, 
 
 # object_pipeline ------------------------------
 
-#' Run Seurat Pipeline
+#' Run SingleCellExperiment Pipeline
 #'
 #' This functions allows you to Preprocess, Cluster and Reduce Dimensions for a single object.
 #'
-#' @param object A Seurat object
-#' @param assay Assay of interest in Seurat object
+#' @param object A SingleCellExperiment object
+#' @param assay Assay of interest in SingleCellExperiment object
 #' @param resolution Resolution for clustering cells. Default set to 0.6.
 #' @param reduction Dimensional reduction object
 #' @param organism Organism

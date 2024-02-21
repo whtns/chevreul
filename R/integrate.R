@@ -84,7 +84,7 @@ object_integrate <- function(object_list, method = "cca", organism = "human", ..
 sce_integrate <- function(object_list, method = "cca", organism = "human", ...) {
   # To construct a reference we will identify ‘anchors’ between the individual datasets. First, we split the combined object into a list, with each dataset as an element.
 
-  # Prior to finding anchors, we perform standard preprocessing (log-normalization), and identify variable features individually for each. Note that Seurat v3 implements an improved method for variable feature selection based on a variance stabilizing transformation ("vst")
+  # Prior to finding anchors, we perform standard preprocessing (log-normalization), and identify variable features individually for each. Note that SingleCellExperiment v3 implements an improved method for variable feature selection based on a variance stabilizing transformation ("vst")
 
   for (i in 1:length(x = object_list)) {
     object_list[[i]][["gene"]] <- object_preprocess(object_list[[i]][["gene"]], scale = TRUE)
@@ -97,12 +97,12 @@ sce_integrate <- function(object_list, method = "cca", organism = "human", ...) 
   if (method == "rpca") {
     # scale and run pca for each separate batch in order to use reciprocal pca instead of cca
     features <- SelectIntegrationFeatures(object.list = object_list)
-    object_list <- map(object_list, Seurat::ScaleData, features = features)
-    object_list <- map(object_list, Seurat::RunPCA, features = features)
+    object_list <- map(object_list, SingleCellExperiment::ScaleData, features = features)
+    object_list <- map(object_list, SingleCellExperiment::RunPCA, features = features)
     object_list.anchors <- FindIntegrationAnchors(object.list = object_list, reduction = "rpca", dims = 1:30)
   } else if (method == "cca") {
-    # Next, we identify anchors using the FindIntegrationAnchors function, which takes a list of Seurat objects as input.
-    object_list.anchors <- Seurat::FindIntegrationAnchors(object.list = object_list, dims = 1:30, k.filter = 50)
+    # Next, we identify anchors using the FindIntegrationAnchors function, which takes a list of SingleCellExperiment objects as input.
+    object_list.anchors <- SingleCellExperiment::FindIntegrationAnchors(object.list = object_list, dims = 1:30, k.filter = 50)
   }
 
   # proceed with integration
@@ -125,7 +125,7 @@ sce_integrate <- function(object_list, method = "cca", organism = "human", ...) 
   #     object <- enriched_object
   #   }
 
-  # Next, we identify anchors using the FindIntegrationAnchors function, which takes a list of Seurat objects as input.
+  # Next, we identify anchors using the FindIntegrationAnchors function, which takes a list of SingleCellExperiment objects as input.
 
   # #stash batches
   Idents(object_list.integrated) <- "batch"
@@ -133,11 +133,11 @@ sce_integrate <- function(object_list, method = "cca", organism = "human", ...) 
 
   # switch to integrated assay. The variable features of this assay are
   # automatically set during IntegrateData
-  Seurat::DefaultAssay(object = object_list.integrated) <- "integrated"
+  SingleCellExperiment::DefaultAssay(object = object_list.integrated) <- "integrated"
 
   # if not integrated with harmony run the standard workflow for visualization and clustering
   if (!"harmony" %in% names(object_list.integrated@reductions)) {
-    object_list.integrated <- Seurat::ScaleData(object = object_list.integrated, verbose = FALSE)
+    object_list.integrated <- SingleCellExperiment::ScaleData(object = object_list.integrated, verbose = FALSE)
     object_list.integrated <- object_reduce_dimensions(object_list.integrated, ...)
   }
 
@@ -166,7 +166,7 @@ object_cluster <- function(object = object, resolution = 0.6, custom_clust = NUL
         if (length(resolution) > 1) {
             for (i in resolution) {
                 message(paste0("clustering at ", i, " resolution"))
-                # object <- Seurat::FindClusters(object = object, resolution = i, algorithm = algorithm, ...)
+                # object <- SingleCellExperiment::FindClusters(object = object, resolution = i, algorithm = algorithm, ...)
                 cluster_labels <- scran::clusterCells(object,
                     use.dimred = reduction,
                     BLUSPARAM = NNGraphParam(cluster.fun = "louvain", cluster.args = list(resolution = i))
@@ -176,7 +176,7 @@ object_cluster <- function(object = object, resolution = 0.6, custom_clust = NUL
             }
         } else if (length(resolution) == 1) {
             message(paste0("clustering at ", resolution, " resolution"))
-            # object <- Seurat::FindClusters(object = object, resolution = resolution, algorithm = algorithm, ...)
+            # object <- SingleCellExperiment::FindClusters(object = object, resolution = resolution, algorithm = algorithm, ...)
             cluster_labels <- scran::clusterCells(object,
                 use.dimred = reduction,
                 BLUSPARAM = NNGraphParam(cluster.fun = "louvain", cluster.args = list(resolution = resolution))
@@ -194,7 +194,7 @@ object_cluster <- function(object = object, resolution = 0.6, custom_clust = NUL
         return(object)
     }
 
-#' Read in Gene and Transcript Seurat Objects
+#' Read in Gene and Transcript SingleCellExperiment Objects
 #'
 #' @param proj_dir path to project directory
 #' @param prefix default "unfiltered"
@@ -219,7 +219,7 @@ load_object_path <- function(proj_dir = getwd(), prefix = "unfiltered") {
 }
 
 
-#' Load Seurat Files from a signle project path
+#' Load SingleCellExperiment Files from a signle project path
 #'
 #' @param proj_dir project directory
 #' @param ... extra args passed to load_object_path
@@ -235,7 +235,7 @@ load_object_from_proj <- function(proj_dir, ...) {
 #' Run PCA, TSNE and UMAP on a singlecell objects
 #' perplexity should not be bigger than 3 * perplexity < nrow(X) - 1, see details for interpretation
 #'
-#' @param object A Seurat object
+#' @param object A SingleCellExperiment object
 #' @param assay Assay of interest to be run on the singlecell objects
 #' @param reduction Set dimensional reduction object
 #' @param legacy_settings Use legacy settings
@@ -291,7 +291,7 @@ object_reduce_dimensions <- function(object, assay = "gene", reduction = "PCA", 
 #'
 #' Give a new project name to a single cell object
 #'
-#' @param object A Seurat object
+#' @param object A SingleCellExperiment object
 #' @param new_name New name to assign
 #'
 #' @return a renamed single cell object
@@ -302,9 +302,9 @@ rename_object <- function (object, new_name)
             return(object)
           }
 
-#' Filter a List of Seurat Objects
+#' Filter a List of SingleCellExperiment Objects
 #'
-#' Filter Seurat Objects by custom variable and reset assay to uncorrected "gene"
+#' Filter SingleCellExperiment Objects by custom variable and reset assay to uncorrected "gene"
 #'
 #' @param objects single cell projects
 #' @param filter_var filter variable
@@ -318,7 +318,7 @@ filter_merged_objects <- function(objects, filter_var, filter_val, .drop = F) {
 }
 
 
-#' Filter a Single Seurat Object
+#' Filter a Single SingleCellExperiment Object
 #'
 #' @param object A singlecell objects
 #' @param filter_var filter variable
@@ -356,10 +356,10 @@ filter_merged_object <- function(object, filter_var, filter_val, .drop = .drop) 
 #' @export
 reintegrate_object <- function (object, feature = "gene", suffix = "", reduction = "PCA", algorithm = 1, ...)
           {
-            # Seurat::DefaultAssay(object) <- "gene"
+            # SingleCellExperiment::DefaultAssay(object) <- "gene"
             organism <- metadata(object)$experiment$organism
             experiment_name <- metadata(object)$experiment$experiment_name
-            # object <- Seurat::DietSeurat(object, counts = TRUE, data = TRUE, scale.data = FALSE)
+            # object <- SingleCellExperiment::DietSingleCellExperiment(object, counts = TRUE, data = TRUE, scale.data = FALSE)
             objects <- batchelor::divideIntoBatches(object, object$batch, byrow = FALSE, restrict = NULL)[["batches"]]
             object <- object_integration_pipeline(objects, feature = feature, suffix = suffix, algorithm = algorithm, ...)
             object <- record_experiment_data(object, experiment_name, organism)

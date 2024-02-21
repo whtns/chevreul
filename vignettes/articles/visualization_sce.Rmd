@@ -43,7 +43,7 @@ Chevreul contains many plotting functions that allows for visualization, these p
 
 Expression of one or more features (genes or transcripts) can be plotted on a given embedding, resulting in an interactive, single or multi-feature plot. 
 
-When plotting only one feature, output is identical to `Seurat::FeaturePlot` 
+When plotting only one feature, output is identical to `SingleCellExperiment::FeaturePlot` 
  
 ```{r}
 plot_feature(human_gene_transcript_sce,
@@ -82,7 +82,7 @@ Chevreul contains a function that produces an interactive scatter plot of a meta
 plot_var(human_gene_transcript_sce, group = "type", embedding = "UMAP")
 ```
 
-This function utilizes a Seurat function, `DimPlot()`, as sub function which produces the dimensional reduction plot.The interactive parameter, `return_plotly`, in plot_var when set to TRUE will convert the plot into an interactive plot using ggplotly function from R's plotly package
+This function utilizes a SingleCellExperiment function, `DimPlot()`, as sub function which produces the dimensional reduction plot.The interactive parameter, `return_plotly`, in plot_var when set to TRUE will convert the plot into an interactive plot using ggplotly function from R's plotly package
 
 ## Plot cluster marker genes  
 
@@ -99,7 +99,7 @@ plot_markers(human_gene_transcript_sce,
 
 ## Violin plot
 
-To visualize the distribution of expression level of a feature in different groups of cells Chevreul draws a violin plot. This function uses Seurat's `VInPlot()` function as a sub-function to create the violin plot, where the metadata variable, provided to the function through the variable `plot_var`, is used to group the cells and based on the level of feature expression a violin plot is produced. 
+To visualize the distribution of expression level of a feature in different groups of cells Chevreul draws a violin plot. This function uses SingleCellExperiment's `VInPlot()` function as a sub-function to create the violin plot, where the metadata variable, provided to the function through the variable `plot_var`, is used to group the cells and based on the level of feature expression a violin plot is produced. 
 
 ```{r}
 plot_violin(human_gene_transcript_sce, plot_var = "Kit_ID", features = "NRL")
@@ -108,7 +108,7 @@ plot_violin(human_gene_transcript_sce, plot_var = "Kit_ID", features = "NRL")
 
 ## Ploting all transcripts 
 
-This function plots the expression level of all the transcripts present in a given Seurat object, coding for a feature/gene of interest. The gene of interest is specified by the argument 'features' and by default the data is superimposed on UMAP embedding. 
+This function plots the expression level of all the transcripts present in a given SingleCellExperiment object, coding for a feature/gene of interest. The gene of interest is specified by the argument 'features' and by default the data is superimposed on UMAP embedding. 
 
 ```{r}
 plot_all_transcripts(human_gene_transcript_sce, features = "NRL")
@@ -128,7 +128,7 @@ plot_transcript_composition(human_gene_transcript_sce, "NRL",
 
 ## Ploting ridge plots for cell cycle scoring 
 
-The plot_ridge() function in Chevreul plots a ridge plot for cell cycle scoring of a feature, providing a visual representation of expression level of the feature in each cell cycle. This function uses two embedded Seurat functions. The function CellCycleScoring() assigns each cell a score based on its expression of G2/M and S phase markers. This data is then used by the function, RidgePlot(), which uses user provided 'features' argument to plot the ridge plot of the features.
+The plot_ridge() function in Chevreul plots a ridge plot for cell cycle scoring of a feature, providing a visual representation of expression level of the feature in each cell cycle. This function uses two embedded SingleCellExperiment functions. The function CellCycleScoring() assigns each cell a score based on its expression of G2/M and S phase markers. This data is then used by the function, RidgePlot(), which uses user provided 'features' argument to plot the ridge plot of the features.
 
 ```{r}
 plot_cell_cycle_distribution(human_gene_transcript_sce, "NRL")
@@ -137,9 +137,9 @@ plot_cell_cycle_distribution(human_gene_transcript_sce, "nFeature_RNA")
 ```
 
 
-## Plot Complex heatmap from Seurat object 
+## Plot Complex heatmap from SingleCellExperiment object 
 
-The Chevreul function plots an annotated complex heat map from the Seurat object with a dendogram added to the left side and the top.
+The Chevreul function plots an annotated complex heat map from the SingleCellExperiment object with a dendogram added to the left side and the top.
 
 
 ```{r}

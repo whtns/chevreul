@@ -28,7 +28,7 @@ First step is to load Chevreul and all other packages required
 
 ```{r setup, }
 library(chevreul)
-library(Seurat)
+library(SingleCellExperiment)
 library(tidyverse)
 library(ggraph)
 library(patchwork)

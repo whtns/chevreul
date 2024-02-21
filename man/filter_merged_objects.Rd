@@ -2,7 +2,7 @@
 % Please edit documentation in R/integrate.R
 \name{filter_merged_objects}
 \alias{filter_merged_objects}
-\title{Filter a List of Seurat Objects}
+\title{Filter a List of SingleCellExperiment Objects}
 \usage{
 filter_merged_objects(objects, filter_var, filter_val, .drop = F)
 }
@@ -19,5 +19,5 @@ filter_merged_objects(objects, filter_var, filter_val, .drop = F)
 a list of single cell objects
 }
 \description{
-Filter Seurat Objects by custom variable and reset assay to uncorrected "gene"
+Filter SingleCellExperiment Objects by custom variable and reset assay to uncorrected "gene"
 }

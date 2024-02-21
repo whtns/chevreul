@@ -14,17 +14,17 @@ run_scvelo <- function(object, loom_path, assay = "gene", fit.quantile = 0.05, c
     # if(DefaultAssay(object) == "SCT"){
     #   object <-
     #     object %>%
-    #     Seurat::FindVariableFeatures(nfeatures= 3000)
+    #     SingleCellExperiment::FindVariableFeatures(nfeatures= 3000)
     # }
 
-    ldat <- SeuratWrappers::ReadVelocity(file = loom_path)
+    ldat <- SingleCellExperimentWrappers::ReadVelocity(file = loom_path)
 
     for (assay in names(ldat)) {
         colnames(ldat[[assay]]) <- str_replace(colnames(ldat[[assay]]), ".*:", "")
         colnames(ldat[[assay]]) <- str_replace(colnames(ldat[[assay]]), "x$", "-1")
     }
 
-    bm <- Seurat::as.Seurat(x = ldat)
+    bm <- SingleCellExperiment::as.SingleCellExperiment(x = ldat)
     bm <- bm[rownames(bm) %in% rownames(object), ]
 
     bm[[assay]] <- bm[["spliced"]]
@@ -40,7 +40,7 @@ run_scvelo <- function(object, loom_path, assay = "gene", fit.quantile = 0.05, c
     Misc(sub_object)$vel <- NULL
     Misc(sub_object)[names(Misc(sub_object)) == "experiment"] <- NULL
 
-    # sub_object <- SeuratObject::RenameAssays(sub_object, gene = "RNA")
+    # sub_object <- SingleCellExperimentObject::RenameAssays(sub_object, gene = "RNA")
 
     h5ad_path <- str_replace(loom_path, ".loom", ".h5ad")
 
@@ -63,12 +63,12 @@ run_scvelo <- function(object, loom_path, assay = "gene", fit.quantile = 0.05, c
 #' @examples
 #'
 #' convert_to_h5ad(human_gene_transcript_object, "inst/extdata/object.rds")
-#' @importFrom SeuratDisk SaveH5Seurat
-#' @importFrom SeuratDisk Convert
+#' @importFrom SingleCellExperimentDisk SaveH5SingleCellExperiment
+#' @importFrom SingleCellExperimentDisk Convert
 convert_to_h5ad <- function(object, file_path) {
-    h5object_path <- path_ext_set(file_path, ".h5Seurat")
+    h5object_path <- path_ext_set(file_path, ".h5SingleCellExperiment")
     message(h5object_path)
-    SaveH5Seurat(object, filename = h5object_path, overwrite = TRUE)
+    SaveH5SingleCellExperiment(object, filename = h5object_path, overwrite = TRUE)
 
     h5ad_path <- path_ext_set(file_path, ".h5ad")
 

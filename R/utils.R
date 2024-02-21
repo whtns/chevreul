@@ -17,11 +17,6 @@ format_new_metadata <- function(object, datapath) {
 
         colData(object) <- new_meta
 
-        # DefaultAssay(object) <- "gene"
-        object <- addPerCellQC(object)
-        object$nFeature_gene <- object$detected
-        object$nCount_gene <- ncalc$sum
-
         return(object)
     }
 
@@ -61,7 +56,7 @@ combine_cols <- function(object, cols, new_col) {
 #'
 #' @examples
 #'
-#' NRL_transcripts <- get_transcripts_from_object(human_gene_transcript_object, "NRL")
+#' NRL_transcripts <- get_transcripts_from_object(human_gene_transcript_sce, "NRL")
 #'
 get_transcripts_from_object <- function(object, gene, organism = "human") {
         transcripts <- genes_to_transcripts(gene, organism)
@@ -79,8 +74,11 @@ get_transcripts_from_object <- function(object, gene, organism = "human") {
 #'
 #' @return a single cell object
 #' @export
+#' @examples
+#' record_experiment_data(human_gene_transcript_sce)
+#'
 record_experiment_data <- function(object, experiment_name = "default_experiment", organism = "human") {
-        if (!requireNamespace("Seurat", quietly = TRUE)) {
+        if (!requireNamespace("SingleCellExperiment", quietly = TRUE)) {
             stop("Package 'object' needed for this function to work. Please install it.",
                 call. = FALSE
             )
@@ -143,7 +141,7 @@ update_chevreul_object <- function(object_path, feature, resolution = seq(0.2, 2
 
         if (is.list(object)) {
             object <- convert_object_list_to_multimodal(object)
-            # object <- Seurat::UpdateSeuratObject(object)
+            # object <- SingleCellExperiment::UpdateSingleCellExperimentObject(object)
         } else if (all(names(object@assays) == "RNA")) {
             object <- RenameAssays(object, RNA = "gene")
         } else if (identical(names(object@assays), c("RNA", "integrated"))) {
@@ -152,7 +150,7 @@ update_chevreul_object <- function(object_path, feature, resolution = seq(0.2, 2
 
         seurat_version <- Misc(object)$experiment$seurat_version
 
-        if (packageVersion("Seurat") == "5.0.0" & (seurat_version < 5 || is.null(seurat_version))) {
+        if (packageVersion("SingleCellExperiment") == "5.0.0" & (seurat_version < 5 || is.null(seurat_version))) {
             object <- convert_v3_to_v5(object)
         }
 
@@ -226,11 +224,11 @@ update_chevreul_object <- function(object_path, feature, resolution = seq(0.2, 2
 #' @return a single cell object with nfeatures and ngenes stored in metadata
 #' @export
 object_calcn <- function(object, assay = "gene", slot = "counts") {
-        n.calc <- Seurat:::CalcN(object = GetAssay(object, assay))
-        if (!is.null(x = n.calc)) {
-            names(x = n.calc) <- paste(names(x = n.calc), assay, sep = "_")
-            object[[names(x = n.calc)]] <- n.calc
-        }
+
+  object <- addPerCellQC(object)
+  object$nFeature_gene <- object$detected
+  object$nCount_gene <- object$sum
+
         return(object)
     }
 
@@ -519,7 +517,7 @@ convert_v3_to_v5 <- function(seurat_v3) {
     if (seurat_version < 5 || is.null(seurat_version)) {
         meta <- seurat_v3@meta.data
 
-        seurat_v5 <- CreateSeuratObject(counts = seurat_v3$gene@counts, data = seurat_v3$gene@data, assay = "gene", meta.data = meta)
+        seurat_v5 <- CreateSingleCellExperimentObject(counts = seurat_v3$gene@counts, data = seurat_v3$gene@data, assay = "gene", meta.data = meta)
 
         transcript_assay.v5 <- CreateAssay5Object(counts = seurat_v3$transcript@counts, data = seurat_v3$transcript@data)
         seurat_v5$transcript <- transcript_assay.v5
@@ -571,7 +569,7 @@ metadata_from_object <- function(object) {
 convert_seurat_to_sce <- function(seu) {
     sce <- as.SingleCellExperiment(seu, assay = DefaultAssay(seu))
 
-    alt_exp_names <- Seurat::Assays(seu)[!Seurat::Assays(seu) == DefaultAssay(seu)]
+    alt_exp_names <- SingleCellExperiment::Assays(seu)[!SingleCellExperiment::Assays(seu) == DefaultAssay(seu)]
 
     for (i in alt_exp_names) {
         altExp(sce, i) <- as.SingleCellExperiment(seu, assay = i)
@@ -580,4 +578,32 @@ convert_seurat_to_sce <- function(seu) {
     sce@metadata <- seu@misc
 
     return(sce)
+}
+
+#' Save object to <project>/output/sce/<feature>_object.rds
+#'
+#' @param object a single cell object
+#' @param prefix a prefix for saving
+#' @param proj_dir path to a project directory
+#'
+#' @return a path to an rds file containing a single cell object
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' save_object(gene = feature_objects$gene, transcript = feature_objects$transcript, proj_dir = proj_dir)
+#'
+#' save_object(gene = feature_objects$gene, transcript = feature_objects$transcript, prefix = "remove_nonPRs", proj_dir = proj_dir)
+#' }
+save_object <- function(object, prefix = "unfiltered", proj_dir = getwd()) {
+  object_dir <- path(proj_dir, "output", "seurat")
+
+  dir.create(object_dir)
+
+  object_path <- path(object_dir, paste0(prefix, "_object.rds"))
+
+  message(paste0("saving to ", object_path))
+  saveRDS(object, object_path)
+
+  return(object)
 }

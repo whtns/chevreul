@@ -1,4 +1,4 @@
-#' Transfer Labels Between Seurat Objects
+#' Transfer Labels Between SingleCellExperiment Objects
 #'
 #' @param ref_object reference object
 #' @param query_object query object
@@ -53,7 +53,7 @@ reference_integrate <- function(ref_object, query_object, query_name = "fetal", 
 
 
 ## find markers for every cluster compared to all remaining cells, report only the positive ones
-#' Find Cell Type Markers in a Seurat Object
+#' Find Cell Type Markers in a SingleCellExperiment Object
 #'
 #' @param object A object
 #' @param num_features number of features to retrieve for marker genes
@@ -61,7 +61,7 @@ reference_integrate <- function(ref_object, query_object, query_name = "fetal", 
 #' @return a single cell object
 #' @export
 find_markers <- function(object, num_features) {
-    markers <- Seurat::FindAllMarkers(object, only.pos = TRUE, min.pct = 0.25, logfc.threshold = 0.25)
+    markers <- SingleCellExperiment::FindAllMarkers(object, only.pos = TRUE, min.pct = 0.25, logfc.threshold = 0.25)
     markers %>%
         group_by(cluster) %>%
         top_n(n = 2, wt = avg_logFC)

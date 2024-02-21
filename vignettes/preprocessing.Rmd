@@ -51,7 +51,7 @@ First step is to load Chevreul package and all other packages required
 devtools::load_all()
 library(scran)
 library(scuttle)
-library(Seurat)
+library(SingleCellExperiment)
 library(tidyverse)
 library(ggraph)
 ```
@@ -64,7 +64,7 @@ chevreul provides a single command to:
 
 -   filter genes by minimum expression and ubiquity
 
--   normalize and scale expression by any of several methods packaged in Seurat
+-   normalize and scale expression by any of several methods packaged in SingleCellExperiment
 
 ## Run clustering on a single object
 

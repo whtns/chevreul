@@ -2,7 +2,7 @@
 % Please edit documentation in R/cluster.R
 \name{stash_marker_features}
 \alias{stash_marker_features}
-\title{Stash Marker Genes in a Seurat Object}
+\title{Stash Marker Genes in a SingleCellExperiment Object}
 \usage{
 stash_marker_features(
   object,

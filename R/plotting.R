@@ -26,7 +26,7 @@ unite_metadata <-
 #' variable whose position on the map depends on cell embeddings determined by the
 #' reduction technique used
 #'
-#' @param object A Seurat object
+#' @param object A SingleCellExperiment object
 #' @param embedding The dimensional reduction technique to be used
 #' @param group Name of one or more metadata columns to group (color) cells by.
 #' @param dims Dimensions to plot, must be a two-length numeric vector
@@ -97,7 +97,7 @@ plotly_settings <- function(plotly_plot, width = 600, height = 700) {
 #' Plots a Violin plot of a single data (gene expression, metrics, etc.)
 #' grouped by a metadata variable
 #'
-#' @param object A Seurat object
+#' @param object A SingleCellExperiment object
 #' @param plot_var Variable to group (color) cells by
 #' @param plot_vals plot values
 #' @param features Features to plot
@@ -129,7 +129,7 @@ plot_violin <- function(object, plot_var = "batch", plot_vals = NULL, features =
 #' If multiple features are supplied the joint density of all features
 #' will be plotted using [Nebulosa](https://www.bioconductor.org/packages/devel/bioc/html/Nebulosa.html)
 #'
-#' @param object A Seurat object
+#' @param object A SingleCellExperiment object
 #' @param embedding Dimensional reduction technique to be used
 #' @param features Features to plot
 #' @param dims Dimensions to plot, must be a two-length numeric vector
@@ -177,7 +177,7 @@ plot_feature <- function(object, embedding = c("umap", "pca", "tsne"), features,
 
 #' Annotate Cell Cycle
 #'
-#' Annotate Cell Cycle for Gene and Transcript Seurat Objects
+#' Annotate Cell Cycle for Gene and Transcript SingleCellExperiment Objects
 #'
 #' @param object A single cell object
 #'
@@ -331,9 +331,9 @@ plot_readcount<-  function(object, group_by = "nCount_RNA", color.by = "batch", 
     }
 
 
-#' Plot Annotated Complexheatmap from Seurat object
+#' Plot Annotated Complexheatmap from SingleCellExperiment object
 #'
-#' @param object A Seurat object
+#' @param object A SingleCellExperiment object
 #' @param features Vector of features to plot. Features can come
 #' @param cells Cells to retain
 #' @param group.by  Name of one or more metadata columns to annotate columns by (for example, orig.ident)

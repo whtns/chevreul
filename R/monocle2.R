@@ -9,7 +9,7 @@
 #'
 #' @examples
 add_census_slot <- function(object, assay = "gene", slot = "counts") {
-    data <- Seurat::GetAssayData(object, assay = assay, slot = slot)
+    data <- SingleCellExperiment::GetAssayData(object, assay = assay, slot = slot)
 
     data <- floor(data)
 
@@ -45,7 +45,7 @@ add_census_slot <- function(object, assay = "gene", slot = "counts") {
     return(object)
 }
 
-#' Convert a Seurat V3 object to a Monocle v2 object
+#' Convert a SingleCellExperiment V3 object to a Monocle v2 object
 #'
 #' @param object
 #'
@@ -54,11 +54,11 @@ add_census_slot <- function(object, assay = "gene", slot = "counts") {
 #'
 #' @examples
 convert_objectv3_to_monoclev2 <- function(object, assay = "gene", slot = "data", return_census = FALSE, sig_slice = 1000) {
-    # Load Seurat object
-    # Extract data, phenotype data, and feature data from the SeuratObject
+    # Load SingleCellExperiment object
+    # Extract data, phenotype data, and feature data from the SingleCellExperimentObject
     # data <- as(as.matrix(object@assays[["gene"]]@counts), "sparseMatrix")
 
-    data <- Seurat::GetAssayData(object, assay = assay, slot = slot)
+    data <- SingleCellExperiment::GetAssayData(object, assay = assay, slot = slot)
 
     data <- floor(data)
 
@@ -204,7 +204,7 @@ convert_objectv3_to_monoclev2 <- function(object, assay = "gene", slot = "data",
     monocle_cds <- orderCells(monocle_cds)
 }
 
-#' Convert a Seurat V3 object to a Monocle v2 object
+#' Convert a SingleCellExperiment V3 object to a Monocle v2 object
 #'
 #' @param object
 #'
@@ -213,11 +213,11 @@ convert_objectv3_to_monoclev2 <- function(object, assay = "gene", slot = "data",
 #'
 #' @examples
 convert_monoclev2_to_objectv3 <- function(object, assay = "gene", slot = "data", return_census = FALSE, sig_slice = 1000) {
-    # Load Seurat object
-    # Extract data, phenotype data, and feature data from the SeuratObject
+    # Load SingleCellExperiment object
+    # Extract data, phenotype data, and feature data from the SingleCellExperimentObject
     # data <- as(as.matrix(object@assays[["gene"]]@counts), "sparseMatrix")
 
-    data <- Seurat::GetAssayData(object, assay = assay, slot = slot)
+    data <- SingleCellExperiment::GetAssayData(object, assay = assay, slot = slot)
 
     data <- floor(data)
 

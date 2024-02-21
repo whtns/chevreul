@@ -18,7 +18,7 @@ integration_workflow(
 
 \item{excluded_cells}{named list of cells to exclude}
 
-\item{resolution}{value(s) to control the clustering resolution via \code{Seurat::FindMarkers}}
+\item{resolution}{value(s) to control the clustering resolution via \code{SingleCellExperiment::FindMarkers}}
 
 \item{experiment_name}{arbitrary name to identify experiment}
 

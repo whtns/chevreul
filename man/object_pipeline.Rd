@@ -2,7 +2,7 @@
 % Please edit documentation in R/pipeline.R
 \name{object_pipeline}
 \alias{object_pipeline}
-\title{Run Seurat Pipeline}
+\title{Run SingleCellExperiment Pipeline}
 \usage{
 object_pipeline(
   object,
@@ -14,9 +14,9 @@ object_pipeline(
 )
 }
 \arguments{
-\item{object}{A Seurat object}
+\item{object}{A SingleCellExperiment object}
 
-\item{assay}{Assay of interest in Seurat object}
+\item{assay}{Assay of interest in SingleCellExperiment object}
 
 \item{resolution}{Resolution for clustering cells. Default set to 0.6.}
 

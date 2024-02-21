@@ -55,7 +55,7 @@ subset_by_meta <- function(meta_path, object) {
 
     object <- object[, colnames(object) %in% upload_cells]
 
-    object <- Seurat::AddMetaData(object, upload_meta)
+    object <- SingleCellExperiment::AddMetaData(object, upload_meta)
 
     return(object)
 }

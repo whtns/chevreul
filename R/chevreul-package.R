@@ -49,6 +49,7 @@
 #' @importFrom harmony RunHarmony
 #' @importFrom methods slot
 #' @importFrom methods slot<-
+#' @importFrom patchwork wrap_plots
 #' @importFrom plotly config
 #' @importFrom plotly event_data
 #' @importFrom plotly ggplotly
@@ -100,7 +101,7 @@
 #' @importFrom utils sessionInfo
 ## usethis namespace: end
 #' @import ggplot2
-#' @import Seurat
+#' @import SingleCellExperiment
 #' @import SingleCellExperiment
 #' @import shiny
 NULL

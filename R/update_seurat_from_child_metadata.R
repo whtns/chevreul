@@ -1,4 +1,4 @@
-#' Update Seurat Metadata from Project
+#' Update SingleCellExperiment Metadata from Project
 #'
 #' Given a project metadata file located in <proj_dir>/data/<meta_file>, update an existing object with the project data
 #'
@@ -30,7 +30,7 @@ update_object_meta <- function(object, proj_dir, numcols) {
 }
 
 
-#' Reset Seurat Metadata
+#' Reset SingleCellExperiment Metadata
 #'
 #' @param object A object
 #' @param new_meta new object

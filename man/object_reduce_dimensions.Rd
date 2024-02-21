@@ -13,7 +13,7 @@ object_reduce_dimensions(
 )
 }
 \arguments{
-\item{object}{A Seurat object}
+\item{object}{A SingleCellExperiment object}
 
 \item{assay}{Assay of interest to be run on the singlecell objects}
 

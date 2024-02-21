@@ -28,7 +28,7 @@ First step is to load Chevreul package and all other packages required
 
 ```{r setup }
 library(chevreul)
-library(Seurat)
+library(SingleCellExperiment)
 library(tidyverse)
 library(ggraph)
 ```
@@ -37,11 +37,11 @@ library(ggraph)
 
 chevreul provides a single command to:
 
--   construct a Seurat object
+-   construct a SingleCellExperiment object
 
 -   filter genes by minimum expression and ubiquity
 
--   normalize and scale expression by any of several methods packaged in Seurat
+-   normalize and scale expression by any of several methods packaged in SingleCellExperiment
 
 ## Run clustering on a single object
 
@@ -68,7 +68,7 @@ DimPlot(clustered_object, group.by = "gene_snn_res.0.6")
 ## Get a first look at a processed dataset using an interactive shiny app
 
 ```{r, eval = FALSE}
-minimalSeuratApp(clustered_object)
+minimalSingleCellExperimentApp(clustered_object)
 ```
 
 ## Set up a object
@@ -93,16 +93,16 @@ head(human_meta) %>%
     format_table()
 ```
 
-Then using these 2 datasets we can create a Seurat object in the usual manner using the `CreateSeuratObject` function
+Then using these 2 datasets we can create a SingleCellExperiment object in the usual manner using the `CreateSingleCellExperimentObject` function
 
 ```{r}
-myobject <- CreateSeuratObject(human_count, assay = "gene", meta.data = human_meta)
+myobject <- CreateSingleCellExperimentObject(human_count, assay = "gene", meta.data = human_meta)
 myobject
 ```
 
 ## Preprocess the object
 
-Chevreul includes a handy function to preprocess the data that handles normalization and scaling required for downstream analysis. Preprocessing is performed using existing Seurat functions. If needed, parameters can be specified by the user.
+Chevreul includes a handy function to preprocess the data that handles normalization and scaling required for downstream analysis. Preprocessing is performed using existing SingleCellExperiment functions. If needed, parameters can be specified by the user.
 
 ```{r}
 myobject <- object_preprocess(myobject)
@@ -159,7 +159,7 @@ Dim_Red_object <- RunUMAP(Dim_Red_object, dims = 1:30)
 
 ## Community detection by clustering
 
-Clustering analysis is performed via Louvain(default) or alternative algorithms available in Seurat. Clustering is performed at a range of resolutions with default value ranging from 0.2 to 2 and pca reduction
+Clustering analysis is performed via Louvain(default) or alternative algorithms available in SingleCellExperiment. Clustering is performed at a range of resolutions with default value ranging from 0.2 to 2 and pca reduction
 
 ```{r, results=FALSE, eval=TRUE}
 object <- object_cluster(object = Dim_Red_object, resolution = seq(0.2, 2, by = 0.2))

@@ -2,7 +2,7 @@
 % Please edit documentation in R/integrate.R
 \name{merge_small_objects}
 \alias{merge_small_objects}
-\title{Merge Small Seurat Objects}
+\title{Merge Small SingleCellExeriment Objects}
 \usage{
 merge_small_objects(object_list, k.filter = 50)
 }
@@ -15,5 +15,5 @@ merge_small_objects(object_list, k.filter = 50)
 a single cell object
 }
 \description{
-Merge Small Seurat Objects
+Merge Small SingleCellExeriment Objects
 }
