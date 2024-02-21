@@ -96,7 +96,7 @@ head(human_meta) %>%
 Then using these 2 datasets we can create a SingleCellExperiment object in the usual manner using the `CreateSingleCellExperimentObject` function
 
 ```{r}
-myobject <- CreateSingleCellExperimentObject(human_count, assay = "gene", meta.data = human_meta)
+myobject <- CreateSingleCellExperimentObject(human_count, experiment = "gene", meta.data = human_meta)
 myobject
 ```
 
@@ -133,10 +133,10 @@ pre_process_object <- ScaleData(preprocess_object)
 
 ## Perform dimension reduction
 
-Chevreul also implements a standardized dimension reduction step to select variable features at a user-specified threshold and perform PCA, tSNE, and UMAP. The default assay the dimension reduction is being run on is "gene".
+Chevreul also implements a standardized dimension reduction step to select variable features at a user-specified threshold and perform PCA, tSNE, and UMAP. The default experiment the dimension reduction is being run on is "gene".
 
 ```{r, results=FALSE}
-myobject <- object_reduce_dimensions(myobject, assay = "RNA")
+myobject <- object_reduce_dimensions(myobject, experiment = "RNA")
 DimPlot(myobject)
 ```
 

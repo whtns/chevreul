@@ -6,7 +6,7 @@
 \usage{
 plot_feature(
   object,
-  embedding = c("umap", "pca", "tsne"),
+  embedding = c("UMAP", "PCA", "TSNE"),
   features,
   dims = c(1, 2),
   return_plotly = FALSE,

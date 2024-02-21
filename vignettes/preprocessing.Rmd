@@ -126,7 +126,7 @@ Then using these 2 datasets we can create a SingleCellExperiment object in the u
 
 ```{r}
 myobject <- SingleCellExperiment::SingleCellExperiment(
-  assays = list(counts = human_count), 
+  experiments = list(counts = human_count), 
   colData = human_meta, 
   mainExpName = "gene")
 myobject
@@ -154,7 +154,7 @@ This single function includes sub-functions that normalize, identify highly vari
 
 ## Perform dimension reduction
 
-Chevreul also includes a separate function `object_reduce_dimentions()` capable of implementing a standardized dimension reduction step to select variable features at a user-specified threshold. This function performs tSNE and UMAP in addition to PCA. The default assay the dimension reduction is being run on is "gene".
+Chevreul also includes a separate function `object_reduce_dimentions()` capable of implementing a standardized dimension reduction step to select variable features at a user-specified threshold. This function performs tSNE and UMAP in addition to PCA. The default experiment the dimension reduction is being run on is "gene".
 
 ```{r, results=FALSE}
 myobject_red <- object_reduce_dimensions(myobject0)

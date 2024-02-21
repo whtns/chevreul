@@ -126,7 +126,7 @@ Subsetting of single or batch integrated data will trigger renewal of all releva
 
 ### All Transcripts
 
-If expression is summarized with both gene and transcript assays, it is possible to plot all constituent transcripts (labeled by ensembl transcript ids) making up a given gene.
+If expression is summarized with both gene and transcript experiments, it is possible to plot all constituent transcripts (labeled by ensembl transcript ids) making up a given gene.
 
 The two parameters that must be chosen are:
 

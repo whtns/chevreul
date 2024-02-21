@@ -27,11 +27,20 @@ pyplot <- NULL
     human_fetal_retina_sce <<- readRDS(url("http://cobrinik-1.saban-chla.usc.edu/chevreuldata/human_fetal_retina_sce.rds"))
     human_fetal_retina_seu <<- readRDS(url("http://cobrinik-1.saban-chla.usc.edu/chevreuldata/human_fetal_retina_seu.rds"))
     baron2016singlecell <<- loadRData(url("http://cobrinik-1.saban-chla.usc.edu/chevreuldata/baron2016singlecell.rda"))
-    panc8 <<- loadRData(url("http://cobrinik-1.saban-chla.usc.edu/chevreuldata/panc8.rda"))
+    human_gene_transcript_sce <<- loadRData(url("http://cobrinik-1.saban-chla.usc.edu/chevreuldata/panc8.rda"))
     human_count <<- loadRData(url("http://cobrinik-1.saban-chla.usc.edu/human_count.rda"))
     human_meta <<- loadRData(url("http://cobrinik-1.saban-chla.usc.edu/human_meta.rda"))
 }
 
+#' Install scvelo
+#'
+#' @param method
+#' @param conda
+#'
+#' @return
+#' @export
+#'
+#' @examples
 install_scvelo <- function(method = "auto", conda = "auto") {
     reticulate::py_install("scvelo", method = method, conda = conda, pip = TRUE)
     reticulate::py_install("matplotlib", method = method, conda = conda)

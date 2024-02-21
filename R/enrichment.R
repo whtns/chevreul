@@ -79,7 +79,7 @@
 #' 'http://amp.pharm.mssm.edu/Enrichr/enrich'.
 #' @export
 #' @return SingleCellExperiment object with Enrichr results for samples and clusters stored in
-#' Misc(object)$enriched_pathways$enrichr
+#' metadata(object)$enriched_pathways$enrichr
 #' @import dplyr
 #' @importFrom rlang .data
 #' @importFrom future.apply future_sapply
@@ -123,7 +123,7 @@ getEnrichedPathways <- function(object,
     ## --------------------------------------------------------------------------##
     ## check if marker genes are present and stop if they aren't
     ## --------------------------------------------------------------------------##
-    if (is.null(Misc(object)$markers)) {
+    if (is.null(metadata(object)$markers)) {
         stop(
             "No marker genes found. Please run 'getMarkerGenes()' first.",
             call. = FALSE
@@ -140,8 +140,8 @@ getEnrichedPathways <- function(object,
     ## - try up to three times to run enrichR annotation (fails sometimes)
     ## - filter results
     ## --------------------------------------------------------------------------##
-    if (!is.null(Misc(object)$markers[[1]]$wilcox)) {
-        if (is.data.frame(Misc(object)$markers[[1]]$wilcox)) {
+    if (!is.null(metadata(object)$markers[[1]]$wilcox)) {
+        if (is.data.frame(metadata(object)$markers[[1]]$wilcox)) {
             message(
                 paste0(
                     "[", format(Sys.time(), "%H:%M:%S"),
@@ -150,7 +150,7 @@ getEnrichedPathways <- function(object,
             )
 
             ## remove clusters for which no marker genes were found
-            markers_by_cluster <- Misc(object)$markers[[1]]$wilcox %>%
+            markers_by_cluster <- metadata(object)$markers[[1]]$wilcox %>%
                 # filter(padj < 0.05) %>%
                 identity()
 
@@ -229,7 +229,7 @@ getEnrichedPathways <- function(object,
                     " pathways passed the thresholds across all clusters and databases."
                 )
             )
-        } else if (Misc(object)$markers == "no_markers_found") {
+        } else if (metadata(object)$markers == "no_markers_found") {
             message(
                 paste0(
                     "[", format(Sys.time(), "%H:%M:%S"),
@@ -265,7 +265,7 @@ getEnrichedPathways <- function(object,
             max_terms = max_terms
         )
     )
-    Misc(object)$enriched_pathways$enrichr <- results
+    metadata(object)$enriched_pathways$enrichr <- results
 
     ## --------------------------------------------------------------------------##
     ## return SingleCellExperiment object
@@ -282,6 +282,8 @@ getEnrichedPathways <- function(object,
 #'
 #' @return a dataframe of enrichment scores
 #' @export
+#' @examples
+#'
 format_pathway_table <- function(enrich_by_cluster, cluster, db) {
     enrich_by_cluster <-
         enrich_by_cluster %>%

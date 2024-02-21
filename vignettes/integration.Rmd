@@ -57,7 +57,7 @@ library(patchwork)
 
 # TLDR 
 
-Here, we are using the `panc8` dataset, which is produced in two batches using different technologies. The `SplitObject()` function splits the object into a list containing each batch as element. This list of objects can then be integrated using the `integration_workflow()` function, which identifies shared cell states that are present across different single cell datasets.
+Here, we are using the `human_gene_transcript_sce` dataset, which is produced in two batches using different technologies. The `SplitObject()` function splits the object into a list containing each batch as element. This list of objects can then be integrated using the `integration_workflow()` function, which identifies shared cell states that are present across different single cell datasets.
 
 ```{r, eval=FALSE}
 batches <-

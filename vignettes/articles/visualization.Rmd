@@ -51,7 +51,7 @@ When plotting only one feature, output is identical to `SingleCellExperiment::Fe
  
 ```{r}
 plot_feature(human_gene_transcript_seu,
-    embedding = "umap",
+    embedding = "UMAP",
     features = "NRL", return_plotly = FALSE
 )
 ```
@@ -60,7 +60,7 @@ If multiple features are to be plotted, the joint density of all the features ar
 
 ```{r}
 plot_feature(human_gene_transcript_seu,
-    embedding = "umap",
+    embedding = "UMAP",
     features = c("NRL", "RHO"), return_plotly = FALSE
 )
 ```
@@ -83,7 +83,7 @@ plot_readcount(human_gene_transcript_seu,
 Chevreul contains a function that produces an interactive scatter plot of a metadata variable, where each point in the plot represents a cell whose position on the plot is given by the cell embedding determined by the dimensional reduction technique. The default dimension reduction used is "UMAP". The group argument in `plot_var()` function allows the user to enter the metadata variable by which to group the cells by, its default value is set to "batch".
 
 ```{r}
-plot_var(human_gene_transcript_seu, group = "type", embedding = "umap")
+plot_var(human_gene_transcript_seu, group = "type", embedding = "UMAP")
 ```
 
 This function utilizes a SingleCellExperiment function, `DimPlot()`, as sub function which produces the dimensional reduction plot.The interactive parameter, `return_plotly`, in plot_var when set to TRUE will convert the plot into an interactive plot using ggplotly function from R's plotly package

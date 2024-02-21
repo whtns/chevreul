@@ -1,15 +1,15 @@
-#' add census assay to a object
+#' add census experiment to a object
 #'
 #' @param object
-#' @param assay
+#' @param experiment
 #' @param slot
 #'
 #' @return
 #' @export
 #'
 #' @examples
-add_census_slot <- function(object, assay = "gene", slot = "counts") {
-    data <- SingleCellExperiment::GetAssayData(object, assay = assay, slot = slot)
+add_census_slot <- function(object, experiment = "gene", slot = "counts") {
+    data <- SingleCellExperiment::GetAssayData(object, experiment = experiment, slot = slot)
 
     data <- floor(data)
 
@@ -40,7 +40,7 @@ add_census_slot <- function(object, assay = "gene", slot = "counts") {
     attributes(object)$census <- Biobase::exprs(monocle_cds)
 
     object[["census"]] <- object[["gene"]]
-    object <- SetAssayData(object, slot = "data", new.data = Biobase::exprs(monocle_cds), assay = "census")
+    object <- SetAssayData(object, slot = "data", new.data = Biobase::exprs(monocle_cds), experiment = "census")
 
     return(object)
 }
@@ -53,12 +53,12 @@ add_census_slot <- function(object, assay = "gene", slot = "counts") {
 #' @export
 #'
 #' @examples
-convert_objectv3_to_monoclev2 <- function(object, assay = "gene", slot = "data", return_census = FALSE, sig_slice = 1000) {
+convert_objectv3_to_monoclev2 <- function(object, experiment = "gene", slot = "data", return_census = FALSE, sig_slice = 1000) {
     # Load SingleCellExperiment object
     # Extract data, phenotype data, and feature data from the SingleCellExperimentObject
-    # data <- as(as.matrix(object@assays[["gene"]]@counts), "sparseMatrix")
+    # data <- as(as.matrix(object@experiments[["gene"]]@counts), "sparseMatrix")
 
-    data <- SingleCellExperiment::GetAssayData(object, assay = assay, slot = slot)
+    data <- SingleCellExperiment::GetAssayData(object, experiment = experiment, slot = slot)
 
     data <- floor(data)
 
@@ -212,12 +212,12 @@ convert_objectv3_to_monoclev2 <- function(object, assay = "gene", slot = "data",
 #' @export
 #'
 #' @examples
-convert_monoclev2_to_objectv3 <- function(object, assay = "gene", slot = "data", return_census = FALSE, sig_slice = 1000) {
+convert_monoclev2_to_objectv3 <- function(object, experiment = "gene", slot = "data", return_census = FALSE, sig_slice = 1000) {
     # Load SingleCellExperiment object
     # Extract data, phenotype data, and feature data from the SingleCellExperimentObject
-    # data <- as(as.matrix(object@assays[["gene"]]@counts), "sparseMatrix")
+    # data <- as(as.matrix(object@experiments[["gene"]]@counts), "sparseMatrix")
 
-    data <- SingleCellExperiment::GetAssayData(object, assay = assay, slot = slot)
+    data <- SingleCellExperiment::GetAssayData(object, experiment = experiment, slot = slot)
 
     data <- floor(data)
 
@@ -938,7 +938,7 @@ sce_from_tibbles <- function(counts, colData, experimentdata = NULL) {
     colData <- data.frame(colData)
     rownames(colData) <- gsub("-", ".", colData$sample_id)
     colData <- colData[colnames(counts), ]
-    sce <- SingleCellExperiment::SingleCellExperiment(assays = list(counts = counts), colData = colData, rowData = featuredata, metadata = experimentdata)
+    sce <- SingleCellExperiment::SingleCellExperiment(experiments = list(counts = counts), colData = colData, rowData = featuredata, metadata = experimentdata)
 
     return(sce)
 }

@@ -4,8 +4,7 @@
 # Chevreul
 
 This package includes a set of Shiny apps for exploring single cell RNA
-datasets processed with
-<a href="https://github.com/satijalab/object" target="_blank" rel="noopener noreferrer">SingleCellExperiment</a>
+datasets processed as a SingleCellExperiment
 
 A demo using a human gene transcript dataset from Shayler et al. (link)
 is available
@@ -14,19 +13,14 @@ is available
 There are also convenient functions for:
 
 - Clustering and Dimensional Reduction of Raw Sequencing Data.
-- <a href="https://satijalab.org/seurat/archive/v3.0/integration.html" target="_blank" rel="noopener noreferrer">Integration
-  and Label Transfer</a>
+- Integration and Label Transfer
 - Louvain Clustering at a Range of Resolutions
-- Cell cycle state regression and labelingz
-- RNA velocity calculation with
-  <a href="https://velocyto.org/" target="_blank" rel="noopener noreferrer">Velocyto.R</a>
-  and
-  <a href="https://scvelo.readthedocs.io/" target="_blank" rel="noopener noreferrer">scvelo</a>
+- Cell cycle state regression and labeling
+- RNA velocity calculation with Velocyto.R and scvelo
 
 > \[!WARNING\] Chevreul was designed for full-length smart-seq based
 > single cell data. Default settings may not be appropriate for droplet
-> (10x) data, though most can be adjusted. Keep in mind [best
-> practices](https://satijalab.org/seurat/articles/pbmc3k_tutorial)
+> (10x) data, though most can be adjusted. Keep in mind best practices
 > regarding normalization, dimensional reduction, etc. when using.
 
 ## Installation
@@ -37,7 +31,7 @@ with:
 
 ### Install locally and run in three steps:
 
-You can install Chevreul locally using the following steps:
+You can install chevreul locally using the following steps:
 
 ``` r
 install.packages("devtools")
@@ -81,7 +75,7 @@ By default clustering will be run at ten different resolutions between
 argument as a numeric vector.
 
 ``` r
-clustered_object <- clustering_workflow(human_gene_transcript_object,
+clustered_object <- clustering_workflow(human_gene_transcript_sce,
     experiment_name = "object_hu_trans",
     organism = "human"
 )
@@ -90,7 +84,7 @@ clustered_object <- clustering_workflow(human_gene_transcript_object,
 ## Get a first look at a processed dataset using an interactive shiny app
 
 ``` r
-minimalSingleCellExperimentApp(human_gene_transcript_object)
+minimalSingleCellExperimentApp(human_gene_transcript_sce)
 ```
 
 ## Set up a object
@@ -108,7 +102,7 @@ We can then create a object in the usual manner using
 `CreatSingleCellExperimentObject` function
 
 ``` r
-myobject <- CreateSingleCellExperimentObject(human_count, assay = "gene", meta.data = human_meta)
+myobject <- CreateSingleCellExperimentObject(human_count, experiment = "gene", meta.data = human_meta)
 ```
 
 ## Preprocess the object
@@ -128,11 +122,11 @@ identifies highly variable features and scales the data
 
 Chevreul also implements a standardized dimension reduction step to
 select variable features at a user-specified threshold and perform PCA,
-tSNE, and UMAP. The default assay the dimension reduction is being run
-on is “gene”.
+tSNE, and UMAP. The default experiment the dimension reduction is being
+run on is “gene”.
 
 ``` r
-myobject <- object_reduce_dimensions(myobject, assay = "RNA")
+myobject <- object_reduce_dimensions(myobject, experiment = "RNA")
 ```
 
 ## Community detection by clustering
@@ -175,7 +169,7 @@ integrated_object <- integration_workflow(split_human)
 ## View analysis details
 
 ``` r
-Misc(integrated_object, "experiment") %>%
+metadata(integrated_object, "experiment") %>%
     enframe() %>%
     knitr::kable()
 ```

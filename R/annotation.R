@@ -73,16 +73,16 @@ transcripts_to_genes <- function(transcripts, organism = "human") {
 #'
 #' @param object A object
 #' @param organism mouse
-#' @param object_assay gene
+#' @param object_experiment gene
 #'
 #' @return a single cell obejct with cell metadata column containing mitochondrial percentage
 #' @export
 #' @examples
 #' add_percent_mito(human_gene_transcript_sce)
 #'
-add_percent_mito <- function(object, organism = "human", object_assay = "gene") {
+add_percent_mito <- function(object, organism = "human", object_experiment = "gene") {
         # mito_features <- mito_features[[organism]][["gene"]]
-        # mito_features <- mito_features[mito_features %in% rownames(object[[object_assay]])]
+        # mito_features <- mito_features[mito_features %in% rownames(object[[object_experiment]])]
         # object[["percent.mt"]] <- PercentageFeatureSet(object, features = mito_features)
         # return(object)
         is.mito <- grepl("^MT-*", rownames(object))

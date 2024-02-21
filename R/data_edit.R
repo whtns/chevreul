@@ -3,6 +3,7 @@
 #' @param id id
 #'
 #' @return UI to reformat the metadata of a single cell object
+#' @noRd
 reformatMetadataDRui <- function(id) {
     ns <- NS(id)
     tagList(

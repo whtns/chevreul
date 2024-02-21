@@ -12,7 +12,7 @@ object_integration_pipeline(
   organism = "human",
   annotate_cell_cycle = FALSE,
   annotate_percent_mito = FALSE,
-  reduction = "pca",
+  reduction = "PCA",
   ...
 )
 }
@@ -46,7 +46,7 @@ Run batch correction, followed by:
 }
 \examples{
 
-batches <- panc8 \%>\%
+batches <- human_gene_transcript_sce \%>\%
     SingleCellExperiment::SplitObject(split.by = "tech")
 
 integrated_object <- object_integration_pipeline(batches)

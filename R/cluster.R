@@ -2,7 +2,7 @@
 #'
 #' Performs standard pre-processing workflow for scRNA-seq data
 #'
-#' @param assay Assay to use
+#' @param experiment Assay to use
 #' @param scale Perform linear transformation 'Scaling'
 #' @param normalize Perform normalization
 #' @param features Identify highly variable features
@@ -14,40 +14,40 @@
 #'
 #' @examples
 #'
-#' panc8[["gene"]] <- object_preprocess(panc8[["gene"]])
+#' human_gene_transcript_sce <- object_preprocess(human_gene_transcript_sce)
 #'
-object_preprocess <- function (assay, scale = TRUE, normalize = TRUE, features = NULL, legacy_settings = FALSE, ...)
+object_preprocess <- function (experiment, scale = TRUE, normalize = TRUE, features = NULL, legacy_settings = FALSE, ...)
           {
-            # assay <- computeLibraryFactors(assay)
+            # experiment <- computeLibraryFactors(experiment)
             # if (normalize) {
-            #   assay <- logNormCounts(assay)
+            #   experiment <- logNormCounts(experiment)
             # }
             #
-            # assay <- modelGeneVar(assay)
+            # experiment <- modelGeneVar(experiment)
             #
             # if (scale) {
             # }
 
-            clusters <- quickCluster(assay)
-            assay <- computeSumFactors(assay, clusters=clusters)
-            # summary(sizeFactors(assay))
+            clusters <- quickCluster(experiment)
+            experiment <- computeSumFactors(experiment, clusters=clusters)
+            # summary(sizeFactors(experiment))
 
-            assay <- logNormCounts(assay)
+            experiment <- logNormCounts(experiment)
 
-            dec <- modelGeneVar(assay)
+            dec <- modelGeneVar(experiment)
 
             # Get the top 10% of genes.
             top.hvgs <- getTopHVGs(dec, prop=0.1)
-            assay <- runPCA(assay, subset_row=top.hvgs)
-            # ncol(reducedDim(assayd, "PCA"))
-            output <- getClusteredPCs(reducedDim(assay))
-            # reducedDim(assay, "PCAsub") <- reducedDim(assay, "PCA")[,1:npcs,drop=FALSE]
+            experiment <- runPCA(experiment, subset_row=top.hvgs)
+            # ncol(reducedDim(experimentd, "PCA"))
+            output <- getClusteredPCs(reducedDim(experiment))
+            # reducedDim(experiment, "PCAsub") <- reducedDim(experiment, "PCA")[,1:npcs,drop=FALSE]
             # npcs
             # In this case, using the PCs that we chose from getClusteredPCs().
-            g1 <- buildSNNGraph(assay, use.dimred="PCA")
+            g1 <- buildSNNGraph(experiment, use.dimred="PCA")
 
 
-            return(assay)
+            return(experiment)
 }
 
 #' Find All Markers
@@ -56,20 +56,20 @@ object_preprocess <- function (assay, scale = TRUE, normalize = TRUE, features =
 #'
 #' @param object An object.
 #' @param group_by A metadata variable to group by.
-#' @param object_assay Assay to use, Default "gene".
+#' @param object_experiment Assay to use, Default "gene".
 #' @param ... extra args passed to stash_marker_features
 #'
 #' @return a single cell object containing marker genes
 #' @export
 #'
 #' @examples
-#' markers_stashed_object <- find_all_markers(panc8)
-#' marker_genes <- Misc(markers_stashed_object, "markers")
+#' markers_stashed_object <- find_all_markers(human_gene_transcript_sce)
+#' marker_genes <- metadata(markers_stashed_object)[["markers"]]
 #' str(marker_genes)
-find_all_markers <- function(object, group_by = NULL, object_assay = "gene", ...) {
+find_all_markers <- function(object, group_by = NULL, object_experiment = "gene", ...) {
         if (is.null(group_by)) {
-            resolutions <- colnames(get_cell_metadata(object))[grepl(paste0(object_assay, "_snn_res."), colnames(get_cell_metadata(object)))]
-            cluster_index <- grepl(paste0(object_assay, "_snn_res."), colnames(get_cell_metadata(object)))
+            resolutions <- colnames(get_cell_metadata(object))[grepl(paste0(object_experiment, "_snn_res."), colnames(get_cell_metadata(object)))]
+            cluster_index <- grepl(paste0(object_experiment, "_snn_res."), colnames(get_cell_metadata(object)))
             if (!any(cluster_index)) {
                 warning("no clusters found in metadata. runnings object_cluster")
                 object <- object_cluster(object, resolution = seq(0.2, 2, by = 0.2))
@@ -80,10 +80,10 @@ find_all_markers <- function(object, group_by = NULL, object_assay = "gene", ...
             clusters <- select(clusters, dplyr::one_of(names(cluster_levels)))
             group_by <- names(clusters)
         }
-        new_markers <- map(group_by, ~ stash_marker_features(object, .x, object_assay = object_assay, ...))
+        new_markers <- map(group_by, ~ stash_marker_features(object, .x, object_experiment = object_experiment, ...))
         names(new_markers) <- group_by
-        old_markers <- metadata(object)$markers[!names(metadata(object)$markers) %in% names(new_markers)]
-        metadata(object)$markers <- c(old_markers, new_markers)
+        old_markers <- metadata(object)$markers[!names(metadata(object)[["markers"]]) %in% names(new_markers)]
+        metadata(object)[["markers"]] <- c(old_markers, new_markers)
         return(object)
     }
 
@@ -93,6 +93,8 @@ find_all_markers <- function(object, group_by = NULL, object_assay = "gene", ...
 #' @param marker_table a table of marker genes
 #'
 #' @return a table of marker genes
+#' @examples
+#'
 #'
 enframe_markers <- function(marker_table) {
     marker_table %>%
@@ -108,7 +110,7 @@ enframe_markers <- function(marker_table) {
 #'
 #' @param group_by A metadata variable to group by
 #' @param object A object
-#' @param object_assay An assay to use
+#' @param object_experiment An experiment to use
 #' @param top_n Use top n genes, Default "200"
 #' @param p_val_cutoff p value cut-off, Default value is "0.5"
 #'
@@ -116,9 +118,9 @@ enframe_markers <- function(marker_table) {
 #'
 #' @examples
 #'
-#' object <- stash_marker_features(group_by = "batch", object, object_assay = "gene")
+#' object <- stash_marker_features(group_by = "batch", object, object_experiment = "gene")
 #'
-stash_marker_features <- function(object, group_by, object_assay = "gene", top_n = 200, p_val_cutoff = 0.5) {
+stash_marker_features <- function(object, group_by, object_experiment = "gene", top_n = 200, p_val_cutoff = 0.5) {
         message(paste0("stashing markers for ", group_by))
         markers <- list()
         markers <-
