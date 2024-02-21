@@ -18,7 +18,7 @@ integration_workflow <-  function(batches, excluded_cells = NULL, resolution = s
 
         organisms <- map(batches, list("meta.data", "organism", 1))
 
-        if (any(purrr::map_lgl(organisms, is.null))) {
+        if (any(map_lgl(organisms, is.null))) {
             organisms <- case_when(
                 grepl("Hs", names(batches)) ~ "human",
                 grepl("Mm", names(batches)) ~ "mouse",
@@ -29,7 +29,7 @@ integration_workflow <-  function(batches, excluded_cells = NULL, resolution = s
 
         experiment_names <- names(batches)
 
-        batches <- purrr::pmap(list(batches, experiment_names, organisms), record_experiment_data)
+        batches <- pmap(list(batches, experiment_names, organisms), record_experiment_data)
 
         merged_batches <- object_integration_pipeline(batches, resolution = resolution, organism = "human", ...)
         metadata(merged_batches)$batches <- names(batches)

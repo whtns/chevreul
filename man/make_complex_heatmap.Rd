@@ -10,7 +10,7 @@ make_complex_heatmap(
   group.by = "ident",
   cells = NULL,
   layer = "scale.data",
-  assay = NULL,
+  experiment = NULL,
   group.bar.height = 0.01,
   column_split = NULL,
   col_arrangement = "ward.D2",
@@ -29,7 +29,7 @@ make_complex_heatmap(
 
 \item{layer}{"counts" for raw data "scale.data" for log-normalized data}
 
-\item{assay}{assay to display}
+\item{experiment}{experiment to display}
 
 \item{group.bar.height}{height for group bars}
 
@@ -39,7 +39,7 @@ make_complex_heatmap(
 
 \item{mm_col_dend}{height of column dendrogram}
 
-\item{...}{additional arguments passed to ComplexHeatmap::Heatmap}
+\item{...}{additional arguments passed to Heatmap}
 }
 \value{
 a complexheatmap

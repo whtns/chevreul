@@ -12,7 +12,7 @@
 update_object_meta <- function(object, proj_dir, numcols) {
     object_meta <- as.data.frame(get_cell_metadata(object))
 
-    project_meta <- readr::read_csv(get_meta(proj_dir))
+    project_meta <- read_csv(get_meta(proj_dir))
 
     common_cols <- intersect(colnames(object_meta), colnames(project_meta))
     object_meta <- mutate_at(object_meta, .vars = vars(one_of(numcols)), .funs = funs(as.numeric))

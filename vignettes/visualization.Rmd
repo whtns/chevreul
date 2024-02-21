@@ -157,7 +157,7 @@ We can plot an annotated complex heat map from the SingleCellExperiment object w
 
 
 ```{r}
-top_10_features <- scran::getTopHVGs(human_gene_transcript_sce)[1:10]
+top_10_features <- getTopHVGs(human_gene_transcript_sce)[1:10]
 
 make_complex_heatmap(human_gene_transcript_sce, features = top_10_features, 
                      group.by = "gene_snn_res.0.2")

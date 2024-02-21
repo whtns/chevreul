@@ -107,7 +107,7 @@ plotViolin <- function(input, output, session, object, featureType, organism_typ
             paste("violin", ".pdf", sep = "")
         },
         content = function(file) {
-            ggsave(file, vln_plot() + ggpubr::theme_pubr(base_size = 20, x.text.angle = 45), width = 16, height = 12)
+            ggsave(file, vln_plot() + theme_pubr(base_size = 20, x.text.angle = 45), width = 16, height = 12)
         }
     )
 
@@ -162,9 +162,9 @@ plotHeatmapui <- function(id) {
 plotHeatmap <- function(input, output, session, object, featureType, organism_type) {
     ns <- session$ns
 
-    w <- waiter::Waiter$new(ns("heatmap"),
-        html = waiter::spin_loaders(id = 1, color = "black", style = "position:relative;margin:auto;"),
-        color = waiter::transparent(.5)
+    w <- Waiter$new(ns("heatmap"),
+        html = spin_loaders(id = 1, color = "black", style = "position:relative;margin:auto;"),
+        color = transparent(.5)
     )
 
     observe({
@@ -228,7 +228,7 @@ plotHeatmap <- function(input, output, session, object, featureType, organism_ty
             paste("heatmap", ".pdf", sep = "")
         },
         content = function(file) {
-            ggsave(file, ggplotify::as.ggplot(heatmap_plot()) + ggpubr::theme_pubr(base_size = 20, x.text.angle = 45), width = 16, height = 12)
+            ggsave(file, as.ggplot(heatmap_plot()) + theme_pubr(base_size = 20, x.text.angle = 45), width = 16, height = 12)
         }
     )
 }
@@ -248,8 +248,8 @@ integrateProjui <- function(id) {
             textOutput(ns("integrationMessages")),
             checkboxInput(ns("legacySettings"), "Use Legacy Settings", value = FALSE),
             textOutput(ns("integrationResult")),
-            shinyFiles::shinySaveButton(ns("saveIntegratedProject"), "Save Integrated Project", "Save project as..."),
-            DT::dataTableOutput(ns("myDatatable")),
+            shinySaveButton(ns("saveIntegratedProject"), "Save Integrated Project", "Save project as..."),
+            dataTableOutput(ns("myDatatable")),
             width = 12
         ) %>%
             default_helper(type = "markdown", content = "integrateProjects")
@@ -273,11 +273,11 @@ integrateProj <- function(input, output, session, proj_matrices, object, proj_di
 
     clean_proj_matrix <- reactive({
         clean_proj_matrix <- proj_matrix() %>%
-            dplyr::select(-project_path) %>%
+            select(-project_path) %>%
             identity()
     })
 
-    output$myDatatable <- DT::renderDT(clean_proj_matrix(),
+    output$myDatatable <- renderDT(clean_proj_matrix(),
         server = FALSE,
         rownames = TRUE
     )
@@ -287,7 +287,7 @@ integrateProj <- function(input, output, session, proj_matrices, object, proj_di
     })
 
     selectedProjects <- reactive({
-        selectedProjects <- dplyr::slice(proj_matrix(), selectedRows()) %>%
+        selectedProjects <- slice(proj_matrix(), selectedRows()) %>%
             pull(project_path) %>%
             identity()
     })
@@ -341,14 +341,14 @@ integrateProj <- function(input, output, session, proj_matrices, object, proj_di
         volumes <- c(
             Home = "/dataVolume/storage/single_cell_projects/integrated_projects/",
             "R Installation" = R.home(),
-            shinyFiles::getVolumes()()
+            getVolumes()()
         )
         # print(volumes)
         volumes
     })
 
     observe({
-        shinyFiles::shinyFileSave(input,
+        shinyFileSave(input,
             "saveIntegratedProject",
             roots = volumes(),
             session = session,
@@ -358,7 +358,7 @@ integrateProj <- function(input, output, session, proj_matrices, object, proj_di
 
 
     integratedProjectSavePath <- eventReactive(input$saveIntegratedProject, {
-        savefile <- shinyFiles::parseSavePath(volumes(), input$saveIntegratedProject)
+        savefile <- parseSavePath(volumes(), input$saveIntegratedProject)
 
         savefile$datapath
     })
@@ -372,27 +372,27 @@ integrateProj <- function(input, output, session, proj_matrices, object, proj_di
         req(integratedProjectSavePath())
 
         if (!is.null(integratedProjectSavePath())) {
-            shiny::withProgress(
+            withProgress(
                 message = paste0("Saving Integrated Dataset to ", integratedProjectSavePath()),
                 value = 0,
                 {
                     # Sys.sleep(6)
-                    shiny::incProgress(2 / 10)
+                    incProgress(2 / 10)
                     save_object(mergedSeus(), proj_dir = integratedProjectSavePath())
                     set_permissions_call <- paste0("chmod -R 775 ", integratedProjectSavePath())
                     system(set_permissions_call)
                     writeLines(character(), path(integratedProjectSavePath(), ".here"))
                     # create_proj_db()
-                    DBI::dbAppendTable(con, "projects_tbl", data.frame(
+                    dbAppendTable(con, "projects_tbl", data.frame(
                         project_name = path_file(integratedProjectSavePath()),
                         project_path = integratedProjectSavePath(),
                         project_slug = str_remove(path_file(integratedProjectSavePath()), "_proj$"),
                         project_type = "integrated_projects"
                     ))
-                    shiny::incProgress(8 / 10)
+                    incProgress(8 / 10)
 
                     velocyto_dir <- path(integratedProjectSavePath(), "output", "velocyto")
-                    fs::dir_create(velocyto_dir)
+                    dir.create(velocyto_dir)
                     new_loom_path <- path(velocyto_dir, path_file(integratedProjectSavePath()))
                     # need to configure conda for line below
                     combine_looms(selectedProjects(), new_loom_path)
@@ -498,7 +498,7 @@ plotDimRed <- function(input, output, session, object, plot_types, featureType,
         # selected_plot <- ifelse(is.null(selected_plot()), "louvain",
         #                         selected_plot())
         updateSelectizeInput(session, "plottype",
-            choices = purrr::flatten_chr(plot_types()),
+            choices = flatten_chr(plot_types()),
             selected = "batch"
         )
     })
@@ -582,7 +582,7 @@ plotDimRed <- function(input, output, session, object, plot_types, featureType,
 #' @noRd
 tableSelectedui <- function(id) {
     ns <- NS(id)
-    tagList(DT::DTOutput(ns("brushtable")))
+    tagList(DTOutput(ns("brushtable")))
 }
 
 #' Create Table of Selected Cells
@@ -604,13 +604,13 @@ tableSelected <- function(input, output, session, object) {
         }
     })
 
-    output$brushtable <- DT::renderDT({
+    output$brushtable <- renderDT({
         req(object())
         req(brush())
         selected_meta <- data.frame(get_cell_metadata(object())[brush(), ])
 
         # selection = list(mode = 'multiple', selected = c(1, 3, 8), target = 'row'),
-        DT::datatable(selected_meta,
+        datatable(selected_meta,
             extensions = "Buttons",
             selection = list(mode = "multiple", selected = 1:nrow(selected_meta), target = "row"),
             options = list(dom = "Bft", buttons = c("copy", "csv"), scrollX = "100px", scrollY = "800px")
@@ -675,7 +675,7 @@ diffexui <- function(id) {
                 "Run Differential Expression"
             ),
             downloadLink(ns("downloadData"), "Download Complete DE Results"),
-            DT::dataTableOutput(ns("DT1")),
+            dataTableOutput(ns("DT1")),
             width = 6
         ),
         chevreulBox(
@@ -694,8 +694,8 @@ diffexui <- function(id) {
         #   title = "Cells",
         #   tabsetPanel(type = "tabs",
         #               tabPanel("Selected Cells", tableSelectedui("diffex")),
-        #               tabPanel("Custom Cluster 1", DT::DTOutput(ns("cc1"))),
-        #               tabPanel("Custom Cluster 2", DT::DTOutput(ns("cc2")))
+        #               tabPanel("Custom Cluster 1", DTOutput(ns("cc1"))),
+        #               tabPanel("Custom Cluster 2", DTOutput(ns("cc2")))
         #   ),
         #   width = 6
         # ),
@@ -706,10 +706,10 @@ diffexui <- function(id) {
             width = 12
         ),
         chevreulBox(
-            title = "Custom Cluster 1", DT::DTOutput(ns("cc1")),
+            title = "Custom Cluster 1", DTOutput(ns("cc1")),
             width = 6
         ), chevreulBox(
-            title = "Custom Cluster 2", DT::DTOutput(ns("cc2")),
+            title = "Custom Cluster 2", DTOutput(ns("cc2")),
             width = 6
         ),
     )
@@ -779,10 +779,10 @@ diffex <- function(input, output, session, object, featureType, selected_cells, 
         isolate(selected_cells())
     })
 
-    output$cc1 <- DT::renderDT({
+    output$cc1 <- renderDT({
         req(custom_cluster1())
         selected_meta <- data.frame(get_cell_metadata(object())[custom_cluster1(), ])
-        DT::datatable(selected_meta,
+        datatable(selected_meta,
             extensions = "Buttons",
             options = list(dom = "Bft", buttons = c(
                 "copy",
@@ -790,10 +790,10 @@ diffex <- function(input, output, session, object, featureType, selected_cells, 
             ), scrollX = "100px", scrollY = "400px")
         )
     })
-    output$cc2 <- DT::renderDT({
+    output$cc2 <- renderDT({
         req(custom_cluster2())
         selected_meta <- data.frame(get_cell_metadata(object())[custom_cluster2(), ])
-        DT::datatable(selected_meta,
+        datatable(selected_meta,
             extensions = "Buttons",
             options = list(dom = "Bft", buttons = c(
                 "copy",
@@ -825,7 +825,7 @@ diffex <- function(input, output, session, object, featureType, selected_cells, 
         }
     })
 
-    output$DT1 <- DT::renderDT(de_results()[[input$diffex_method]],
+    output$DT1 <- renderDT(de_results()[[input$diffex_method]],
         extensions = "Buttons", options = list(
             dom = "Bfptr",
             buttons = c("copy", "csv"), scrollX = "100px", scrollY = "600px"
@@ -835,7 +835,7 @@ diffex <- function(input, output, session, object, featureType, selected_cells, 
 
     Volcano <- reactive({
         de_results()[[input$diffex_method]] %>%
-            dplyr::distinct(symbol, .keep_all = TRUE) %>%
+            distinct(symbol, .keep_all = TRUE) %>%
             column_to_rownames("symbol") %>%
             EnhancedVolcano(
                 lab = rownames(.),
@@ -855,7 +855,7 @@ diffex <- function(input, output, session, object, featureType, selected_cells, 
             paste("DE_Volcano_plot", ".pdf", sep = "")
         },
         content = function(file) {
-            ggplot2::ggsave(file, Volcano() + ggpubr::theme_pubr(base_size = 20, x.text.angle = 45), width = 16, height = 12)
+            ggsave(file, Volcano() + theme_pubr(base_size = 20, x.text.angle = 45), width = 16, height = 12)
         }
     )
 
@@ -892,7 +892,7 @@ findMarkersui <- function(id) {
             actionButton(ns("plotDots"), "Plot Markers!"),
             downloadButton(ns("downloadMarkerTable"), "Download Markers!"),
             checkboxInput(ns("uniqueMarkers"), "Make Markers Unique", value = FALSE),
-            checkboxInput(ns("hidePobjectdo"), "Hide Pobjectdogenes", value = TRUE),
+            checkboxInput(ns("hidePseudo"), "Hide Pseudogenes", value = TRUE),
             plotlyOutput(ns("markerplot"), height = 800),
             width = 6
         )
@@ -918,7 +918,7 @@ findMarkers <- function(input, output, session, object, plot_types, featureType)
         # selected_plot <- ifelse(is.null(selected_plot()), "louvain",
         #                         selected_plot())
         selectizeInput(ns("plottype"), "Variable to Plot",
-            choices = purrr::flatten_chr(plot_types()),
+            choices = flatten_chr(plot_types()),
             selected = "louvain", multiple = TRUE
         )
     })
@@ -951,13 +951,8 @@ findMarkers <- function(input, output, session, object, plot_types, featureType)
         selectizeInput(ns("displayValues"), "Values to display", multiple = TRUE, choices = choices)
     })
 
-    # observe({
-    #   req(experiment())
-    #   SingleCellExperiment::DefaultAssay(object()) <- "gene"
-    # })
-
     marker_plot_return <- eventReactive(input$plotDots, {
-        plot_markers(object(), group_by = group_by(), num_markers = input$num_markers, selected_values = input$displayValues, marker_method = input$markerMethod, object_experiment = input$dotFeature, featureType = featureType(), hide_pobjectdo = input$hidePobjectdo, unique_markers = input$uniqueMarkers, p_val_cutoff = input$pValCutoff, return_plotly = TRUE)
+        plot_markers(object(), group_by = group_by(), num_markers = input$num_markers, selected_values = input$displayValues, marker_method = input$markerMethod, experiment = input$dotFeature, featureType = featureType(), hide_pseudo = input$hidePseudo, unique_markers = input$uniqueMarkers, p_val_cutoff = input$pValCutoff, return_plotly = TRUE)
     })
 
     output$markerplot <- renderPlotly({
@@ -1004,15 +999,15 @@ plotReadCount <- function(input, output, session, object, plot_types) {
 
     output$colorbyui <- renderUI({
         req(object())
-        shiny::selectInput(ns("colorby"), "Variable to Color the Plot by",
-            choices = purrr::flatten_chr(plot_types()), selected = c("louvain"), multiple = FALSE
+        selectInput(ns("colorby"), "Variable to Color the Plot by",
+            choices = flatten_chr(plot_types()), selected = c("louvain"), multiple = FALSE
         )
     })
 
     output$group_byui <- renderUI({
         req(object())
-        shiny::selectInput(ns("group_by"), "Variable for x-axis",
-            choices = purrr::flatten_chr(plot_types()), selected = c("nCount_RNA"), multiple = FALSE
+        selectInput(ns("group_by"), "Variable for x-axis",
+            choices = flatten_chr(plot_types()), selected = c("nCount_RNA"), multiple = FALSE
         )
     })
 
@@ -1029,7 +1024,7 @@ plotReadCount <- function(input, output, session, object, plot_types) {
 
             louvain_resolution <- paste0(experiment, "_snn_res.", input$resolution)
             plot_readcount(object(), group_by = input$group_by, color.by = louvain_resolution, yscale = input$yScale, return_plotly = TRUE)
-        } else if (input$colorby %in% purrr::flatten_chr(plot_types())) {
+        } else if (input$colorby %in% flatten_chr(plot_types())) {
             plot_readcount(object(), group_by = input$group_by, color.by = input$colorby, yscale = input$yScale, return_plotly = TRUE)
         }
     })
@@ -1084,7 +1079,7 @@ allTranscriptsui <- function(id) {
                 checkboxInput(ns("standardizeExpression"), "Standardize Expression", value = FALSE),
                 checkboxInput(ns("dropZero"), "Drop Zero Values", value = FALSE),
                 plotlyOutput(ns("compositionPlot")),
-                DT::DTOutput(ns("compositionDT")),
+                DTOutput(ns("compositionDT")),
                 width = 6
             ),
             type = "markdown", content = "allTranscripts"
@@ -1141,8 +1136,8 @@ allTranscripts <- function(input, output, session, object,
             identity()
     })
 
-    output$compositionDT <- DT::renderDT({
-        DT::datatable(composition_plot()$data,
+    output$compositionDT <- renderDT({
+        datatable(composition_plot()$data,
             extensions = "Buttons",
             options = list(dom = "Bft", buttons = c(
                 "copy",
@@ -1446,7 +1441,7 @@ pathwayEnrichment <- function(input, output, session, object, featureType) {
                                 uiOutput(ns("enriched_pathways_by_cluster_select_db_UI"))
                             )
                         ),
-                        DT::dataTableOutput(ns("enriched_pathways_by_cluster_table_present"))
+                        dataTableOutput(ns("enriched_pathways_by_cluster_table_present"))
                     )
                 } else if (enriched_pathways()$enrichr$by_cluster == "no_markers_found") {
                     textOutput(ns("enriched_pathways_by_cluster_table_no_markers_found"))
@@ -1491,7 +1486,7 @@ pathwayEnrichment <- function(input, output, session, object, featureType) {
     })
 
     # table
-    output$enriched_pathways_by_cluster_table_present <- DT::renderDataTable(server = FALSE, {
+    output$enriched_pathways_by_cluster_table_present <- renderDataTable(server = FALSE, {
         req(
             input$enriched_pathways_by_cluster_select_source,
             input$enriched_pathways_by_cluster_select_cluster,
@@ -1569,16 +1564,9 @@ techInfo <- function(input, output, session, object) {
   ## Tab: Analysis info.
   ## ----------------------------------------------------------------------------##
 
-  misc <- reactive({
+  object_metadata <- reactive({
     req(object())
-    ## SCE
-    if(is(object(), "SingleCellExperiment")){
-      metadata(object())
-    }
-    ## SingleCellExperiment
-    if(is(object(), "SingleCellExperiment")){
-      SingleCellExperiment::metadata(object())
-    }
+    metadata(object())
   })
 
   observe({
@@ -1588,45 +1576,45 @@ techInfo <- function(input, output, session, object) {
         "<strong><u>General</u></strong>",
         "<ul>",
         "<li><b>Date of analysis:</b> ",
-        misc()$experiment$date_of_analysis,
+        object_metadata()$experiment$date_of_analysis,
         "<li><b>Date of export:</b> ",
-        misc()$experiment$date_of_export,
+        object_metadata()$experiment$date_of_export,
         "<li><b>Experiment name:</b> ",
-        misc()$experiment$experiment_name,
+        object_metadata()$experiment$experiment_name,
         "<li><b>Organism:</b> ",
-        misc()$experiment$organism,
+        object_metadata()$experiment$organism,
         "</ul>",
         "<strong><u>Parameters</u></strong>",
         "<ul>",
         "<li><b>Discard genes in fewer than X cells:</b> ",
-        misc()$experiment$parameters$discard_genes_expressed_in_fewer_cells_than,
+        object_metadata()$experiment$parameters$discard_genes_expressed_in_fewer_cells_than,
         "<li><b>Keep mitochondrial genes:</b> ",
-        misc()$experiment$parameters$keep_mitochondrial_genes,
+        object_metadata()$experiment$parameters$keep_mitochondrial_genes,
         "<li><b>Min/max # of UMI:</b> ",
         paste0(
-          misc()$experiment$filtering$UMI_min, " / ",
-          misc()$experiment$filtering$UMI_max
+          object_metadata()$experiment$filtering$UMI_min, " / ",
+          object_metadata()$experiment$filtering$UMI_max
         ),
         "<li><b>Min/max # of expressed genes:</b> ",
         paste0(
-          misc()$experiment$filtering$genes_min, " / ",
-          misc()$experiment$filtering$genes_max
+          object_metadata()$experiment$filtering$genes_min, " / ",
+          object_metadata()$experiment$filtering$genes_max
         ),
         "<li><b>Cluster resolution: </b>",
-        paste(misc()$experiment$parameters$cluster_resolution, collapse = ","),
+        paste(object_metadata()$experiment$parameters$cluster_resolution, collapse = ","),
         "<li><b>Number of principal components: </b>",
-        misc()$experiment$parameters$number_PCs,
+        object_metadata()$experiment$parameters$number_PCs,
         "<li><b>Variables to regress: </b>",
-        misc()$experiment$parameters$variables_to_regress_out,
+        object_metadata()$experiment$parameters$variables_to_regress_out,
         "<li><b>tSNE perplexity: </b>",
-        misc()$experiment$parameters$tSNE_perplexity,
+        object_metadata()$experiment$parameters$tSNE_perplexity,
         "</ul>",
         "<strong><u>Gene lists</u></strong>",
         "<ul>",
         # "<li><b>Mitochondrial genes:</b> ",
-        # paste0(mito_features[[misc()$experiment$organism]][["gene"]], collapse = ", "),
+        # paste0(mito_features[[object_metadata()$experiment$organism]][["gene"]], collapse = ", "),
         # "<li><b>Ribosomal genes:</b> ",
-        # paste0(ribo_features[[misc()$experiment$organism]][["gene"]], collapse = ", "),
+        # paste0(ribo_features[[object_metadata()$experiment$organism]][["gene"]], collapse = ", "),
         "<li><b>S phase genes:</b> ",
         paste0(cc.genes$s.genes, collapse = ", "),
         "<li><b>G2M phase genes:</b> ",
@@ -1635,29 +1623,29 @@ techInfo <- function(input, output, session, object) {
         "<strong><u>Marker genes</u></strong>",
         "<ul>",
         # "<li><b>Only positive:</b> ",
-        # misc()$marker_genes$parameters$only_positive,
+        # object_metadata()$marker_genes$parameters$only_positive,
         # "<li><b>Fraction of cells in group of interest that must express marker gene:</b> ",
-        # misc()$marker_genes$parameters$minimum_percentage,
+        # object_metadata()$marker_genes$parameters$minimum_percentage,
         # "<li><b>LogFC threshold:</b> ",
-        # misc()$marker_genes$parameters$logFC_threshold,
+        # object_metadata()$marker_genes$parameters$logFC_threshold,
         "<li><b>p-value threshold:</b> ",
         "0.05",
-        # misc()$marker_genes$parameters$p_value_threshold,
+        # object_metadata()$marker_genes$parameters$p_value_threshold,
         "</ul>",
         "<strong><u>Pathway enrichment</u></strong>",
         "<ul>",
         "<li><b>Enrichr:</b>",
         "<ul>",
         "<li><b>Databases:</b> ",
-        paste0(misc()$enriched_pathways$enrichr$parameters$databases, collapse = ", "),
+        paste0(object_metadata()$enriched_pathways$enrichr$parameters$databases, collapse = ", "),
         "<li><b>Adj. p-value cut-off:</b> ",
-        misc()$enriched_pathways$enrichr$parameters$adj_p_cutoff,
+        object_metadata()$enriched_pathways$enrichr$parameters$adj_p_cutoff,
         "<li><b>Max. terms:</b> ",
-        misc()$enriched_pathways$enrichr$parameters$max_terms,
+        object_metadata()$enriched_pathways$enrichr$parameters$max_terms,
         "</ul>",
         "</ul>"
       )
-      info_R_raw <- misc()$experiment$technical_info$R
+      info_R_raw <- object_metadata()$experiment$technical_info$R
       info_R <- c()
       for (i in 1:length(info_R_raw)) {
         info_R <- paste(info_R, "<br>", info_R_raw[i])
@@ -1667,9 +1655,9 @@ techInfo <- function(input, output, session, object) {
         "<strong><u>Technical info (package versions)</u></strong>",
         "<ul>",
         "<li><strong>chevreul version:</strong> ",
-        misc()$experiment$technical_info$chevreul_version,
+        object_metadata()$experiment$technical_info$chevreul_version,
         "<li><strong>SingleCellExperiment version:</strong> ",
-        misc()$technical_info$object_version,
+        object_metadata()$technical_info$object_version,
         "<li><strong>Session info:</strong> ",
         "</ul>",
         "<pre>",
@@ -1680,8 +1668,8 @@ techInfo <- function(input, output, session, object) {
 
     # R info
     output$sample_info_R <- renderPrint({
-      if (!is.null(misc()$technical_info$R)) {
-        capture.output(misc()$technical_info$R)
+      if (!is.null(object_metadata()$technical_info$R)) {
+        capture.output(object_metadata()$technical_info$R)
       } else {
         print("Not available")
       }
@@ -1713,7 +1701,7 @@ plotCoverage_UI <- function(id) {
                 numericInput(ns("start"), "start coordinate", value = NULL),
                 numericInput(ns("end"), "end coordinate", value = NULL)
             ),
-            DT::DTOutput(ns("coverageTable")),
+            DTOutput(ns("coverageTable")),
             plotOutput(ns("coveragePlot"), height = "1500px"),
             width = 12
         )
@@ -1732,9 +1720,9 @@ plotCoverage_UI <- function(id) {
 plotCoverage <- function(input, output, session, object, plot_types, proj_dir, organism_type = "human", bigwig_db = "~/.cache/chevreul/bw-files.db") {
     ns <- session$ns
 
-    w <- waiter::Waiter$new(ns("coveragePlot"),
-        html = waiter::spin_loaders(id = 1, color = "black", style = "position:relative;margin:auto;"),
-        color = waiter::transparent(.5)
+    w <- Waiter$new(ns("coveragePlot"),
+        html = spin_loaders(id = 1, color = "black", style = "position:relative;margin:auto;"),
+        color = transparent(.5)
     )
 
     observe({
@@ -1788,8 +1776,8 @@ plotCoverage <- function(input, output, session, object, plot_types, proj_dir, o
         coverage_return()$plot
     })
 
-    output$coverageTable <- DT::renderDT({
-        DT::datatable(coverage_return()$table,
+    output$coverageTable <- renderDT({
+        datatable(coverage_return()$table,
             extensions = "Buttons",
             options = list(dom = "Bft", buttons = c("copy", "csv"), scrollY = "400px")
         )

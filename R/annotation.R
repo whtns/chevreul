@@ -59,7 +59,7 @@ transcripts_to_genes <- function(transcripts, organism = "human") {
         transcript_table <- annotables::grcm38_tx2gene
     }
 
-    tibble::tibble(enstxp = transcripts) %>%
+    tibble(enstxp = transcripts) %>%
         left_join(transcript_table, by = "enstxp") %>%
         left_join(gene_table, by = "ensgene") %>%
         pull("symbol") %>%
@@ -73,20 +73,21 @@ transcripts_to_genes <- function(transcripts, organism = "human") {
 #'
 #' @param object A object
 #' @param organism mouse
-#' @param object_experiment gene
+#' @param experiment gene
 #'
 #' @return a single cell obejct with cell metadata column containing mitochondrial percentage
 #' @export
+#' @importFrom scuttle addPerCellQCMetrics
 #' @examples
 #' add_percent_mito(human_gene_transcript_sce)
 #'
-add_percent_mito <- function(object, organism = "human", object_experiment = "gene") {
+add_percent_mito <- function(object, organism = "human", experiment = "gene") {
         # mito_features <- mito_features[[organism]][["gene"]]
-        # mito_features <- mito_features[mito_features %in% rownames(object[[object_experiment]])]
+        # mito_features <- mito_features[mito_features %in% rownames(object[[experiment]])]
         # object[["percent.mt"]] <- PercentageFeatureSet(object, features = mito_features)
         # return(object)
         is.mito <- grepl("^MT-*", rownames(object))
-        object <- scuttle::addPerCellQCMetrics(object, subsets = list(Mito = is.mito))
+        object <- addPerCellQCMetrics(object, subsets = list(Mito = is.mito))
         return(object)
     }
 

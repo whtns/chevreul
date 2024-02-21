@@ -6,7 +6,7 @@
 \usage{
 object_pipeline(
   object,
-  assay = "gene",
+  experiment = "gene",
   resolution = 0.6,
   reduction = "PCA",
   organism = "human",
@@ -16,7 +16,7 @@ object_pipeline(
 \arguments{
 \item{object}{A SingleCellExperiment object}
 
-\item{assay}{Assay of interest in SingleCellExperiment object}
+\item{experiment}{Assay of interest in SingleCellExperiment object}
 
 \item{resolution}{Resolution for clustering cells. Default set to 0.6.}
 

@@ -8,7 +8,7 @@ run_object_de(
   object,
   cluster1,
   cluster2,
-  resolution,
+  resolution = 0.2,
   diffex_scheme = "louvain",
   featureType,
   tests = c("t", "wilcox", "bimod")

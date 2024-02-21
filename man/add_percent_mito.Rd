@@ -4,14 +4,14 @@
 \alias{add_percent_mito}
 \title{Annotate percent mitochondrial reads per cell}
 \usage{
-add_percent_mito(object, organism = "human", object_assay = "gene")
+add_percent_mito(object, organism = "human", experiment = "gene")
 }
 \arguments{
 \item{object}{A object}
 
 \item{organism}{mouse}
 
-\item{object_assay}{gene}
+\item{experiment}{gene}
 }
 \value{
 a single cell obejct with cell metadata column containing mitochondrial percentage

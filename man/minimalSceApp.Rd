@@ -31,7 +31,7 @@ a minimal chevreul app
 Create a minimal chevreul app using SingleCellExperiment input
 }
 \examples{
-\dontrun{
+\donttest{
 minimalSceApp(human_gene_transcript_sce)
 }
 

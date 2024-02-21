@@ -5,7 +5,7 @@
 #' @return a filepath to a project metadata file
 #' @examples
 get_meta <- function(proj_path) {
-    meta_path <- path(proj_path, "data", gsub("_proj", "_metadata.csv", fs::path_file(proj_path)))
+    meta_path <- path(proj_path, "data", gsub("_proj", "_metadata.csv", path_file(proj_path)))
 }
 
 

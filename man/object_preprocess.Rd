@@ -5,7 +5,7 @@
 \title{Preprocess Single Cell Object}
 \usage{
 object_preprocess(
-  assay,
+  experiment,
   scale = TRUE,
   normalize = TRUE,
   features = NULL,
@@ -14,7 +14,7 @@ object_preprocess(
 )
 }
 \arguments{
-\item{assay}{Assay to use}
+\item{experiment}{Assay to use}
 
 \item{scale}{Perform linear transformation 'Scaling'}
 

@@ -13,6 +13,7 @@
 #'
 #' @return a dataframe with differential expression information
 #' @export
+#' @importFrom scran findMarkers
 #' @examples
 #'
 #'
@@ -43,7 +44,7 @@ run_object_de <- function(object, cluster1, cluster2, resolution = 0.2, diffex_s
         test_list <- vector("list", length(tests))
         for (test in tests) {
             print(test)
-            de <- scran::findMarkers(object, test.type = test)
+            de <- findMarkers(object, test.type = test)
             if (featureType == "transcript") {
                 de_cols <- c("enstxp", "ensgene", "symbol", "p_val" = "p.value", "avg_log2FC", "pct.1", "pct.2", "p_val_adj" = "FDR")
                 de <- de[[1]] %>%
@@ -205,12 +206,13 @@ prep_slider_values <- function(default_val) {
 #'
 #' @return a shiny app
 #' @export
+#' @importFrom future plan
 #'
 #' @examples
 #'
 chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "human", db_path = "~/.cache/chevreul/single-cell-projects.db", futureMb = 13000) {
     print(packageVersion("chevreul"))
-    future::plan(strategy = "multicore", workers = 6)
+    plan(strategy = "multicore", workers = 6)
     future_size <- futureMb * 1024^2
     options(future.globals.maxSize = future_size)
     options(shiny.maxRequestSize = 40 * 1024^2)
@@ -226,15 +228,15 @@ chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "
             default_helper(type = "markdown", content = "overview"),
         textOutput("appTitle"),
         bookmarkButton(),
-        shinyWidgets::prettyRadioButtons("organism_type",
+        prettyRadioButtons("organism_type",
             inline = TRUE,
             "Organism", choices = c("human", "mouse"), selected = organism_type
         ),
-        shinyFiles::shinyFilesButton("objectUpload", "Load a SingleCellExperiment Dataset",
+        shinyFilesButton("objectUpload", "Load a SingleCellExperiment Dataset",
             "Please select a .rds file",
             multiple = FALSE
         ),
-        shinyFiles::shinySaveButton("saveSingleCellExperiment", "Save Current Dataset",
+        shinySaveButton("saveSingleCellExperiment", "Save Current Dataset",
             "Save file as...",
             filetype = list(rds = "rds")
         ),
@@ -277,7 +279,7 @@ chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "
         width = 250
     )
     body <- dashboardBody(
-        waiter::use_waiter(),
+        use_waiter(),
         tabItems(
             tabItem(
                 tabName = "comparePlots",
@@ -446,31 +448,28 @@ chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "
             uploadSingleCellExperimentPath(state$values$uploadSingleCellExperimentPath[[1]])
         })
 
-        w <- waiter::Waiter$new()
+        w <- Waiter$new()
 
-        # lib.loc = "/dataVolume/storage/rpkgs/devel_install/"
-        shinyhelper::observe_helpers(help_dir = system.file("helpers", package = "chevreul"))
+        observe_helpers(help_dir = system.file("helpers", package = "chevreul"))
         options(warn = -1)
-        # shinylogs::track_usage(storage_mode = shinylogs::store_json(path = "logs/"))
-        # projects_db <- "/dataVolume/storage/single_cell_projects/single_cell_projects.db"
 
         con <- reactive({
             dbConnect(
-                RSQLite::SQLite(),
+                SQLite(),
                 db_path
             )
         })
 
         projList <- reactivePoll(4000, session, checkFunc = function() {
             if (file.exists(db_path)) {
-                DBI::dbReadTable(con(), "projects_tbl") %>%
-                    tibble::deframe()
+                dbReadTable(con(), "projects_tbl") %>%
+                    deframe()
             } else {
                 ""
             }
         }, valueFunc = function() {
-            DBI::dbReadTable(con(), "projects_tbl") %>%
-                tibble::deframe()
+            dbReadTable(con(), "projects_tbl") %>%
+                deframe()
         })
 
         output$projInput <- renderUI({
@@ -511,19 +510,19 @@ chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "
                     proj_dir(),
                     "output", "seurat"
                 ), "R Installation" = R.home(),
-                shinyFiles::getVolumes()()
+                getVolumes()()
             )
         })
         observe({
             req(dataset_volumes())
-            shinyFiles::shinyFileChoose(input, "objectUpload",
+            shinyFileChoose(input, "objectUpload",
                 roots = dataset_volumes(), session = session
             )
         })
         observeEvent(input$objectUpload, {
             req(dataset_volumes())
 
-            file <- shinyFiles::parseFilePaths(
+            file <- parseFilePaths(
                 dataset_volumes(),
                 input$objectUpload
             )
@@ -534,24 +533,24 @@ chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "
         observe({
             req(uploadSingleCellExperimentPath())
             print("uploaded")
-            shiny::withProgress(
+            withProgress(
                 message = paste0("Uploading Data"),
                 value = 0,
                 {
-                    shiny::incProgress(2 / 10)
+                    incProgress(2 / 10)
                     print(uploadSingleCellExperimentPath())
                     updated_object <- update_chevreul_object(object_path = uploadSingleCellExperimentPath(), organism = organism)
                     object(updated_object)
-                    shiny::incProgress(6 / 10)
+                    incProgress(6 / 10)
 
                     organism <- case_when(
-                        stringr::str_detect(uploadSingleCellExperimentPath(), "Hs") ~ "human",
-                        stringr::str_detect(uploadSingleCellExperimentPath(), "Mm") ~ "mouse"
+                        str_detect(uploadSingleCellExperimentPath(), "Hs") ~ "human",
+                        str_detect(uploadSingleCellExperimentPath(), "Mm") ~ "mouse"
                     )
 
                     print(uploadSingleCellExperimentPath())
                     print(names(object))
-                    shiny::incProgress(8 / 10)
+                    incProgress(8 / 10)
                 }
             )
         })
@@ -563,7 +562,7 @@ chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "
 
         observe({
             req(dataset_volumes())
-            shinyFiles::shinyFileSave(input, "saveSingleCellExperiment",
+            shinyFileSave(input, "saveSingleCellExperiment",
                 # roots = dataset_volumes(),
                 roots = c(Home = path(
                     proj_dir(),
@@ -574,7 +573,7 @@ chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "
         })
         subSingleCellExperimentPath <- eventReactive(input$saveSingleCellExperiment, {
             req(object())
-            savefile <- shinyFiles::parseSavePath(
+            savefile <- parseSavePath(
                 dataset_volumes(),
                 input$saveSingleCellExperiment
             )
@@ -584,17 +583,17 @@ chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "
             req(object())
             req(subSingleCellExperimentPath())
 
-            shiny::withProgress(
+            withProgress(
                 message = paste0("Saving Data"),
                 value = 0,
                 {
                     Sys.sleep(6)
-                    shiny::incProgress(2 / 10)
+                    incProgress(2 / 10)
                     saveRDS(
                         object(),
                         subSingleCellExperimentPath()
                     )
-                    shiny::incProgress(10 / 10)
+                    incProgress(10 / 10)
                 }
             )
         })
@@ -606,7 +605,7 @@ chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "
             req(integrationResults())
             integration_path <- paste0(integrationResults())
             proj_dir(integration_path)
-            newintegrated_project <- purrr::set_names(
+            newintegrated_project <- set_names(
                 integration_path,
                 path_file(integration_path)
             )
@@ -831,8 +830,8 @@ chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "
                 title = "Regressing out provided list of features",
                 "This process may take a minute or two!"
             ))
-            regressed_object <- chevreul::regress_by_features(object(),
-                feature_set = list(input$geneSet), set_name = janitor::make_clean_names(input$geneSetName),
+            regressed_object <- regress_by_features(object(),
+                feature_set = list(input$geneSet), set_name = make_clean_names(input$geneSetName),
                 regress = input$runRegression
             )
             object(regressed_object)

@@ -4,20 +4,24 @@
 \alias{object_integrate}
 \title{Batch Correct Multiple Single Cell Objects}
 \usage{
-object_integrate(object_list, method = "cca", organism = "human", ...)
+object_integrate(object_list, organism = "human", ...)
 }
 \arguments{
 \item{object_list}{List of two or more single cell objects}
 
-\item{method}{Default "cca"}
-
 \item{organism}{human or mouse}
 
 \item{...}{extra args passed to object_reduce_dimensions}
+
+\item{method}{Default "cca"}
 }
 \value{
 an integrated single cell object
 }
 \description{
 Batch Correct Multiple Single Cell Objects
+}
+\examples{
+batches <- splitByCol(human_gene_transcript_sce, "Prep.Method")
+object_integrate(batches)
 }

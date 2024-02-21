@@ -18,12 +18,12 @@
             !all(genes == "") &
             length(genes) != 0
     ) {
-        temp <- httr::POST(
+        temp <- POST(
             url = URL_API,
             body = list(list = paste(genes, collapse = "\n"))
         )
     } else if (is.data.frame(genes)) {
-        temp <- httr::POST(
+        temp <- POST(
             url = URL_API,
             body = list(list = paste(paste(genes[, 1], genes[, 2], sep = ","), collapse = "\n"))
         )
@@ -35,13 +35,13 @@
             )
         )
     }
-    httr::GET(url = "http://amp.pharm.mssm.edu/Enrichr/share")
+    GET(url = "http://amp.pharm.mssm.edu/Enrichr/share")
     dfSAF <- options()$stringsAsFactors
     options(stringsAsFactors = FALSE)
     result <- future_sapply(databases,
         USE.NAMES = TRUE,
         simplify = FALSE, function(x) {
-            r <- httr::GET(
+            r <- GET(
                 url = "http://amp.pharm.mssm.edu/Enrichr/export",
                 query = list(file = "API", backgroundType = x)
             )
@@ -183,7 +183,7 @@ getEnrichedPathways <- function(object,
                                 mutate(db = y)
                             ## if there are more than max_terms entries...
                             if (nrow(out) > max_terms) {
-                                out <- out %>% dplyr::top_n(-max_terms, .data$Adjusted.P.value)
+                                out <- out %>% top_n(-max_terms, .data$Adjusted.P.value)
                                 ## if there are no entries left
                             } else if (nrow(out) == 0) {
                                 out <- NULL
@@ -215,7 +215,7 @@ getEnrichedPathways <- function(object,
             }
             ## merge clusters into single table
             results_by_cluster <- do.call(rbind, results_by_cluster) %>%
-                select(.data$group, .data$db, dplyr::everything()) %>%
+                select(.data$group, .data$db, everything()) %>%
                 mutate(
                     cluster = factor(.data$group, levels = intersect(
                         cluster_names,
@@ -298,7 +298,7 @@ format_pathway_table <- function(enrich_by_cluster, cluster, db) {
             Adjusted.P.value = formatC(Adjusted.P.value, format = "e", digits = 2),
             Combined.Score = formatC(Combined.Score, format = "f", digits = 2)
         ) %>%
-        dplyr::rename(
+        rename(
             "p-value" = P.value,
             "adj. p-value" = Adjusted.P.value,
             "combined score" = Combined.Score,
@@ -347,7 +347,7 @@ format_pathway_table <- function(enrich_by_cluster, cluster, db) {
 
     enrich_by_cluster <-
         enrich_by_cluster %>%
-        DT::formatStyle(columns = c("combined score"), textAlign = "right")
+        formatStyle(columns = c("combined score"), textAlign = "right")
 
     return(enrich_by_cluster)
 }

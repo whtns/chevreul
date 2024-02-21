@@ -8,7 +8,7 @@
 #' @return a single cell object
 #' @export
 label_transfer <- function(ref_object, query_object, ref_name = NULL, query_name = NULL) {
-    label_transerred <- purrr::map2(ref_object, query_object, reference_integrate, query_name = query_name, ref_name = ref_name)
+    label_transerred <- map2(ref_object, query_object, reference_integrate, query_name = query_name, ref_name = ref_name)
 }
 
 #' Transfer labels between gene or transcript objects
@@ -29,7 +29,7 @@ reference_integrate <- function(ref_object, query_object, query_name = "fetal", 
 
     cellids <- colnames(refdata)
     refdata <- setNames(split(refdata, seq(nrow(refdata))), rownames(refdata)) %>%
-        map(purrr::set_names, cellids)
+        map(set_names, cellids)
 
     ref_names <- str_replace(reference_clusters, ".*snn_res", ref_name)
 
@@ -42,8 +42,8 @@ reference_integrate <- function(ref_object, query_object, query_name = "fetal", 
         map(as_tibble, rownames = "sample_id") %>%
         map(~ select(.x, sample_id, predicted.id)) %>%
         bind_rows(.id = "resolution") %>%
-        tidyr::spread(resolution, predicted.id) %>%
-        purrr::set_names(c("sample_id", ref_names)) %>%
+        spread(resolution, predicted.id) %>%
+        set_names(c("sample_id", ref_names)) %>%
         column_to_rownames("sample_id") %>%
         identity()
 

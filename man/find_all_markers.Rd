@@ -4,14 +4,14 @@
 \alias{find_all_markers}
 \title{Find All Markers}
 \usage{
-find_all_markers(object, group_by = NULL, object_assay = "gene", ...)
+find_all_markers(object, group_by = NULL, experiment = "gene", ...)
 }
 \arguments{
 \item{object}{An object.}
 
 \item{group_by}{A metadata variable to group by.}
 
-\item{object_assay}{Assay to use, Default "gene".}
+\item{experiment}{Assay to use, Default "gene".}
 
 \item{...}{extra args passed to stash_marker_features}
 }

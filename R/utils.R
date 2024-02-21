@@ -33,13 +33,13 @@ format_new_metadata <- function(object, datapath) {
 #' @export
 #' @examples
 combine_cols <- function(object, cols, new_col) {
-        new_col <- janitor::make_clean_names(new_col)
+        new_col <- make_clean_names(new_col)
         drop_cols <- cols[!cols == new_col]
-        na_cols <- purrr::map_lgl(cols, ~ all(is.na(object[[.x]])))
+        na_cols <- map_lgl(cols, ~ all(is.na(object[[.x]])))
         cols <- cols[!na_cols]
         meta <- rownames_to_column(get_cell_metadata(object)) %>%
-            dplyr::mutate_at(vars(one_of(cols)), as.character) %>%
-            mutate(`:=`(!!new_col, dplyr::coalesce(!!!syms(cols)))) %>%
+            mutate_at(vars(one_of(cols)), as.character) %>%
+            mutate(`:=`(!!new_col, coalesce(!!!syms(cols)))) %>%
             select(-drop_cols) %>%
             column_to_rownames(var = "rowname") %>%
             identity()
@@ -119,8 +119,7 @@ record_experiment_data <- function(object, experiment_name = "default_experiment
             experiment$SingleCellExperiment_version <- objectVersion(object)
         }
 
-        experiment$chevreul_version <- utils::packageVersion("chevreul")
-
+        experiment$chevreul_version <- packageVersion("chevreul")
 
         metadata(object)[["experiment"]] <- experiment
 
@@ -137,6 +136,7 @@ record_experiment_data <- function(object, experiment_name = "default_experiment
 #'
 #' @return a single cell object
 #' @export
+#' @importFrom glue glue
 #' @examples
 update_chevreul_object <- function(object_path, feature, resolution = seq(0.2, 2.0, by = 0.2), return_object = TRUE, ...) {
         message(object_path)
@@ -168,7 +168,7 @@ update_chevreul_object <- function(object_path, feature, resolution = seq(0.2, 2
 
         DefaultAssay(object) <- default_experiment
 
-        cluster_tag <- glue::glue("{DefaultAssay(object)}_snn_res\\.")
+        cluster_tag <- glue("{DefaultAssay(object)}_snn_res\\.")
 
         cluster_names <- str_subset(names(get_cell_metadata(object)), cluster_tag)
         new_cluster_names <- str_replace(cluster_names, cluster_tag, "cluster_resolution_")
@@ -199,7 +199,7 @@ update_chevreul_object <- function(object_path, feature, resolution = seq(0.2, 2
             }
 
             for (i in names(object@experiments)[names(object@experiments) %in% c("gene", "integrated")]) {
-                object <- find_all_markers(object, object_experiment = i)
+                object <- find_all_markers(object, experiment = i)
             }
 
             object <- record_experiment_data(object, ...)
@@ -276,8 +276,8 @@ create_project_db <- function(cache_location = "~/.cache/chevreul", sqlite_db = 
         if (!dir.exists(cache_location)) {
             dir.create(cache_location)
         }
-        con <- dbConnect(RSQLite::SQLite(), path(cache_location, sqlite_db))
-        projects_tbl <- tibble::tibble(project_name = character(), project_path = character(), project_slug = character(), project_type = character(), )
+        con <- dbConnect(SQLite(), path(cache_location, sqlite_db))
+        projects_tbl <- tibble(project_name = character(), project_path = character(), project_slug = character(), project_type = character(), )
         message(paste0("building table of chevreul projects at ", path(cache_location, sqlite_db)))
         tryCatch({
             dbWriteTable(con, "projects_tbl", projects_tbl)
@@ -310,20 +310,20 @@ update_project_db <- function(projects_dir = NULL,
         dir.create(cache_location)
     }
 
-    con <- dbConnect(RSQLite::SQLite(), path(cache_location, sqlite_db))
+    con <- dbConnect(SQLite(), path(cache_location, sqlite_db))
 
     projects_tbl <-
         dir_ls(projects_dir, glob = "*.here", recurse = TRUE, fail = FALSE, all = TRUE) %>%
         path_dir(.) %>%
-        purrr::set_names(path_file(.)) %>%
+        set_names(path_file(.)) %>%
         enframe("project_name", "project_path") %>%
         mutate(project_slug = str_remove(project_name, "_proj$")) %>%
         mutate(project_type = path_file(path_dir(project_path))) %>%
         identity()
 
     current_projects_tbl <-
-        DBI::dbReadTable(con, "projects_tbl") %>%
-        filter(fs::file_exists(project_path)) %>%
+        dbReadTable(con, "projects_tbl") %>%
+        filter(file.exists(project_path)) %>%
         filter(!project_path %in% projects_tbl$project_path) %>%
         bind_rows(projects_tbl) %>%
         distinct(project_path, .keep_all = TRUE)
@@ -355,19 +355,19 @@ append_to_project_db <- function(new_project_path, projects_dir = NULL,
         dir.create(cache_location)
     }
 
-    con <- dbConnect(RSQLite::SQLite(), path(cache_location, sqlite_db))
+    con <- dbConnect(SQLite(), path(cache_location, sqlite_db))
 
     projects_tbl <-
         new_project_path %>%
-        purrr::set_names(path_file(.)) %>%
+        set_names(path_file(.)) %>%
         enframe("project_name", "project_path") %>%
         mutate(project_slug = str_remove(project_name, "_proj$")) %>%
         mutate(project_type = path_file(path_dir(project_path))) %>%
         identity()
 
     current_projects_tbl <-
-        DBI::dbReadTable(con, "projects_tbl") %>%
-        filter(fs::file_exists(project_path)) %>%
+        dbReadTable(con, "projects_tbl") %>%
+        filter(file.exists(project_path)) %>%
         filter(!project_path %in% projects_tbl$project_path) %>%
         bind_rows(projects_tbl) %>%
         distinct(project_path, .keep_all = TRUE)
@@ -397,10 +397,10 @@ read_project_db <- function(projects_dir = NULL,
         dir.create(cache_location)
     }
 
-    con <- dbConnect(RSQLite::SQLite(), path(cache_location, sqlite_db))
+    con <- dbConnect(SQLite(), path(cache_location, sqlite_db))
 
     current_projects_tbl <-
-        DBI::dbReadTable(con, "projects_tbl")
+        dbReadTable(con, "projects_tbl")
 
     dbDisconnect(con)
 
@@ -419,14 +419,14 @@ read_project_db <- function(projects_dir = NULL,
 #' @examples
 make_bigwig_db <- function(new_project = NULL, cache_location = "~/.cache/chevreul/", sqlite_db = "bw-files.db") {
     new_bigwigfiles <- dir_ls(new_project, glob = "*.bw", recurse = TRUE) %>%
-        purrr::set_names(path_file(.)) %>%
+        set_names(path_file(.)) %>%
         enframe("name", "bigWig") %>%
         mutate(sample_id = str_remove(name, "_Aligned.sortedByCoord.out.*bw$")) %>%
-        filter(!stringr::str_detect(name, "integrated")) %>%
+        filter(!str_detect(name, "integrated")) %>%
         distinct(sample_id, .keep_all = TRUE) %>%
         identity()
 
-    con <- dbConnect(RSQLite::SQLite(), dbname = path(cache_location, sqlite_db))
+    con <- dbConnect(SQLite(), dbname = path(cache_location, sqlite_db))
 
     all_bigwigfiles <-
         dbReadTable(con, "bigwigfiles") %>%
@@ -447,7 +447,7 @@ make_bigwig_db <- function(new_project = NULL, cache_location = "~/.cache/chevre
 #' @examples
 metadata_from_batch <- function(batch, projects_dir = "/dataVolume/storage/single_cell_projects",
     db_path = "single-cell-projects.db") {
-    mydb <- dbConnect(RSQLite::SQLite(), path(projects_dir, db_path))
+    mydb <- dbConnect(SQLite(), path(projects_dir, db_path))
 
     projects_tbl <- dbReadTable(mydb, "projects_tbl") %>%
         filter(!project_type %in% c("integrated_projects", "resources"))
@@ -509,7 +509,7 @@ convert_object_list_to_multimodal <- function(object_list) {
 #' @examples
 make_chevreul_clean_names <- function(myvec) {
     myvec %>%
-        purrr::set_names(stringr::str_to_title(stringr::str_replace_all(., "[^[:alnum:][:space:]\\.]", " ")))
+        set_names(str_to_title(str_replace_all(., "[^[:alnum:][:space:]\\.]", " ")))
 }
 
 
