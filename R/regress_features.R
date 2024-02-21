@@ -10,7 +10,7 @@
 #'
 #' @examples
 #'
-#' regressed_object <- regress_by_features(panc8, feature_set = cc.genes$s.genes, set_name = "s_genes")
+#' regressed_object <- regress_by_features(human_gene_transcript_sce, feature_set = cc.genes$s.genes, set_name = "s_genes")
 #'
 #'@importFrom scran modelGeneVar
 #'@importFrom batchelor regressBatches
@@ -27,13 +27,13 @@ regress_by_features <- function (object, feature_set, set_name, regress = TRUE)
             # object <- AddModuleScore(object, feature_set, name = set_name, ctrl = ctrl)
             set_name <- paste0(set_name, length(feature_set))
             message(paste0("Module score stored as ", set_name))
-            # if ("integrated" %in% names(object@assays)) {
-            #   default_assay <- "integrated"
+            # if ("integrated" %in% names(object@experiments)) {
+            #   default_experiment <- "integrated"
             # }
             # else {
-            #   default_assay <- "gene"
+            #   default_experiment <- "gene"
             # }
-            # SingleCellExperiment::DefaultAssay(object) <- default_assay
+            # SingleCellExperiment::DefaultAssay(object) <- default_experiment
             if (regress) {
               dec.nocycle <- modelGeneVar(object, block=colData(object)[["Phase"]])
               reg.nocycle <- regressBatches(object, batch=colData(object)[["Phase"]])

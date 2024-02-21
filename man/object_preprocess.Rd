@@ -34,6 +34,6 @@ Performs standard pre-processing workflow for scRNA-seq data
 }
 \examples{
 
-panc8[["gene"]] <- object_preprocess(panc8[["gene"]])
+human_gene_transcript_sce <- object_preprocess(human_gene_transcript_sce)
 
 }

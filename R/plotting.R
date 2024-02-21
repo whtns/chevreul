@@ -101,7 +101,7 @@ plotly_settings <- function(plotly_plot, width = 600, height = 700) {
 #' @param plot_var Variable to group (color) cells by
 #' @param plot_vals plot values
 #' @param features Features to plot
-#' @param assay Name of assay to use, defaults to the active assay
+#' @param experiment Name of experiment to use, defaults to the active experiment
 #' @param ... extra parameters passed to ggplot2
 #'
 #' @return a violin plot
@@ -111,7 +111,7 @@ plotly_settings <- function(plotly_plot, width = 600, height = 700) {
 #'
 #' plot_violin(human_gene_transcript_sce, plot_var = "batch", features = "NRL")
 #'
-plot_violin <- function(object, plot_var = "batch", plot_vals = NULL, features = "NRL", assay = "gene", ...) {
+plot_violin <- function(object, plot_var = "batch", plot_vals = NULL, features = "NRL", experiment = "gene", ...) {
         if (is.null(plot_vals)) {
             plot_vals <- unique(get_cell_metadata(object)[[plot_var]])
             plot_vals <- plot_vals[!is.na(plot_vals)]
@@ -142,7 +142,7 @@ plot_violin <- function(object, plot_var = "batch", plot_vals = NULL, features =
 #' @examples
 #' plot_feature(human_gene_transcript_sce, embedding = "UMAP", features = "NRL")
 #'
-plot_feature <- function(object, embedding = c("umap", "pca", "tsne"), features, dims = c(1, 2), return_plotly = FALSE, pt.size = 1.0) {
+plot_feature <- function(object, embedding = c("UMAP", "PCA", "TSNE"), features, dims = c(1, 2), return_plotly = FALSE, pt.size = 1.0) {
         embedding <- toupper(embedding)
 
         metadata <- get_cell_metadata(object)
@@ -205,7 +205,7 @@ annotate_cell_cycle <- function(object) {
 #' @param selected_values selected values to display
 #' @param return_plotly whether to return an interactive ploly plot
 #' @param marker_method "wilcox"
-#' @param object_assay assay to plot default gene
+#' @param object_experiment experiment to plot default gene
 #' @param hide_technical whether to exclude mitochondrial or ribosomal genes
 #' @param unique_markers whether to plot only unique marker genes for each group
 #'
@@ -218,9 +218,9 @@ annotate_cell_cycle <- function(object) {
 #'
 #' plot_markers(human_gene_transcript_sce, group_by = "gene_snn_res.0.2")
 #'
-plot_markers <- function(object, group_by = "batch", num_markers = 5, selected_values = NULL, return_plotly = FALSE, marker_method = "wilcox", object_assay = "gene", hide_technical = NULL, unique_markers = FALSE, p_val_cutoff = 1, ...) {
+plot_markers <- function(object, group_by = "batch", num_markers = 5, selected_values = NULL, return_plotly = FALSE, marker_method = "wilcox", object_experiment = "gene", hide_technical = NULL, unique_markers = FALSE, p_val_cutoff = 1, ...) {
         # Idents(object) <- get_cell_metadata(object)[[group_by]]
-        object <- find_all_markers(object, group_by, object_assay = object_assay, p_val_cutoff = p_val_cutoff)
+        object <- find_all_markers(object, group_by, object_experiment = object_experiment, p_val_cutoff = p_val_cutoff)
         marker_table <- metadata(object)$markers[[group_by]]
         markers <- marker_table %>%
             enframe_markers() %>%
@@ -228,13 +228,13 @@ plot_markers <- function(object, group_by = "batch", num_markers = 5, selected_v
         if (!is.null(hide_technical)) {
             markers <- map(markers, c)
             if (hide_technical == "pobjectdo") {
-                markers <- map(markers, ~ .x[!.x %in% pobjectdogenes[[object_assay]]])
+                markers <- map(markers, ~ .x[!.x %in% pobjectdogenes[[object_experiment]]])
             } else if (hide_technical == "mito_ribo") {
                 markers <- map(markers, ~ .x[!str_detect(.x, "^MT-")])
                 markers <- map(markers, ~ .x[!str_detect(.x, "^RPS")])
                 markers <- map(markers, ~ .x[!str_detect(.x, "^RPL")])
             } else if (hide_technical == "all") {
-                markers <- map(markers, ~ .x[!.x %in% pobjectdogenes[[object_assay]]])
+                markers <- map(markers, ~ .x[!.x %in% pobjectdogenes[[object_experiment]]])
                 markers <- map(markers, ~ .x[!str_detect(.x, "^MT-")])
                 markers <- map(markers, ~ .x[!str_detect(.x, "^RPS")])
                 markers <- map(markers, ~ .x[!str_detect(.x, "^RPL")])
@@ -338,7 +338,7 @@ plot_readcount<-  function(object, group_by = "nCount_RNA", color.by = "batch", 
 #' @param cells Cells to retain
 #' @param group.by  Name of one or more metadata columns to annotate columns by (for example, orig.ident)
 #' @param layer "counts" for raw data "scale.data" for log-normalized data
-#' @param assay assay to display
+#' @param experiment experiment to display
 #' @param group.bar.height height for group bars
 #' @param col_arrangement how to arrange columns whether with a dendrogram (Ward.D2, average, etc.) or exclusively by metadata category
 #' @param column_split whether to split columns by metadat value
@@ -346,7 +346,7 @@ plot_readcount<-  function(object, group_by = "nCount_RNA", color.by = "batch", 
 #' @param ... additional arguments passed to ComplexHeatmap::Heatmap
 #'
 #' @return a complexheatmap
-#' @importFrom SummarizedExperiment assay
+#' @importFrom SummarizedExperiment experiment
 #' @importFrom cluster agnes
 #' @importFrom circlize colorRamp2
 #' @export
@@ -355,8 +355,8 @@ plot_readcount<-  function(object, group_by = "nCount_RNA", color.by = "batch", 
 #' top_25_features <- get_variable_features(human_gene_transcript_sce)[1:25]
 #' make_complex_heatmap(human_gene_transcript_sce, features = top_25_features)
 
-make_complex_heatmap<-function(object, features = NULL, group.by = "ident", cells = NULL, layer = "scale.data", assay = NULL, group.bar.height = 0.01, column_split = NULL, col_arrangement = "ward.D2", mm_col_dend = 30, ...) {
-        assay_method <- switch(layer,
+make_complex_heatmap<-function(object, features = NULL, group.by = "ident", cells = NULL, layer = "scale.data", experiment = NULL, group.bar.height = 0.01, column_split = NULL, col_arrangement = "ward.D2", mm_col_dend = 30, ...) {
+        experiment_method <- switch(layer,
             counts = "counts",
             scale.data = "logcounts"
         )
@@ -366,22 +366,22 @@ make_complex_heatmap<-function(object, features = NULL, group.by = "ident", cell
         if (is.numeric(x = cells)) {
             cells <- colnames(x = object)[cells]
         }
-        assay <- assay %||% mainExpName(object)
-        if (!assay == mainExpName(object)) {
-            object <- swapAltExp(object, name = assay)
+        experiment <- experiment %||% mainExpName(object)
+        if (!experiment == mainExpName(object)) {
+            object <- swapAltExp(object, name = experiment)
         }
         features <- features %||% scran::getTopHVGs(object)
         features <- rev(unique(features))
-        possible.features <- rownames(x = assay(object, assay_method))
+        possible.features <- rownames(x = experiment(object, experiment_method))
         if (any(!features %in% possible.features)) {
             bad.features <- features[!features %in% possible.features]
             features <- features[features %in% possible.features]
             if (length(x = features) == 0) {
-                stop("No requested features found in the ", layer, " layer for the ", assay, " assay.")
+                stop("No requested features found in the ", layer, " layer for the ", experiment, " experiment.")
             }
-            warning("The following features were omitted as they were not found in the ", assay_method, " layer for the ", assay, " assay: ", paste(bad.features, collapse = ", "))
+            warning("The following features were omitted as they were not found in the ", experiment_method, " layer for the ", experiment, " experiment: ", paste(bad.features, collapse = ", "))
         }
-        data <- as.data.frame(x = t(x = as.matrix(x = assay(object, assay_method)[features, cells, drop = FALSE])))
+        data <- as.data.frame(x = t(x = as.matrix(x = experiment(object, experiment_method)[features, cells, drop = FALSE])))
 
         # object <- suppressMessages(expr = StashIdent(object = object, save.name = "ident"))
 
@@ -514,7 +514,7 @@ plot_all_transcripts <- function(object, features, embedding = "UMAP", from_gene
             features <- genes_to_transcripts(features)
         }
         features <- features[features %in% rownames(altExp(object, "transcript"))]
-        transcript_cols <- assay(altExp(object, "transcript"))[features, ]
+        transcript_cols <- experiment(altExp(object, "transcript"))[features, ]
         colData(object)[features] <- t(as.matrix(transcript_cols))
         # plot_out <- scater::plotReducedDim(altExp(object), features = features, dimred = embedding)
         plot_out <- map(paste0(features), ~ plot_feature(object, embedding = embedding, features = .x, return_plotly = FALSE)) %>% purrr::set_names(features)

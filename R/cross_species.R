@@ -9,7 +9,7 @@
 #'
 #' convert_mouse_object_to_human(baron2016singlecell)
 convert_mouse_object_to_human <- function(object) {
-    # transfer default species expression data to a species-specific assay
+    # transfer default species expression data to a species-specific experiment
     object[["mouse"]] <- object[["gene"]]
 
     new_rownames <- convert_symbols_by_species(src_genes = rownames(object), src_species = "mouse")
@@ -17,9 +17,9 @@ convert_mouse_object_to_human <- function(object) {
     object_slots <- c("counts", "data", "scale.data", "meta.features")
 
     for (i in object_slots) {
-        current_slot <- slot(object@assays[["gene"]], i)
+        current_slot <- slot(object@experiments[["gene"]], i)
         if (!(dim(current_slot) == c(0, 0))) {
-            rownames(slot(object@assays[["gene"]], i)) <- new_rownames
+            rownames(slot(object@experiments[["gene"]], i)) <- new_rownames
         }
     }
 
@@ -40,7 +40,7 @@ convert_human_object_to_mouse <- function(object, ...) {
 
 
     for (i in object_slots) {
-        rownames(slot(object@assays[["gene"]], i)) <- new_rownames
+        rownames(slot(object@experiments[["gene"]], i)) <- new_rownames
     }
 
     return(object)
@@ -102,7 +102,7 @@ convert_symbols_by_species <- function(src_genes, src_species) {
 #'
 #' @examples
 #'
-#' cross_species_integrate(list(baron2016singlecell = baron2016singlecell), list(panc8 = panc8))
+#' cross_species_integrate(list(baron2016singlecell = baron2016singlecell), list(human_gene_transcript_sce = human_gene_transcript_sce))
 #'
 cross_species_integrate <- function(mouse_object_list, human_object_list){
     mouse_object_list <- map(mouse_object_list, convert_mouse_object_to_human)
@@ -117,7 +117,7 @@ cross_species_integrate <- function(mouse_object_list, human_object_list){
 
     # annotate cell cycle scoring to objects
 
-    integrated_object <- annotate_cell_cycle(integrated_object, feature = "gene")
+    integrated_object <- annotate_cell_cycle(integrated_object)
 
     # add marker genes to objects
 
@@ -129,16 +129,20 @@ cross_species_integrate <- function(mouse_object_list, human_object_list){
 #' Update human gene symbols in object
 #'
 #' @param object A SingleCellExperiment object
-#' @param assay Assay to use, Default = "gene"
+#' @param experiment Assay to use, Default = "gene"
 #'
 #' @return a single cell object
 #' @export
 #' @importFrom EnsDb.Hsapiens.v86 EnsDb.Hsapiens.v86
-update_human_gene_symbols <- function(object, assay = "gene") {
+#'
+#' @examples
+#'
+#'
+update_human_gene_symbols <- function(object, experiment = "gene") {
 
     ensdb <- EnsDb.Hsapiens.v86
 
-    symbols <- rownames(object[[assay]])
+    symbols <- rownames(object[[experiment]])
 
     new_rownames <-
         mapIds(ensdb, symbols, keytype = "SYMBOL", columns = c("SYMBOL", "GENEID")) %>%
@@ -146,7 +150,7 @@ update_human_gene_symbols <- function(object, assay = "gene") {
 
     rownames(new_rownames) <- new_rownames$old_symbol
 
-    object[[assay]] <- SingleCellExperiment::AddMetaData(object[[assay]], new_rownames)
+    object[[experiment]] <- SingleCellExperiment::AddMetaData(object[[experiment]], new_rownames)
 
     new_rownames <-
         new_rownames %>%
@@ -159,18 +163,18 @@ update_human_gene_symbols <- function(object, assay = "gene") {
     object_slots <- c("counts", "data", "scale.data", "meta.features")
 
     for (i in object_slots) {
-        if (length(slot(object@assays[[assay]], i)) > 0) {
-            rownames(slot(object@assays[[assay]], i)) <- make.unique(new_rownames$symbol)
+        if (length(slot(object@experiments[[experiment]], i)) > 0) {
+            rownames(slot(object@experiments[[experiment]], i)) <- make.unique(new_rownames$symbol)
         }
     }
 
-    variable_features <- get_variable_features(object[[assay]])
+    variable_features <- get_variable_features(object[[experiment]])
     if (length(variable_features) > 1) {
         new_variable_features <-
             filter(new_rownames, old_symbol %in% variable_features) %>%
             pull(symbol)
 
-        get_variable_features(object[[assay]]) <- new_variable_features
+        get_variable_features(object[[experiment]]) <- new_variable_features
     }
 
     return(object)

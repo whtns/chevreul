@@ -7,6 +7,7 @@
 #'
 #' @return a path to a bigwig file sqlite database
 #' @export
+#' @examples
 build_bigwig_db <- function(bam_files, bigwig_db = "~/.cache/chevreul/bw-files.db") {
     bam_files <- fs::path_abs(bam_files)
 
@@ -32,6 +33,7 @@ build_bigwig_db <- function(bam_files, bigwig_db = "~/.cache/chevreul/bw-files.d
 #'
 #' @return a vector of bigwigs file paths
 #' @export
+#' @examples
 load_bigwigs <- function(object, bigwig_db = "~/.cache/chevreul/bw-files.db") {
     con <- dbConnect(RSQLite::SQLite(), dbname = bigwig_db)
 
@@ -76,6 +78,7 @@ load_bigwigs <- function(object, bigwig_db = "~/.cache/chevreul/bw-files.db") {
 #' @export
 #' @importFrom EnsDb.Hsapiens.v86 EnsDb.Hsapiens.v86
 #' @importFrom EnsDb.Mmusculus.v79 EnsDb.Mmusculus.v79
+#' @examples
 plot_gene_coverage_by_var <- function(genes_of_interest = "NRL",
     cell_metadata,
     bigwig_tbl,

@@ -7,6 +7,7 @@
 #'
 #' @return a single cell object
 #' @export
+#' @examples
 format_new_metadata <- function(object, datapath) {
         new_meta <- read_csv(datapath) %>%
             mutate(across(contains("snn"), as.factor))
@@ -30,6 +31,7 @@ format_new_metadata <- function(object, datapath) {
 #'
 #' @return updated cell level metadata
 #' @export
+#' @examples
 combine_cols <- function(object, cols, new_col) {
         new_col <- janitor::make_clean_names(new_col)
         drop_cols <- cols[!cols == new_col]
@@ -61,7 +63,7 @@ combine_cols <- function(object, cols, new_col) {
 get_transcripts_from_object <- function(object, gene, organism = "human") {
         transcripts <- genes_to_transcripts(gene, organism)
 
-        transcripts <- transcripts[transcripts %in% rownames(retrieve_assay(object, "transcript"))]
+        transcripts <- transcripts[transcripts %in% rownames(retrieve_experiment(object, "transcript"))]
     }
 
 
@@ -135,6 +137,7 @@ record_experiment_data <- function(object, experiment_name = "default_experiment
 #'
 #' @return a single cell object
 #' @export
+#' @examples
 update_chevreul_object <- function(object_path, feature, resolution = seq(0.2, 2.0, by = 0.2), return_object = TRUE, ...) {
         message(object_path)
         object <- readRDS(object_path)
@@ -142,13 +145,13 @@ update_chevreul_object <- function(object_path, feature, resolution = seq(0.2, 2
         if (is.list(object)) {
             object <- convert_object_list_to_multimodal(object)
             # object <- SingleCellExperiment::UpdateSingleCellExperimentObject(object)
-        } else if (all(names(object@assays) == "RNA")) {
+        } else if (all(names(object@experiments) == "RNA")) {
             object <- RenameAssays(object, RNA = "gene")
-        } else if (identical(names(object@assays), c("RNA", "integrated"))) {
+        } else if (identical(names(object@experiments), c("RNA", "integrated"))) {
             object <- RenameAssays(object, RNA = "gene")
         }
 
-        seurat_version <- Misc(object)$experiment$seurat_version
+        seurat_version <- metadata(object)$experiment$seurat_version
 
         if (packageVersion("SingleCellExperiment") == "5.0.0" & (seurat_version < 5 || is.null(seurat_version))) {
             object <- convert_v3_to_v5(object)
@@ -156,14 +159,14 @@ update_chevreul_object <- function(object_path, feature, resolution = seq(0.2, 2
 
         object <- propagate_spreadsheet_changes(get_cell_metadata(object), object)
 
-        # set appropriate assay
-        if ("integrated" %in% names(object@assays)) {
-            default_assay <- "integrated"
+        # set appropriate experiment
+        if ("integrated" %in% names(object@experiments)) {
+            default_experiment <- "integrated"
         } else {
-            default_assay <- "gene"
+            default_experiment <- "gene"
         }
 
-        DefaultAssay(object) <- default_assay
+        DefaultAssay(object) <- default_experiment
 
         cluster_tag <- glue::glue("{DefaultAssay(object)}_snn_res\\.")
 
@@ -177,26 +180,26 @@ update_chevreul_object <- function(object_path, feature, resolution = seq(0.2, 2
 
         object <- set_metadata(object, new_meta)
 
-        chevreul_version <- Misc(object)$experiment$chevreul_version
+        chevreul_version <- metadata(object)$experiment$chevreul_version
 
         chevreul_version <- ifelse(is.null(chevreul_version), 0.1, chevreul_version)
 
         # update human gene symbols to grch38
         old_symbol <- "CTC-378H22.2"
         if (old_symbol %in% rownames(object[["gene"]])) {
-            for (i in names(object@assays)[names(object@assays) %in% c("gene", "integrated")]) {
-                # object <- update_human_gene_symbols(object, assay = i)
+            for (i in names(object@experiments)[names(object@experiments) %in% c("gene", "integrated")]) {
+                # object <- update_human_gene_symbols(object, experiment = i)
             }
         }
 
         if (chevreul_version < getNamespaceVersion("chevreul")) {
             message(paste0(object_path, " is out of date! updating..."))
             if (!any(grepl("_snn_res", colnames(get_cell_metadata(object))))) {
-                object <- object_cluster(object = object, resolution = resolution, reduction = "pca", ...)
+                object <- object_cluster(object = object, resolution = resolution, reduction = "PCA", ...)
             }
 
-            for (i in names(object@assays)[names(object@assays) %in% c("gene", "integrated")]) {
-                object <- find_all_markers(object, object_assay = i)
+            for (i in names(object@experiments)[names(object@experiments) %in% c("gene", "integrated")]) {
+                object <- find_all_markers(object, object_experiment = i)
             }
 
             object <- record_experiment_data(object, ...)
@@ -218,12 +221,13 @@ update_chevreul_object <- function(object_path, feature, resolution = seq(0.2, 2
 #' Recalculate counts/features per cell for a object
 #'
 #' @param object A single cell object
-#' @param assay Assay to use, Default = "gene"
+#' @param experiment Assay to use, Default = "gene"
 #' @param slot slot for data
 #'
 #' @return a single cell object with nfeatures and ngenes stored in metadata
 #' @export
-object_calcn <- function(object, assay = "gene", slot = "counts") {
+#' @examples
+object_calcn <- function(object, experiment = "gene", slot = "counts") {
 
   object <- addPerCellQC(object)
   object$nFeature_gene <- object$detected
@@ -240,6 +244,7 @@ object_calcn <- function(object, assay = "gene", slot = "counts") {
 #'
 #' @return a single cell object
 #' @export
+#' @examples
 propagate_spreadsheet_changes <- function(updated_table, object) {
     meta <- updated_table
 
@@ -266,6 +271,7 @@ propagate_spreadsheet_changes <- function(updated_table, object) {
 #'
 #' @return a sqlite database with single cell objects
 #' @export
+#' @examples
 create_project_db <- function(cache_location = "~/.cache/chevreul", sqlite_db = "single-cell-projects.db", verbose = TRUE) {
         if (!dir.exists(cache_location)) {
             dir.create(cache_location)
@@ -295,6 +301,7 @@ create_project_db <- function(cache_location = "~/.cache/chevreul", sqlite_db = 
 #'
 #' @return a sqlite database with single cell objects
 #' @export
+#' @examples
 update_project_db <- function(projects_dir = NULL,
     cache_location = "~/.cache/chevreul",
     sqlite_db = "single-cell-projects.db",
@@ -339,6 +346,7 @@ update_project_db <- function(projects_dir = NULL,
 #'
 #' @return a sqlite database with single cell objects
 #' @export
+#' @examples
 append_to_project_db <- function(new_project_path, projects_dir = NULL,
     cache_location = "~/.cache/chevreul",
     sqlite_db = "single-cell-projects.db",
@@ -380,6 +388,7 @@ append_to_project_db <- function(new_project_path, projects_dir = NULL,
 #'
 #' @return a tibble with single cell objects
 #' @export
+#' @examples
 read_project_db <- function(projects_dir = NULL,
     cache_location = "~/.cache/chevreul",
     sqlite_db = "single-cell-projects.db",
@@ -407,6 +416,7 @@ read_project_db <- function(projects_dir = NULL,
 #'
 #' @return a sqlite database of bigwig files for cells in a single cell object
 #' @export
+#' @examples
 make_bigwig_db <- function(new_project = NULL, cache_location = "~/.cache/chevreul/", sqlite_db = "bw-files.db") {
     new_bigwigfiles <- dir_ls(new_project, glob = "*.bw", recurse = TRUE) %>%
         purrr::set_names(path_file(.)) %>%
@@ -434,6 +444,7 @@ make_bigwig_db <- function(new_project = NULL, cache_location = "~/.cache/chevre
 #' @param db_path path to .db file
 #'
 #' @return a tibble with cell level metadata from a single cell object
+#' @examples
 metadata_from_batch <- function(batch, projects_dir = "/dataVolume/storage/single_cell_projects",
     db_path = "single-cell-projects.db") {
     mydb <- dbConnect(RSQLite::SQLite(), path(projects_dir, db_path))
@@ -458,6 +469,7 @@ metadata_from_batch <- function(batch, projects_dir = "/dataVolume/storage/singl
 #'
 #' @return a list of single cell objects
 #' @export
+#' @examples
 convert_object_list_to_multimodal <- function(object_list) {
     colnames(object_list[["gene"]]@meta.data) <- gsub("RNA_", "gene_", colnames(object_list[["gene"]]@meta.data))
 
@@ -476,10 +488,10 @@ convert_object_list_to_multimodal <- function(object_list) {
         }
     }
 
-    marker_names <- names(Misc(multimodal_object)[["markers"]])
+    marker_names <- names(metadata(multimodal_object)[["markers"]])
 
-    if (!is.null(Misc(multimodal_object)$markers)) {
-        names(Misc(multimodal_object)$markers) <- gsub("RNA", "gene", marker_names)
+    if (!is.null(metadata(multimodal_object)$markers)) {
+        names(metadata(multimodal_object)$markers) <- gsub("RNA", "gene", marker_names)
     }
 
 
@@ -494,6 +506,7 @@ convert_object_list_to_multimodal <- function(object_list) {
 #'
 #' @return a clean vector of object names
 #' @export
+#' @examples
 make_chevreul_clean_names <- function(myvec) {
     myvec %>%
         purrr::set_names(stringr::str_to_title(stringr::str_replace_all(., "[^[:alnum:][:space:]\\.]", " ")))
@@ -512,15 +525,15 @@ make_chevreul_clean_names <- function(myvec) {
 #' @examples
 #' convert_v3_to_v5(human_gene_transcript_seurat)
 convert_v3_to_v5 <- function(seurat_v3) {
-    seurat_version <- Misc(seurat_v3)$experiment$seurat_version
+    seurat_version <- metadata(seurat_v3)$experiment$seurat_version
 
     if (seurat_version < 5 || is.null(seurat_version)) {
         meta <- seurat_v3@meta.data
 
-        seurat_v5 <- CreateSingleCellExperimentObject(counts = seurat_v3$gene@counts, data = seurat_v3$gene@data, assay = "gene", meta.data = meta)
+        seurat_v5 <- CreateSingleCellExperimentObject(counts = seurat_v3$gene@counts, data = seurat_v3$gene@data, experiment = "gene", meta.data = meta)
 
-        transcript_assay.v5 <- CreateAssay5Object(counts = seurat_v3$transcript@counts, data = seurat_v3$transcript@data)
-        seurat_v5$transcript <- transcript_assay.v5
+        transcript_experiment.v5 <- CreateAssay5Object(counts = seurat_v3$transcript@counts, data = seurat_v3$transcript@data)
+        seurat_v5$transcript <- transcript_experiment.v5
 
         seurat_v5$gene <- seurat_preprocess(seurat_v5$gene, normalize = FALSE)
         seurat_v5$transcript <- seurat_preprocess(seurat_v5$transcript, normalize = FALSE)
@@ -530,11 +543,11 @@ convert_v3_to_v5 <- function(seurat_v3) {
         seurat_v5@graphs <- seurat_v3@graphs
         seurat_v5@neighbors <- seurat_v3@neighbors
 
-        Misc(seurat_v5) <- Misc(seurat_v3)
+        metadata(seurat_v5) <- metadata(seurat_v3)
 
         Idents(seurat_v5) <- Idents(seurat_v3)
 
-        Misc(seurat_v5)$experiment$seurat_version <- packageVersion("seurat")
+        metadata(seurat_v5)$experiment$seurat_version <- packageVersion("seurat")
     } else {
         seurat_v5 <- seurat_v3
     }
@@ -550,6 +563,7 @@ convert_v3_to_v5 <- function(seurat_v3) {
 #'
 #' @return a vector of genes in a single cell object
 #' @export
+#' @examples
 genes_from_object <- function(object) {
     rownames(object)
 }
@@ -562,17 +576,18 @@ genes_from_object <- function(object) {
 #'
 #' @return a tibble with metadata from a single cell object
 #' @export
+#' @examples
 metadata_from_object <- function(object) {
     colnames(colData(object))
 }
 
 convert_seurat_to_sce <- function(seu) {
-    sce <- as.SingleCellExperiment(seu, assay = DefaultAssay(seu))
+    sce <- as.SingleCellExperiment(seu, experiment = DefaultAssay(seu))
 
     alt_exp_names <- SingleCellExperiment::Assays(seu)[!SingleCellExperiment::Assays(seu) == DefaultAssay(seu)]
 
     for (i in alt_exp_names) {
-        altExp(sce, i) <- as.SingleCellExperiment(seu, assay = i)
+        altExp(sce, i) <- as.SingleCellExperiment(seu, experiment = i)
     }
 
     sce@metadata <- seu@misc

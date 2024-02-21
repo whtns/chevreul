@@ -5,6 +5,7 @@
 #' @return plot_types a list of category_vars or continuous_vars
 #' @export
 #' @importFrom pillar new_pillar_type
+#' @examples
 list_plot_types <- function(object) {
         meta_types <- tibble::tibble(
             vars = colnames(colData(object)),
@@ -49,6 +50,7 @@ list_plot_types <- function(object) {
 #' @param object a single cell object
 #'
 #' @return dataframe containing object metadata
+#' @examples
 get_cell_metadata <- function(object) {
         colData(object) %>%
             as.data.frame()
@@ -61,6 +63,7 @@ get_cell_metadata <- function(object) {
 #'
 #' @return variable features from a single cell object
 #' @export
+#' @examples
 get_object_metadata <- function(object, ...) {
     metadata(object)
   }
@@ -72,6 +75,7 @@ get_object_metadata <- function(object, ...) {
 #'
 #' @return variable features from a single cell object
 #' @export
+#' @examples
 get_variable_features <- function(object, ...) {
         scran::getTopHVGs(object)
     }
@@ -85,6 +89,7 @@ get_variable_features <- function(object, ...) {
 #'
 #' @return variable features from a single cell object
 #' @export
+#' @examples
 get_features <- function(object, ...) {
         rownames(object)
     }
@@ -97,16 +102,25 @@ get_features <- function(object, ...) {
 #'
 #' @return object metadata
 #' @export
+#' @examples
 set_metadata <- function(object, meta.data) {
         colData(object) <- meta.data
         return(object)
     }
 
-# get_feature_types ------------------------------
 
+#' Get Feature Types
+#'
+#' @param object
+#'
+#' @return
+#' @export
+#'
+#' @examples
 get_feature_types <- function(object) {
     sort(c(mainExpName(object), altExpNames(object)))
 }
+
 set_feature_types <- function(object, feature_type) {
   if(feature_type %in% altExpNames(object)){
     object <- swapAltExp(object, feature_type, saved = mainExpName(object), withColData = TRUE)
@@ -114,24 +128,47 @@ set_feature_types <- function(object, feature_type) {
   return(object)
 }
 
-# check_integrated ------------------------------
-
+#' Check if Integrated
+#'
+#' @param object
+#'
+#' @return
+#' @export
+#'
+#' @examples
 check_integrated <- function(object) {
-    assay <- str_subset(assayNames(scMerge_unsupervised), "scMerge")
+    experiment <- str_subset(experimentNames(scMerge_unsupervised), "scMerge")
 
-    return(assay)
+    return(experiment)
 }
 
-# retrieve_assays ------------------------------
-retrieve_assay <- function(object, assay) {
-    if (assay %in% mainExpName(object)) {
+
+#' Retrieve Assay
+#'
+#' @param object
+#' @param experiment
+#'
+#' @return
+#' @export
+#'
+#' @examples
+retrieve_experiment <- function(object, experiment) {
+    if (experiment %in% mainExpName(object)) {
         return(object)
-    } else if (assay %in% altExpNames(object)) {
-        return(altExp(object, assay))
+    } else if (experiment %in% altExpNames(object)) {
+        return(altExp(object, experiment))
     }
 }
 
-# query_assay ------------------------------
-query_assay <- function(object, assay) {
-    return(assay %in% c(mainExpName(object), altExpNames(object)))
+#' Query Assay
+#'
+#' @param object
+#' @param experiment
+#'
+#' @return
+#' @export
+#'
+#' @examples
+query_experiment <- function(object, experiment) {
+    return(experiment %in% c(mainExpName(object), altExpNames(object)))
 }

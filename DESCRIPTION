@@ -15,7 +15,6 @@ URL: https://github.com/whtns/chevreul,
 BugReports: https://github.com/cobriniklab/chevreul/issues
 Depends:
     R (>= 4.3.0),
-    Seurat,
     SingleCellExperiment,
     scater,
     shiny (>= 1.6.0),
@@ -80,7 +79,6 @@ Imports:
     circlize,
     bluster,
     SummarizedExperiment,
-    SeuratDisk,
     EnsDb.Hsapiens.v86,
     EnsDb.Mmusculus.v79
 Suggests:
@@ -89,7 +87,6 @@ Suggests:
     monocle3 (>= 0.2.1),
     RefManageR,
     rmarkdown,
-    SeuratWrappers (>= 0.2.0),
     testthat (>= 3.0.0),
     Nebulosa
 VignetteBuilder:

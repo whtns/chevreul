@@ -37,7 +37,7 @@ original is out-of-service; defaults to
 }
 \value{
 SingleCellExperiment object with Enrichr results for samples and clusters stored in
-Misc(object)$enriched_pathways$enrichr
+metadata(object)$enriched_pathways$enrichr
 }
 \description{
 This function uses the enrichR API to look for enriched pathways

@@ -14,17 +14,17 @@ convert_object_to_cds <- function(object, resolution = 1, min_expression = 0.05)
 
     # part two, counts sparse matrix
 
-    if ("integrated" %in% names(object@assays)) {
-        default_assay <- "integrated"
+    if ("integrated" %in% names(object@experiments)) {
+        default_experiment <- "integrated"
     } else {
-        default_assay <- "gene"
+        default_experiment <- "gene"
     }
 
-    DefaultAssay(object) <- default_assay
+    DefaultAssay(object) <- default_experiment
 
-    expression_matrix <- SingleCellExperiment::GetAssayData(object, slot = "data", assay = "gene")
+    expression_matrix <- SingleCellExperiment::GetAssayData(object, slot = "data", experiment = "gene")
 
-    count_matrix <- SingleCellExperiment::GetAssayData(object, slot = "counts", assay = "gene")
+    count_matrix <- SingleCellExperiment::GetAssayData(object, slot = "counts", experiment = "gene")
 
     count_matrix <- count_matrix[row.names(expression_matrix), ]
     count_matrix <- count_matrix[, Matrix::colSums(count_matrix) != 0]
@@ -75,11 +75,11 @@ convert_object_to_cds <- function(object, resolution = 1, min_expression = 0.05)
     cds_from_object <- monocle3::preprocess_cds(cds_from_object, method = "PCA", norm_method = "none")
     cds_from_object <- monocle3::reduce_dimension(cds_from_object, reduction_method = "UMAP")
 
-    # # reducedDim(cds_from_object, "PCA") <- Embeddings(object, "pca")
-    reducedDim(cds_from_object, "UMAP") <- Embeddings(object, "umap")
-    # # cds_from_object@reducedDims@listData[["UMAP"]] <- Embeddings(object, "umap")
-    # # cds_from_object@reducedDims@listData[["PCA"]] <- Embeddings(object, "pca")
-    cds_from_object@preprocess_aux$gene_loadings <- Loadings(object, "pca")
+    # # reducedDim(cds_from_object, "PCA") <- Embeddings(object, "PCA")
+    reducedDim(cds_from_object, "UMAP") <- Embeddings(object, "UMAP")
+    # # cds_from_object@reducedDims@listData[["UMAP"]] <- Embeddings(object, "UMAP")
+    # # cds_from_object@reducedDims@listData[["PCA"]] <- Embeddings(object, "PCA")
+    cds_from_object@preprocess_aux$gene_loadings <- Loadings(object, "PCA")
 
     # cds_from_object <- learn_graph_by_resolution(cds_from_object, object, resolution = resolution)
 
@@ -114,14 +114,14 @@ assign_clusters_to_cds <- function(cds, clusters) {
 learn_graph_by_resolution <- function(cds, object, resolution = 1) {
     ### Assign the cluster info
     if (any(grepl("integrated", names(cds@colData)))) {
-        default_assay <- "integrated"
+        default_experiment <- "integrated"
     } else {
-        default_assay <- "gene"
+        default_experiment <- "gene"
     }
 
     cds <- monocle3::cluster_cells(cds)
 
-    clusters <- object[[paste0(default_assay, "_snn_res.", resolution)]]
+    clusters <- object[[paste0(default_experiment, "_snn_res.", resolution)]]
 
     clusters <- purrr::set_names(clusters[[1]], rownames(clusters))
 
@@ -146,13 +146,13 @@ plot_cds <- function(cds, color_cells_by = NULL, genes = NULL, return_plotly = T
     cds[["key"]] <- key
 
     if (any(grepl("integrated", names(cds@colData)))) {
-        default_assay <- "integrated"
+        default_experiment <- "integrated"
     } else {
-        default_assay <- "gene"
+        default_experiment <- "gene"
     }
 
     # if (color_cells_by == "louvain_cluster"){
-    #   color_cells_by = paste0(default_assay, "_snn_res.", resolution)
+    #   color_cells_by = paste0(default_experiment, "_snn_res.", resolution)
     # }
 
 
@@ -196,9 +196,9 @@ plot_pseudotime <- function(cds, resolution, color_cells_by = NULL, genes = NULL
     cds[["cellid"]] <- cellid
 
     if (any(grepl("integrated", colnames(cds@colData)))) {
-        default_assay <- "integrated"
+        default_experiment <- "integrated"
     } else {
-        default_assay <- "gene"
+        default_experiment <- "gene"
     }
 
 
@@ -242,9 +242,9 @@ plot_monocle_features <- function(cds, resolution, genes = NULL, ...) {
     cds[["cellid"]] <- cellid
 
     if (any(grepl("integrated", colnames(cds@colData)))) {
-        default_assay <- "integrated"
+        default_experiment <- "integrated"
     } else {
-        default_assay <- "gene"
+        default_experiment <- "gene"
     }
 
     cds_plot <- plot_cells(cds,
@@ -848,7 +848,7 @@ plot_cells <- function(cds, x = 1, y = 2, reduction_method = c(
 #'
 #' @examples
 threshold_monocle_genes <- function(object, cds, min_expression = 0.05) {
-    agg_mat <- SingleCellExperiment::GetAssayData(object, assay = "gene") %>%
+    agg_mat <- SingleCellExperiment::GetAssayData(object, experiment = "gene") %>%
         as.matrix()
 
     lgl_agg_mat <- agg_mat > min_expression
@@ -882,6 +882,7 @@ threshold_monocle_genes <- function(object, cds, min_expression = 0.05) {
 #' @importFrom circlize colorRamp2
 #'
 #' @return
+#' @examples
 monocle_module_heatmap <- function(cds, pr_deg_ids, object_resolution, cells = NULL, collapse_rows = TRUE,
     resolution = 10^seq(-6, -1), group.by = "batch", group.bar.height = 0.01,
     cluster_columns = FALSE, cluster_rows = TRUE,
@@ -892,12 +893,12 @@ monocle_module_heatmap <- function(cds, pr_deg_ids, object_resolution, cells = N
     )
 
     if (any(grepl("integrated", colnames(cds@colData)))) {
-        default_assay <- "integrated"
+        default_experiment <- "integrated"
     } else {
-        default_assay <- "gene"
+        default_experiment <- "gene"
     }
 
-    object_resolution <- paste0(default_assay, "_snn_res.", object_resolution)
+    object_resolution <- paste0(default_experiment, "_snn_res.", object_resolution)
 
     cds <- cds[pr_deg_ids, ]
 
@@ -1195,19 +1196,19 @@ monocle <- function(input, output, session, object, plot_types, featureType,
   })
 
   louvain_resolution <- reactive({
-    if (query_assay(object(), "integrated")) {
-      assay <- "integrated"
+    if (query_experiment(object(), "integrated")) {
+      experiment <- "integrated"
     } else {
-      assay <- "gene"
+      experiment <- "gene"
     }
 
-    paste0(assay, "_snn_res.", input$cdsResolution)
+    paste0(experiment, "_snn_res.", input$cdsResolution)
   })
 
   objectdimplot <- reactive({
     req(object_monocle())
 
-    plot_var(object_monocle(), embedding = "umap", group = louvain_resolution(), return_plotly = TRUE)
+    plot_var(object_monocle(), embedding = "UMAP", group = louvain_resolution(), return_plotly = TRUE)
   })
 
   output$objectdimplot <- renderPlotly({
@@ -1529,12 +1530,12 @@ prep_plot_genes_in_pseudotime <- function(cds, mygenes, resolution, partition = 
   cds <- cds[rownames(cds) %in% mygenes, ]
 
   if (any(grepl("integrated", colnames(colData(cds))))) {
-    default_assay <- "integrated"
+    default_experiment <- "integrated"
   } else {
-    default_assay <- "gene"
+    default_experiment <- "gene"
   }
 
-  color_cells_by <- paste0(default_assay, "_snn_res.", resolution)
+  color_cells_by <- paste0(default_experiment, "_snn_res.", resolution)
 
   gene_ptime_plot <- monocle3::plot_genes_in_pseudotime(cds,
                                                         color_cells_by = color_cells_by,
@@ -1559,7 +1560,7 @@ swap_counts_from_feature <- function(cds, featureType) {
   #     rowData(cds[[featureType]])$gene_short_name <- rownames(cds[[featureType]])
   #   }
 
-  assay(cds$traj, withDimnames = FALSE) <- assay(cds[[featureType]])
+  experiment(cds$traj, withDimnames = FALSE) <- experiment(cds[[featureType]])
   rowData(cds$traj) <- rowData(cds[[featureType]])
   rownames(cds$traj) <- rownames(cds[[featureType]])
   cds$traj@preprocess_aux$gene_loadings <- cds[[featureType]]@preprocess_aux$gene_loadings

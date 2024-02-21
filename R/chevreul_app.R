@@ -13,18 +13,21 @@
 #'
 #' @return a dataframe with differential expression information
 #' @export
-run_object_de <- function(object, cluster1, cluster2, resolution, diffex_scheme = "louvain", featureType, tests = c("t", "wilcox", "bimod")) {
+#' @examples
+#'
+#'
+run_object_de <- function(object, cluster1, cluster2, resolution = 0.2, diffex_scheme = "louvain", featureType, tests = c("t", "wilcox", "bimod")) {
         match.arg(tests)
 
         if (featureType == "transcript") object <- altExp(object, "transcript")
 
         if (diffex_scheme == "louvain") {
-            if ("integrated" %in% names(object@assays)) {
-                active_assay <- "integrated"
+            if ("integrated" %in% names(object@experiments)) {
+                active_experiment <- "integrated"
             } else {
-                active_assay <- "gene"
+                active_experiment <- "gene"
             }
-            colLabels(object) <- colData(object)[[paste0(active_assay, "_snn_res.", resolution)]]
+            colLabels(object) <- colData(object)[[paste0(active_experiment, "_snn_res.", resolution)]]
             object <- object[, colLabels(object) %in% c(cluster1, cluster2)]
             colLabels(object) <- factor(colLabels(object))
         } else if (diffex_scheme == "feature") {
@@ -84,6 +87,9 @@ run_object_de <- function(object, cluster1, cluster2, resolution, diffex_scheme 
 #' @export
 #' @importFrom SummarizedExperiment SummarizedExperiment
 #' @importFrom forcats fct_inseq
+#' @examples
+#'
+#'
 run_enrichmentbrowser <- function(object, cluster_list, de_results, enrichment_method = c("ora"), ...) {
     cluster1_cells <- cluster_list$cluster1
     cluster2_cells <- cluster_list$cluster2
@@ -108,20 +114,20 @@ run_enrichmentbrowser <- function(object, cluster_list, de_results, enrichment_m
     new_idents <- new_idents[colnames(object)]
     Idents(object) <- new_idents
 
-    counts <- GetAssayData(object, assay = "gene", slot = "counts")
+    counts <- GetAssayData(object, experiment = "gene", slot = "counts")
     counts <- as.matrix(counts)
     mode(counts) <- "integer"
 
     rowData <- data.frame(
         FC = object[["gene"]][[]]$FC,
         ADJ.PVAL = object[["gene"]][[]]$ADJ.PVAL,
-        row.names = rownames(object@assays[["gene"]])
+        row.names = rownames(object@experiments[["gene"]])
     )
 
     colData <- as.data.frame(get_cell_metadata(object))
 
     se <- SummarizedExperiment(
-        assays = list(counts = counts),
+        experiments = list(counts = counts),
         rowData = rowData, colData = colData
     )
 
@@ -199,6 +205,8 @@ prep_slider_values <- function(default_val) {
 #'
 #' @return a shiny app
 #' @export
+#'
+#' @examples
 #'
 chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "human", db_path = "~/.cache/chevreul/single-cell-projects.db", futureMb = 13000) {
     print(packageVersion("chevreul"))
@@ -621,7 +629,7 @@ chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "
         reductions <- reactive({
             req(object())
             names(object()@reductions)
-            # c("pca", "tsne", "umap")
+            # c("PCA", "TSNE", "UMAP")
         })
 
         observe({
@@ -685,7 +693,7 @@ chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "
                         reintegrated_object <- reintegrate_object(object(),
                             resolution = seq(0.2, 2, by = 0.2),
                             legacy_settings = input$legacySettingsSubset,
-                            organism = Misc(object())$experiment$organism
+                            organism = metadata(object())$experiment$organism
                         )
                         object(reintegrated_object)
                     } else {
@@ -719,7 +727,7 @@ chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "
                         reintegrated_object <- reintegrate_object(object(),
                             resolution = seq(0.2, 2, by = 0.2),
                             legacy_settings = input$legacySettingsSubset,
-                            organism = Misc(object())$experiment$organism
+                            organism = metadata(object())$experiment$organism
                         )
                         object(reintegrated_object)
                     } else {

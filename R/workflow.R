@@ -1,20 +1,3 @@
-
-splitByCol <- function(x, f) {
-
-  f <- colData(x)[[f]]
-
-  i <- split(seq_along(f), f)
-
-  v <- vector(mode = "list", length = length(i))
-
-  names(v) <- names(i)
-
-  for (n in names(i)) { v[[n]] <- x[, i[[n]]] }
-
-  return(v)
-
-}
-
 #' Integration Workflow
 #'
 #' Integrate multiple objects and save to file
@@ -28,6 +11,7 @@ splitByCol <- function(x, f) {
 #'
 #' @return an integrated single cell object
 #' @export
+#' @examples
 integration_workflow <-  function(batches, excluded_cells = NULL, resolution = seq(0.2, 2.0, by = 0.2), experiment_name = "default_experiment", organism = "human", ...) {
 
         # organisms <- map(batches, Misc, c("experiment", "organism"))
@@ -48,13 +32,13 @@ integration_workflow <-  function(batches, excluded_cells = NULL, resolution = s
         batches <- purrr::pmap(list(batches, experiment_names, organisms), record_experiment_data)
 
         merged_batches <- object_integration_pipeline(batches, resolution = resolution, organism = "human", ...)
-        Misc(merged_batches)$batches <- names(batches)
+        metadata(merged_batches)$batches <- names(batches)
 
         # # cross species
         # mouse_object_list <- batches[names(organisms[organisms == "mouse"])]
         # human_object_list <- batches[names(organisms[organisms == "human"])]
         # merged_batches <- cross_species_integrate(mouse_object_list = mouse_object_list, human_object_list = human_object_list)
-        # Misc(merged_batches)$batches <- names(batches)
+        # metadata(merged_batches)$batches <- names(batches)
 
         merged_batches <- record_experiment_data(merged_batches, experiment_name, organism)
 
@@ -75,6 +59,7 @@ integration_workflow <-  function(batches, excluded_cells = NULL, resolution = s
 #'
 #' @return a clustered single cell object
 #' @export
+#' @examples
 clustering_workflow <-  function(object, excluded_cells, resolution = seq(0.2, 2.0, by = 0.2), organism = "human", experiment_name = "default_experiment", ...) {
         object <- object_pipeline(object, resolution = resolution, organism = organism, ...)
 

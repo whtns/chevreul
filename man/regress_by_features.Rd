@@ -23,6 +23,6 @@ Regress SingleCellExperiment Object by Given Set of Genes
 }
 \examples{
 
-regressed_object <- regress_by_features(panc8, feature_set = cc.genes$s.genes, set_name = "s_genes")
+regressed_object <- regress_by_features(human_gene_transcript_sce, feature_set = cc.genes$s.genes, set_name = "s_genes")
 
 }

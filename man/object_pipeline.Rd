@@ -34,6 +34,6 @@ This functions allows you to Preprocess, Cluster and Reduce Dimensions for a sin
 }
 \examples{
 
-processed_object <- object_pipeline(panc8)
+processed_object <- object_pipeline(human_gene_transcript_sce)
 
 }

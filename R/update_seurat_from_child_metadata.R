@@ -8,6 +8,7 @@
 #'
 #' @return updated object metadata
 #' @export
+#' @examples
 update_object_meta <- function(object, proj_dir, numcols) {
     object_meta <- as.data.frame(get_cell_metadata(object))
 
@@ -37,6 +38,7 @@ update_object_meta <- function(object, proj_dir, numcols) {
 #'
 #' @return a single cell object with new metadata
 #' @export
+#' @examples
 reset_object_meta <- function(object, new_meta) {
     object@meta.data <- as.data.frame(new_meta, row.names = new_meta$sample_id)
     return(object)

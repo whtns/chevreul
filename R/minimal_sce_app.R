@@ -10,11 +10,11 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' minimalSceApp(panc8)
+#' \donttest{
+#' minimalSceApp(human_gene_transcript_sce)
 #' }
 #'
-minimalSceApp <- function(single_cell_object = panc8, loom_path = NULL, appTitle = NULL, organism_type = "human", futureMb = 13000, bigwig_db = "~/.cache/chevreul/bw-files.db") {
+minimalSceApp <- function(single_cell_object = human_gene_transcript_sce, loom_path = NULL, appTitle = NULL, organism_type = "human", futureMb = 13000, bigwig_db = "~/.cache/chevreul/bw-files.db") {
     future::plan(strategy = "multicore", workers = 6)
     future_size <- futureMb * 1024^2
     options(future.globals.maxSize = future_size)
@@ -309,7 +309,7 @@ minimalSceApp <- function(single_cell_object = panc8, loom_path = NULL, appTitle
         # observe({
         #   # req(featureType())
         #   req(object())
-        #   if (query_assay(object(), "transcript")) {
+        #   if (query_experiment(object(), "transcript")) {
         #     callModule(
         #       allTranscripts, "alltranscripts1", object, featureType,
         #       organism_type
@@ -352,7 +352,7 @@ minimalSceApp <- function(single_cell_object = panc8, loom_path = NULL, appTitle
                         message(paste0("reintegrating gene expression"))
                         reintegrated_object <- reintegrate_object(object(),
                             resolution = seq(0.2, 2, by = 0.2),
-                            organism = Misc(object())$experiment$organism
+                            organism = metadata(object())$experiment$organism
                         )
                         object(reintegrated_object)
                     } else {
@@ -386,7 +386,7 @@ minimalSceApp <- function(single_cell_object = panc8, loom_path = NULL, appTitle
                         message(paste0("reintegrating gene expression"))
                         reintegrated_object <- reintegrate_object(object(),
                             resolution = seq(0.2, 2, by = 0.2),
-                            organism = Misc(object())$experiment$organism
+                            organism = metadata(object())$experiment$organism
                         )
                         object(reintegrated_object)
                     } else {

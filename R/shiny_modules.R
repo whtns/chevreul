@@ -13,16 +13,16 @@ plotClustree_UI <- function(id) {
 #'
 #' @noRd
 plotClustree <- function(input, output, session, object) {
-    # set appropriate assay
-    assay = reactive({
-      ifelse("integrated" %in% names(object()@assays), "integrated", "gene")
+    # set appropriate experiment
+    experiment = reactive({
+      ifelse("integrated" %in% names(object()@experiments), "integrated", "gene")
     })
 
     output$clustree <- renderPlot({
         req(object())
-        assay <- ifelse("integrated" %in% get_feature_types(object()), "integrated", "gene")
-        object <- set_feature_types(object(), assay)
-        clustree::clustree(object(), prefix = paste0(assay, "_snn_res."))
+        experiment <- ifelse("integrated" %in% get_feature_types(object()), "integrated", "gene")
+        object <- set_feature_types(object(), experiment)
+        clustree::clustree(object(), prefix = paste0(experiment, "_snn_res."))
     })
 }
 
@@ -169,16 +169,16 @@ plotHeatmap <- function(input, output, session, object, featureType, organism_ty
 
     observe({
         req(object())
-        if (query_assay(object(), "integrated")) {
-            assay <- "integrated"
+        if (query_experiment(object(), "integrated")) {
+            experiment <- "integrated"
         } else {
-            assay <- "gene"
+            experiment <- "gene"
         }
 
-        preset_features <- get_variable_features(object(), assay = assay)[1:50]
+        preset_features <- get_variable_features(object(), experiment = experiment)[1:50]
 
         updateSelectizeInput(session, "customFeature",
-            choices = get_features(object(), assay = assay),
+            choices = get_features(object(), experiment = experiment),
             selected = preset_features, server = TRUE
         )
     })
@@ -206,13 +206,13 @@ plotHeatmap <- function(input, output, session, object, featureType, organism_ty
         req(input$customFeature)
         req(input$colAnnoVar)
 
-        if (query_assay(object(), "integrated")) {
-            assay <- "integrated"
+        if (query_experiment(object(), "integrated")) {
+            experiment <- "integrated"
         } else {
-            assay <- "gene"
+            experiment <- "gene"
         }
 
-        hm <- make_complex_heatmap(object(), features = input$customFeature, assay = assay, group.by = input$colAnnoVar, layer = input$layer, col_arrangement = input$dendroSelect)
+        hm <- make_complex_heatmap(object(), features = input$customFeature, experiment = experiment, group.by = input$colAnnoVar, layer = input$layer, col_arrangement = input$dendroSelect)
 
         hm <- draw(hm)
         return(hm)
@@ -430,7 +430,7 @@ changeEmbedParamsui <- function(id) {
 changeEmbedParams <- function(input, output, session, object) {
     ns <- session$ns
 
-    object <- RunUMAP(object(), dims = as.numeric(input$dims), reduction = "pca", min.dist = input$minDist, negative.sample.rate = input$negativeSampleRate)
+    object <- RunUMAP(object(), dims = as.numeric(input$dims), reduction = "PCA", min.dist = input$minDist, negative.sample.rate = input$negativeSampleRate)
 
     return(object)
 }
@@ -738,12 +738,12 @@ cells_selected <- function(input) {
 diffex <- function(input, output, session, object, featureType, selected_cells, tests = c("t-test" = "t", "wilcoxon rank-sum test" = "wilcox", "Likelihood-ratio test (bimodal)" = "bimod", "MAST" = "MAST")) {
     ns <- session$ns
 
-    assay <- reactive({
+    experiment <- reactive({
         req(object())
-        if (query_assay(object(), "integrated")) {
-            assay <- "integrated"
+        if (query_experiment(object(), "integrated")) {
+            experiment <- "integrated"
         } else {
-            assay <- "gene"
+            experiment <- "gene"
         }
     })
 
@@ -910,7 +910,7 @@ findMarkers <- function(input, output, session, object, plot_types, featureType)
 
     observe({
         req(object())
-        updateSelectizeInput(session, "dotFeature", choices = names(object()@assays), selected = "gene", server = TRUE)
+        updateSelectizeInput(session, "dotFeature", choices = names(object()@experiments), selected = "gene", server = TRUE)
     })
 
     output$dplottype <- renderUI({
@@ -923,12 +923,12 @@ findMarkers <- function(input, output, session, object, plot_types, featureType)
         )
     })
 
-    assay <- reactive({
+    experiment <- reactive({
         req(object())
-        if (query_assay(object(), "integrated")) {
-            assay <- "integrated"
+        if (query_experiment(object(), "integrated")) {
+            experiment <- "integrated"
         } else {
-            assay <- "gene"
+            experiment <- "gene"
         }
     })
 
@@ -936,7 +936,7 @@ findMarkers <- function(input, output, session, object, plot_types, featureType)
         req(input$plottype)
 
         if (input$plottype == "louvain") {
-            group_by <- paste0(assay(), "_snn_res.", input$resolution2)
+            group_by <- paste0(experiment(), "_snn_res.", input$resolution2)
         } else {
             group_by <- input$plottype
         }
@@ -952,12 +952,12 @@ findMarkers <- function(input, output, session, object, plot_types, featureType)
     })
 
     # observe({
-    #   req(assay())
+    #   req(experiment())
     #   SingleCellExperiment::DefaultAssay(object()) <- "gene"
     # })
 
     marker_plot_return <- eventReactive(input$plotDots, {
-        plot_markers(object(), group_by = group_by(), num_markers = input$num_markers, selected_values = input$displayValues, marker_method = input$markerMethod, object_assay = input$dotFeature, featureType = featureType(), hide_pobjectdo = input$hidePobjectdo, unique_markers = input$uniqueMarkers, p_val_cutoff = input$pValCutoff, return_plotly = TRUE)
+        plot_markers(object(), group_by = group_by(), num_markers = input$num_markers, selected_values = input$displayValues, marker_method = input$markerMethod, object_experiment = input$dotFeature, featureType = featureType(), hide_pobjectdo = input$hidePobjectdo, unique_markers = input$uniqueMarkers, p_val_cutoff = input$pValCutoff, return_plotly = TRUE)
     })
 
     output$markerplot <- renderPlotly({
@@ -1021,13 +1021,13 @@ plotReadCount <- function(input, output, session, object, plot_types) {
         req(input$colorby)
 
         if (input$colorby == "louvain") {
-            if (query_assay(object(), "integrated")) {
-                assay <- "integrated"
+            if (query_experiment(object(), "integrated")) {
+                experiment <- "integrated"
             } else {
-                assay <- "gene"
+                experiment <- "gene"
             }
 
-            louvain_resolution <- paste0(assay, "_snn_res.", input$resolution)
+            louvain_resolution <- paste0(experiment, "_snn_res.", input$resolution)
             plot_readcount(object(), group_by = input$group_by, color.by = louvain_resolution, yscale = input$yScale, return_plotly = TRUE)
         } else if (input$colorby %in% purrr::flatten_chr(plot_types())) {
             plot_readcount(object(), group_by = input$group_by, color.by = input$colorby, yscale = input$yScale, return_plotly = TRUE)
@@ -1104,8 +1104,8 @@ allTranscripts <- function(input, output, session, object,
 
     observe({
         req(object())
-        updateSelectizeInput(session, "compositionGene", choices = get_features(object(), assay = "gene"), selected = "NRL", server = TRUE)
-        updateSelectizeInput(session, "embeddingGene", choices = get_features(object(), assay = "gene"), selected = "NRL", server = TRUE)
+        updateSelectizeInput(session, "compositionGene", choices = get_features(object(), experiment = "gene"), selected = "NRL", server = TRUE)
+        updateSelectizeInput(session, "embeddingGene", choices = get_features(object(), experiment = "gene"), selected = "NRL", server = TRUE)
 
         formatted_col_names <- colnames(get_cell_metadata(object())) %>%
             make_chevreul_clean_names()
@@ -1116,7 +1116,7 @@ allTranscripts <- function(input, output, session, object,
     transcripts <- reactive({
         req(object())
         req(input$embeddingGene)
-        if (query_assay(object(), "transcript")) {
+        if (query_experiment(object(), "transcript")) {
             get_transcripts_from_object(object(), input$embeddingGene, organism = organism_type())
         }
     })
@@ -1124,7 +1124,7 @@ allTranscripts <- function(input, output, session, object,
     observe({
         req(object())
         req(transcripts())
-        updateSelectizeInput(session, "embedding", choices = c("pca", "tsne", "umap"), selected = "umap", server = TRUE)
+        updateSelectizeInput(session, "embedding", choices = c("PCA", "TSNE", "UMAP"), selected = "UMAP", server = TRUE)
         updateSelectizeInput(session, "transcriptSelect", choices = transcripts(), server = TRUE)
     })
 
@@ -1194,8 +1194,8 @@ plotVelocityui <- function(id) {
             title = "Plot Veloctiy on Embedding",
             width = 12,
             selectizeInput(ns("embedding"), "dimensional reduction method",
-                choices = c("pca", "tsne", "umap"),
-                selected = "umap"
+                choices = c("PCA", "TSNE", "UMAP"),
+                selected = "UMAP"
             ),
             selectizeInput(ns("varSelect"), "Color by Variable", choices = NULL, multiple = FALSE),
             sliderInput(ns("resolution"), "Resolution of clustering algorithm (affects number of clusters)", min = 0.2, max = 2, step = 0.2, value = 0.6),
@@ -1230,7 +1230,7 @@ plotVelocity <- function(input, output, session, object, loom_path) {
     observe({
         req(object())
         updateSelectizeInput(session, "varSelect", choices = colnames(get_cell_metadata(object())), selected = "batch", server = TRUE)
-        updateSelectizeInput(session, "geneSelect", choices = get_features(object(), assay = "gene"), selected = "NRL", server = TRUE)
+        updateSelectizeInput(session, "geneSelect", choices = get_features(object(), experiment = "gene"), selected = "NRL", server = TRUE)
     })
 
     # reactive val adata ------------------------------
@@ -1244,10 +1244,10 @@ plotVelocity <- function(input, output, session, object, loom_path) {
                 html("scveloMessages", "")
                 message("Beginning")
 
-                if (query_assay(object(), "integrated")) {
-                    assay <- "integrated"
+                if (query_experiment(object(), "integrated")) {
+                    experiment <- "integrated"
                 } else {
-                    assay <- "gene"
+                    experiment <- "gene"
                 }
 
                 adata <- prep_scvelo(object(), loom_path, velocity_mode = input$velocityMode)
@@ -1275,13 +1275,13 @@ plotVelocity <- function(input, output, session, object, loom_path) {
     observe({
         req(adata())
 
-        if (query_assay(object(), "integrated")) {
-            assay <- "integrated"
+        if (query_experiment(object(), "integrated")) {
+            experiment <- "integrated"
         } else {
-            assay <- "gene"
+            experiment <- "gene"
         }
 
-        cluster_resolution <- paste0(assay, "_snn_res.", input$resolution)
+        cluster_resolution <- paste0(experiment, "_snn_res.", input$resolution)
 
         plot_scvelo(adata(), group.by = input$varSelect, plot_method = input$plotFormat)
         fig <- pyplot$gcf()
@@ -1293,10 +1293,10 @@ plotVelocity <- function(input, output, session, object, loom_path) {
         req(adata())
         req(input$geneSelect)
 
-        if (query_assay(object(), "integrated")) {
-            assay <- "integrated"
+        if (query_experiment(object(), "integrated")) {
+            experiment <- "integrated"
         } else {
-            assay <- "gene"
+            experiment <- "gene"
         }
         scvelo_expression(adata(), features = input$geneSelect)
 
@@ -1411,7 +1411,7 @@ pathwayEnrichment <- function(input, output, session, object, featureType) {
             }
         }
 
-        Misc(object())$enriched_pathways
+        metadata(object())$enriched_pathways
     })
 
     # UI element: choose source for pathway enrichement results (currently Enrichr or GSVA)
@@ -1577,7 +1577,7 @@ techInfo <- function(input, output, session, object) {
     }
     ## SingleCellExperiment
     if(is(object(), "SingleCellExperiment")){
-      SingleCellExperiment::Misc(object())
+      SingleCellExperiment::metadata(object())
     }
   })
 
@@ -1739,7 +1739,7 @@ plotCoverage <- function(input, output, session, object, plot_types, proj_dir, o
 
     observe({
         req(object())
-        updateSelectizeInput(session, "geneSelect", choices = get_features(object(), assay = "gene"), server = TRUE)
+        updateSelectizeInput(session, "geneSelect", choices = get_features(object(), experiment = "gene"), server = TRUE)
 
         formatted_col_names <- colnames(get_cell_metadata(object())) %>%
             make_chevreul_clean_names()
@@ -1772,7 +1772,7 @@ plotCoverage <- function(input, output, session, object, plot_types, proj_dir, o
             bigwig_tbl = bigwig_tbl(),
             group_by = input$varSelect,
             values_of_interest = input$displayvalues,
-            organism = Misc(object())$experiment$organism,
+            organism = metadata(object())$experiment$organism,
             mean_only = input$meanCoverage,
             rescale_introns = input$collapseIntrons,
             scale_y = input$yScale,
