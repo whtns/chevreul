@@ -2,7 +2,7 @@
 % Please edit documentation in R/update_seurat_from_child_metadata.R
 \name{reset_object_meta}
 \alias{reset_object_meta}
-\title{Reset Seurat Metadata}
+\title{Reset SingleCellExperiment Metadata}
 \usage{
 reset_object_meta(object, new_meta)
 }
@@ -15,5 +15,5 @@ reset_object_meta(object, new_meta)
 a single cell object with new metadata
 }
 \description{
-Reset Seurat Metadata
+Reset SingleCellExperiment Metadata
 }

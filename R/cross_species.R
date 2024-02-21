@@ -1,4 +1,4 @@
-#' Convert Seurat Objects from Mouse to Human
+#' Convert SingleCellExperiment Objects from Mouse to Human
 #'
 #' @param object Mouse object
 #'
@@ -26,8 +26,8 @@ convert_mouse_object_to_human <- function(object) {
     return(object)
 }
 
-#' Convert Seurat Objects from Human to Mouse
-#' @param object Human Seurat object
+#' Convert SingleCellExperiment Objects from Human to Mouse
+#' @param object Human SingleCellExperiment object
 #' @param ... to be passed to \code{convert_symbols_by_species}
 #'
 #' @return a single cell object
@@ -92,7 +92,7 @@ convert_symbols_by_species <- function(src_genes, src_species) {
     return(make.unique(dest_symbols[[2]]))
 }
 
-#' Integrate Seurat Objects from Mouse to Human
+#' Integrate SingleCellExperiment Objects from Mouse to Human
 #'
 #' @param mouse_object_list List of mouse single cell objects
 #' @param human_object_list List of human single cell objects
@@ -128,7 +128,7 @@ cross_species_integrate <- function(mouse_object_list, human_object_list){
 
 #' Update human gene symbols in object
 #'
-#' @param object A Seurat object
+#' @param object A SingleCellExperiment object
 #' @param assay Assay to use, Default = "gene"
 #'
 #' @return a single cell object
@@ -146,7 +146,7 @@ update_human_gene_symbols <- function(object, assay = "gene") {
 
     rownames(new_rownames) <- new_rownames$old_symbol
 
-    object[[assay]] <- Seurat::AddMetaData(object[[assay]], new_rownames)
+    object[[assay]] <- SingleCellExperiment::AddMetaData(object[[assay]], new_rownames)
 
     new_rownames <-
         new_rownames %>%

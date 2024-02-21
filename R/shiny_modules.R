@@ -53,9 +53,9 @@ plotViolinui <- function(id) {
 
 #' Plot Violin Server
 #'
-#' Plots a Violin plot of a single data (gene expression, metrics, etc.) in the server Seurat app.
+#' Plots a Violin plot of a single data (gene expression, metrics, etc.) in the server SingleCellExperiment app.
 #'
-#' @param object Seurat object
+#' @param object SingleCellExperiment object
 #' @param featureType Gene or Transcript
 #' @param organism_type Organism
 #'
@@ -636,7 +636,7 @@ diffexui <- function(id) {
             title = "Differential Expression Settings",
             radioButtons(ns("diffex_scheme"),
                 "Cells to Compare",
-                choiceNames = c("Seurat Cluster", "Custom Selection"), choiceValues = c("louvain", "custom"),
+                choiceNames = c("SingleCellExperiment Cluster", "Custom Selection"), choiceValues = c("louvain", "custom"),
                 selected = "louvain",
                 inline = TRUE
             ),
@@ -953,7 +953,7 @@ findMarkers <- function(input, output, session, object, plot_types, featureType)
 
     # observe({
     #   req(assay())
-    #   Seurat::DefaultAssay(object()) <- "gene"
+    #   SingleCellExperiment::DefaultAssay(object()) <- "gene"
     # })
 
     marker_plot_return <- eventReactive(input$plotDots, {
@@ -1575,9 +1575,9 @@ techInfo <- function(input, output, session, object) {
     if(is(object(), "SingleCellExperiment")){
       metadata(object())
     }
-    ## Seurat
-    if(is(object(), "Seurat")){
-      Seurat::Misc(object())
+    ## SingleCellExperiment
+    if(is(object(), "SingleCellExperiment")){
+      SingleCellExperiment::Misc(object())
     }
   })
 
@@ -1668,7 +1668,7 @@ techInfo <- function(input, output, session, object) {
         "<ul>",
         "<li><strong>chevreul version:</strong> ",
         misc()$experiment$technical_info$chevreul_version,
-        "<li><strong>Seurat version:</strong> ",
+        "<li><strong>SingleCellExperiment version:</strong> ",
         misc()$technical_info$object_version,
         "<li><strong>Session info:</strong> ",
         "</ul>",
@@ -1805,7 +1805,7 @@ plotCoverage <- function(input, output, session, object, plot_types, proj_dir, o
     )
 }
 
-#' Reformat Seurat Object Metadata UI
+#' Reformat SingleCellExperiment Object Metadata UI
 #'
 #' @noRd
 reformatMetadataDRui <- function(id) {
@@ -1836,7 +1836,7 @@ reformatMetadataDRui <- function(id) {
   )
 }
 
-#' Reformat Seurat Object Metadata Server
+#' Reformat SingleCellExperiment Object Metadata Server
 #'
 #' @param object a single cell object
 #'

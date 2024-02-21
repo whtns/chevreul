@@ -14,7 +14,7 @@ plot_violin(
 )
 }
 \arguments{
-\item{object}{A Seurat object}
+\item{object}{A SingleCellExperiment object}
 
 \item{plot_var}{Variable to group (color) cells by}
 

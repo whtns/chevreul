@@ -14,7 +14,7 @@ plot_feature(
 )
 }
 \arguments{
-\item{object}{A Seurat object}
+\item{object}{A SingleCellExperiment object}
 
 \item{embedding}{Dimensional reduction technique to be used}
 

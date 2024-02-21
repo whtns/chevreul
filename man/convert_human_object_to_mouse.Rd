@@ -2,12 +2,12 @@
 % Please edit documentation in R/cross_species.R
 \name{convert_human_object_to_mouse}
 \alias{convert_human_object_to_mouse}
-\title{Convert Seurat Objects from Human to Mouse}
+\title{Convert SingleCellExperiment Objects from Human to Mouse}
 \usage{
 convert_human_object_to_mouse(object, ...)
 }
 \arguments{
-\item{object}{Human Seurat object}
+\item{object}{Human SingleCellExperiment object}
 
 \item{...}{to be passed to \code{convert_symbols_by_species}}
 }
@@ -15,5 +15,5 @@ convert_human_object_to_mouse(object, ...)
 a single cell object
 }
 \description{
-Convert Seurat Objects from Human to Mouse
+Convert SingleCellExperiment Objects from Human to Mouse
 }

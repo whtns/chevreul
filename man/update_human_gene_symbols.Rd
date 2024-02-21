@@ -7,7 +7,7 @@
 update_human_gene_symbols(object, assay = "gene")
 }
 \arguments{
-\item{object}{A Seurat object}
+\item{object}{A SingleCellExperiment object}
 
 \item{assay}{Assay to use, Default = "gene"}
 }

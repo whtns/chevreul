@@ -1,4 +1,4 @@
-#' Regress Seurat Object by Given Set of Genes
+#' Regress SingleCellExperiment Object by Given Set of Genes
 #'
 #' @param object A object
 #' @param feature_set a set of features
@@ -33,7 +33,7 @@ regress_by_features <- function (object, feature_set, set_name, regress = TRUE)
             # else {
             #   default_assay <- "gene"
             # }
-            # Seurat::DefaultAssay(object) <- default_assay
+            # SingleCellExperiment::DefaultAssay(object) <- default_assay
             if (regress) {
               dec.nocycle <- modelGeneVar(object, block=colData(object)[["Phase"]])
               reg.nocycle <- regressBatches(object, batch=colData(object)[["Phase"]])

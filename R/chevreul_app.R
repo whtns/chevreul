@@ -222,11 +222,11 @@ chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "
             inline = TRUE,
             "Organism", choices = c("human", "mouse"), selected = organism_type
         ),
-        shinyFiles::shinyFilesButton("objectUpload", "Load a Seurat Dataset",
+        shinyFiles::shinyFilesButton("objectUpload", "Load a SingleCellExperiment Dataset",
             "Please select a .rds file",
             multiple = FALSE
         ),
-        shinyFiles::shinySaveButton("saveSeurat", "Save Current Dataset",
+        shinyFiles::shinySaveButton("saveSingleCellExperiment", "Save Current Dataset",
             "Save file as...",
             filetype = list(rds = "rds")
         ),
@@ -248,8 +248,8 @@ chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "
                 #   tabName = "pathwayEnrichment", icon = icon("sitemap")
             ), menuItem("Find Markers",
                 tabName = "findMarkers", icon = icon("bullhorn")
-            ), menuItem("Subset Seurat Input",
-                tabName = "subsetSeurat", icon = icon("filter")
+            ), menuItem("Subset SingleCellExperiment Input",
+                tabName = "subsetSingleCellExperiment", icon = icon("filter")
             ), menuItem("All Transcripts",
                 tabName = "allTranscripts", icon = icon("sliders-h")
             ), menuItem("RNA Velocity",
@@ -315,9 +315,9 @@ chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "
                 )
             ),
             tabItem(
-                tabName = "subsetSeurat",
-                h2("Subset Seurat Input") %>%
-                    default_helper(type = "markdown", content = "subsetSeurat"),
+                tabName = "subsetSingleCellExperiment",
+                h2("Subset SingleCellExperiment Input") %>%
+                    default_helper(type = "markdown", content = "subsetSingleCellExperiment"),
                 plotDimRedui("subset"),
                 chevreulBox(
                     title = "Subset Settings",
@@ -376,7 +376,7 @@ chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "
                         title = "Regress Features",
                         actionButton(
                             "regressAction",
-                            "Regress Seurat Objects By Genes"
+                            "Regress SingleCellExperiment Objects By Genes"
                         ),
                         checkboxInput("runRegression",
                             "Run Regression?",
@@ -431,11 +431,11 @@ chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "
         # setBookmarkExclude(names(list_of_inputs))
 
         onBookmark(function(state) {
-            state$values$uploadSeuratPath <- uploadSeuratPath()
+            state$values$uploadSingleCellExperimentPath <- uploadSingleCellExperimentPath()
         })
 
         onRestore(function(state) {
-            uploadSeuratPath(state$values$uploadSeuratPath[[1]])
+            uploadSingleCellExperimentPath(state$values$uploadSingleCellExperimentPath[[1]])
         })
 
         w <- waiter::Waiter$new()
@@ -478,7 +478,7 @@ chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "
 
         object <- reactiveVal()
         proj_dir <- reactiveVal()
-        uploadSeuratPath <- reactiveVal()
+        uploadSingleCellExperimentPath <- reactiveVal()
 
         if (!is.null(preset_project)) {
             proj_dir(preset_project)
@@ -520,28 +520,28 @@ chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "
                 input$objectUpload
             )
             print(file)
-            uploadSeuratPath(file$datapath)
+            uploadSingleCellExperimentPath(file$datapath)
         })
 
         observe({
-            req(uploadSeuratPath())
+            req(uploadSingleCellExperimentPath())
             print("uploaded")
             shiny::withProgress(
                 message = paste0("Uploading Data"),
                 value = 0,
                 {
                     shiny::incProgress(2 / 10)
-                    print(uploadSeuratPath())
-                    updated_object <- update_chevreul_object(object_path = uploadSeuratPath(), organism = organism)
+                    print(uploadSingleCellExperimentPath())
+                    updated_object <- update_chevreul_object(object_path = uploadSingleCellExperimentPath(), organism = organism)
                     object(updated_object)
                     shiny::incProgress(6 / 10)
 
                     organism <- case_when(
-                        stringr::str_detect(uploadSeuratPath(), "Hs") ~ "human",
-                        stringr::str_detect(uploadSeuratPath(), "Mm") ~ "mouse"
+                        stringr::str_detect(uploadSingleCellExperimentPath(), "Hs") ~ "human",
+                        stringr::str_detect(uploadSingleCellExperimentPath(), "Mm") ~ "mouse"
                     )
 
-                    print(uploadSeuratPath())
+                    print(uploadSingleCellExperimentPath())
                     print(names(object))
                     shiny::incProgress(8 / 10)
                 }
@@ -555,7 +555,7 @@ chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "
 
         observe({
             req(dataset_volumes())
-            shinyFiles::shinyFileSave(input, "saveSeurat",
+            shinyFiles::shinyFileSave(input, "saveSingleCellExperiment",
                 # roots = dataset_volumes(),
                 roots = c(Home = path(
                     proj_dir(),
@@ -564,17 +564,17 @@ chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "
                 session = session, restrictions = system.file(package = "base")
             )
         })
-        subSeuratPath <- eventReactive(input$saveSeurat, {
+        subSingleCellExperimentPath <- eventReactive(input$saveSingleCellExperiment, {
             req(object())
             savefile <- shinyFiles::parseSavePath(
                 dataset_volumes(),
-                input$saveSeurat
+                input$saveSingleCellExperiment
             )
             return(savefile$datapath)
         })
-        observeEvent(input$saveSeurat, {
+        observeEvent(input$saveSingleCellExperiment, {
             req(object())
-            req(subSeuratPath())
+            req(subSingleCellExperimentPath())
 
             shiny::withProgress(
                 message = paste0("Saving Data"),
@@ -584,7 +584,7 @@ chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "
                     shiny::incProgress(2 / 10)
                     saveRDS(
                         object(),
-                        subSeuratPath()
+                        subSingleCellExperimentPath()
                     )
                     shiny::incProgress(10 / 10)
                 }
@@ -696,7 +696,7 @@ chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "
                 },
                 message = function(m) {
                     html(id = "subsetMessages", html = paste0(
-                        "Subsetting Seurat Object: ",
+                        "Subsetting SingleCellExperiment Object: ",
                         m$message
                     ), add = FALSE)
                 }
@@ -736,7 +736,7 @@ chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "
                 },
                 message = function(m) {
                     html(id = "subsetMessages", html = paste0(
-                        "Subsetting Seurat Object: ",
+                        "Subsetting SingleCellExperiment Object: ",
                         m$message
                     ), add = FALSE)
                 }
@@ -841,10 +841,10 @@ chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "
 
 
         observe({
-            req(uploadSeuratPath())
+            req(uploadSingleCellExperimentPath())
             req(object())
 
-            proj_path <- str_replace(uploadSeuratPath(), "output.*", "")
+            proj_path <- str_replace(uploadSingleCellExperimentPath(), "output.*", "")
 
             proj_name <- path_file(proj_path)
             print(proj_name)

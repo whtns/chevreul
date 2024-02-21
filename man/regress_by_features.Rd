@@ -2,7 +2,7 @@
 % Please edit documentation in R/regress_features.R
 \name{regress_by_features}
 \alias{regress_by_features}
-\title{Regress Seurat Object by Given Set of Genes}
+\title{Regress SingleCellExperiment Object by Given Set of Genes}
 \usage{
 regress_by_features(object, feature_set, set_name, regress = TRUE)
 }
@@ -19,7 +19,7 @@ regress_by_features(object, feature_set, set_name, regress = TRUE)
 a single cell object with features regressed
 }
 \description{
-Regress Seurat Object by Given Set of Genes
+Regress SingleCellExperiment Object by Given Set of Genes
 }
 \examples{
 

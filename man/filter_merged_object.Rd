@@ -2,7 +2,7 @@
 % Please edit documentation in R/integrate.R
 \name{filter_merged_object}
 \alias{filter_merged_object}
-\title{Filter a Single Seurat Object}
+\title{Filter a Single SingleCellExperiment Object}
 \usage{
 filter_merged_object(object, filter_var, filter_val, .drop = .drop)
 }
@@ -19,5 +19,5 @@ filter_merged_object(object, filter_var, filter_val, .drop = .drop)
 a single cell object
 }
 \description{
-Filter a Single Seurat Object
+Filter a Single SingleCellExperiment Object
 }

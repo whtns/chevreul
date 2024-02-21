@@ -2,7 +2,7 @@
 % Please edit documentation in R/integrate.R
 \name{load_object_from_proj}
 \alias{load_object_from_proj}
-\title{Load Seurat Files from a signle project path}
+\title{Load SingleCellExperiment Files from a signle project path}
 \usage{
 load_object_from_proj(proj_dir, ...)
 }
@@ -15,5 +15,5 @@ load_object_from_proj(proj_dir, ...)
 a single cell object
 }
 \description{
-Load Seurat Files from a signle project path
+Load SingleCellExperiment Files from a signle project path
 }

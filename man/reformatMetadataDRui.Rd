@@ -2,7 +2,7 @@
 % Please edit documentation in R/data_edit.R
 \name{reformatMetadataDRui}
 \alias{reformatMetadataDRui}
-\title{Reformat Seurat Object Metadata UI}
+\title{Reformat SingleCellExeriment Object Metadata UI}
 \usage{
 reformatMetadataDRui(id)
 }
@@ -13,5 +13,5 @@ reformatMetadataDRui(id)
 UI to reformat the metadata of a single cell object
 }
 \description{
-Reformat Seurat Object Metadata UI
+Reformat SingleCellExeriment Object Metadata UI
 }

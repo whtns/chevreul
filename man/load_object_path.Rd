@@ -2,7 +2,7 @@
 % Please edit documentation in R/integrate.R
 \name{load_object_path}
 \alias{load_object_path}
-\title{Read in Gene and Transcript Seurat Objects}
+\title{Read in Gene and Transcript SingleCellExperiment Objects}
 \usage{
 load_object_path(proj_dir = getwd(), prefix = "unfiltered")
 }
@@ -15,5 +15,5 @@ load_object_path(proj_dir = getwd(), prefix = "unfiltered")
 a single cell object
 }
 \description{
-Read in Gene and Transcript Seurat Objects
+Read in Gene and Transcript SingleCellExperiment Objects
 }

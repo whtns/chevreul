@@ -5,7 +5,7 @@
 
 This package includes a set of Shiny apps for exploring single cell RNA
 datasets processed with
-<a href="https://github.com/satijalab/object" target="_blank" rel="noopener noreferrer">Seurat</a>
+<a href="https://github.com/satijalab/object" target="_blank" rel="noopener noreferrer">SingleCellExperiment</a>
 
 A demo using a human gene transcript dataset from Shayler et al. (link)
 is available
@@ -58,7 +58,7 @@ First, load Chevreul and all other packages required
 
 ``` r
 library(chevreul)
-library(Seurat)
+library(SingleCellExperiment)
 library(tidyverse)
 library(ggraph)
 ```
@@ -67,12 +67,12 @@ library(ggraph)
 
 Chevreul provides a single command to:
 
-- construct a Seurat object
+- construct a SingleCellExperiment object
 
 - filter genes by minimum expression and ubiquity
 
 - normalize and scale expression by any of several methods packaged in
-  Seurat
+  SingleCellExperiment
 
 ## Run clustering on a single object
 
@@ -90,7 +90,7 @@ clustered_object <- clustering_workflow(human_gene_transcript_object,
 ## Get a first look at a processed dataset using an interactive shiny app
 
 ``` r
-minimalSeuratApp(human_gene_transcript_object)
+minimalSingleCellExperimentApp(human_gene_transcript_object)
 ```
 
 ## Set up a object
@@ -105,10 +105,10 @@ head(human_meta)
 ```
 
 We can then create a object in the usual manner using
-`CreatSeuratObject` function
+`CreatSingleCellExperimentObject` function
 
 ``` r
-myobject <- CreateSeuratObject(human_count, assay = "gene", meta.data = human_meta)
+myobject <- CreateSingleCellExperimentObject(human_count, assay = "gene", meta.data = human_meta)
 ```
 
 ## Preprocess the object
@@ -138,8 +138,9 @@ myobject <- object_reduce_dimensions(myobject, assay = "RNA")
 ## Community detection by clustering
 
 Clustering analysis is performed via Louvain(default) or alternative
-algorithms available in Seurat. Clustering is performed at a range of
-resolutions with default value ranging from 0.2 to 2 and pca reduction
+algorithms available in SingleCellExperiment. Clustering is performed at
+a range of resolutions with default value ranging from 0.2 to 2 and pca
+reduction
 
 ``` r
 object <- object_cluster(object = Dim_Red_object, resolution = seq(0.2, 2, by = 0.2))

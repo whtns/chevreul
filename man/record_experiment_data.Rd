@@ -23,3 +23,7 @@ a single cell object
 \description{
 Records miscellaneous data
 }
+\examples{
+record_experiment_data(human_gene_transcript_sce)
+
+}

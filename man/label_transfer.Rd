@@ -2,7 +2,7 @@
 % Please edit documentation in R/reference_integrate.R
 \name{label_transfer}
 \alias{label_transfer}
-\title{Transfer Labels Between Seurat Objects}
+\title{Transfer Labels Between SingleCellExperiment Objects}
 \usage{
 label_transfer(ref_object, query_object, ref_name = NULL, query_name = NULL)
 }
@@ -19,5 +19,5 @@ label_transfer(ref_object, query_object, ref_name = NULL, query_name = NULL)
 a single cell object
 }
 \description{
-Transfer Labels Between Seurat Objects
+Transfer Labels Between SingleCellExperiment Objects
 }

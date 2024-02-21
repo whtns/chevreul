@@ -13,7 +13,7 @@ annotate_cell_cycle(object)
 a single cell object
 }
 \description{
-Annotate Cell Cycle for Gene and Transcript Seurat Objects
+Annotate Cell Cycle for Gene and Transcript SingleCellExperiment Objects
 }
 \examples{
 human_gene_phase<-annotate_cell_cycle(human_gene_transcript_sce)

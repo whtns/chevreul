@@ -1,3 +1,5 @@
-test_that("multiplication works", {
-  expect_equal(2 * 2, 4)
+test_that("percentage mito added", {
+  expect_error(
+    add_percent_mito(human_gene_transcript_sce),
+    NA)
 })

@@ -1,4 +1,4 @@
-#' Convert a Seurat Object to a Monocle Cell Data Set
+#' Convert a SingleCellExperiment Object to a Monocle Cell Data Set
 #'
 #' @param object
 #'
@@ -22,9 +22,9 @@ convert_object_to_cds <- function(object, resolution = 1, min_expression = 0.05)
 
     DefaultAssay(object) <- default_assay
 
-    expression_matrix <- Seurat::GetAssayData(object, slot = "data", assay = "gene")
+    expression_matrix <- SingleCellExperiment::GetAssayData(object, slot = "data", assay = "gene")
 
-    count_matrix <- Seurat::GetAssayData(object, slot = "counts", assay = "gene")
+    count_matrix <- SingleCellExperiment::GetAssayData(object, slot = "counts", assay = "gene")
 
     count_matrix <- count_matrix[row.names(expression_matrix), ]
     count_matrix <- count_matrix[, Matrix::colSums(count_matrix) != 0]
@@ -848,7 +848,7 @@ plot_cells <- function(cds, x = 1, y = 2, reduction_method = c(
 #'
 #' @examples
 threshold_monocle_genes <- function(object, cds, min_expression = 0.05) {
-    agg_mat <- Seurat::GetAssayData(object, assay = "gene") %>%
+    agg_mat <- SingleCellExperiment::GetAssayData(object, assay = "gene") %>%
         as.matrix()
 
     lgl_agg_mat <- agg_mat > min_expression
@@ -1073,14 +1073,14 @@ monocleui <- function(id) {
   tagList(
     fluidRow(
       chevreulBox(
-        title = "Seurat Data",
+        title = "SingleCellExperiment Data",
         plotlyOutput(ns("objectdimplot"), height = 500),
         width = 6
         # plotDimRedui(ns("plotdimred")
       ),
       chevreulBox(
         title = "Pobjectdotime Settings",
-        actionButton(ns("subsetSeurat"), "Subset Seurat before Pobjectdotime Calculation"),
+        actionButton(ns("subsetSingleCellExperiment"), "Subset SingleCellExperiment before Pobjectdotime Calculation"),
         actionButton(ns("calcCDS"), "Calculate Pobjectdotime"),
         sliderInput(ns("cdsResolution"), "Resolution of clustering algorithm (affects number of clusters)",
                     min = 0.2, max = 2, step = 0.2, value = 0.6
@@ -1218,7 +1218,7 @@ monocle <- function(input, output, session, object, plot_types, featureType,
   #            organism_type, reductions)
 
 
-  observeEvent(input$subsetSeurat, {
+  observeEvent(input$subsetSingleCellExperiment, {
     req(object_monocle())
 
     d <- event_data("plotly_selected", priority = "event")

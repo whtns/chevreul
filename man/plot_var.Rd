@@ -16,7 +16,7 @@ plot_var(
 )
 }
 \arguments{
-\item{object}{A Seurat object}
+\item{object}{A SingleCellExperiment object}
 
 \item{group}{Name of one or more metadata columns to group (color) cells by.}
 

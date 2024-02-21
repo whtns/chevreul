@@ -16,7 +16,7 @@ getEnrichedPathways(
 )
 }
 \arguments{
-\item{object}{Seurat object.
+\item{object}{SingleCellExperiment object.
 about sample; defaults to 'sample'.}
 
 \item{column_cluster}{Column in object@meta.data that contains information
@@ -36,7 +36,7 @@ original is out-of-service; defaults to
 'http://amp.pharm.mssm.edu/Enrichr/enrich'.}
 }
 \value{
-Seurat object with Enrichr results for samples and clusters stored in
+SingleCellExperiment object with Enrichr results for samples and clusters stored in
 Misc(object)$enriched_pathways$enrichr
 }
 \description{
@@ -65,5 +65,5 @@ Roman Hillje, modified by Kevin Stachelek
 }
 \keyword{Cerebro}
 \keyword{Enrichr}
-\keyword{Seurat}
+\keyword{SingleCellExperiment}
 \keyword{scRNAseq}

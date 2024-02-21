@@ -235,7 +235,7 @@ minimalSceApp <- function(single_cell_object = panc8, loom_path = NULL, appTitle
         reductions <- reactive({
             req(object())
 
-            if (is(object(), "Seurat")) {
+            if (is(object(), "SingleCellExperiment")) {
                 names(object()@reductions)
             } else if (is(object(), "SingleCellExperiment")) {
                 SingleCellExperiment::reducedDimNames(object())

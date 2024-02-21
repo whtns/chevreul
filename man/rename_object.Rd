@@ -7,7 +7,7 @@
 rename_object(object, new_name)
 }
 \arguments{
-\item{object}{A Seurat object}
+\item{object}{A SingleCellExperiment object}
 
 \item{new_name}{New name to assign}
 }

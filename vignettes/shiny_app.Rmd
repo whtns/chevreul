@@ -37,7 +37,7 @@ library(kableExtra)
 ```
 
 
-Chevreul allows exploratory data analysis of a single cell dataset processed using `Seurat` with the command `minimalSeuratApp()`
+Chevreul allows exploratory data analysis of a single cell dataset processed using `SingleCellExperiment` with the command `minimalSingleCellExperimentApp()`
 
 Here we'll provide a brief tour of this app organized by section with app functions organized as tabs along the sidebar upon startup.
 
@@ -52,7 +52,7 @@ Metadata addition can be executed by uploading a csv with row names matching cel
 
 #### Dimensional reduction plots 
 chevreul provides visualization of embeddings in PCA, tSNE, and UMAP for scRNAseq data summarized at the gene and transcript level. 
-Plots can be customized to display cell metadata and the results of community detection clustering by Louvain or Leiden algorithms as implemented in Seurat. 
+Plots can be customized to display cell metadata and the results of community detection clustering by Louvain or Leiden algorithms as implemented in SingleCellExperiment. 
 In addition, gene and transcript feature expression can be overlaid on embedding plots both at the gene and transcript level. 
 
 ![](images/louvain_and_feature_umap_plot.png)
@@ -116,7 +116,7 @@ Marker features based on louvain/leiden cluster identities or cell metadata can 
 
 ![](images/marker_gene_plot.png)
 
-### Subset Seurat Input
+### Subset SingleCellExperiment Input
 
 It is often useful to subset a single cell data set based on cell metadata whether experimentally determined (age, collection method, etc.) or derived from analysis (quality control metrics, annotated cell type)
 

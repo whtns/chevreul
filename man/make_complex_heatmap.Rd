@@ -2,7 +2,7 @@
 % Please edit documentation in R/plotting.R
 \name{make_complex_heatmap}
 \alias{make_complex_heatmap}
-\title{Plot Annotated Complexheatmap from Seurat object}
+\title{Plot Annotated Complexheatmap from SingleCellExperiment object}
 \usage{
 make_complex_heatmap(
   object,
@@ -19,7 +19,7 @@ make_complex_heatmap(
 )
 }
 \arguments{
-\item{object}{A Seurat object}
+\item{object}{A SingleCellExperiment object}
 
 \item{features}{Vector of features to plot. Features can come}
 
@@ -45,7 +45,7 @@ make_complex_heatmap(
 a complexheatmap
 }
 \description{
-Plot Annotated Complexheatmap from Seurat object
+Plot Annotated Complexheatmap from SingleCellExperiment object
 }
 \examples{
 top_25_features <- get_variable_features(human_gene_transcript_sce)[1:25]

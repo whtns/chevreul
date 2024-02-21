@@ -63,8 +63,8 @@
 #' @title Get enriched pathways based on marker genes from EnrichR.
 #' @description This function uses the enrichR API to look for enriched pathways
 #' in marker gene sets of samples and clusters.
-#' @keywords Cerebro scRNAseq Seurat Enrichr
-#' @param object Seurat object.
+#' @keywords Cerebro scRNAseq SingleCellExperiment Enrichr
+#' @param object SingleCellExperiment object.
 #' about sample; defaults to 'sample'.
 #' @param column_cluster Column in object@meta.data that contains information
 #' about cluster; defaults to 'cluster'.
@@ -78,7 +78,7 @@
 #' original is out-of-service; defaults to
 #' 'http://amp.pharm.mssm.edu/Enrichr/enrich'.
 #' @export
-#' @return Seurat object with Enrichr results for samples and clusters stored in
+#' @return SingleCellExperiment object with Enrichr results for samples and clusters stored in
 #' Misc(object)$enriched_pathways$enrichr
 #' @import dplyr
 #' @importFrom rlang .data
@@ -113,10 +113,10 @@ getEnrichedPathways <- function(object,
     adj_p_cutoff = 0.05,
     max_terms = 100,
     URL_API = "http://amp.pharm.mssm.edu/Enrichr/enrich") {
-    ## check if Seurat is installed
-    if (!requireNamespace("Seurat", quietly = TRUE)) {
+    ## check if SingleCellExperiment is installed
+    if (!requireNamespace("SingleCellExperiment", quietly = TRUE)) {
         stop(
-            "Package 'Seurat' needed for this function to work. Please install it.",
+            "Package 'SingleCellExperiment' needed for this function to work. Please install it.",
             call. = FALSE
         )
     }
@@ -255,7 +255,7 @@ getEnrichedPathways <- function(object,
         )
     }
     ## ---------------------------------------------------------------------------#
-    ## merge results, add to Seurat object and return Seurat object
+    ## merge results, add to SingleCellExperiment object and return SingleCellExperiment object
     ## ---------------------------------------------------------------------------#
     results <- list(
         by_cluster = results_by_cluster,
@@ -268,7 +268,7 @@ getEnrichedPathways <- function(object,
     Misc(object)$enriched_pathways$enrichr <- results
 
     ## --------------------------------------------------------------------------##
-    ## return Seurat object
+    ## return SingleCellExperiment object
     ## --------------------------------------------------------------------------##
     return(object)
 }
