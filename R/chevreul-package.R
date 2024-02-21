@@ -3,6 +3,7 @@
 
 ## usethis namespace: start
 #' @importFrom AnnotationDbi mapIds
+#' @importFrom batchelor NoCorrectParam
 #' @importFrom clustree clustree
 #' @importFrom ComplexHeatmap draw
 #' @importFrom ComplexHeatmap Heatmap
@@ -66,6 +67,7 @@
 #' @importFrom janitor make_clean_names
 #' @importFrom methods slot
 #' @importFrom methods slot<-
+#' @importFrom Nebulosa plot_density
 #' @importFrom patchwork wrap_plots
 #' @importFrom plotly config
 #' @importFrom plotly event_data

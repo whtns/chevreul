@@ -47,7 +47,7 @@ chevreulBox <- function(title = "", ...) {
 #' @importFrom shinyWidgets dropdownButton
 #'
 #' @noRd
-dropdownButton <- function(inputId, ...) {
+chevreulDropDownButton <- function(inputId, ...) {
     tagList(
         dropdownButton(
             inputId = inputId,

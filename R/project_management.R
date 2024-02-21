@@ -75,5 +75,7 @@ combine_looms <- function(projectPaths, newProjectPath) {
 
     selected_looms <- path(projectPaths, "output", "velocyto", loom_filenames)
 
-    if (all(fs::is_file(selected_looms))) loompy$combine(selected_looms, newProjectPath)
+    file_not_dir <- function(f){file.exists(f) && !dir.exists(f)}
+
+    if (all(file_not_dir(selected_looms))) loompy$combine(selected_looms, newProjectPath)
 }

@@ -15,7 +15,7 @@ plotClustree_UI <- function(id) {
 plotClustree <- function(input, output, session, object) {
     # set appropriate experiment
     experiment = reactive({
-      ifelse("integrated" %in% names(object()@experiments), "integrated", "gene")
+      ifelse(query_experiment(object(), "integrated"), "integrated", "gene")
     })
 
     output$clustree <- renderPlot({
@@ -442,7 +442,7 @@ plotDimRedui <- function(id) {
     ns <- NS(id)
     chevreulBox(
         title = "Embedding",
-        dropdownButton(
+        chevreulDropDownButton(
             ns("dimPlotSettings"),
             selectizeInput(ns("embedding"), "Embedding", choices = NULL, selected = NULL),
             sliderInput(ns("dotSize"), "Size of Points in UMAP", min = 0.5, max = 2, step = 0.1, value = 1),
@@ -910,7 +910,7 @@ findMarkers <- function(input, output, session, object, plot_types, featureType)
 
     observe({
         req(object())
-        updateSelectizeInput(session, "dotFeature", choices = names(object()@experiments), selected = "gene", server = TRUE)
+        updateSelectizeInput(session, "dotFeature", choices = c(mainExpName(object()), altExpNames(object())), selected = "gene", server = TRUE)
     })
 
     output$dplottype <- renderUI({
@@ -1692,7 +1692,7 @@ plotCoverage_UI <- function(id) {
             downloadButton(ns("downloadPlot"), "Download Coverage Plot"),
             uiOutput(ns("displayvaluesui")),
             br(),
-            dropdownButton(
+            chevreulDropDownButton(
                 ns("coveragePlotSettings"),
                 checkboxInput(ns("collapseIntrons"), "Collapse Introns", value = TRUE),
                 checkboxInput(ns("meanCoverage"), "Summarize Coverage to Mean", value = TRUE),

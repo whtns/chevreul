@@ -112,6 +112,8 @@ cross_species_integrate <- function(mouse_object_list, human_object_list){
 
     integrated_object <- object_integrate(object_list)
 
+    integrated_object <- object_reduce_dimensions(integrated_object)
+
     # cluster merged objects
     integrated_object <- object_cluster(integrated_object, resolution = seq(0.2, 2.0, by = 0.2))
 

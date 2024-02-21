@@ -7,7 +7,7 @@
 #' @export
 #'
 #' @examples
-#' splitByCol(human_gene_transcript_sce, "batch")
+#' splitByCol(human_gene_transcript_sce, "Prep.Method")
 splitByCol <- function(x, f = "batch") {
 
   f <- colData(x)[[f]]
@@ -98,8 +98,6 @@ object_integrate <- function(object_list, organism = "human", ...) {
 #' @examples
 object_cluster <- function(object = object, resolution = 0.6, custom_clust = NULL, reduction = "PCA", algorithm = 1, ...) {
         message(paste0("[", format(Sys.time(), "%H:%M:%S"), "] Clustering Cells..."))
-        # return list of graph object with KNN (SNN?)
-        # object <- scran::buildKNNGraph(x = object, use.dimred = reduction)
         if (length(resolution) > 1) {
             for (i in resolution) {
                 message(paste0("clustering at ", i, " resolution"))
