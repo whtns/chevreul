@@ -301,7 +301,7 @@ integrateProj <- function(input, output, session, proj_matrices, object, proj_di
                 html("integrationMessages", "")
                 message("Beginning")
                 message(selectedProjects())
-                batches <- path(selectedProjects(), "output", "seurat", "unfiltered_object.rds") %>%
+                batches <- path(selectedProjects(), "output", "singlecellexperiment", "unfiltered_object.rds") %>%
                     map(readRDS)
 
                 names(batches) <- names(selectedProjects())
@@ -520,9 +520,10 @@ plotDimRed <- function(input, output, session, object, plot_types, featureType,
     })
     observe({
         req(prefill_feature())
+      req(featureType())
         req(object())
         updateSelectizeInput(session, "customFeature",
-            choices = get_features(object()),
+            choices = get_features(object(), featureType()),
             selected = prefill_feature(), server = TRUE
         )
     })
@@ -1148,6 +1149,7 @@ allTranscripts <- function(input, output, session, object,
 
     pList <- reactive({
         req(transcripts())
+      req(input$embedding)
         pList <- plot_all_transcripts(object(), transcripts(), input$embedding, from_gene = FALSE, combine = FALSE)
     })
 

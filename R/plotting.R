@@ -510,7 +510,7 @@ plot_all_transcripts <- function(object, features, embedding = "UMAP", from_gene
             features <- genes_to_transcripts(features)
         }
         features <- features[features %in% rownames(altExp(object, "transcript"))]
-        transcript_cols <- experiment(altExp(object, "transcript"))[features, ]
+        transcript_cols <- assay(altExp(object, "transcript"))[features, ]
         colData(object)[features] <- t(as.matrix(transcript_cols))
         # plot_out <- plotReducedDim(altExp(object), features = features, dimred = embedding)
         plot_out <- map(paste0(features), ~ plot_feature(object, embedding = embedding, features = .x, return_plotly = FALSE)) %>% set_names(features)
