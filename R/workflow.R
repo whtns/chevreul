@@ -36,12 +36,6 @@ integration_workflow <-  function(batches, excluded_cells = NULL, resolution = s
         merged_batches <- object_integration_pipeline(batches, resolution = resolution, organism = "human", ...)
         metadata(merged_batches)$batches <- names(batches)
 
-        # # cross species
-        # mouse_object_list <- batches[names(organisms[organisms == "mouse"])]
-        # human_object_list <- batches[names(organisms[organisms == "human"])]
-        # merged_batches <- cross_species_integrate(mouse_object_list = mouse_object_list, human_object_list = human_object_list)
-        # metadata(merged_batches)$batches <- names(batches)
-
         merged_batches <- record_experiment_data(merged_batches, experiment_name, organism)
 
         return(merged_batches)
@@ -64,10 +58,8 @@ integration_workflow <-  function(batches, excluded_cells = NULL, resolution = s
 #' @examples
 #' clustering_workflow(human_gene_transcript_sce)
 clustering_workflow <-  function(object, excluded_cells, resolution = seq(0.2, 2.0, by = 0.2), organism = "human", experiment_name = "default_experiment", ...) {
-        object <- object_pipeline(object, resolution = resolution, organism = organism, ...)
+        object <- object_pipeline(object, resolution = resolution, ...)
 
         object <- record_experiment_data(object, experiment_name, organism)
-
-        # save_object(feature_objects, proj_dir = proj_dir, ...)
     }
 

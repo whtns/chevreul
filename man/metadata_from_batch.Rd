@@ -23,3 +23,8 @@ a tibble with cell level metadata from a single cell object
 \description{
 Retrieve Metadata from Batch
 }
+\examples{
+
+\donttest{metadata_from_batch(human_gene_transcript_sce)}
+
+}

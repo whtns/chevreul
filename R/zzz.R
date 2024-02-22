@@ -37,7 +37,7 @@ pyplot <- NULL
 #' @param method deterministic, stochastic, or dynamical
 #' @param conda conda env
 #'
-#' @return
+#' @return package installed
 #' @export
 #'
 #' @examples

@@ -9,6 +9,9 @@ get_feature_types(object)
 \arguments{
 \item{object}{}
 }
+\value{
+vector of feature types in an object
+}
 \description{
 Get Feature Types
 }

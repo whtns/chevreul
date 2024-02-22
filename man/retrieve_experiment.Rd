@@ -7,7 +7,12 @@
 retrieve_experiment(object, experiment)
 }
 \arguments{
-\item{experiment}{}
+\item{object}{a single cell object}
+
+\item{experiment}{an experiment name}
+}
+\value{
+Main or alt experiment in an object
 }
 \description{
 Retrieve Assay

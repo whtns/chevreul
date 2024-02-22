@@ -7,7 +7,12 @@
 query_experiment(object, experiment)
 }
 \arguments{
-\item{experiment}{}
+\item{object}{a single cell object}
+
+\item{experiment}{an experiment name}
+}
+\value{
+logical scalar indicating if experiment is present in object
 }
 \description{
 Query Assay

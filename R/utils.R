@@ -21,32 +21,6 @@ replace_object_metadata <- function(object, datapath) {
         return(object)
     }
 
-#' Reformat object Metadata
-#'
-#' Reformat object Metadata by Coalesced Columns
-#'
-#' @param object A SingleCellExperiment object
-#' @param cols Columns
-#' @param new_col New columns
-#'
-#' @return updated cell level metadata
-#' @export
-#' @examples
-combine_cols <- function(object, cols, new_col) {
-        new_col <- make_clean_names(new_col)
-        drop_cols <- cols[!cols == new_col]
-        na_cols <- map_lgl(cols, ~ all(is.na(object[[.x]])))
-        cols <- cols[!na_cols]
-        meta <- rownames_to_column(get_cell_metadata(object)) %>%
-            mutate_at(vars(one_of(cols)), as.character) %>%
-            mutate(`:=`(!!new_col, coalesce(!!!syms(cols)))) %>%
-            select(-drop_cols) %>%
-            column_to_rownames(var = "rowname") %>%
-            identity()
-
-        return(meta)
-    }
-
 #' Get Transcripts in object
 #'
 #' Get transcript ids in objects for one or more gene of interest
@@ -162,6 +136,12 @@ object_calcn <- function(object) {
 #' @return a single cell object
 #' @export
 #' @examples
+#'
+#' \donttest{
+#' updated_table <- read_csv(system.file("extdata", "new_meta.csv", package="chevreul"))
+#'
+#' propagate_spreadsheet_changes(updated_table, human_gene_transcript_sce)
+#' }
 propagate_spreadsheet_changes <- function(updated_table, object) {
     meta <- updated_table
 
@@ -365,6 +345,9 @@ make_bigwig_db <- function(new_project = NULL, cache_location = "~/.cache/chevre
 #'
 #' @return a tibble with cell level metadata from a single cell object
 #' @examples
+#'
+#' \donttest{metadata_from_batch(human_gene_transcript_sce)}
+#'
 metadata_from_batch <- function(batch, projects_dir = "/dataVolume/storage/single_cell_projects",
     db_path = "single-cell-projects.db") {
     mydb <- dbConnect(SQLite(), path(projects_dir, db_path))

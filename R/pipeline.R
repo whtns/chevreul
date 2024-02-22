@@ -110,10 +110,10 @@ object_pipeline <- function(object, experiment = "gene", resolution = 0.6, reduc
 
 
         # annotate cell cycle scoring to objects
-        object <- annotate_cell_cycle(object, organism = organism, ...)
+        object <- annotate_cell_cycle(object, ...)
 
         # annotate mitochondrial percentage in object metadata
-        object <- add_percent_mito(object, organism = organism)
+        object <- add_percent_mito(object, ...)
 
         return(object)
     }
