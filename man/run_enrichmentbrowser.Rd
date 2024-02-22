@@ -29,3 +29,9 @@ a list of enrichmentbrowser output
 \description{
 Run Enrichment Browser on Differentially Expressed Genes
 }
+\examples{
+
+donttest{run_enrichmentbrowser(human_gene_transcript_sce)}
+
+
+}

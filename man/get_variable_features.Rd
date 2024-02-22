@@ -17,3 +17,6 @@ variable features from a single cell object
 \description{
 Get variable features
 }
+\examples{
+get_variable_features(human_gene_transcript_sce)
+}

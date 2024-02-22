@@ -2,12 +2,13 @@
 #'
 #' Create a sqlite database of bigwig files matching cell ids in objects
 #'
-#' @param bam_files bam files
+#' @param bam_files vector of paths to bam files
 #' @param bigwig_db bigwig database
 #'
 #' @return a path to a bigwig file sqlite database
 #' @export
 #' @examples
+#' \donttest{build_bigwig_db()}
 build_bigwig_db <- function(bam_files, bigwig_db = "~/.cache/chevreul/bw-files.db") {
     bam_files <- normalizePath(bam_files)
 
@@ -34,6 +35,7 @@ build_bigwig_db <- function(bam_files, bigwig_db = "~/.cache/chevreul/bw-files.d
 #' @return a vector of bigwigs file paths
 #' @export
 #' @examples
+#' \donttest{load_bigwigs(human_gene_transcript_sce)}
 load_bigwigs <- function(object, bigwig_db = "~/.cache/chevreul/bw-files.db") {
     con <- dbConnect(SQLite(), dbname = bigwig_db)
 
@@ -79,6 +81,7 @@ load_bigwigs <- function(object, bigwig_db = "~/.cache/chevreul/bw-files.db") {
 #' @importFrom EnsDb.Hsapiens.v86 EnsDb.Hsapiens.v86
 #' @importFrom EnsDb.Mmusculus.v79 EnsDb.Mmusculus.v79
 #' @examples
+#' \donttest{plot_gene_coverage_by_var()}
 plot_gene_coverage_by_var <- function(genes_of_interest = "NRL",
     cell_metadata,
     bigwig_tbl,

@@ -82,7 +82,7 @@ plotViolin <- function(input, output, session, object, featureType, organism_typ
         req(prefill_feature())
         req(object())
         updateSelectizeInput(session, "customFeature",
-            choices = genes_from_object(object()),
+            choices = rownames(object()),
             selected = prefill_feature(), server = TRUE
         )
     })
@@ -805,7 +805,7 @@ diffex <- function(input, output, session, object, featureType, selected_cells, 
     de_results <- eventReactive(input$diffex, {
         if (input$diffex_scheme == "louvain") {
             run_object_de(object(), input$cluster1, input$cluster2,
-                resolution = input$objectResolution, diffex_scheme = "louvain", input$featureType, tests = input$diffex_method
+                resolution = input$objectResolution, diffex_scheme = input$diffex_scheme, input$featureType, tests = input$diffex_method
             )
         } else if (input$diffex_scheme == "custom") {
             # req(custom_cluster1())
@@ -820,7 +820,7 @@ diffex <- function(input, output, session, object, featureType, selected_cells, 
             ))
             run_object_de(object(), cluster1, cluster2,
                 input$customResolution,
-                diffex_scheme = "feature", input$featureType, tests = input$diffex_method
+                diffex_scheme = input$diffex_scheme, input$featureType, tests = input$diffex_method
             )
         }
     })
@@ -877,7 +877,7 @@ diffex <- function(input, output, session, object, featureType, selected_cells, 
 #' Find Markers UI
 #'
 #' @noRd
-findMarkersui <- function(id) {
+chevreulMarkersui <- function(id) {
     ns <- NS(id)
     tagList(
         chevreulBox(
@@ -905,7 +905,7 @@ findMarkersui <- function(id) {
 #' @param object a single cell object
 #'
 #' @noRd
-findMarkers <- function(input, output, session, object, plot_types, featureType) {
+chevreulMarkers <- function(input, output, session, object, plot_types, featureType) {
     ns <- session$ns
 
     observe({
@@ -1925,7 +1925,7 @@ reformatMetadataDR <- function(input, output, session, object, featureType = "ge
         return(NULL)
       }
 
-      reformatted_object <- format_new_metadata(object(), inFile$datapath)
+      reformatted_object <- replace_object_metadata(object(), inFile$datapath)
       object(reformatted_object)
     } else if (input$updateMethod == "spreadsheet") {
       reformatted_object <- propagate_spreadsheet_changes(values$data_active, object())

@@ -15,3 +15,8 @@ a table of marker genes
 \description{
 Enframe Markers
 }
+\examples{
+marker_table <- metadata(human_gene_transcript_sce)$markers[["batch"]]
+enframe_markers(marker_table)
+
+}

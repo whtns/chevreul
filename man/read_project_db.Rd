@@ -5,15 +5,12 @@
 \title{Read a database of chevreul projects}
 \usage{
 read_project_db(
-  projects_dir = NULL,
   cache_location = "~/.cache/chevreul",
   sqlite_db = "single-cell-projects.db",
   verbose = TRUE
 )
 }
 \arguments{
-\item{projects_dir}{project directory}
-
 \item{cache_location}{Path to cache "~/.cache/chevreul"}
 
 \item{sqlite_db}{sqlite db}
@@ -25,4 +22,7 @@ a tibble with single cell objects
 }
 \description{
 Reads database of chevreul projects to a data frame
+}
+\examples{
+\donttest{read_project_db()}
 }

@@ -23,6 +23,4 @@ Find all markers at a range of resolutions
 }
 \examples{
 markers_stashed_object <- find_all_markers(human_gene_transcript_sce)
-marker_genes <- metadata(markers_stashed_object)[["markers"]]
-str(marker_genes)
 }

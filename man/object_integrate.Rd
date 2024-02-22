@@ -22,6 +22,6 @@ an integrated single cell object
 Batch Correct Multiple Single Cell Objects
 }
 \examples{
-batches <- splitByCol(human_gene_transcript_sce, "Prep.Method")
+batches <- splitByCol(human_gene_transcript_sce, "batch")
 object_integrate(batches)
 }

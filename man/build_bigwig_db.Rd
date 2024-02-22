@@ -7,7 +7,7 @@
 build_bigwig_db(bam_files, bigwig_db = "~/.cache/chevreul/bw-files.db")
 }
 \arguments{
-\item{bam_files}{bam files}
+\item{bam_files}{vector of paths to bam files}
 
 \item{bigwig_db}{bigwig database}
 }
@@ -16,4 +16,7 @@ a path to a bigwig file sqlite database
 }
 \description{
 Create a sqlite database of bigwig files matching cell ids in objects
+}
+\examples{
+\donttest{build_bigwig_db()}
 }

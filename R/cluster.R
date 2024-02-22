@@ -18,16 +18,6 @@
 #'
 object_preprocess <- function (experiment, scale = TRUE, normalize = TRUE, features = NULL, legacy_settings = FALSE, ...)
           {
-            # experiment <- computeLibraryFactors(experiment)
-            # if (normalize) {
-            #   experiment <- logNormCounts(experiment)
-            # }
-            #
-            # experiment <- modelGeneVar(experiment)
-            #
-            # if (scale) {
-            # }
-
             clusters <- quickCluster(experiment)
             experiment <- computeSumFactors(experiment, clusters=clusters)
             # summary(sizeFactors(experiment))
@@ -39,16 +29,15 @@ object_preprocess <- function (experiment, scale = TRUE, normalize = TRUE, featu
             # Get the top 10% of genes.
             top.hvgs <- getTopHVGs(dec, prop=0.1)
             experiment <- runPCA(experiment, subset_row=top.hvgs)
-            # ncol(reducedDim(experimentd, "PCA"))
+
             output <- getClusteredPCs(reducedDim(experiment))
-            # reducedDim(experiment, "PCAsub") <- reducedDim(experiment, "PCA")[,1:npcs,drop=FALSE]
-            # npcs
-            # In this case, using the PCs that we chose from getClusteredPCs().
+
             g1 <- buildSNNGraph(experiment, use.dimred="PCA")
 
 
             return(experiment)
 }
+
 
 #' Find All Markers
 #'
@@ -64,8 +53,6 @@ object_preprocess <- function (experiment, scale = TRUE, normalize = TRUE, featu
 #'
 #' @examples
 #' markers_stashed_object <- find_all_markers(human_gene_transcript_sce)
-#' marker_genes <- metadata(markers_stashed_object)[["markers"]]
-#' str(marker_genes)
 find_all_markers <- function(object, group_by = NULL, experiment = "gene", ...) {
         if (is.null(group_by)) {
             resolutions <- colnames(get_cell_metadata(object))[grepl(paste0(experiment, "_snn_res."), colnames(get_cell_metadata(object)))]
@@ -94,7 +81,8 @@ find_all_markers <- function(object, group_by = NULL, experiment = "gene", ...) 
 #'
 #' @return a table of marker genes
 #' @examples
-#'
+#' marker_table <- metadata(human_gene_transcript_sce)$markers[["batch"]]
+#' enframe_markers(marker_table)
 #'
 enframe_markers <- function(marker_table) {
     marker_table %>%

@@ -17,3 +17,6 @@ a renamed single cell object
 \description{
 Give a new project name to a single cell object
 }
+\examples{
+rename_object(human_gene_transcript_sce, "new_name")
+}

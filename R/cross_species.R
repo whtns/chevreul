@@ -10,7 +10,7 @@
 #' convert_mouse_object_to_human(baron2016singlecell)
 convert_mouse_object_to_human <- function(object) {
     # transfer default species expression data to a species-specific experiment
-    object[["mouse"]] <- object[["gene"]]
+    altExp(object, "mouse") <- object
 
     new_rownames <- convert_symbols_by_species(src_genes = rownames(object), src_species = "mouse")
 
@@ -128,56 +128,3 @@ cross_species_integrate <- function(mouse_object_list, human_object_list){
     return(integrated_object)
 }
 
-#' Update human gene symbols in object
-#'
-#' @param object A SingleCellExperiment object
-#' @param experiment Assay to use, Default = "gene"
-#'
-#' @return a single cell object
-#' @export
-#' @importFrom EnsDb.Hsapiens.v86 EnsDb.Hsapiens.v86
-#'
-#' @examples
-#'
-#'
-update_human_gene_symbols <- function(object, experiment = "gene") {
-
-    ensdb <- EnsDb.Hsapiens.v86
-
-    symbols <- rownames(object[[experiment]])
-
-    new_rownames <-
-        mapIds(ensdb, symbols, keytype = "SYMBOL", columns = c("SYMBOL", "GENEID")) %>%
-        enframe("old_symbol", "ensgene")
-
-    rownames(new_rownames) <- new_rownames$old_symbol
-
-    object <- SingleCellExperiment::AddMetaData(object, new_rownames)
-
-    new_rownames <-
-        new_rownames %>%
-        left_join(annotables::grch38, by = "ensgene") %>%
-        distinct(old_symbol, .keep_all = TRUE) %>%
-        mutate(new_symbol = symbol) %>%
-        mutate(symbol = coalesce(new_symbol, old_symbol)) %>%
-        identity()
-
-    object_slots <- c("counts", "data", "scale.data", "meta.features")
-
-    for (i in object_slots) {
-        if (length(slot(object@experiments[[experiment]], i)) > 0) {
-            rownames(slot(object@experiments[[experiment]], i)) <- make.unique(new_rownames$symbol)
-        }
-    }
-
-    variable_features <- get_variable_features(object[[experiment]])
-    if (length(variable_features) > 1) {
-        new_variable_features <-
-            filter(new_rownames, old_symbol %in% variable_features) %>%
-            pull(symbol)
-
-        get_variable_features(object[[experiment]]) <- new_variable_features
-    }
-
-    return(object)
-}

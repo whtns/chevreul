@@ -23,3 +23,6 @@ a sqlite database of bigwig files for cells in a single cell object
 \description{
 Make Bigwig Database
 }
+\examples{
+\donttest{make_bigwig_db("example_project")}
+}

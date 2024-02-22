@@ -4,18 +4,17 @@
 \alias{object_calcn}
 \title{Calculate Read Count Metrics for a object}
 \usage{
-object_calcn(object, experiment = "gene", slot = "counts")
+object_calcn(object)
 }
 \arguments{
 \item{object}{A single cell object}
-
-\item{experiment}{Assay to use, Default = "gene"}
-
-\item{slot}{slot for data}
 }
 \value{
 a single cell object with nfeatures and ngenes stored in metadata
 }
 \description{
 Recalculate counts/features per cell for a object
+}
+\examples{
+object_calcn(human_gene_transcript_sce)
 }

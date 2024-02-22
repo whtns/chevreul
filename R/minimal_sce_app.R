@@ -124,7 +124,7 @@ minimalSceApp <- function(single_cell_object = human_gene_transcript_sce, loom_p
             ), tabItem(
                 tabName = "findMarkers",
                 h2("Find Markers"),
-                findMarkersui("findmarkers"),
+                chevreulMarkersui("findmarkers"),
                 plotDimRedui("markerScatter")
             ), tabItem(
                 tabName = "allTranscripts",
@@ -287,7 +287,7 @@ minimalSceApp <- function(single_cell_object = human_gene_transcript_sce, loom_p
             removeModal()
         })
 
-        callModule(findMarkers, "findmarkers", object, plot_types, featureType)
+        callModule(chevreulMarkers, "findmarkers", object, plot_types, featureType)
 
         callModule(pathwayEnrichment, "pathwayEnrichment", object)
 

@@ -4,24 +4,18 @@
 \alias{object_reduce_dimensions}
 \title{Dimensional Reduction}
 \usage{
-object_reduce_dimensions(
-  object,
-  experiment = "gene",
-  reduction = "PCA",
-  legacy_settings = FALSE,
-  ...
-)
+object_reduce_dimensions(object, experiment = "gene", ...)
 }
 \arguments{
 \item{object}{A SingleCellExperiment object}
 
 \item{experiment}{Assay of interest to be run on the singlecell objects}
 
+\item{...}{Extra parameters passed to object_reduce_dimensions}
+
 \item{reduction}{Set dimensional reduction object}
 
 \item{legacy_settings}{Use legacy settings}
-
-\item{...}{Extra parameters passed to object_reduce_dimensions}
 }
 \value{
 a single cell object with embeddings

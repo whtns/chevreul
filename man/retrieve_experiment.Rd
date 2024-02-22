@@ -12,3 +12,6 @@ retrieve_experiment(object, experiment)
 \description{
 Retrieve Assay
 }
+\examples{
+retrieve_experiment(human_gene_transcript_sce)
+}

@@ -16,14 +16,21 @@
 #' @importFrom scran findMarkers
 #' @examples
 #'
+#' run_object_de(human_gene_transcript_sce, diffex_scheme = "louvain", cluster1 = 1, cluster2 = 2, tests = "t")
 #'
-run_object_de <- function(object, cluster1, cluster2, resolution = 0.2, diffex_scheme = "louvain", featureType, tests = c("t", "wilcox", "bimod")) {
+#' cells1 <- colnames(human_gene_transcript_sce)[human_gene_transcript_sce$batch == "Zhong"]
+#' cells2 <- colnames(human_gene_transcript_sce)[human_gene_transcript_sce$batch == "Kuwahara"]
+#'
+#' run_object_de(human_gene_transcript_sce, diffex_scheme = "custom", cluster1 = cells1 , cluster2 = cells2, tests = "t")
+#'
+#'
+run_object_de <- function(object, cluster1, cluster2, resolution = 0.2, diffex_scheme = "louvain", featureType = "gene", tests = c("t", "wilcox", "bimod")) {
         match.arg(tests)
 
         if (featureType == "transcript") object <- altExp(object, "transcript")
 
         if (diffex_scheme == "louvain") {
-            if ("integrated" %in% names(object@experiments)) {
+            if (query_experiment(object, "integrated")) {
                 active_experiment <- "integrated"
             } else {
                 active_experiment <- "gene"
@@ -31,7 +38,7 @@ run_object_de <- function(object, cluster1, cluster2, resolution = 0.2, diffex_s
             colLabels(object) <- colData(object)[[paste0(active_experiment, "_snn_res.", resolution)]]
             object <- object[, colLabels(object) %in% c(cluster1, cluster2)]
             colLabels(object) <- factor(colLabels(object))
-        } else if (diffex_scheme == "feature") {
+        } else if (diffex_scheme == "custom") {
             object <- object[, c(cluster1, cluster2)]
             keep_cells <- c(cluster1, cluster2)
             new_idents <- c(rep(1, length(cluster1)), rep(2, length(cluster2)))
@@ -85,10 +92,11 @@ run_object_de <- function(object, cluster1, cluster2, resolution = 0.2, diffex_s
 #' @param ... extra arguments passed to ggplot
 #'
 #' @return a list of enrichmentbrowser output
-#' @export
 #' @importFrom SummarizedExperiment SummarizedExperiment
 #' @importFrom forcats fct_inseq
 #' @examples
+#'
+#' donttest{run_enrichmentbrowser(human_gene_transcript_sce)}
 #'
 #'
 run_enrichmentbrowser <- function(object, cluster_list, de_results, enrichment_method = c("ora"), ...) {
@@ -125,7 +133,7 @@ run_enrichmentbrowser <- function(object, cluster_list, de_results, enrichment_m
         row.names = rownames(object@experiments[["gene"]])
     )
 
-    colData <- as.data.frame(get_cell_metadata(object))
+    colData <- get_cell_metadata(object)
 
     se <- SummarizedExperiment(
         experiments = list(counts = counts),
@@ -209,6 +217,7 @@ prep_slider_values <- function(default_val) {
 #' @importFrom future plan
 #'
 #' @examples
+#' \donttest{chevreulApp()}
 #'
 chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "human", db_path = "~/.cache/chevreul/single-cell-projects.db", futureMb = 13000) {
     print(packageVersion("chevreul"))
@@ -348,7 +357,7 @@ chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "
             ), tabItem(
                 tabName = "findMarkers",
                 h2("Find Markers"),
-                findMarkersui("findmarkers"),
+                chevreulMarkersui("findmarkers"),
                 plotDimRedui("markerScatter")
             ), tabItem(
                 tabName = "allTranscripts",
@@ -753,7 +762,7 @@ chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "
             )
             removeModal()
         })
-        callModule(findMarkers, "findmarkers", object, plot_types, featureType)
+        callModule(chevreulMarkers, "findmarkers", object, plot_types, featureType)
         diffex_results <- callModule(
             diffex, "diffex", object, featureType,
             diffex_selected_cells

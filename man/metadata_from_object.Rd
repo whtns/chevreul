@@ -15,3 +15,7 @@ a tibble with metadata from a single cell object
 \description{
 Get metadata from the given object
 }
+\examples{
+metadata_from_object(human_gene_transcript_sce)
+
+}

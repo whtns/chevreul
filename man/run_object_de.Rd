@@ -10,7 +10,7 @@ run_object_de(
   cluster2,
   resolution = 0.2,
   diffex_scheme = "louvain",
-  featureType,
+  featureType = "gene",
   tests = c("t", "wilcox", "bimod")
 )
 }
@@ -34,4 +34,15 @@ a dataframe with differential expression information
 }
 \description{
 Run Differential Expression
+}
+\examples{
+
+run_object_de(human_gene_transcript_sce, diffex_scheme = "louvain", cluster1 = 1, cluster2 = 2, tests = "t")
+
+cells1 <- colnames(human_gene_transcript_sce)[human_gene_transcript_sce$batch == "Zhong"]
+cells2 <- colnames(human_gene_transcript_sce)[human_gene_transcript_sce$batch == "Kuwahara"]
+
+run_object_de(human_gene_transcript_sce, diffex_scheme = "custom", cluster1 = cells1 , cluster2 = cells2, tests = "t")
+
+
 }

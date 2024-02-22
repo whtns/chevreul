@@ -15,3 +15,6 @@ a clean vector of object names
 \description{
 Cleans names of objects provided in a vector form
 }
+\examples{
+make_chevreul_clean_names(colnames(get_cell_metadata(human_gene_transcript_sce)))
+}

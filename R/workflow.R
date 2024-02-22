@@ -12,6 +12,8 @@
 #' @return an integrated single cell object
 #' @export
 #' @examples
+#' batches <- splitByCol(human_gene_transcript_sce, "batch")
+#' integration_workflow(batches)
 integration_workflow <-  function(batches, excluded_cells = NULL, resolution = seq(0.2, 2.0, by = 0.2), experiment_name = "default_experiment", organism = "human", ...) {
 
         # organisms <- map(batches, Misc, c("experiment", "organism"))
@@ -60,6 +62,7 @@ integration_workflow <-  function(batches, excluded_cells = NULL, resolution = s
 #' @return a clustered single cell object
 #' @export
 #' @examples
+#' clustering_workflow(human_gene_transcript_sce)
 clustering_workflow <-  function(object, excluded_cells, resolution = seq(0.2, 2.0, by = 0.2), organism = "human", experiment_name = "default_experiment", ...) {
         object <- object_pipeline(object, resolution = resolution, organism = organism, ...)
 
