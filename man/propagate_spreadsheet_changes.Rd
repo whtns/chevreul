@@ -17,3 +17,11 @@ a single cell object
 \description{
 Propagate Metadata Changes
 }
+\examples{
+
+\donttest{
+updated_table <- read_csv(system.file("extdata", "new_meta.csv", package="chevreul"))
+
+propagate_spreadsheet_changes(updated_table, human_gene_transcript_sce)
+}
+}

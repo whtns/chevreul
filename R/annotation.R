@@ -81,7 +81,7 @@ transcripts_to_genes <- function(transcripts, organism = "human") {
 #' @examples
 #' add_percent_mito(human_gene_transcript_sce)
 #'
-add_percent_mito <- function(object, organism = "human", experiment = "gene") {
+add_percent_mito <- function(object, experiment = "gene") {
         # mito_features <- mito_features[[organism]][["gene"]]
         # mito_features <- mito_features[mito_features %in% rownames(object[[experiment]])]
         # object[["percent.mt"]] <- PercentageFeatureSet(object, features = mito_features)

@@ -11,6 +11,9 @@ install_scvelo(method = "auto", conda = "auto")
 
 \item{conda}{conda env}
 }
+\value{
+package installed
+}
 \description{
 Install scvelo
 }

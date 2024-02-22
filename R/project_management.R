@@ -5,7 +5,6 @@
 #' @param proj_list List of projects
 #'
 #' @return a tibble of single cell projects
-#'
 create_proj_matrix <- function(proj_list) {
     proj_list <- unlist(proj_list)
 
@@ -86,12 +85,10 @@ combine_looms <- function(projectPaths, newProjectPath) {
 #' @param prefix default "unfiltered"
 #'
 #' @return a single cell object
-#' @export
-#' @examples
 load_object_path <- function(proj_dir = getwd(), prefix = "unfiltered") {
   object_regex <- paste0(paste0(".*/", prefix, "_object.rds"))
 
-  object_path <- path(proj_dir, "output", "seurat") %>%
+  object_path <- path(proj_dir, "output", "singlecellexperiment") %>%
     dir_ls(regexp = object_regex)
 
   if (!rlang::is_empty(object_path)) {
@@ -112,7 +109,6 @@ load_object_path <- function(proj_dir = getwd(), prefix = "unfiltered") {
 #' @param ... extra args passed to load_object_path
 #'
 #' @return a single cell object
-#' @examples
 load_object_from_proj <- function(proj_dir, ...) {
   object_file <- load_object_path(proj_dir, ...)
   object_file <- readRDS(object_file)

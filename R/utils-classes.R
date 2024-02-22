@@ -104,7 +104,7 @@ get_features <- function(object, ...) {
 #'
 #' @param object
 #'
-#' @return
+#' @return vector of feature types in an object
 #' @export
 #'
 #' @examples
@@ -122,10 +122,10 @@ set_feature_types <- function(object, feature_type) {
 
 #' Retrieve Assay
 #'
-#' @param object
-#' @param experiment
+#' @param object a single cell object
+#' @param experiment an experiment name
 #'
-#' @return
+#' @return Main or alt experiment in an object
 #' @export
 #'
 #' @examples
@@ -140,10 +140,10 @@ retrieve_experiment <- function(object, experiment) {
 
 #' Query Assay
 #'
-#' @param object
-#' @param experiment
+#' @param object a single cell object
+#' @param experiment an experiment name
 #'
-#' @return
+#' @return logical scalar indicating if experiment is present in object
 #' @export
 #'
 #' @examples
