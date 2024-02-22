@@ -511,7 +511,7 @@ chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "
             dataset_volumes <- c(
                 Home = path(
                     proj_dir(),
-                    "output", "seurat"
+                    "output", "singlecellexperiment"
                 ), "R Installation" = R.home(),
                 getVolumes()()
             )
@@ -542,7 +542,7 @@ chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "
                 {
                     incProgress(2 / 10)
                     print(uploadSingleCellExperimentPath())
-                    updated_object <- update_chevreul_object(object_path = uploadSingleCellExperimentPath(), organism = organism)
+                    updated_object <- readRDS(uploadSingleCellExperimentPath())
                     object(updated_object)
                     incProgress(6 / 10)
 
@@ -569,7 +569,7 @@ chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "
                 # roots = dataset_volumes(),
                 roots = c(Home = path(
                     proj_dir(),
-                    "output", "seurat"
+                    "output", "singlecellexperiment"
                 )),
                 session = session, restrictions = system.file(package = "base")
             )

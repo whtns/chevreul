@@ -39,7 +39,7 @@ replace_object_metadata <- function(object, datapath) {
 get_transcripts_from_object <- function(object, gene, organism = "human") {
         transcripts <- genes_to_transcripts(gene, organism)
 
-        transcripts <- transcripts[transcripts %in% rownames(retrieve_experiment(object, "transcript"))]
+        transcripts <- transcripts[transcripts %in% get_features(object, "transcript")]
     }
 
 
@@ -405,7 +405,7 @@ convert_seurat_to_sce <- function(seu) {
         altExp(sce, i) <- as.SingleCellExperiment(seu, experiment = i)
     }
 
-    sce@metadata <- seu@misc
+    metadata(sce) <- seu@misc
 
     return(sce)
 }
@@ -426,7 +426,7 @@ convert_seurat_to_sce <- function(seu) {
 #' save_object(gene = feature_objects$gene, transcript = feature_objects$transcript, prefix = "remove_nonPRs", proj_dir = proj_dir)
 #' }
 save_object <- function(object, prefix = "unfiltered", proj_dir = getwd()) {
-  object_dir <- path(proj_dir, "output", "seurat")
+  object_dir <- path(proj_dir, "output", "singlecellexperiment")
 
   dir.create(object_dir)
 

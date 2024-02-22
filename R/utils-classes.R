@@ -61,27 +61,31 @@ get_cell_metadata <- function(object) {
 #' Get object metadata
 #'
 #' @param object a single cell object
-#' @param ... extra args passed to seurat class method
 #'
 #' @return variable features from a single cell object
 #' @export
 #' @examples
 #' get_object_metadata(human_gene_transcript_sce)
-get_object_metadata <- function(object, ...) {
+get_object_metadata <- function(object) {
     metadata(object)
   }
 
 #' Get variable features
 #'
 #' @param object a single cell object
-#' @param ... extra args passed to seurat class method
+#' @param experiment "gene" or "transcript"
 #'
 #' @return variable features from a single cell object
 #' @export
 #' @examples
 #' get_variable_features(human_gene_transcript_sce)
-get_variable_features <- function(object, ...) {
-        getTopHVGs(object)
+get_variable_features <- function(object, experiment = "gene") {
+
+  if(experiment == mainExpName(object)){
+    getTopHVGs(object)
+  } else if(experiment %in% altExpNames(object)){
+    getTopHVGs(altExp(object, experiment))
+  }
     }
 
 # get feature names ------------------------------
@@ -89,15 +93,21 @@ get_variable_features <- function(object, ...) {
 #' Get feature names
 #'
 #' @param object a single cell object
-#' @param ... extra args passed to seurat class method
+#' @param experiment "gene" or "transcript"
 #'
 #' @return variable features from a single cell object
 #' @export
 #' @examples
 #' get_features(human_gene_transcript_sce)
-get_features <- function(object, ...) {
-        rownames(object)
-    }
+get_features <- function(object, experiment = "gene") {
+
+  if(experiment == mainExpName(object)){
+    rownames(object)
+  } else if(experiment %in% altExpNames(object)){
+    rownames(altExp(object, experiment))
+  }
+
+}
 
 
 #' Get Feature Types
