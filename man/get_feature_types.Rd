@@ -12,3 +12,6 @@ get_feature_types(object)
 \description{
 Get Feature Types
 }
+\examples{
+get_feature_types(human_gene_transcript_sce)
+}

@@ -79,3 +79,41 @@ combine_looms <- function(projectPaths, newProjectPath) {
 
     if (all(file_not_dir(selected_looms))) loompy$combine(selected_looms, newProjectPath)
 }
+
+#' Read in Gene and Transcript SingleCellExperiment Objects
+#'
+#' @param proj_dir path to project directory
+#' @param prefix default "unfiltered"
+#'
+#' @return a single cell object
+#' @export
+#' @examples
+load_object_path <- function(proj_dir = getwd(), prefix = "unfiltered") {
+  object_regex <- paste0(paste0(".*/", prefix, "_object.rds"))
+
+  object_path <- path(proj_dir, "output", "seurat") %>%
+    dir_ls(regexp = object_regex)
+
+  if (!rlang::is_empty(object_path)) {
+    return(object_path)
+  }
+
+  stop("'", object_path, "' does not exist",
+       paste0(" in current working directory ('", getwd(), "')"),
+       ".",
+       call. = FALSE
+  )
+}
+
+
+#' Load SingleCellExperiment Files from a single project path
+#'
+#' @param proj_dir project directory
+#' @param ... extra args passed to load_object_path
+#'
+#' @return a single cell object
+#' @examples
+load_object_from_proj <- function(proj_dir, ...) {
+  object_file <- load_object_path(proj_dir, ...)
+  object_file <- readRDS(object_file)
+}

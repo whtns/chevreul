@@ -15,3 +15,6 @@ dataframe containing object metadata
 \description{
 Pull the metadata from a given object
 }
+\examples{
+get_cell_metadata(human_gene_transcript_sce)
+}

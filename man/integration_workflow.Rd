@@ -32,3 +32,7 @@ an integrated single cell object
 \description{
 Integrate multiple objects and save to file
 }
+\examples{
+batches <- splitByCol(human_gene_transcript_sce, "batch")
+integration_workflow(batches)
+}

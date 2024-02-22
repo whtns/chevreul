@@ -4,16 +4,23 @@
 \alias{merge_small_objects}
 \title{Merge Small SingleCellExeriment Objects}
 \usage{
-merge_small_objects(object_list, k.filter = 50)
+merge_small_objects(..., k.filter = 50)
 }
 \arguments{
-\item{object_list}{List of two or more singlecell objects}
-
 \item{k.filter}{minimum cell number for integration}
+
+\item{object_list}{List of two or more singlecell objects}
 }
 \value{
 a single cell object
 }
 \description{
 Merge Small SingleCellExeriment Objects
+}
+\examples{
+merge_small_objects(
+"small_batch1" = human_gene_transcript_sce[,1:40],
+"small_batch2" = human_gene_transcript_sce[,41:80],
+"large_batch" = human_gene_transcript_sce[,81:300])
+
 }

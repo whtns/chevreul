@@ -6,7 +6,6 @@
 \usage{
 append_to_project_db(
   new_project_path,
-  projects_dir = NULL,
   cache_location = "~/.cache/chevreul",
   sqlite_db = "single-cell-projects.db",
   verbose = TRUE
@@ -14,8 +13,6 @@ append_to_project_db(
 }
 \arguments{
 \item{new_project_path}{new project path}
-
-\item{projects_dir}{project directory}
 
 \item{cache_location}{Path to cache "~/.cache/chevreul"}
 
@@ -27,5 +24,8 @@ append_to_project_db(
 a sqlite database with single cell objects
 }
 \description{
-Append projects to datatbase
+Append projects to database
+}
+\examples{
+\donttest{append_to_project_db("example_project_path")}
 }

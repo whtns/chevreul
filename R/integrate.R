@@ -7,7 +7,7 @@
 #' @export
 #'
 #' @examples
-#' splitByCol(human_gene_transcript_sce, "Prep.Method")
+#' splitByCol(human_gene_transcript_sce, "batch")
 splitByCol <- function(x, f = "batch") {
 
   f <- colData(x)[[f]]
@@ -33,8 +33,14 @@ splitByCol <- function(x, f = "batch") {
 #' @return a single cell object
 #' @export
 #' @examples
+#' merge_small_objects(
+#' "small_batch1" = human_gene_transcript_sce[,1:40],
+#' "small_batch2" = human_gene_transcript_sce[,41:80],
+#' "large_batch" = human_gene_transcript_sce[,81:300])
 #'
-merge_small_objects <- function(object_list, k.filter = 50) {
+merge_small_objects <- function(..., k.filter = 50) {
+  object_list <- list(...)
+  browser()
     # check if any singlecell objects are too small and if so merge with the first singlecell objects
     object_dims <- map(object_list, dim) %>%
         map_lgl(~ .x[[2]] < k.filter)
@@ -43,7 +49,7 @@ merge_small_objects <- function(object_list, k.filter = 50) {
 
     object_list <- object_list[!object_dims]
 
-    object_list[[1]] <- reduce(c(small_objects, object_list[[1]]), merge)
+    object_list[[1]] <- reduce(c(small_objects, object_list[[1]]), batchelor::correctExperiments, PARAM=NoCorrectParam())
 
     return(object_list)
 }
@@ -60,7 +66,7 @@ merge_small_objects <- function(object_list, k.filter = 50) {
 #' @importFrom batchelor correctExperiments
 #' @export
 #' @examples
-#' batches <- splitByCol(human_gene_transcript_sce, "Prep.Method")
+#' batches <- splitByCol(human_gene_transcript_sce, "batch")
 #' object_integrate(batches)
 object_integrate <- function(object_list, organism = "human", ...) {
 
@@ -96,6 +102,7 @@ object_integrate <- function(object_list, organism = "human", ...) {
 #' @importFrom scran clusterCells
 #' @importFrom glue glue
 #' @examples
+#' object_cluster(human_gene_transcript_sce)
 object_cluster <- function(object = object, resolution = 0.6, custom_clust = NULL, reduction = "PCA", algorithm = 1, ...) {
         message(paste0("[", format(Sys.time(), "%H:%M:%S"), "] Clustering Cells..."))
         if (length(resolution) > 1) {
@@ -121,44 +128,6 @@ object_cluster <- function(object = object, resolution = 0.6, custom_clust = NUL
         return(object)
     }
 
-#' Read in Gene and Transcript SingleCellExperiment Objects
-#'
-#' @param proj_dir path to project directory
-#' @param prefix default "unfiltered"
-#'
-#' @return a single cell object
-#' @export
-#' @examples
-load_object_path <- function(proj_dir = getwd(), prefix = "unfiltered") {
-    object_regex <- paste0(paste0(".*/", prefix, "_object.rds"))
-
-    object_path <- path(proj_dir, "output", "seurat") %>%
-        dir_ls(regexp = object_regex)
-
-    if (!rlang::is_empty(object_path)) {
-        return(object_path)
-    }
-
-    stop("'", object_path, "' does not exist",
-        paste0(" in current working directory ('", getwd(), "')"),
-        ".",
-        call. = FALSE
-    )
-}
-
-
-#' Load SingleCellExperiment Files from a signle project path
-#'
-#' @param proj_dir project directory
-#' @param ... extra args passed to load_object_path
-#'
-#' @return a single cell object
-#' @examples
-load_object_from_proj <- function(proj_dir, ...) {
-        object_file <- load_object_path(proj_dir, ...)
-        object_file <- readRDS(object_file)
-    }
-
 #' Dimensional Reduction
 #'
 #' Run PCA, TSNE and UMAP on a singlecell objects
@@ -174,7 +143,7 @@ load_object_from_proj <- function(proj_dir, ...) {
 #' @export
 #' @examples
 #' object_reduce_dimensions(human_gene_transcript_sce)
-object_reduce_dimensions <- function(object, experiment = "gene", reduction = "PCA", legacy_settings = FALSE, ...) {
+object_reduce_dimensions <- function(object, experiment = "gene", ...) {
         # if (query_experiment(object, "integrated")){
         #     experiment <- "integrated"
         # } else {
@@ -187,38 +156,27 @@ object_reduce_dimensions <- function(object, experiment = "gene", reduction = "P
         } else {
             npcs <- 50
         }
-        if (legacy_settings) {
-            message("using legacy settings")
-
-            if (experiment == "gene") {
-                object <- runPCA(x = object, subset_row = rownames(object))
-            } else {
-                object <- runPCA(x = object, altexp = experiment, subset_row = rownames(object))
-            }
+        if ("gene" == experiment) {
+            object <- runPCA(x = object, subset_row = getTopHVGs(stats = object), ncomponents = npcs, ...)
         } else {
-            if ("gene" == experiment) {
-                object <- runPCA(x = object, subset_row = getTopHVGs(stats = object), ncomponents = npcs, ...)
-            } else {
-                object <- runPCA(x = object, altexp = experiment, subset_row = getTopHVGs(stats = object), ncomponents = npcs, ...)
-            }
+            object <- runPCA(x = object, altexp = experiment, subset_row = getTopHVGs(stats = object), ncomponents = npcs, ...)
         }
 
         if ((ncol(object) - 1) > 3 * 30) {
             if ("gene" == experiment) {
-                object <- runTSNE(x = object, dimred = reduction, n_dimred = 1:30)
+                object <- runTSNE(x = object, dimred = "PCA", n_dimred = 1:30)
             } else {
-                object <- runTSNE(x = object, altexp = experiment, dimred = reduction, n_dimred = 1:30)
+                object <- runTSNE(x = object, altexp = experiment, dimred = "PCA", n_dimred = 1:30)
             }
             if ("gene" == experiment) {
-                object <- runUMAP(x = object, dimred = reduction, n_dimred = 1:30)
+                object <- runUMAP(x = object, dimred = "PCA", n_dimred = 1:30)
             } else {
-                object <- runUMAP(x = object, altexp = experiment, dimred = reduction, n_dimred = 1:30)
+                object <- runUMAP(x = object, altexp = experiment, dimred = "PCA", n_dimred = 1:30)
             }
         }
         return(object)
     }
 
-#'
 #' Give a new project name to a single cell object
 #'
 #' @param object A SingleCellExperiment object
@@ -227,50 +185,12 @@ object_reduce_dimensions <- function(object, experiment = "gene", reduction = "P
 #' @return a renamed single cell object
 #' @export
 #' @examples
+#' rename_object(human_gene_transcript_sce, "new_name")
 rename_object <- function (object, new_name)
           {
             metadata(object)["project.name"] <- new_name
             return(object)
           }
-
-#' Filter a List of SingleCellExperiment Objects
-#'
-#' Filter SingleCellExperiment Objects by custom variable and reset experiment to uncorrected "gene"
-#'
-#' @param objects single cell projects
-#' @param filter_var filter variable
-#' @param filter_val filter values
-#' @param .drop whether to drop from single cell object
-#'
-#' @return a list of single cell objects
-#' @export
-#' @examples
-filter_merged_objects <- function(objects, filter_var, filter_val, .drop = F) {
-    objects <- map(objects, ~ filter_merged_object(object = .x, filter_var = filter_var, filter_val = filter_val, .drop = .drop))
-}
-
-
-#' Filter a Single SingleCellExperiment Object
-#'
-#' @param object A singlecell objects
-#' @param filter_var filter variable
-#' @param filter_val filter values
-#' @param .drop whether to drop values
-#'
-#' @return a single cell object
-#' @export
-#' @examples
-filter_merged_object <- function(object, filter_var, filter_val, .drop = .drop) {
-    if (.drop) {
-        mycells <- get_cell_metadata(object)[[filter_var]] == filter_val
-    } else {
-        mycells <- get_cell_metadata(object)[[filter_var]] == filter_val | is.na(get_cell_metadata(object)[[filter_var]])
-    }
-    mycells <- colnames(object)[mycells]
-    object <- object[, mycells]
-    return(object)
-}
-
 
 #' Reintegrate (filtered) singlecell objectss
 #'
@@ -288,6 +208,7 @@ filter_merged_object <- function(object, filter_var, filter_val, .drop = .drop) 
 #' @return a single cell object
 #' @export
 #' @examples
+#' reintegrate_object(human_gene_transcript_sce)
 reintegrate_object <- function (object, feature = "gene", suffix = "", reduction = "PCA", algorithm = 1, ...)
           {
             organism <- metadata(object)$experiment$organism

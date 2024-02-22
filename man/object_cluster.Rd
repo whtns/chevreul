@@ -32,3 +32,6 @@ a single cell object with louvain clusters
 \description{
 Run Louvain Clustering at Multiple Resolutions
 }
+\examples{
+object_cluster(human_gene_transcript_sce)
+}

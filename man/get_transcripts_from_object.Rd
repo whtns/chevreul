@@ -7,9 +7,9 @@
 get_transcripts_from_object(object, gene, organism = "human")
 }
 \arguments{
-\item{object}{A object}
+\item{object}{A SingleCellExperiment object}
 
-\item{gene}{Gene of intrest}
+\item{gene}{Gene of interest}
 
 \item{organism}{Organism}
 }

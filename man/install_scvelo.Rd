@@ -7,8 +7,13 @@
 install_scvelo(method = "auto", conda = "auto")
 }
 \arguments{
-\item{conda}{}
+\item{method}{deterministic, stochastic, or dynamical}
+
+\item{conda}{conda env}
 }
 \description{
 Install scvelo
+}
+\examples{
+\donttest{install_scvelo()}
 }

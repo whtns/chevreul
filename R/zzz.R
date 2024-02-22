@@ -34,13 +34,14 @@ pyplot <- NULL
 
 #' Install scvelo
 #'
-#' @param method
-#' @param conda
+#' @param method deterministic, stochastic, or dynamical
+#' @param conda conda env
 #'
 #' @return
 #' @export
 #'
 #' @examples
+#' \donttest{install_scvelo()}
 install_scvelo <- function(method = "auto", conda = "auto") {
     reticulate::py_install("scvelo", method = method, conda = conda, pip = TRUE)
     reticulate::py_install("matplotlib", method = method, conda = conda)

@@ -133,7 +133,7 @@ reformatMetadataDR <- function(input, output, session, object, featureType = "ge
                 return(NULL)
             }
 
-            reformatted_object <- format_new_metadata(object(), inFile$datapath)
+            reformatted_object <- replace_object_metadata(object(), inFile$datapath)
             object(reformatted_object)
         } else if (input$updateMethod == "spreadsheet") {
             reformatted_object <- propagate_spreadsheet_changes(values$data_active, object())

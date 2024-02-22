@@ -36,3 +36,6 @@ a single cell object
 \item run integration pipeline and save
 }
 }
+\examples{
+reintegrate_object(human_gene_transcript_sce)
+}

@@ -17,3 +17,6 @@ a vector of bigwigs file paths
 \description{
 Load a tibble of bigwig file paths by cell id
 }
+\examples{
+\donttest{load_bigwigs(human_gene_transcript_sce)}
+}

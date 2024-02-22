@@ -6,6 +6,7 @@
 #' @export
 #' @importFrom pillar new_pillar_type
 #' @examples
+#' list_plot_types(human_gene_transcript_sce)
 list_plot_types <- function(object) {
         meta_types <- tibble(
             vars = colnames(colData(object)),
@@ -51,6 +52,7 @@ list_plot_types <- function(object) {
 #'
 #' @return dataframe containing object metadata
 #' @examples
+#' get_cell_metadata(human_gene_transcript_sce)
 get_cell_metadata <- function(object) {
         colData(object) %>%
             as.data.frame()
@@ -64,6 +66,7 @@ get_cell_metadata <- function(object) {
 #' @return variable features from a single cell object
 #' @export
 #' @examples
+#' get_object_metadata(human_gene_transcript_sce)
 get_object_metadata <- function(object, ...) {
     metadata(object)
   }
@@ -76,6 +79,7 @@ get_object_metadata <- function(object, ...) {
 #' @return variable features from a single cell object
 #' @export
 #' @examples
+#' get_variable_features(human_gene_transcript_sce)
 get_variable_features <- function(object, ...) {
         getTopHVGs(object)
     }
@@ -90,22 +94,9 @@ get_variable_features <- function(object, ...) {
 #' @return variable features from a single cell object
 #' @export
 #' @examples
+#' get_features(human_gene_transcript_sce)
 get_features <- function(object, ...) {
         rownames(object)
-    }
-
-
-#' Add new metadata to the object metadata
-#'
-#' @param object a single cell object
-#' @param meta.data new metadata
-#'
-#' @return object metadata
-#' @export
-#' @examples
-set_metadata <- function(object, meta.data) {
-        colData(object) <- meta.data
-        return(object)
     }
 
 
@@ -117,6 +108,7 @@ set_metadata <- function(object, meta.data) {
 #' @export
 #'
 #' @examples
+#' get_feature_types(human_gene_transcript_sce)
 get_feature_types <- function(object) {
     sort(c(mainExpName(object), altExpNames(object)))
 }
@@ -128,21 +120,6 @@ set_feature_types <- function(object, feature_type) {
   return(object)
 }
 
-#' Check if Integrated
-#'
-#' @param object
-#'
-#' @return
-#' @export
-#'
-#' @examples
-check_integrated <- function(object) {
-    experiment <- str_subset(experimentNames(scMerge_unsupervised), "scMerge")
-
-    return(experiment)
-}
-
-
 #' Retrieve Assay
 #'
 #' @param object
@@ -152,6 +129,7 @@ check_integrated <- function(object) {
 #' @export
 #'
 #' @examples
+#' retrieve_experiment(human_gene_transcript_sce)
 retrieve_experiment <- function(object, experiment) {
     if (experiment %in% mainExpName(object)) {
         return(object)
@@ -169,6 +147,7 @@ retrieve_experiment <- function(object, experiment) {
 #' @export
 #'
 #' @examples
+#' query_experiment(human_gene_transcript_sce, "gene")
 query_experiment <- function(object, experiment) {
     return(experiment %in% c(mainExpName(object), altExpNames(object)))
 }

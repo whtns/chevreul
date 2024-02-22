@@ -7,7 +7,7 @@
 combine_cols(object, cols, new_col)
 }
 \arguments{
-\item{object}{A object}
+\item{object}{A SingleCellExperiment object}
 
 \item{cols}{Columns}
 

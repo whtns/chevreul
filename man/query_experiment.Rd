@@ -12,3 +12,6 @@ query_experiment(object, experiment)
 \description{
 Query Assay
 }
+\examples{
+query_experiment(human_gene_transcript_sce, "gene")
+}

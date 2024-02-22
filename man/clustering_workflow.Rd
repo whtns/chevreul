@@ -32,3 +32,6 @@ a clustered single cell object
 \description{
 Cluster and Reduce Dimensions of a object
 }
+\examples{
+clustering_workflow(human_gene_transcript_sce)
+}

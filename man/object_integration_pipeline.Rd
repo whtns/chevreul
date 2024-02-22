@@ -8,7 +8,6 @@ object_integration_pipeline(
   object_list,
   resolution = seq(0.2, 2, by = 0.2),
   suffix = "",
-  algorithm = 1,
   organism = "human",
   annotate_cell_cycle = FALSE,
   annotate_percent_mito = FALSE,
@@ -22,8 +21,6 @@ object_integration_pipeline(
 \item{resolution}{Range of resolution}
 
 \item{suffix}{a suffix to be appended to a file save in output dir}
-
-\item{algorithm}{Algorithm for modularity optimization. Default 1:original Louvain algorithm}
 
 \item{organism}{Default "human"}
 
@@ -46,8 +43,6 @@ Run batch correction, followed by:
 }
 \examples{
 
-batches <- human_gene_transcript_sce \%>\%
-    SingleCellExperiment::SplitObject(split.by = "tech")
-
+batches <- splitByCol(human_gene_transcript_sce, "batch")
 integrated_object <- object_integration_pipeline(batches)
 }

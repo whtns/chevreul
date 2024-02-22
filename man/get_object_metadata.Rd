@@ -17,3 +17,6 @@ variable features from a single cell object
 \description{
 Get object metadata
 }
+\examples{
+get_object_metadata(human_gene_transcript_sce)
+}
