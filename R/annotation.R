@@ -4,7 +4,7 @@
 #'
 #' convert hgnc gene symbols to ensembl transcript ids
 #'
-#' @param genes genes
+#' @param symbols character vector of gene symbols
 #'
 #' @return a vector of transcripts
 #' @export
@@ -12,10 +12,7 @@
 #' @examples
 #'
 #' genes_to_transcripts("NRL")
-#' @importFrom EnsDb.Hsapiens.v86 EnsDb.Hsapiens.v86
-#' @importFrom EnsDb.Mmusculus.v79 EnsDb.Mmusculus.v79
-#' @importFrom ensembldb transcripts
-genes_to_transcripts <- function(genes, organism = "human") {
+genes_to_transcripts <- function(symbols, organism = "human") {
     if (organism == "human") {
         feature_table <- transcripts(EnsDb.Hsapiens.v86,
             columns = c("gene_name", "gene_biotype", "gene_id"),
@@ -28,10 +25,8 @@ genes_to_transcripts <- function(genes, organism = "human") {
         )
     }
 
-    feature_table %>%
-        as_tibble() %>%
-        filter(gene_name %in% genes) %>%
-        pull(tx_id)
+  feature_table[(feature_table[["gene_name"]] %in% symbols),"tx_id"]
+
 }
 
 #' Ensembl Transcript Ids to Gene Symbols

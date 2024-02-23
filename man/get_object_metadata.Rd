@@ -4,12 +4,10 @@
 \alias{get_object_metadata}
 \title{Get object metadata}
 \usage{
-get_object_metadata(object, ...)
+get_object_metadata(object)
 }
 \arguments{
 \item{object}{a single cell object}
-
-\item{...}{extra args passed to seurat class method}
 }
 \value{
 variable features from a single cell object

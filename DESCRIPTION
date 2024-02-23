@@ -83,7 +83,8 @@ Imports:
     EnsDb.Mmusculus.v79,
     scales,
     readr,
-    Nebulosa
+    Nebulosa,
+    velociraptor
 Suggests:
     BiocStyle,
     knitr,

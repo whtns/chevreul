@@ -351,11 +351,7 @@ plot_readcount<-  function(object, group_by = "nCount_RNA", color.by = "batch", 
 #' top_25_features <- get_variable_features(human_gene_transcript_sce)[1:25]
 #' make_complex_heatmap(human_gene_transcript_sce, features = top_25_features)
 
-make_complex_heatmap<-function(object, features = NULL, group.by = "ident", cells = NULL, layer = "scale.data", experiment = NULL, group.bar.height = 0.01, column_split = NULL, col_arrangement = "ward.D2", mm_col_dend = 30, ...) {
-        experiment_method <- switch(layer,
-            counts = "counts",
-            scale.data = "logcounts"
-        )
+make_complex_heatmap<-function(object, features = NULL, group.by = "ident", cells = NULL, assayName = "logcounts", experiment = NULL, group.bar.height = 0.01, column_split = NULL, col_arrangement = "ward.D2", mm_col_dend = 30, ...) {
 
 
         cells <- cells %||% colnames(x = object)
@@ -368,16 +364,16 @@ make_complex_heatmap<-function(object, features = NULL, group.by = "ident", cell
         }
         features <- features %||% getTopHVGs(object)
         features <- rev(unique(features))
-        possible.features <- rownames(x = experiment(object, experiment_method))
+        possible.features <- rownames(x = assay(object, assayName))
         if (any(!features %in% possible.features)) {
             bad.features <- features[!features %in% possible.features]
             features <- features[features %in% possible.features]
             if (length(x = features) == 0) {
                 stop("No requested features found in the ", layer, " layer for the ", experiment, " experiment.")
             }
-            warning("The following features were omitted as they were not found in the ", experiment_method, " layer for the ", experiment, " experiment: ", paste(bad.features, collapse = ", "))
+            warning("The following features were omitted as they were not found in the ", assay, " assay for the ", experiment, " experiment: ", paste(bad.features, collapse = ", "))
         }
-        data <- as.data.frame(x = t(x = as.matrix(x = experiment(object, experiment_method)[features, cells, drop = FALSE])))
+        data <- as.data.frame(x = t(x = as.matrix(x = assay(object, assayName)[features, cells, drop = FALSE])))
 
         # object <- suppressMessages(expr = StashIdent(object = object, save.name = "ident"))
 

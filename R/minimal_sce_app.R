@@ -158,19 +158,7 @@ minimalSceApp <- function(single_cell_object = human_gene_transcript_sce, loom_p
                         checkboxInput("runRegression",
                             "Run Regression?",
                             value = FALSE
-                        ), radioButtons("priorGeneSet",
-                            "Choose a marker gene set:",
-                            choices = c(
-                                "Apoptosis",
-                                "Cell Cycle",
-                                "Mitochondrial",
-                                "Ribosomal"
-                            )
-                        ), selectizeInput("geneSet",
-                            "List of genes",
-                            choices = NULL, multiple = TRUE
                         ),
-                        textInput("geneSetName", "Name for Gene Set"),
                         width = 12
                     ) %>%
                         default_helper(type = "markdown", content = "regressFeatures")
@@ -390,60 +378,13 @@ minimalSceApp <- function(single_cell_object = human_gene_transcript_sce, loom_p
             )
         })
 
-        prior_gene_set <- reactive({
-            # req(input$priorGeneSet)
-            req(object())
-
-            if (is.null(input$priorGeneSet)) {
-                ""
-            } else if (input$priorGeneSet == "Apoptosis") {
-                marker_genes <- c(
-                    "CASP3", "CASP7", "BAX", "BAK1", "BID", "BBC3",
-                    "BCL2", "MCL1"
-                )
-
-                marker_genes[marker_genes %in% rownames(object())]
-            } else if (input$priorGeneSet == "Cell Cycle") {
-                marker_genes <- c(
-                    "MCM5", "PCNA", "TYMS", "FEN1", "MCM2", "MCM4",
-                    "RRM1", "UNG", "GINS2", "MCM6", "CDCA7", "DTL",
-                    "PRIM1", "UHRF1", "MLF1IP", "HELLS", "RFC2",
-                    "RPA2", "NASP", "RAD51AP1", "GMNN", "WDR76",
-                    "SLBP", "CCNE2", "UBR7", "POLD3", "MSH2",
-                    "ATAD2", "RAD51", "RRM2", "CDC45", "CDC6",
-                    "EXO1", "TIPIN", "DSCC1", "BLM", "CASP8AP2",
-                    "USP1", "CLSPN", "POLA1", "CHAF1B", "BRIP1",
-                    "E2F8"
-                )
-
-                marker_genes[marker_genes %in% rownames(object())]
-            } else if (input$priorGeneSet == "Mitochondrial") {
-                marker_genes <- mito_features[[organism_type()]][["gene"]]
-
-                marker_genes[marker_genes %in% rownames(object())]
-            } else if (input$priorGeneSet == "Ribosomal") {
-                marker_genes <- ribo_features[[organism_type()]][["gene"]]
-
-                marker_genes[marker_genes %in% rownames(object())]
-            }
-        })
-
-        observe({
-            req(object())
-            updateSelectizeInput(session, "geneSet",
-                choices = rownames(object()),
-                selected = prior_gene_set(),
-                server = TRUE
-            )
-        })
         observeEvent(input$regressAction, {
             req(object())
             showModal(modalDialog(
-                title = "Regressing out provided list of features",
+                title = "Regressing out cell cycle effects",
                 "This process may take a minute or two!"
             ))
-            regressed_object <- regress_by_features(object(),
-                feature_set = list(input$geneSet), set_name = make_clean_names(input$geneSetName),
+            regressed_object <- regress_cell_cycle(object(),
                 regress = input$runRegression
             )
             object(regressed_object)
