@@ -4,12 +4,12 @@
 \alias{get_variable_features}
 \title{Get variable features}
 \usage{
-get_variable_features(object, ...)
+get_variable_features(object, experiment = "gene")
 }
 \arguments{
 \item{object}{a single cell object}
 
-\item{...}{extra args passed to seurat class method}
+\item{experiment}{"gene" or "transcript"}
 }
 \value{
 variable features from a single cell object

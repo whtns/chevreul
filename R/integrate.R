@@ -136,7 +136,6 @@ object_cluster <- function(object = object, resolution = 0.6, custom_clust = NUL
 #' @param object A SingleCellExperiment object
 #' @param experiment Assay of interest to be run on the singlecell objects
 #' @param reduction Set dimensional reduction object
-#' @param legacy_settings Use legacy settings
 #' @param ... Extra parameters passed to object_reduce_dimensions
 #'
 #' @return a single cell object with embeddings
@@ -144,11 +143,6 @@ object_cluster <- function(object = object, resolution = 0.6, custom_clust = NUL
 #' @examples
 #' object_reduce_dimensions(human_gene_transcript_sce)
 object_reduce_dimensions <- function(object, experiment = "gene", ...) {
-        # if (query_experiment(object, "integrated")){
-        #     experiment <- "integrated"
-        # } else {
-        #     experiment <- "gene"
-        # }
 
         num_samples <- dim(object)[[2]]
         if (num_samples < 50) {

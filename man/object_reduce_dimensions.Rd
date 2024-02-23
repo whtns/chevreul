@@ -14,8 +14,6 @@ object_reduce_dimensions(object, experiment = "gene", ...)
 \item{...}{Extra parameters passed to object_reduce_dimensions}
 
 \item{reduction}{Set dimensional reduction object}
-
-\item{legacy_settings}{Use legacy settings}
 }
 \value{
 a single cell object with embeddings

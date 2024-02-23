@@ -1198,16 +1198,16 @@ plotVelocityui <- function(id) {
             sliderInput(ns("resolution"), "Resolution of clustering algorithm (affects number of clusters)", min = 0.2, max = 2, step = 0.2, value = 0.6),
             radioButtons(ns("plotFormat"), "velocity format", choices = c("arrow", "stream"), selected = "arrow", inline = TRUE),
             actionButton(ns("plot_velocity_embedding"), "plot velocity on embedding"),
-            downloadButton(ns("downloadEmbeddingPlot"), label = "Download Plot"),
-            imageOutput(ns("velocityEmbeddingPlot"), height = "800px")
+            # downloadButton(ns("downloadEmbeddingPlot"), label = "Download Plot"),
+            plotOutput(ns("velocityEmbeddingPlot"), height = "800px")
         ),
         chevreulBox(
             title = "Plot Velocity and Expression",
             width = 12,
             selectizeInput(ns("geneSelect"), "Select a Gene", choices = NULL, selected = NULL, multiple = TRUE),
             actionButton(ns("plot_velocity_expression"), "plot velocity and expression"),
-            downloadButton(ns("downloadExpressionPlot"), label = "Download Plot"),
-            imageOutput(ns("velocityExpressionPlot"), height = "500px")
+            # downloadButton(ns("downloadExpressionPlot"), label = "Download Plot"),
+            plotOutput(ns("velocityExpressionPlot"), height = "500px")
         ) %>%
             default_helper(type = "markdown", content = "plotVelocity")
     )
@@ -1232,7 +1232,7 @@ plotVelocity <- function(input, output, session, object, loom_path) {
 
     # reactive val adata ------------------------------
 
-    adata <- reactiveVal()
+    loom_object <- reactiveVal()
 
     observeEvent(input$calc_velocity, {
         req(object())
@@ -1247,9 +1247,9 @@ plotVelocity <- function(input, output, session, object, loom_path) {
                     experiment <- "gene"
                 }
 
-                adata <- prep_scvelo(object(), loom_path, velocity_mode = input$velocityMode)
+                loom_object <- merge_loom(object(), loom_path)
 
-                adata(adata)
+                loom_object(loom_object)
                 message("scvelo Complete!")
             },
             message = function(m) {
@@ -1260,34 +1260,29 @@ plotVelocity <- function(input, output, session, object, loom_path) {
 
 
     velocity_flag <- eventReactive(input$calc_velocity, {
-        req(adata())
+        req(loom_object())
         "Velocity Calculated for this dataset"
     })
 
     output$velocityFlag <- renderText({
-        req(adata())
+        req(loom_object())
         velocity_flag()
     })
 
-    observe({
-        req(adata())
 
-        if (query_experiment(object(), "integrated")) {
-            experiment <- "integrated"
-        } else {
-            experiment <- "gene"
-        }
+    velocityEmbeddingPlot <- eventReactive(input$plot_velocity_embedding, {
+      req(loom_object())
+      req(input$varSelect)
 
-        cluster_resolution <- paste0(experiment, "_snn_res.", input$resolution)
-
-        plot_scvelo(adata(), group.by = input$varSelect, plot_method = input$plotFormat)
-        fig <- pyplot$gcf()
-        # fig$savefig("velocity_embedding.pdf")
-        fig$savefig("velocity_embedding.svg")
+      plot_scvelo(loom_object(), colour_by = input$varSelect, embedding = input$embedding)
     })
 
-    observe({
-        req(adata())
+      output$velocityEmbeddingPlot <- renderPlot({
+        velocityEmbeddingPlot()
+        })
+
+    velocityExpressionPlot <- eventReactive(input$plot_velocity_expression, {
+        req(loom_object())
         req(input$geneSelect)
 
         if (query_experiment(object(), "integrated")) {
@@ -1295,76 +1290,14 @@ plotVelocity <- function(input, output, session, object, loom_path) {
         } else {
             experiment <- "gene"
         }
-        scvelo_expression(adata(), features = input$geneSelect)
+        scvelo_expression(loom_object(), colour_by = input$varSelect, embedding = input$embedding)
 
-        fig <- pyplot$gcf()
-        # fig$savefig("velocity_expression.pdf")
-        fig$savefig("velocity_expression.svg")
     })
 
-    output$downloadEmbeddingPlot <- downloadHandler(
-        filename = function() {
-            paste("velocity_embedding", ".svg", sep = "")
-        },
-        content = function(file) {
-            file.copy("velocity_embedding.svg", file, overwrite = TRUE)
-        }
-    )
-
-    output$downloadExpressionPlot <- downloadHandler(
-        filename = function() {
-            paste("velocity_expression", ".svg", sep = "")
-        },
-        content = function(file) {
-            file.copy("velocity_expression.svg", file, overwrite = TRUE)
-        }
-    )
-
-    expression_path <- eventReactive(input$plot_velocity_expression, {
-        "velocity_expression.svg"
+    output$velocityExpressionPlot <- renderPlot({
+      velocityExpressionPlot()
     })
 
-    embedding_path <- eventReactive(input$plot_velocity_embedding, {
-        "velocity_embedding.svg"
-    })
-
-    output$velocityEmbeddingPlot <- renderImage(
-        {
-            # req(velocityExpressionPlot())
-            # Get width and height of image output
-            width <- session$clientData$output_image_width
-            height <- session$clientData$output_image_height
-
-            # Return a list containing information about the image
-            list(
-                src = embedding_path(),
-                contentType = "image/svg+xml",
-                width = 1200,
-                height = 800,
-                alt = "This is alternate text"
-            )
-        },
-        deleteFile = FALSE
-    )
-
-    output$velocityExpressionPlot <- renderImage(
-        {
-            # req(velocityExpressionPlot())
-            # Get width and height of image output
-            width <- session$clientData$output_image_width
-            height <- session$clientData$output_image_height
-
-            # Return a list containing information about the image
-            list(
-                src = expression_path(),
-                contentType = "image/svg+xml",
-                width = 1500,
-                height = 500,
-                alt = "This is alternate text"
-            )
-        },
-        deleteFile = FALSE
-    )
 }
 
 

@@ -257,8 +257,6 @@ data_bind_cols <- function(data = NULL,
 
 }
 
-## BIND ROWS -------------------------------------------------------------------
-
 #' Add new rows to data
 #'
 #' from https://github.com/DillonHammill/DataEditR/blob/850feb2e29a2e94151c84300d1564ba19dcba415/R/helpers.R#L148
