@@ -12,6 +12,7 @@
 #' @param annotate_cell_cycle whether to score cell cycle phases
 #' @param reduction pca, umap, or tsne
 #' @param ... extra args passed to object_integrate
+#' @param annotate_percent_mito logical scalar whether to annotate mitochondrial percentage
 #'
 #' @return an integrated single cell object
 #' @export

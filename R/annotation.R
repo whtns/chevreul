@@ -5,6 +5,7 @@
 #' convert hgnc gene symbols to ensembl transcript ids
 #'
 #' @param symbols character vector of gene symbols
+#' @param organism mouse or human
 #'
 #' @return a vector of transcripts
 #' @export
@@ -67,7 +68,6 @@ transcripts_to_genes <- function(transcripts, organism = "human") {
 #'  Object (based on nCount_RNA)
 #'
 #' @param object A object
-#' @param organism mouse
 #' @param experiment gene
 #'
 #' @return a single cell obejct with cell metadata column containing mitochondrial percentage

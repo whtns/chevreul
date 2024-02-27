@@ -5,7 +5,7 @@
 #' @param appTitle a title for the app
 #' @param organism_type human or mouse
 #' @param futureMb the megabytes available for the future package
-#' @param bigwigb  path to sqlite database listing bigwig files for cells in the obect object
+#' @param bigwig_db  path to sqlite database listing bigwig files for cells in the obect object
 #'
 #' @return a dockerized shiny app
 #' @export

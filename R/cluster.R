@@ -82,6 +82,7 @@ find_all_markers <- function(object, group_by = NULL, experiment = "gene", ...) 
 #' @param marker_table a table of marker genes
 #'
 #' @return a table of marker genes
+#' @export
 #' @examples
 #' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
 #' marker_table <- metadata(chevreul_sce)$markers[["batch"]]

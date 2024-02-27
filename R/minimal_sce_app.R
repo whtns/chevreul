@@ -5,6 +5,7 @@
 #' @param appTitle a title for the app
 #' @param organism_type human or mouse
 #' @param futureMb the megabytes available for the future package
+#' @param bigwig_db a database of bigwig files
 #'
 #' @return a minimal chevreul app
 #' @export

@@ -20,7 +20,7 @@ plotClustree <- function(input, output, session, object) {
     output$clustree <- renderPlot({
         req(object())
         experiment <- ifelse("integrated" %in% get_feature_types(object()), "integrated", "gene")
-        object <- set_feature_types(object(), experiment)
+        object <- set_feature_type(object(), experiment)
         clustree::clustree(object(), prefix = paste0(experiment, "_snn_res."))
     })
 }
@@ -1848,7 +1848,7 @@ reformatMetadataDR <- function(input, output, session, object, featureType = "ge
         return(NULL)
       }
 
-      colData(object()) <- colData(object()) <- read_csv(inFile$datapath)
+      colData(object()) <- read_csv(inFile$datapath)
       object(object())
     } else if (input$updateMethod == "spreadsheet") {
       reformatted_object <- propagate_spreadsheet_changes(values$data_active, object())

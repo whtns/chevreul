@@ -10,8 +10,6 @@ add_percent_mito(object, experiment = "gene")
 \item{object}{A object}
 
 \item{experiment}{gene}
-
-\item{organism}{mouse}
 }
 \value{
 a single cell obejct with cell metadata column containing mitochondrial percentage

@@ -12,8 +12,6 @@ object_integrate(object_list, organism = "human", ...)
 \item{organism}{human or mouse}
 
 \item{...}{extra args passed to object_reduce_dimensions}
-
-\item{method}{Default "cca"}
 }
 \value{
 an integrated single cell object

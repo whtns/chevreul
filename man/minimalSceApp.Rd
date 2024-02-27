@@ -23,6 +23,8 @@ minimalSceApp(
 \item{organism_type}{human or mouse}
 
 \item{futureMb}{the megabytes available for the future package}
+
+\item{bigwig_db}{a database of bigwig files}
 }
 \value{
 a minimal chevreul app
