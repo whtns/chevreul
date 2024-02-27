@@ -2,7 +2,7 @@
 #'
 #' Performs standard pre-processing workflow for scRNA-seq data
 #'
-#' @param experiment Assay to use
+#' @param object Assay to use
 #' @param scale Perform linear transformation 'Scaling'
 #' @param normalize Perform normalization
 #' @param features Identify highly variable features
@@ -13,29 +13,30 @@
 #' @export
 #'
 #' @examples
+#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
 #'
-#' human_gene_transcript_sce <- object_preprocess(human_gene_transcript_sce)
+#' chevreul_sce <- object_preprocess(chevreul_sce)
 #'
-object_preprocess <- function (experiment, scale = TRUE, normalize = TRUE, features = NULL, legacy_settings = FALSE, ...)
+object_preprocess <- function (object, scale = TRUE, normalize = TRUE, features = NULL, legacy_settings = FALSE, ...)
           {
-            clusters <- quickCluster(experiment)
-            experiment <- computeSumFactors(experiment, clusters=clusters)
-            # summary(sizeFactors(experiment))
+            clusters <- quickCluster(object)
+            object <- computeSumFactors(object, clusters=clusters)
+            # summary(sizeFactors(object))
 
-            experiment <- logNormCounts(experiment)
+            object <- logNormCounts(object)
 
-            dec <- modelGeneVar(experiment)
+            dec <- modelGeneVar(object)
 
             # Get the top 10% of genes.
             top.hvgs <- getTopHVGs(dec, prop=0.1)
-            experiment <- runPCA(experiment, subset_row=top.hvgs)
+            object <- runPCA(object, subset_row=top.hvgs)
 
-            output <- getClusteredPCs(reducedDim(experiment))
+            output <- getClusteredPCs(reducedDim(object))
 
-            g1 <- buildSNNGraph(experiment, use.dimred="PCA")
+            g1 <- buildSNNGraph(object, use.dimred="PCA")
 
 
-            return(experiment)
+            return(object)
 }
 
 
@@ -52,7 +53,8 @@ object_preprocess <- function (experiment, scale = TRUE, normalize = TRUE, featu
 #' @export
 #'
 #' @examples
-#' markers_stashed_object <- find_all_markers(human_gene_transcript_sce)
+#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+#' markers_stashed_object <- find_all_markers(chevreul_sce)
 find_all_markers <- function(object, group_by = NULL, experiment = "gene", ...) {
         if (is.null(group_by)) {
             resolutions <- colnames(get_cell_metadata(object))[grepl(paste0(experiment, "_snn_res."), colnames(get_cell_metadata(object)))]
@@ -81,7 +83,8 @@ find_all_markers <- function(object, group_by = NULL, experiment = "gene", ...) 
 #'
 #' @return a table of marker genes
 #' @examples
-#' marker_table <- metadata(human_gene_transcript_sce)$markers[["batch"]]
+#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+#' marker_table <- metadata(chevreul_sce)$markers[["batch"]]
 #' enframe_markers(marker_table)
 #'
 enframe_markers <- function(marker_table) {

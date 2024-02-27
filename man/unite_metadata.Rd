@@ -18,6 +18,7 @@ an object with Idents formed from concatenation of group_bys
 Unite metadata
 }
 \examples{
-unite_metadata(human_gene_transcript_sce, "nFeature_gene")
+chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+unite_metadata(chevreul_sce, "nFeature_gene")
 
 }

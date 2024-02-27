@@ -21,6 +21,7 @@ Add a Percentage of Mitochondrial Read Count Categorical Variable to the
 Object (based on nCount_RNA)
 }
 \examples{
-add_percent_mito(human_gene_transcript_sce)
+chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+add_percent_mito(chevreul_sce)
 
 }

@@ -10,10 +10,6 @@ regress_cell_cycle(object, regress = TRUE)
 \item{object}{A object}
 
 \item{regress}{whether to regress}
-
-\item{feature_set}{a set of features}
-
-\item{set_name}{as a string}
 }
 \value{
 a single cell object with features regressed
@@ -22,7 +18,8 @@ a single cell object with features regressed
 Regress SingleCellExperiment Object by Given Set of Genes
 }
 \examples{
+chevreul_sce <- chevreuldata::human_gene_transcript_sce()
 
-regressed_object <- regress_cell_cycle(human_gene_transcript_sce)
+regressed_object <- regress_cell_cycle(chevreul_sce)
 
 }

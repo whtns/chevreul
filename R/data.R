@@ -1,17 +1,3 @@
-#' Retinal Cell Type Marker Genes
-#'
-#' Retinal Cell Type Marker Genes
-#'
-#' @format A data frame with 99 rows and 3 variables:
-#' \describe{
-#'   \item{\code{gene}}{character COLUMN_DESCRIPTION}
-#'   \item{\code{cell_type}}{character COLUMN_DESCRIPTION}
-#'   \item{\code{species}}{character COLUMN_DESCRIPTION}
-#' }
-#' @source Cui et al. (2020). Transcriptomic Analysis of the Developmental Similarities and Differences Between the Native Retina and Retinal Organoids. Invest. Ophthalmol. Vis. Sci. 61, 6–6.
-"celltype_markers"
-
-
 #' Gene Homologs Between Human and Mouse
 #'
 #' Homologs drawn from Biomart
@@ -24,3 +10,30 @@
 #' }
 #' @source bioMart
 "human_to_mouse_homologs"
+
+#' Cyclone cell cycle pairs by symbol
+#'
+#' cell cycle genes with paired expression represented by HGNC symbol
+#'
+#' @format a list of dataframes with G1, G2, and S gene expression
+#' \describe{
+#'   \item{G1}{G1 gene symbols}
+#'   \item{G2}{G2 gene symbols}
+#'   \item{S}{S gene symbols}
+#'   ...
+#' }
+#' @source cyclone
+"cc.genes.cyclone"
+
+#' Mitochondial Features
+#'
+#' Mitochondrial genes in mouse and human
+#'
+#' @format a list of human  with G1, G2, and S gene expression
+#' \describe{
+#'   \item{human}{human mitochondrial features: genes and transcripts}
+#'   \item{mouse}{mouse mitochondrial features: genes and transcripts}
+#'   ...
+#' }
+#' @source bioMart
+"mito_features"

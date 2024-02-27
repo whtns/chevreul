@@ -15,13 +15,13 @@
 #' @export
 #' @importFrom scran findMarkers
 #' @examples
+#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+#' run_object_de(chevreul_sce, diffex_scheme = "louvain", cluster1 = 1, cluster2 = 2, tests = "t")
 #'
-#' run_object_de(human_gene_transcript_sce, diffex_scheme = "louvain", cluster1 = 1, cluster2 = 2, tests = "t")
+#' cells1 <- colnames(chevreul_sce)[chevreul_sce$batch == "Zhong"]
+#' cells2 <- colnames(chevreul_sce)[chevreul_sce$batch == "Kuwahara"]
 #'
-#' cells1 <- colnames(human_gene_transcript_sce)[human_gene_transcript_sce$batch == "Zhong"]
-#' cells2 <- colnames(human_gene_transcript_sce)[human_gene_transcript_sce$batch == "Kuwahara"]
-#'
-#' run_object_de(human_gene_transcript_sce, diffex_scheme = "custom", cluster1 = cells1 , cluster2 = cells2, tests = "t")
+#' run_object_de(chevreul_sce, diffex_scheme = "custom", cluster1 = cells1 , cluster2 = cells2, tests = "t")
 #'
 #'
 run_object_de <- function(object, cluster1, cluster2, resolution = 0.2, diffex_scheme = "louvain", featureType = "gene", tests = c("t", "wilcox", "bimod")) {
@@ -82,111 +82,6 @@ run_object_de <- function(object, cluster1, cluster2, resolution = 0.2, diffex_s
 
 
 
-
-#' Run Enrichment Browser on Differentially Expressed Genes
-#'
-#' @param object a single cell object
-#' @param cluster_list a list of clusters
-#' @param de_results differential expression results
-#' @param enrichment_method enrichment method
-#' @param ... extra arguments passed to ggplot
-#'
-#' @return a list of enrichmentbrowser output
-#' @importFrom SummarizedExperiment SummarizedExperiment
-#' @importFrom forcats fct_inseq
-#' @examples
-#'
-#' donttest{run_enrichmentbrowser(human_gene_transcript_sce)}
-#'
-#'
-run_enrichmentbrowser <- function(object, cluster_list, de_results, enrichment_method = c("ora"), ...) {
-    cluster1_cells <- cluster_list$cluster1
-    cluster2_cells <- cluster_list$cluster2
-
-    test_diffex_results <- de_results$t %>%
-        mutate(FC = log2(exp(avg_log2FC))) %>%
-        mutate(ADJ.PVAL = p_val_adj) %>%
-        distinct(symbol, .keep_all = TRUE) %>%
-        column_to_rownames("symbol") %>%
-        identity()
-
-    # subset by supplied cell ids
-    #
-    object <- object[, c(cluster1_cells, cluster2_cells)]
-    object <- object[rownames(object) %in% de_results$t$symbol, ]
-
-    object[["gene"]]@meta.features <- test_diffex_results
-
-    keep_cells <- c(cluster1_cells, cluster2_cells)
-    new_idents <- c(rep(0, length(cluster1_cells)), rep(1, length(cluster2_cells)))
-    names(new_idents) <- keep_cells
-    new_idents <- new_idents[colnames(object)]
-    Idents(object) <- new_idents
-
-    counts <- GetAssayData(object, experiment = "gene", slot = "counts")
-    counts <- as.matrix(counts)
-    mode(counts) <- "integer"
-
-    rowData <- data.frame(
-        FC = object[["gene"]][[]]$FC,
-        ADJ.PVAL = object[["gene"]][[]]$ADJ.PVAL,
-        row.names = rownames(object@experiments[["gene"]])
-    )
-
-    colData <- get_cell_metadata(object)
-
-    se <- SummarizedExperiment(
-        experiments = list(counts = counts),
-        rowData = rowData, colData = colData
-    )
-
-    se$GROUP <- fct_inseq(Idents(object))
-
-    se <- idMap(se, org = "hsa", from = "SYMBOL", to = "ENTREZID")
-
-    outdir <- path("www", "enrichmentbrowser")
-
-    enrichment.res <- list()
-
-    if ("ora" %in% enrichment_method) {
-        enrichment.res$ora <- sbea(
-            method = "ora", se = se, gs = go.gs, perm = 0,
-            alpha = 0.1
-        )
-        results <- enrichment.res$ora
-        report.name <- "ora.html"
-        eaBrowse(results,
-            html.only = TRUE, out.dir = outdir, graph.view = hsa.grn,
-            report.name = report.name
-        )
-    }
-
-    if ("gsea" %in% enrichment_method) {
-        enrichment.res$gsea <- sbea(
-            method = "gsea", se = se, gs = msigdb.gs, perm = 100,
-            alpha = 0.1
-        )
-        results <- enrichment.res$gsea
-        report.name <- "gsea.html"
-        eaBrowse(results,
-            html.only = TRUE, out.dir = outdir, graph.view = hsa.grn,
-            report.name = report.name
-        )
-    }
-
-    if ("nbea" %in% enrichment_method) {
-        enrichment.res$nbea <- nbea(method = "ggea", se = se, gs = go.gs, grn = hsa.grn)
-
-        results <- enrichment.res$nbea
-        report.name <- "nbea.html"
-        eaBrowse(results,
-            html.only = TRUE, out.dir = outdir, graph.view = hsa.grn,
-            report.name = report.name
-        )
-    }
-
-    return(list(report = path("enrichmentbrowser", report.name), results = results$res.tbl))
-}
 
 #' Prep Slider Values
 #'

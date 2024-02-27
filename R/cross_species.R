@@ -102,7 +102,7 @@ convert_symbols_by_species <- function(src_genes, src_species) {
 #'
 #' @examples
 #'
-#' cross_species_integrate(list(baron2016singlecell = baron2016singlecell), list(human_gene_transcript_sce = human_gene_transcript_sce))
+#' cross_species_integrate(list(baron2016singlecell = baron2016singlecell), list(chevreul_sce = chevreul_sce))
 #'
 cross_species_integrate <- function(mouse_object_list, human_object_list){
     mouse_object_list <- map(mouse_object_list, convert_mouse_object_to_human)

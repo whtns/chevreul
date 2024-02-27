@@ -57,7 +57,7 @@ library(patchwork)
 
 # TLDR 
 
-Here, we are using the `human_gene_transcript_sce` dataset, which is produced in two batches using different technologies. The `SplitObject()` function splits the object into a list containing each batch as element. This list of objects can then be integrated using the `integration_workflow()` function, which identifies shared cell states that are present across different single cell datasets.
+Here, we are using the `chevreul_sce` dataset, which is produced in two batches using different technologies. The `SplitObject()` function splits the object into a list containing each batch as element. This list of objects can then be integrated using the `integration_workflow()` function, which identifies shared cell states that are present across different single cell datasets.
 
 ```{r, eval=FALSE}
 batches <-
@@ -75,9 +75,9 @@ When analyzing data across multiple batches, batch effects can become problemati
 
 
 ```{r }
-markerp <- plot_markers(human_gene_transcript_sce, group_by = "gene_snn_res.0.2", num_markers = 10)
+markerp <- plot_markers(chevreul_sce, group_by = "gene_snn_res.0.2", num_markers = 10)
 
-dp <- plot_var(human_gene_transcript_sce, group = "gene_snn_res.0.2")
+dp <- plot_var(chevreul_sce, group = "gene_snn_res.0.2")
 
 wrap_plots(markerp, dp) +
     plot_layout(widths = c(1, 6), ncol = 1)
@@ -102,7 +102,7 @@ Downstream analysis is performed on this integrated matrix by `object_integratio
 Finally, the resulting integrated datasets can be visualized by plotting the output
 
 ```{r, eval=TRUE}
-plot_var(human_gene_transcript_sce, group = "Prep.Method", )
+plot_var(chevreul_sce, group = "Prep.Method", )
 ```
 
 ## Asumtions of the input data

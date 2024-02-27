@@ -18,5 +18,6 @@ Main or alt experiment in an object
 Retrieve Assay
 }
 \examples{
-retrieve_experiment(human_gene_transcript_sce)
+chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+retrieve_experiment(chevreul_sce)
 }

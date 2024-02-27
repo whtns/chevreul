@@ -74,13 +74,10 @@ transcripts_to_genes <- function(transcripts, organism = "human") {
 #' @export
 #' @importFrom scuttle addPerCellQCMetrics
 #' @examples
-#' add_percent_mito(human_gene_transcript_sce)
+#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+#' add_percent_mito(chevreul_sce)
 #'
 add_percent_mito <- function(object, experiment = "gene") {
-        # mito_features <- mito_features[[organism]][["gene"]]
-        # mito_features <- mito_features[mito_features %in% rownames(object[[experiment]])]
-        # object[["percent.mt"]] <- PercentageFeatureSet(object, features = mito_features)
-        # return(object)
         is.mito <- grepl("^MT-*", rownames(object))
         object <- addPerCellQCMetrics(object, subsets = list(Mito = is.mito))
         return(object)

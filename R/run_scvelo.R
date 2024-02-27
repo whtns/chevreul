@@ -11,7 +11,9 @@
 #' @return a single cell object with RNA velocity calculated
 #' @export
 #' @importFrom LoomExperiment import
-#' @examples \donttest{merge_loom(human_gene_transcript_sce, "my.loom")}
+#' @examples \donttest{
+#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+#' merge_loom(chevreul_sce, "my.loom")}
 merge_loom <- function(object, loom_path, assay = "gene", fit.quantile = 0.05, check_loom = FALSE) {
 
   loom_object <- import(loom_path, type="SingleCellLoomExperiment", colnames_attr = "CellID", rownames_attr = "Gene")
@@ -38,7 +40,9 @@ merge_loom <- function(object, loom_path, assay = "gene", fit.quantile = 0.05, c
 #'
 #' @return a single cell object with velocity calculated
 #' @export
-#' @examples plot_scvelo(human_gene_transcript_sce, embedding = "UMAP", color_by = "velocity_pseudotime")
+#' @examples
+#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+#' plot_scvelo(chevreul_sce, embedding = "UMAP", color_by = "velocity_pseudotime")
 plot_scvelo <- function(object, mode = c("steady_state", "deterministic", "stochastic", "dynamical"), embedding = c("UMAP", "PCA", "TSNE"), ...) {
 
   embedding <- match.arg(embedding)

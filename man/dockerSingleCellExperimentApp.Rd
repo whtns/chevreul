@@ -5,7 +5,7 @@
 \title{Create a obect app on a shinyproxy docker instance}
 \usage{
 dockerSingleCellExperimentApp(
-  object = human_gene_transcript_sce,
+  object = chevreul_sce,
   loom_path = NULL,
   appTitle = NULL,
   organism_type = "human",
@@ -33,7 +33,7 @@ a dockerized shiny app
 Create a obect app on a shinyproxy docker instance
 }
 \examples{
-\dontrun{dockerSingleCellExperimentApp(human_gene_transcript_sce)
+\dontrun{dockerSingleCellExperimentApp(chevreul_sce)
 }
 
 }

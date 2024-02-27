@@ -33,5 +33,6 @@ a clustered single cell object
 Cluster and Reduce Dimensions of a object
 }
 \examples{
-clustering_workflow(human_gene_transcript_sce)
+chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+clustering_workflow(chevreul_sce)
 }

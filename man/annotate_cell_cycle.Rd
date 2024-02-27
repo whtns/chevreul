@@ -16,7 +16,8 @@ a single cell object
 Annotate Cell Cycle for Gene and Transcript SingleCellExperiment Objects
 }
 \examples{
-human_gene_phase<-annotate_cell_cycle(human_gene_transcript_sce)
+chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+human_gene_phase<-annotate_cell_cycle(chevreul_sce)
 human_gene_phase$phases
 
 }

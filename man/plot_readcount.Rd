@@ -33,9 +33,10 @@ a histogram of read counts
 Draw a box plot for read count data of a metadata variable
 }
 \examples{
+chevreul_sce <- chevreuldata::human_gene_transcript_sce()
 # interactive plotly
-plot_readcount((human_gene_transcript_sce), return_plotly = TRUE)
+plot_readcount((chevreul_sce), return_plotly = TRUE)
 
 # static plot
-plot_readcount((human_gene_transcript_sce), return_plotly = FALSE)
+plot_readcount((chevreul_sce), return_plotly = FALSE)
 }

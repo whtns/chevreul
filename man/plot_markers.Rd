@@ -47,7 +47,7 @@ Plot a dot plot of n marker features grouped by cell metadata
 available methods are wilcoxon rank-sum test
 }
 \examples{
-
-plot_markers(human_gene_transcript_sce, group_by = "gene_snn_res.0.2")
+chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+plot_markers(chevreul_sce, group_by = "gene_snn_res.0.2")
 
 }

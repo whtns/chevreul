@@ -8,8 +8,9 @@
 #' @return a single cell object
 #' @export
 #' @examples
+#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
 #' new_meta <- system.file("extdata", "new_meta.csv", package="chevreul")
-#' replace_object_metadata(human_gene_transcript_sce, new_meta)
+#' replace_object_metadata(chevreul_sce, new_meta)
 replace_object_metadata <- function(object, datapath) {
         new_meta <- read_csv(datapath) %>%
             mutate(across(contains("snn"), as.factor))
@@ -33,8 +34,9 @@ replace_object_metadata <- function(object, datapath) {
 #' @export
 #'
 #' @examples
+#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
 #'
-#' NRL_transcripts <- get_transcripts_from_object(human_gene_transcript_sce, "NRL")
+#' NRL_transcripts <- get_transcripts_from_object(chevreul_sce, "NRL")
 #'
 get_transcripts_from_object <- function(object, gene, organism = "human") {
         transcripts <- genes_to_transcripts(gene, organism)
@@ -53,7 +55,8 @@ get_transcripts_from_object <- function(object, gene, organism = "human") {
 #' @return a single cell object
 #' @export
 #' @examples
-#' record_experiment_data(human_gene_transcript_sce)
+#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+#' record_experiment_data(chevreul_sce)
 #'
 record_experiment_data <- function(object, experiment_name = "default_experiment", organism = "human") {
         if (!requireNamespace("SingleCellExperiment", quietly = TRUE)) {
@@ -62,7 +65,7 @@ record_experiment_data <- function(object, experiment_name = "default_experiment
             )
         }
 
-        organism <- metadata(human_gene_transcript_sce)[["experiment"]][["organism"]] %||% organism
+        organism <- metadata(object)[["experiment"]][["organism"]] %||% organism
 
         experiment_name <- metadata(object)[["experiment"]][["experiment_name"]] %||% experiment_name
 
@@ -111,7 +114,8 @@ record_experiment_data <- function(object, experiment_name = "default_experiment
 #' @return a single cell object with nfeatures and ngenes stored in metadata
 #' @export
 #' @examples
-#' object_calcn(human_gene_transcript_sce)
+#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+#' object_calcn(chevreul_sce)
 object_calcn <- function(object) {
 
   object <- addPerCellQC(object)
@@ -138,9 +142,10 @@ object_calcn <- function(object) {
 #' @examples
 #'
 #' \donttest{
+#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
 #' updated_table <- read_csv(system.file("extdata", "new_meta.csv", package="chevreul"))
 #'
-#' propagate_spreadsheet_changes(updated_table, human_gene_transcript_sce)
+#' propagate_spreadsheet_changes(updated_table, chevreul_sce)
 #' }
 propagate_spreadsheet_changes <- function(updated_table, object) {
     meta <- updated_table
@@ -346,7 +351,9 @@ make_bigwig_db <- function(new_project = NULL, cache_location = "~/.cache/chevre
 #' @return a tibble with cell level metadata from a single cell object
 #' @examples
 #'
-#' \donttest{metadata_from_batch(human_gene_transcript_sce)}
+#' \donttest{
+#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+#' metadata_from_batch(chevreul_sce)}
 #'
 metadata_from_batch <- function(batch, projects_dir = "/dataVolume/storage/single_cell_projects",
     db_path = "single-cell-projects.db") {
@@ -375,7 +382,8 @@ metadata_from_batch <- function(batch, projects_dir = "/dataVolume/storage/singl
 #' @return a clean vector of object names
 #' @export
 #' @examples
-#' make_chevreul_clean_names(colnames(get_cell_metadata(human_gene_transcript_sce)))
+#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+#' make_chevreul_clean_names(colnames(get_cell_metadata(chevreul_sce)))
 make_chevreul_clean_names <- function(myvec) {
     myvec %>%
         set_names(str_to_title(str_replace_all(., "[^[:alnum:][:space:]\\.]", " ")))
@@ -390,24 +398,11 @@ make_chevreul_clean_names <- function(myvec) {
 #' @return a tibble with metadata from a single cell object
 #' @export
 #' @examples
-#' metadata_from_object(human_gene_transcript_sce)
+#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+#' metadata_from_object(chevreul_sce)
 #'
 metadata_from_object <- function(object) {
     colnames(colData(object))
-}
-
-convert_seurat_to_sce <- function(seu) {
-    sce <- as.SingleCellExperiment(seu, experiment = DefaultAssay(seu))
-
-    alt_exp_names <- SingleCellExperiment::Assays(seu)[!SingleCellExperiment::Assays(seu) == DefaultAssay(seu)]
-
-    for (i in alt_exp_names) {
-        altExp(sce, i) <- as.SingleCellExperiment(seu, experiment = i)
-    }
-
-    metadata(sce) <- seu@misc
-
-    return(sce)
 }
 
 #' Save object to <project>/output/sce/<feature>_object.rds

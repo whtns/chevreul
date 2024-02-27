@@ -9,12 +9,6 @@
 # matplotlib <- NULL
 # pyplot <- NULL
 .onLoad <- function(libname, pkgname) {
-    # reticulate::configure_environment(pkgname, force = TRUE)
-    # use superassignment to update global reference to scvelo
-    # scvelo <<- reticulate::import("scvelo", delay_load = TRUE)
-    # matplotlib <<- reticulate::import("matplotlib", convert = TRUE)
-    # matplotlib$use("Agg", force = TRUE)
-    # pyplot <<- reticulate::import("matplotlib.pyplot", delay_load = TRUE)
 
     loadRData <- function(fileName){
       #loads an RData file, and returns it
@@ -22,15 +16,11 @@
       get(ls()[ls() != "fileName"])
     }
 
-    human_gene_transcript_seu <<- loadRData(url("http://cobrinik-1.saban-chla.usc.edu/human_gene_transcript_seu.rda"))
-    human_gene_transcript_sce <<- loadRData(url("http://cobrinik-1.saban-chla.usc.edu/human_gene_transcript_sce.rda"))
+    # chevreuldata::human_gene_transcript_sce <<- loadRData(url("http://cobrinik-1.saban-chla.usc.edu/chevreuldata::human_gene_transcript_sce.rda"))
+    # chevreul_sce <<- chevreuldata::chevreuldata::human_gene_transcript_sce()
     human_gene_transcript_loom_path <<- "http://cobrinik-1.saban-chla.usc.edu/human_gene_transcript.loom"
     human_fetal_retina_sce <<- readRDS(url("http://cobrinik-1.saban-chla.usc.edu/chevreuldata/human_fetal_retina_sce.rds"))
-    human_fetal_retina_seu <<- readRDS(url("http://cobrinik-1.saban-chla.usc.edu/chevreuldata/human_fetal_retina_seu.rds"))
     baron2016singlecell <<- loadRData(url("http://cobrinik-1.saban-chla.usc.edu/chevreuldata/baron2016singlecell.rda"))
-    panc8 <<- loadRData(url("http://cobrinik-1.saban-chla.usc.edu/chevreuldata/panc8.rda"))
-    human_count <<- loadRData(url("http://cobrinik-1.saban-chla.usc.edu/human_count.rda"))
-    human_meta <<- loadRData(url("http://cobrinik-1.saban-chla.usc.edu/human_meta.rda"))
 }
 
 #' Install scvelo

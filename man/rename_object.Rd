@@ -18,5 +18,6 @@ a renamed single cell object
 Give a new project name to a single cell object
 }
 \examples{
-rename_object(human_gene_transcript_sce, "new_name")
+chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+rename_object(chevreul_sce, "new_name")
 }

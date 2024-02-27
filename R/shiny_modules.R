@@ -3,7 +3,6 @@ plotClustree_UI <- function(id) {
     tagList(
         chevreulBox(
             title = "Clustering Tree",
-            # textOutput(ns("checkSeu")),
             plotOutput(ns("clustree"), height = "700px")
         )
     )
@@ -292,7 +291,7 @@ integrateProj <- function(input, output, session, proj_matrices, object, proj_di
             identity()
     })
 
-    mergedSeus <- reactiveVal()
+    mergedObjects <- reactiveVal()
 
     observeEvent(input$integrateAction, {
         req(selectedProjects())
@@ -306,8 +305,8 @@ integrateProj <- function(input, output, session, proj_matrices, object, proj_di
 
                 names(batches) <- names(selectedProjects())
                 print(names(batches))
-                mergedSeus(integration_workflow(batches, legacy_settings = input$legacySettings))
-                # mergedSeus(batches[[1]])
+                mergedObjects(integration_workflow(batches, legacy_settings = input$legacySettings))
+                # mergedObjects(batches[[1]])
 
                 message("Integration Complete!")
             },
@@ -318,12 +317,12 @@ integrateProj <- function(input, output, session, proj_matrices, object, proj_di
     })
 
     newProjDir <- reactive({
-        req(mergedSeus())
+        req(mergedObjects())
         print("foo created successfully")
-        # print(names(mergedSeus()))
+        # print(names(mergedObjects()))
         #
-        # for (i in names(mergedSeus())) {
-        #   object[[i]] <- mergedSeus()[[i]]
+        # for (i in names(mergedObjects())) {
+        #   object[[i]] <- mergedObjects()[[i]]
         # }
         #
 
@@ -368,7 +367,7 @@ integrateProj <- function(input, output, session, proj_matrices, object, proj_di
     })
 
     observeEvent(input$saveIntegratedProject, {
-        req(mergedSeus())
+        req(mergedObjects())
         req(integratedProjectSavePath())
 
         if (!is.null(integratedProjectSavePath())) {
@@ -378,7 +377,7 @@ integrateProj <- function(input, output, session, proj_matrices, object, proj_di
                 {
                     # Sys.sleep(6)
                     incProgress(2 / 10)
-                    save_object(mergedSeus(), proj_dir = integratedProjectSavePath())
+                    save_object(mergedObjects(), proj_dir = integratedProjectSavePath())
                     set_permissions_call <- paste0("chmod -R 775 ", integratedProjectSavePath())
                     system(set_permissions_call)
                     writeLines(character(), path(integratedProjectSavePath(), ".here"))
@@ -1543,17 +1542,6 @@ techInfo <- function(input, output, session, object) {
         object_metadata()$experiment$parameters$variables_to_regress_out,
         "<li><b>tSNE perplexity: </b>",
         object_metadata()$experiment$parameters$tSNE_perplexity,
-        "</ul>",
-        "<strong><u>Gene lists</u></strong>",
-        "<ul>",
-        # "<li><b>Mitochondrial genes:</b> ",
-        # paste0(mito_features[[object_metadata()$experiment$organism]][["gene"]], collapse = ", "),
-        # "<li><b>Ribosomal genes:</b> ",
-        # paste0(ribo_features[[object_metadata()$experiment$organism]][["gene"]], collapse = ", "),
-        "<li><b>S phase genes:</b> ",
-        paste0(cc.genes$s.genes, collapse = ", "),
-        "<li><b>G2M phase genes:</b> ",
-        paste0(cc.genes$g2m.genes, collapse = ", "),
         "</ul>",
         "<strong><u>Marker genes</u></strong>",
         "<ul>",

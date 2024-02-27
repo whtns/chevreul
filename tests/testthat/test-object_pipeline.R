@@ -1,5 +1,6 @@
-test_that("multiplication works", {
+test_that("pipeline runs", {
+  chevreul_sce <- chevreuldata::human_gene_transcript_sce()
   expect_error(
-    object_pipeline(human_gene_transcript_sce),
+    object_pipeline(chevreul_sce),
     NA)
 })

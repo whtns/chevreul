@@ -1,16 +1,15 @@
 #' Regress SingleCellExperiment Object by Given Set of Genes
 #'
 #' @param object A object
-#' @param feature_set a set of features
-#' @param set_name as a string
 #' @param regress whether to regress
 #'
 #' @return a single cell object with features regressed
 #' @export
-#'
+#' @importFrom batchelor regressBatches
 #' @examples
+#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
 #'
-#' regressed_object <- regress_cell_cycle(human_gene_transcript_sce)
+#' regressed_object <- regress_cell_cycle(chevreul_sce)
 #'
 regress_cell_cycle <- function (object, regress = TRUE)
           {
@@ -29,10 +28,12 @@ regress_cell_cycle <- function (object, regress = TRUE)
 
               reg.nocycle <- runPCA(reg.nocycle, exprs_values="corrected",
                                     subset_row=getTopHVGs(dec.nocycle, prop=0.1))
-              mainExpName(object) <- "original"
-              altExp(object, "gene") <- reg.nocycle
+
               original_experiment = mainExpName(object)
-              swapAltExp(object, "gene")
+
+              altExp(object, glue("{original_experiment}_regressed")) <- reg.nocycle
+              # browser()
+              object <- swapAltExp(object, as.character(glue("{original_experiment}_regressed")))
 
               reductions <- reducedDimNames(object)
               resolutions <- str_extract(colnames(colData(object))[grepl(glue("{original_experiment}_snn_res."), colnames(colData(object)))], "[0-9].*$")
