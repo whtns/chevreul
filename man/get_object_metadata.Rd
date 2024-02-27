@@ -16,5 +16,6 @@ variable features from a single cell object
 Get object metadata
 }
 \examples{
-get_object_metadata(human_gene_transcript_sce)
+chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+get_object_metadata(chevreul_sce)
 }

@@ -16,5 +16,6 @@ dataframe containing object metadata
 Pull the metadata from a given object
 }
 \examples{
-get_cell_metadata(human_gene_transcript_sce)
+chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+get_cell_metadata(chevreul_sce)
 }

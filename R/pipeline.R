@@ -1,5 +1,3 @@
-# seurat integration ------------------------------
-
 #' Run SingleCellExperiment Integration
 #'
 #' Run batch correction, followed by:
@@ -19,8 +17,8 @@
 #' @export
 #'
 #' @examples
-#'
-#' batches <- splitByCol(human_gene_transcript_sce, "batch")
+#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+#' batches <- splitByCol(chevreul_sce, "batch")
 #' integrated_object <- object_integration_pipeline(batches)
 object_integration_pipeline <- function(object_list, resolution = seq(0.2, 2.0, by = 0.2), suffix = "", organism = "human", annotate_cell_cycle = FALSE, annotate_percent_mito = FALSE, reduction = "PCA", ...) {
         experiment_names <- names(object_list)
@@ -83,13 +81,14 @@ object_integration_pipeline <- function(object_list, resolution = seq(0.2, 2.0, 
 #' @export
 #'
 #' @examples
+#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
 #'
-#' processed_object <- object_pipeline(human_gene_transcript_sce)
+#' processed_object <- object_pipeline(chevreul_sce)
 #'
 object_pipeline <- function(object, experiment = "gene", resolution = 0.6, reduction = "PCA", organism = "human", ...) {
 
   object <- object_preprocess(object, scale = TRUE, ...)
-        for (experiment in altExpNames(object)) {
+        for (experiment in altExpNames(object)[!altExpNames(object) == "velocity"]) {
             altExp(object, experiment) <- object_preprocess(altExp(object, experiment), scale = TRUE, ...)
         }
 

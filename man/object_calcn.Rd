@@ -16,5 +16,6 @@ a single cell object with nfeatures and ngenes stored in metadata
 Recalculate counts/features per cell for a object
 }
 \examples{
-object_calcn(human_gene_transcript_sce)
+chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+object_calcn(chevreul_sce)
 }

@@ -18,9 +18,10 @@ a single cell object
 Merge Small SingleCellExeriment Objects
 }
 \examples{
+chevreul_sce <- chevreuldata::human_gene_transcript_sce()
 merge_small_objects(
-"small_batch1" = human_gene_transcript_sce[,1:40],
-"small_batch2" = human_gene_transcript_sce[,41:80],
-"large_batch" = human_gene_transcript_sce[,81:300])
+"small_batch1" = chevreul_sce[,1:40],
+"small_batch2" = chevreul_sce[,41:80],
+"large_batch" = chevreul_sce[,81:300])
 
 }

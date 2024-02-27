@@ -18,7 +18,7 @@ integration_workflow(
 
 \item{excluded_cells}{named list of cells to exclude}
 
-\item{resolution}{value(s) to control the clustering resolution via \code{SingleCellExperiment::FindMarkers}}
+\item{resolution}{value(s) to control the clustering resolution via \code{scran::findMarkers}}
 
 \item{experiment_name}{arbitrary name to identify experiment}
 
@@ -33,6 +33,7 @@ an integrated single cell object
 Integrate multiple objects and save to file
 }
 \examples{
-batches <- splitByCol(human_gene_transcript_sce, "batch")
+chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+batches <- splitByCol(chevreul_sce, "batch")
 integration_workflow(batches)
 }

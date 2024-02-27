@@ -33,7 +33,8 @@ a processed single cell object
 This functions allows you to Preprocess, Cluster and Reduce Dimensions for a single object.
 }
 \examples{
+chevreul_sce <- chevreuldata::human_gene_transcript_sce()
 
-processed_object <- object_pipeline(human_gene_transcript_sce)
+processed_object <- object_pipeline(chevreul_sce)
 
 }

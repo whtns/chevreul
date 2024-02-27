@@ -18,5 +18,6 @@ variable features from a single cell object
 Get feature names
 }
 \examples{
-get_features(human_gene_transcript_sce)
+chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+get_features(chevreul_sce)
 }

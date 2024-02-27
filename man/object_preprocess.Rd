@@ -5,7 +5,7 @@
 \title{Preprocess Single Cell Object}
 \usage{
 object_preprocess(
-  experiment,
+  object,
   scale = TRUE,
   normalize = TRUE,
   features = NULL,
@@ -14,7 +14,7 @@ object_preprocess(
 )
 }
 \arguments{
-\item{experiment}{Assay to use}
+\item{object}{Assay to use}
 
 \item{scale}{Perform linear transformation 'Scaling'}
 
@@ -33,7 +33,8 @@ a preprocessed single cell object
 Performs standard pre-processing workflow for scRNA-seq data
 }
 \examples{
+chevreul_sce <- chevreuldata::human_gene_transcript_sce()
 
-human_gene_transcript_sce <- object_preprocess(human_gene_transcript_sce)
+chevreul_sce <- object_preprocess(chevreul_sce)
 
 }

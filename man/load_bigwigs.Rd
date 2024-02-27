@@ -18,5 +18,7 @@ a vector of bigwigs file paths
 Load a tibble of bigwig file paths by cell id
 }
 \examples{
-\donttest{load_bigwigs(human_gene_transcript_sce)}
+\donttest{
+chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+load_bigwigs(chevreul_sce)}
 }

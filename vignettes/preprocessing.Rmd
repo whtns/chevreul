@@ -41,7 +41,7 @@ format_table <- function(mydf) {
         scroll_box(width = "800px", height = "200px")
 }
 
-load(url("http://cobrinik-1.saban-chla.usc.edu/human_gene_transcript_sce.rda"))
+load(url("http://cobrinik-1.saban-chla.usc.edu/chevreul_sce.rda"))
 
 ```
 
@@ -72,13 +72,13 @@ By default clustering will be run at ten different resolutions between 0.2 and 2
 
 ```{r, results=FALSE, eval=FALSE}
 
-clustered_sce_object <- clustering_workflow(human_gene_transcript_sce,
+clustered_sce_object <- clustering_workflow(chevreul_sce,
     experiment_name = "object_hu_trans"
 )
 ```
 
 ```{r, results=FALSE, echo=FALSE}
-clustered_sce_object <- human_gene_transcript_sce
+clustered_sce_object <- chevreul_sce
 ```
 
 
@@ -126,7 +126,7 @@ Then using these 2 datasets we can create a SingleCellExperiment object in the u
 
 ```{r}
 myobject <- SingleCellExperiment::SingleCellExperiment(
-  experiments = list(counts = human_count), 
+  assays = list(counts = human_count), 
   colData = human_meta, 
   mainExpName = "gene")
 myobject

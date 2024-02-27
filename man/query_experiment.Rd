@@ -18,5 +18,7 @@ logical scalar indicating if experiment is present in object
 Query Assay
 }
 \examples{
-query_experiment(human_gene_transcript_sce, "gene")
+
+chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+query_experiment(chevreul_sce, "gene")
 }

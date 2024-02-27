@@ -7,6 +7,7 @@
 plot_scvelo(
   object,
   mode = c("steady_state", "deterministic", "stochastic", "dynamical"),
+  embedding = c("UMAP", "PCA", "TSNE"),
   ...
 )
 }
@@ -24,4 +25,8 @@ a single cell object with velocity calculated
 }
 \description{
 run scvelo on a gene or transcript level object
+}
+\examples{
+chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+plot_scvelo(chevreul_sce, embedding = "UMAP", color_by = "velocity_pseudotime")
 }

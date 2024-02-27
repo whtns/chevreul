@@ -25,6 +25,8 @@ Retrieve Metadata from Batch
 }
 \examples{
 
-\donttest{metadata_from_batch(human_gene_transcript_sce)}
+\donttest{
+chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+metadata_from_batch(chevreul_sce)}
 
 }

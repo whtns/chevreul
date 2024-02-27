@@ -31,6 +31,6 @@ plot expression all transcripts for an input gene superimposed on an embedding
 }
 \examples{
 
-plot_all_transcripts(human_gene_transcript_sce, "NRL")
+plot_all_transcripts(chevreul_sce, "NRL")
 
 }

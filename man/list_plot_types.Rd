@@ -16,5 +16,6 @@ plot_types a list of category_vars or continuous_vars
 Collate list of variables to be plotted
 }
 \examples{
-list_plot_types(human_gene_transcript_sce)
+chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+list_plot_types(chevreul_sce)
 }

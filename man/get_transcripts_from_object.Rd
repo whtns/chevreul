@@ -20,7 +20,8 @@ transcripts constituting a gene of interest in a single cell object
 Get transcript ids in objects for one or more gene of interest
 }
 \examples{
+chevreul_sce <- chevreuldata::human_gene_transcript_sce()
 
-NRL_transcripts <- get_transcripts_from_object(human_gene_transcript_sce, "NRL")
+NRL_transcripts <- get_transcripts_from_object(chevreul_sce, "NRL")
 
 }

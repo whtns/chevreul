@@ -54,29 +54,9 @@ subset_by_meta <- function(meta_path, object) {
 
     object <- object[, colnames(object) %in% upload_cells]
 
-    object <- SingleCellExperiment::AddMetaData(object, upload_meta)
+    colData(object) <- merge(colData(object), upload_meta, by = "row.names")
 
     return(object)
-}
-
-#' Combine Loom Files
-#'
-#' @param projectPaths project paths
-#' @param newProjectPath new project path
-#'
-#' @return a combined loom file
-#' @export
-combine_looms <- function(projectPaths, newProjectPath) {
-    # loom combine
-    loompy <- reticulate::import("loompy")
-
-    loom_filenames <- str_replace(path_file(projectPaths), "_proj", ".loom")
-
-    selected_looms <- path(projectPaths, "output", "velocyto", loom_filenames)
-
-    file_not_dir <- function(f){file.exists(f) && !dir.exists(f)}
-
-    if (all(file_not_dir(selected_looms))) loompy$combine(selected_looms, newProjectPath)
 }
 
 #' Read in Gene and Transcript SingleCellExperiment Objects
@@ -91,7 +71,7 @@ load_object_path <- function(proj_dir = getwd(), prefix = "unfiltered") {
   object_path <- path(proj_dir, "output", "singlecellexperiment") %>%
     dir_ls(regexp = object_regex)
 
-  if (!rlang::is_empty(object_path)) {
+  if (!is_empty(object_path)) {
     return(object_path)
   }
 

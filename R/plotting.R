@@ -7,7 +7,8 @@
 #' @export
 #'
 #' @examples
-#' unite_metadata(human_gene_transcript_sce, "nFeature_gene")
+#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+#' unite_metadata(chevreul_sce, "nFeature_gene")
 #'
 unite_metadata <-
     function(object, group_bys) {
@@ -39,11 +40,12 @@ unite_metadata <-
 #' @export
 #'
 #' @examples
+#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
 #' # static mode
-#' plot_var(human_gene_transcript_sce, "batch", return_plotly = FALSE)
+#' plot_var(chevreul_sce, "batch", return_plotly = FALSE)
 #'
 #' # interactive plotly plot
-#' plot_var(human_gene_transcript_sce, "batch", return_plotly = TRUE)
+#' plot_var(chevreul_sce, "batch", return_plotly = TRUE)
 #'
 plot_var <- function(object, group = "batch", embedding = "UMAP", dims = c(1, 2), highlight = NULL, pt.size = 1.0, return_plotly = FALSE, ...) {
         metadata <- get_cell_metadata(object)
@@ -105,8 +107,9 @@ plotly_settings <- function(plotly_plot, width = 600, height = 700) {
 #' @export
 #'
 #' @examples
+#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
 #'
-#' plot_violin(human_gene_transcript_sce, plot_var = "batch", features = "NRL")
+#' plot_violin(chevreul_sce, plot_var = "batch", features = "NRL")
 #'
 plot_violin <- function(object, plot_var = "batch", plot_vals = NULL, features = "NRL", experiment = "gene", ...) {
         if (is.null(plot_vals)) {
@@ -137,7 +140,8 @@ plot_violin <- function(object, plot_var = "batch", plot_vals = NULL, features =
 #' @export
 #' @importFrom ggplot2 aes
 #' @examples
-#' plot_feature(human_gene_transcript_sce, embedding = "UMAP", features = "NRL")
+#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+#' plot_feature(chevreul_sce, embedding = "UMAP", features = "NRL")
 #'
 plot_feature <- function(object, embedding = c("UMAP", "PCA", "TSNE"), features, dims = c(1, 2), return_plotly = FALSE, pt.size = 1.0) {
         embedding <- toupper(embedding)
@@ -181,7 +185,8 @@ plot_feature <- function(object, embedding = c("UMAP", "PCA", "TSNE"), features,
 #' @return a single cell object
 #' @export
 #' @examples
-#' human_gene_phase<-annotate_cell_cycle(human_gene_transcript_sce)
+#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+#' human_gene_phase<-annotate_cell_cycle(chevreul_sce)
 #' human_gene_phase$phases
 #'
 annotate_cell_cycle <- function(object) {
@@ -212,8 +217,8 @@ annotate_cell_cycle <- function(object) {
 #' @export
 #'
 #' @examples
-#'
-#' plot_markers(human_gene_transcript_sce, group_by = "gene_snn_res.0.2")
+#'chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+#' plot_markers(chevreul_sce, group_by = "gene_snn_res.0.2")
 #'
 plot_markers <- function(object, group_by = "batch", num_markers = 5, selected_values = NULL, return_plotly = FALSE, marker_method = "wilcox", experiment = "gene", hide_technical = NULL, unique_markers = FALSE, p_val_cutoff = 1, ...) {
         # Idents(object) <- get_cell_metadata(object)[[group_by]]
@@ -303,11 +308,12 @@ plot_markers <- function(object, group_by = "batch", num_markers = 5, selected_v
 #' @export
 #'
 #' @examples
+#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
 #' # interactive plotly
-#' plot_readcount((human_gene_transcript_sce), return_plotly = TRUE)
+#' plot_readcount((chevreul_sce), return_plotly = TRUE)
 #'
 #' # static plot
-#' plot_readcount((human_gene_transcript_sce), return_plotly = FALSE)
+#' plot_readcount((chevreul_sce), return_plotly = FALSE)
 plot_readcount<-  function(object, group_by = "nCount_RNA", color.by = "batch", yscale = "linear", return_plotly = FALSE, ...) {
         object_tbl <- rownames_to_column(get_cell_metadata(object), "SID") %>% select(SID, !!as.symbol(group_by), !!as.symbol(color.by))
         rc_plot <- ggplot(object_tbl, aes(x = reorder(SID, -!!as.symbol(group_by)), y = !!as.symbol(group_by), fill = !!as.symbol(color.by))) +
@@ -348,8 +354,9 @@ plot_readcount<-  function(object, group_by = "nCount_RNA", color.by = "batch", 
 #' @export
 #'
 #' @examples
-#' top_25_features <- get_variable_features(human_gene_transcript_sce)[1:25]
-#' make_complex_heatmap(human_gene_transcript_sce, features = top_25_features)
+#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+#' top_25_features <- get_variable_features(chevreul_sce)[1:25]
+#' make_complex_heatmap(chevreul_sce, features = top_25_features)
 
 make_complex_heatmap<-function(object, features = NULL, group.by = "ident", cells = NULL, assayName = "logcounts", experiment = NULL, group.bar.height = 0.01, column_split = NULL, col_arrangement = "ward.D2", mm_col_dend = 30, ...) {
 
@@ -379,7 +386,7 @@ make_complex_heatmap<-function(object, features = NULL, group.by = "ident", cell
 
         if (any(col_arrangement %in% c("ward.D", "single", "complete", "average", "mcquitty", "median", "centroid", "ward.D2"))) {
             if ("PCA" %in% reducedDimNames(object)) {
-                cluster_columns <- reducedDim(human_gene_transcript_sce, "PCA") %>%
+                cluster_columns <- reducedDim(chevreul_sce, "PCA") %>%
                     dist() %>%
                     hclust(col_arrangement)
             } else {
@@ -420,8 +427,8 @@ make_complex_heatmap<-function(object, features = NULL, group.by = "ident", cell
             ha_cols.numeric <- map2(groups.use[ha_col_names.numeric], ha_col_hues.numeric, numeric_col_fun)
         }
         ha_cols <- c(ha_cols.factor, ha_cols.numeric)
-        column_ha <- HeatmapAnnotation(df = groups.use, height = grid::unit(group.bar.height, "points"), col = ha_cols)
-        hm <- Heatmap(t(data), name = "log expression", top_annotation = column_ha, cluster_columns = cluster_columns, show_column_names = FALSE, column_dend_height = grid::unit(mm_col_dend, "mm"), column_split = column_split, column_title = NULL, ...)
+        column_ha <- HeatmapAnnotation(df = groups.use, height = unit(group.bar.height, "points"), col = ha_cols)
+        hm <- Heatmap(t(data), name = "log expression", top_annotation = column_ha, cluster_columns = cluster_columns, show_column_names = FALSE, column_dend_height = unit(mm_col_dend, "mm"), column_split = column_split, column_title = NULL, ...)
         return(hm)
     }
 
@@ -498,7 +505,7 @@ plot_transcript_composition <- function(object, gene_symbol, group.by = "batch",
 #'
 #' @examples
 #'
-#' plot_all_transcripts(human_gene_transcript_sce, "NRL")
+#' plot_all_transcripts(chevreul_sce, "NRL")
 #'
 
 plot_all_transcripts <- function(object, features, embedding = "UMAP", from_gene = TRUE, combine = TRUE) {

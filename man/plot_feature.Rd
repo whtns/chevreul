@@ -35,6 +35,7 @@ If multiple features are supplied the joint density of all features
 will be plotted using \href{https://www.bioconductor.org/packages/devel/bioc/html/Nebulosa.html}{Nebulosa}
 }
 \examples{
-plot_feature(human_gene_transcript_sce, embedding = "UMAP", features = "NRL")
+chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+plot_feature(chevreul_sce, embedding = "UMAP", features = "NRL")
 
 }

@@ -75,7 +75,7 @@ By default clustering will be run at ten different resolutions between
 argument as a numeric vector.
 
 ``` r
-clustered_object <- clustering_workflow(human_gene_transcript_sce,
+clustered_object <- clustering_workflow(chevreul_sce,
     experiment_name = "object_hu_trans",
     organism = "human"
 )
@@ -84,7 +84,7 @@ clustered_object <- clustering_workflow(human_gene_transcript_sce,
 ## Get a first look at a processed dataset using an interactive shiny app
 
 ``` r
-minimalSceApp(human_gene_transcript_sce)
+minimalSceApp(chevreul_sce)
 ```
 
 ## Set up a object

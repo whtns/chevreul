@@ -5,7 +5,7 @@
 \title{Create a minimal chevreul app using SingleCellExperiment input}
 \usage{
 minimalSceApp(
-  single_cell_object = human_gene_transcript_sce,
+  single_cell_object = chevreul_sce,
   loom_path = NULL,
   appTitle = NULL,
   organism_type = "human",
@@ -32,7 +32,8 @@ Create a minimal chevreul app using SingleCellExperiment input
 }
 \examples{
 \donttest{
-minimalSceApp(human_gene_transcript_sce)
+chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+minimalSceApp(chevreul_sce)
 }
 
 }

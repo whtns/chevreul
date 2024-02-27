@@ -12,7 +12,7 @@
 build_bigwig_db <- function(bam_files, bigwig_db = "~/.cache/chevreul/bw-files.db") {
     bam_files <- normalizePath(bam_files)
 
-    bigwigfiles <- map_chr(bam_files, ~ megadepth::bam_to_bigwig(.x, prefix = fs::path_ext_remove(.x), overwrite = TRUE)) %>%
+    bigwigfiles <- map_chr(bam_files, ~ megadepth::bam_to_bigwig(.x, prefix = path_ext_remove(.x), overwrite = TRUE)) %>%
         set_names(path_file) %>%
         enframe("name", "bigWig") %>%
         mutate(sample_id = str_remove(name, "_Aligned.sortedByCoord.out.bw")) %>%
@@ -35,7 +35,9 @@ build_bigwig_db <- function(bam_files, bigwig_db = "~/.cache/chevreul/bw-files.d
 #' @return a vector of bigwigs file paths
 #' @export
 #' @examples
-#' \donttest{load_bigwigs(human_gene_transcript_sce)}
+#' \donttest{
+#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+#' load_bigwigs(chevreul_sce)}
 load_bigwigs <- function(object, bigwig_db = "~/.cache/chevreul/bw-files.db") {
     con <- dbConnect(SQLite(), dbname = bigwig_db)
 
@@ -132,7 +134,7 @@ plot_gene_coverage_by_var <- function(genes_of_interest = "NRL",
         region_coords <- c(start, end)
     }
 
-    coverage_plot_list <- wiggleplotr::plotCoverageFromEnsembldb(
+    coverage_plot_list <- plotCoverageFromEnsembldb(
         ensembldb = edb,
         gene_names = genes_of_interest,
         track_data = new_track_data,

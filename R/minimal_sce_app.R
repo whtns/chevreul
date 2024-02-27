@@ -11,10 +11,11 @@
 #'
 #' @examples
 #' \donttest{
-#' minimalSceApp(human_gene_transcript_sce)
+#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+#' minimalSceApp(chevreul_sce)
 #' }
 #'
-minimalSceApp <- function(single_cell_object = human_gene_transcript_sce, loom_path = NULL, appTitle = NULL, organism_type = "human", futureMb = 13000, bigwig_db = "~/.cache/chevreul/bw-files.db") {
+minimalSceApp <- function(single_cell_object = chevreul_sce, loom_path = NULL, appTitle = NULL, organism_type = "human", futureMb = 13000, bigwig_db = "~/.cache/chevreul/bw-files.db") {
     future::plan(strategy = "multicore", workers = 6)
     future_size <- futureMb * 1024^2
     options(future.globals.maxSize = future_size)

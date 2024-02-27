@@ -20,8 +20,9 @@ Propagate Metadata Changes
 \examples{
 
 \donttest{
+chevreul_sce <- chevreuldata::human_gene_transcript_sce()
 updated_table <- read_csv(system.file("extdata", "new_meta.csv", package="chevreul"))
 
-propagate_spreadsheet_changes(updated_table, human_gene_transcript_sce)
+propagate_spreadsheet_changes(updated_table, chevreul_sce)
 }
 }

@@ -18,5 +18,6 @@ a list of singlecellexperiments name by colData value
 Split SingleCellExperiment by colData variable
 }
 \examples{
-splitByCol(human_gene_transcript_sce, "batch")
+chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+splitByCol(chevreul_sce, "batch")
 }

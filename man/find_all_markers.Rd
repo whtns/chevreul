@@ -22,5 +22,6 @@ a single cell object containing marker genes
 Find all markers at a range of resolutions
 }
 \examples{
-markers_stashed_object <- find_all_markers(human_gene_transcript_sce)
+chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+markers_stashed_object <- find_all_markers(chevreul_sce)
 }

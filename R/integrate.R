@@ -7,7 +7,8 @@
 #' @export
 #'
 #' @examples
-#' splitByCol(human_gene_transcript_sce, "batch")
+#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+#' splitByCol(chevreul_sce, "batch")
 splitByCol <- function(x, f = "batch") {
 
   f <- colData(x)[[f]]
@@ -33,14 +34,15 @@ splitByCol <- function(x, f = "batch") {
 #' @return a single cell object
 #' @export
 #' @examples
+#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
 #' merge_small_objects(
-#' "small_batch1" = human_gene_transcript_sce[,1:40],
-#' "small_batch2" = human_gene_transcript_sce[,41:80],
-#' "large_batch" = human_gene_transcript_sce[,81:300])
+#' "small_batch1" = chevreul_sce[,1:40],
+#' "small_batch2" = chevreul_sce[,41:80],
+#' "large_batch" = chevreul_sce[,81:300])
 #'
 merge_small_objects <- function(..., k.filter = 50) {
   object_list <- list(...)
-  browser()
+
     # check if any singlecell objects are too small and if so merge with the first singlecell objects
     object_dims <- map(object_list, dim) %>%
         map_lgl(~ .x[[2]] < k.filter)
@@ -49,7 +51,7 @@ merge_small_objects <- function(..., k.filter = 50) {
 
     object_list <- object_list[!object_dims]
 
-    object_list[[1]] <- reduce(c(small_objects, object_list[[1]]), batchelor::correctExperiments, PARAM=NoCorrectParam())
+    object_list[[1]] <- reduce(c(small_objects, object_list[[1]]), correctExperiments, PARAM=NoCorrectParam())
 
     return(object_list)
 }
@@ -66,7 +68,8 @@ merge_small_objects <- function(..., k.filter = 50) {
 #' @importFrom batchelor correctExperiments
 #' @export
 #' @examples
-#' batches <- splitByCol(human_gene_transcript_sce, "batch")
+#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+#' batches <- splitByCol(chevreul_sce, "batch")
 #' object_integrate(batches)
 object_integrate <- function(object_list, organism = "human", ...) {
 
@@ -102,7 +105,8 @@ object_integrate <- function(object_list, organism = "human", ...) {
 #' @importFrom scran clusterCells
 #' @importFrom glue glue
 #' @examples
-#' object_cluster(human_gene_transcript_sce)
+#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+#' object_cluster(chevreul_sce)
 object_cluster <- function(object = object, resolution = 0.6, custom_clust = NULL, reduction = "PCA", algorithm = 1, ...) {
         message(paste0("[", format(Sys.time(), "%H:%M:%S"), "] Clustering Cells..."))
         if (length(resolution) > 1) {
@@ -141,7 +145,8 @@ object_cluster <- function(object = object, resolution = 0.6, custom_clust = NUL
 #' @return a single cell object with embeddings
 #' @export
 #' @examples
-#' object_reduce_dimensions(human_gene_transcript_sce)
+#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+#' object_reduce_dimensions(chevreul_sce)
 object_reduce_dimensions <- function(object, experiment = "gene", ...) {
 
         num_samples <- dim(object)[[2]]
@@ -179,7 +184,8 @@ object_reduce_dimensions <- function(object, experiment = "gene", ...) {
 #' @return a renamed single cell object
 #' @export
 #' @examples
-#' rename_object(human_gene_transcript_sce, "new_name")
+#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+#' rename_object(chevreul_sce, "new_name")
 rename_object <- function (object, new_name)
           {
             metadata(object)["project.name"] <- new_name
@@ -188,26 +194,26 @@ rename_object <- function (object, new_name)
 
 #' Reintegrate (filtered) singlecell objectss
 #'
+#' This function takes a SCE object and perfroms teh below steps
 #' 1) split by batch
 #' 2) integrate
 #' 3) run integration pipeline and save
 #'
 #' @param object A singlecell objects
-#' @param feature gene or transcript
 #' @param suffix to be appended to file saved in output dir
 #' @param reduction to use default is pca
-#' @param algorithm 1
 #' @param ... extra args passed to object_integration_pipeline
 #'
 #' @return a single cell object
 #' @export
 #' @examples
-#' reintegrate_object(human_gene_transcript_sce)
-reintegrate_object <- function (object, feature = "gene", suffix = "", reduction = "PCA", algorithm = 1, ...)
+#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+#' reintegrate_object(chevreul_sce)
+reintegrate_object <- function (object, suffix = "", reduction = "PCA", ...)
           {
             organism <- metadata(object)$experiment$organism
             experiment_name <- metadata(object)$experiment$experiment_name
             objects <- splitByCol(object, "batch")
-            object <- object_integration_pipeline(objects, feature = feature, suffix = suffix, algorithm = algorithm, ...)
+            object <- object_integration_pipeline(objects, suffix = suffix, ...)
             object <- record_experiment_data(object, experiment_name, organism)
           }

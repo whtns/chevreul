@@ -19,6 +19,6 @@ Integrate SingleCellExperiment Objects from Mouse to Human
 }
 \examples{
 
-cross_species_integrate(list(baron2016singlecell = baron2016singlecell), list(human_gene_transcript_sce = human_gene_transcript_sce))
+cross_species_integrate(list(baron2016singlecell = baron2016singlecell), list(chevreul_sce = chevreul_sce))
 
 }

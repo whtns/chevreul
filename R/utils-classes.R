@@ -6,7 +6,8 @@
 #' @export
 #' @importFrom pillar new_pillar_type
 #' @examples
-#' list_plot_types(human_gene_transcript_sce)
+#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+#' list_plot_types(chevreul_sce)
 list_plot_types <- function(object) {
         meta_types <- tibble(
             vars = colnames(colData(object)),
@@ -52,7 +53,8 @@ list_plot_types <- function(object) {
 #'
 #' @return dataframe containing object metadata
 #' @examples
-#' get_cell_metadata(human_gene_transcript_sce)
+#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+#' get_cell_metadata(chevreul_sce)
 get_cell_metadata <- function(object) {
         colData(object) %>%
             as.data.frame()
@@ -65,7 +67,8 @@ get_cell_metadata <- function(object) {
 #' @return variable features from a single cell object
 #' @export
 #' @examples
-#' get_object_metadata(human_gene_transcript_sce)
+#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+#' get_object_metadata(chevreul_sce)
 get_object_metadata <- function(object) {
     metadata(object)
   }
@@ -78,7 +81,8 @@ get_object_metadata <- function(object) {
 #' @return variable features from a single cell object
 #' @export
 #' @examples
-#' get_variable_features(human_gene_transcript_sce)
+#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+#' get_variable_features(chevreul_sce)
 get_variable_features <- function(object, experiment = "gene") {
 
   if(experiment == mainExpName(object)){
@@ -98,7 +102,8 @@ get_variable_features <- function(object, experiment = "gene") {
 #' @return variable features from a single cell object
 #' @export
 #' @examples
-#' get_features(human_gene_transcript_sce)
+#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+#' get_features(chevreul_sce)
 get_features <- function(object, experiment = "gene") {
 
   if(experiment == mainExpName(object)){
@@ -112,17 +117,28 @@ get_features <- function(object, experiment = "gene") {
 
 #' Get Feature Types
 #'
-#' @param object
+#' @param object a single cell object
 #'
 #' @return vector of feature types in an object
 #' @export
 #'
 #' @examples
-#' get_feature_types(human_gene_transcript_sce)
+#' chevreul_sce <- chevreuldata::human_gene_transcript_sce
+#' get_feature_types(chevreul_sce)
 get_feature_types <- function(object) {
     sort(c(mainExpName(object), altExpNames(object)))
 }
 
+#' Set Feature Types
+#'
+#' @param object a single cell object
+#' @param feature_type feature type
+#' @return an object with assigned feature type
+#' @export
+#'
+#' @examples
+#' chevreul_sce <- chevreuldata::human_gene_transcript_sce
+#' set_feature_types(chevreul_sce, "transcript")
 set_feature_types <- function(object, feature_type) {
   if(feature_type %in% altExpNames(object)){
     object <- swapAltExp(object, feature_type, saved = mainExpName(object), withColData = TRUE)
@@ -139,7 +155,8 @@ set_feature_types <- function(object, feature_type) {
 #' @export
 #'
 #' @examples
-#' retrieve_experiment(human_gene_transcript_sce)
+#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+#' retrieve_experiment(chevreul_sce)
 retrieve_experiment <- function(object, experiment) {
     if (experiment %in% mainExpName(object)) {
         return(object)
@@ -157,7 +174,9 @@ retrieve_experiment <- function(object, experiment) {
 #' @export
 #'
 #' @examples
-#' query_experiment(human_gene_transcript_sce, "gene")
+#'
+#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+#' query_experiment(chevreul_sce, "gene")
 query_experiment <- function(object, experiment) {
     return(experiment %in% c(mainExpName(object), altExpNames(object)))
 }

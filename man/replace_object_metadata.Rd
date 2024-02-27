@@ -18,6 +18,7 @@ a single cell object
 Replace object metadata.
 }
 \examples{
+chevreul_sce <- chevreuldata::human_gene_transcript_sce()
 new_meta <- system.file("extdata", "new_meta.csv", package="chevreul")
-replace_object_metadata(human_gene_transcript_sce, new_meta)
+replace_object_metadata(chevreul_sce, new_meta)
 }

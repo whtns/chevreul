@@ -4,7 +4,7 @@
 #'
 #' @param batches objects for all batches provided as a list. If named, the resulting integrated object will be identified with corresponding values in 'batch' metadata
 #' @param excluded_cells named list of cells to exclude
-#' @param resolution value(s) to control the clustering resolution via `SingleCellExperiment::FindMarkers`
+#' @param resolution value(s) to control the clustering resolution via `scran::findMarkers`
 #' @param experiment_name arbitrary name to identify experiment
 #' @param organism either "human" or "mouse"
 #' @param ... extra args passed to object_integration_pipeline
@@ -12,7 +12,8 @@
 #' @return an integrated single cell object
 #' @export
 #' @examples
-#' batches <- splitByCol(human_gene_transcript_sce, "batch")
+#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+#' batches <- splitByCol(chevreul_sce, "batch")
 #' integration_workflow(batches)
 integration_workflow <-  function(batches, excluded_cells = NULL, resolution = seq(0.2, 2.0, by = 0.2), experiment_name = "default_experiment", organism = "human", ...) {
 
@@ -56,7 +57,8 @@ integration_workflow <-  function(batches, excluded_cells = NULL, resolution = s
 #' @return a clustered single cell object
 #' @export
 #' @examples
-#' clustering_workflow(human_gene_transcript_sce)
+#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+#' clustering_workflow(chevreul_sce)
 clustering_workflow <-  function(object, excluded_cells, resolution = seq(0.2, 2.0, by = 0.2), organism = "human", experiment_name = "default_experiment", ...) {
         object <- object_pipeline(object, resolution = resolution, ...)
 

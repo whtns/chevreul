@@ -16,6 +16,7 @@ a tibble with metadata from a single cell object
 Get metadata from the given object
 }
 \examples{
-metadata_from_object(human_gene_transcript_sce)
+chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+metadata_from_object(chevreul_sce)
 
 }
