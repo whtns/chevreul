@@ -21,7 +21,7 @@ update_project_db(
 \item{verbose}{print messages}
 }
 \value{
-a sqlite database with single cell objects
+a sqlite database with SingleCellExperiment objects
 }
 \description{
 Add new/update existing projects to the database by recursing fully

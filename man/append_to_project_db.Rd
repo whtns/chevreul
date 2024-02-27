@@ -21,7 +21,7 @@ append_to_project_db(
 \item{verbose}{print messages}
 }
 \value{
-a sqlite database with single cell objects
+a sqlite database with SingleCellExperiment objects
 }
 \description{
 Append projects to database

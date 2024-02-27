@@ -12,7 +12,7 @@ load_object_path(proj_dir = getwd(), prefix = "unfiltered")
 \item{prefix}{default "unfiltered"}
 }
 \value{
-a single cell object
+a SingleCellExperiment object
 }
 \description{
 Read in Gene and Transcript SingleCellExperiment Objects

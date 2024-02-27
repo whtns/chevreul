@@ -21,7 +21,7 @@ plot_scvelo(
 \item{...}{extra args passed to run_scvelo}
 }
 \value{
-a single cell object with velocity calculated
+a SingleCellExperiment object with velocity calculated
 }
 \description{
 run scvelo on a gene or transcript level object

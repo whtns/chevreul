@@ -14,7 +14,7 @@ clustering_workflow(
 )
 }
 \arguments{
-\item{object}{a single cell object}
+\item{object}{a SingleCellExperiment object}
 
 \item{excluded_cells}{named list of cells to exclude}
 
@@ -27,7 +27,7 @@ clustering_workflow(
 \item{...}{extra args passed to object_pipeline}
 }
 \value{
-a clustered single cell object
+a clustered SingleCellExperiment object
 }
 \description{
 Cluster and Reduce Dimensions of a object

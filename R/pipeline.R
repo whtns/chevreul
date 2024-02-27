@@ -14,7 +14,7 @@
 #' @param ... extra args passed to object_integrate
 #' @param annotate_percent_mito logical scalar whether to annotate mitochondrial percentage
 #'
-#' @return an integrated single cell object
+#' @return an integrated SingleCellExperiment object
 #' @export
 #'
 #' @examples
@@ -78,7 +78,7 @@ object_integration_pipeline <- function(object_list, resolution = seq(0.2, 2.0, 
 #' @param organism Organism
 #' @param ... extra parameters passed to internal functions
 #'
-#' @return a processed single cell object
+#' @return a processed SingleCellExperiment object
 #' @export
 #'
 #' @examples

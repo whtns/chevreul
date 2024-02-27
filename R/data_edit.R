@@ -1,8 +1,8 @@
-#' Reformat SingleCellExeriment Object Metadata UI
+#' Reformat SingleCellExperiment Object Metadata UI
 #'
 #' @param id id
 #'
-#' @return UI to reformat the metadata of a single cell object
+#' @return UI to reformat the metadata of a SingleCellExperiment object
 #' @noRd
 reformatMetadataDRui <- function(id) {
     ns <- NS(id)
@@ -32,9 +32,9 @@ reformatMetadataDRui <- function(id) {
     )
 }
 
-#' Reformat SingleCellExeriment Object Metadata Server
+#' Reformat SingleCellExperiment Object Metadata Server
 #'
-#' @param object single cell object
+#' @param object SingleCellExperiment object
 #'
 #'@noRd
 reformatMetadataDR <- function(input, output, session, object, featureType = "gene",

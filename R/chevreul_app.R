@@ -2,7 +2,7 @@
 #'
 #'
 #'
-#' @param object single cell object
+#' @param object SingleCellExperiment object
 #' @param cluster1 cluster 1
 #' @param cluster2 cluster 2
 #' @param resolution resolution
@@ -104,7 +104,7 @@ prep_slider_values <- function(default_val) {
 #' @param futureMb amount of Mb allocated to future package
 #' @param preset_project preset project
 #' @param organism_type human or mouse
-#' @param db_path sqlite database with list of saved single cell objects
+#' @param db_path sqlite database with list of saved SingleCellExperiment objects
 #' @param futureMb megabytes for use with future package
 #'
 #' @return a shiny app

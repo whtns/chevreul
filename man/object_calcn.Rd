@@ -7,10 +7,10 @@
 object_calcn(object)
 }
 \arguments{
-\item{object}{A single cell object}
+\item{object}{A SingleCellExperiment object}
 }
 \value{
-a single cell object with nfeatures and ngenes stored in metadata
+a SingleCellExperiment object with nfeatures and ngenes stored in metadata
 }
 \description{
 Recalculate counts/features per cell for a object

@@ -180,9 +180,9 @@ plot_feature <- function(object, embedding = c("UMAP", "PCA", "TSNE"), features,
 #'
 #' Annotate Cell Cycle for Gene and Transcript SingleCellExperiment Objects
 #'
-#' @param object A single cell object
+#' @param object A SingleCellExperiment object
 #'
-#' @return a single cell object
+#' @return a SingleCellExperiment object
 #' @export
 #' @examples
 #' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
@@ -382,11 +382,9 @@ make_complex_heatmap<-function(object, features = NULL, group.by = "ident", cell
         }
         data <- as.data.frame(x = t(x = as.matrix(x = assay(object, assayName)[features, cells, drop = FALSE])))
 
-        # object <- suppressMessages(expr = StashIdent(object = object, save.name = "ident"))
-
         if (any(col_arrangement %in% c("ward.D", "single", "complete", "average", "mcquitty", "median", "centroid", "ward.D2"))) {
             if ("PCA" %in% reducedDimNames(object)) {
-                cluster_columns <- reducedDim(chevreul_sce, "PCA") %>%
+                cluster_columns <- reducedDim(object, "PCA") %>%
                     dist() %>%
                     hclust(col_arrangement)
             } else {

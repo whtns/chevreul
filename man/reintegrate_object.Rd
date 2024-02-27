@@ -16,7 +16,7 @@ reintegrate_object(object, suffix = "", reduction = "PCA", ...)
 \item{...}{extra args passed to object_integration_pipeline}
 }
 \value{
-a single cell object
+a SingleCellExperiment object
 }
 \description{
 This function takes a SCE object and perfroms teh below steps

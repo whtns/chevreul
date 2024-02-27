@@ -2,7 +2,7 @@
 % Please edit documentation in R/integrate.R
 \name{rename_object}
 \alias{rename_object}
-\title{Give a new project name to a single cell object}
+\title{Give a new project name to a SingleCellExperiment object}
 \usage{
 rename_object(object, new_name)
 }
@@ -12,10 +12,10 @@ rename_object(object, new_name)
 \item{new_name}{New name to assign}
 }
 \value{
-a renamed single cell object
+a renamed SingleCellExperiment object
 }
 \description{
-Give a new project name to a single cell object
+Give a new project name to a SingleCellExperiment object
 }
 \examples{
 chevreul_sce <- chevreuldata::human_gene_transcript_sce()

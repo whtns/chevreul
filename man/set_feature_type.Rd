@@ -7,7 +7,7 @@
 set_feature_type(object, feature_type)
 }
 \arguments{
-\item{object}{a single cell object}
+\item{object}{a SingleCellExperiment object}
 
 \item{feature_type}{feature type}
 }

@@ -9,7 +9,7 @@
 #' @param legacy_settings Use legacy settings
 #' @param ... extra args passed to scaling functions
 #'
-#' @return a preprocessed single cell object
+#' @return a preprocessed SingleCellExperiment object
 #' @export
 #'
 #' @examples
@@ -49,7 +49,7 @@ object_preprocess <- function (object, scale = TRUE, normalize = TRUE, features 
 #' @param experiment Assay to use, Default "gene".
 #' @param ... extra args passed to stash_marker_features
 #'
-#' @return a single cell object containing marker genes
+#' @return a SingleCellExperiment object containing marker genes
 #' @export
 #'
 #' @examples
@@ -106,7 +106,7 @@ enframe_markers <- function(marker_table) {
 #' @param top_n Use top n genes, Default "200"
 #' @param p_val_cutoff p value cut-off, Default value is "0.5"
 #'
-#' @return a single cell object with marker genes
+#' @return a SingleCellExperiment object with marker genes
 #' @importFrom scran findMarkers
 #'
 #' @examples

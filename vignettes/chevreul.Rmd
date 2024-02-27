@@ -85,17 +85,19 @@ We hope that `r Biocpkg("chevreul")` will be useful for your research. Please us
 citation("chevreul")
 ```
 
+Here is an example of you can cite your package inside the vignette:
+
+* `r Biocpkg("chevreul")` `r Citep(bib[["chevreul"]])`
+
 # Quick start to using `chevreul`
+
 
 ```{r "start", message=FALSE}
 library("chevreul")
 ```
 
-Edit this as you see fit =)
+The main function of Chevreul is 
 
-Here is an example of you can cite your package inside the vignette:
-
-* `r Biocpkg("chevreul")` `r Citep(bib[["chevreul"]])`
 
 
 

@@ -12,7 +12,7 @@ subset_by_meta(meta_path, object)
 \item{object}{A object}
 }
 \value{
-a single cell object
+a SingleCellExperiment object
 }
 \description{
 Subset the object using new metadata

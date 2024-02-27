@@ -14,7 +14,7 @@ object_cluster(
 )
 }
 \arguments{
-\item{object}{A single cell objects}
+\item{object}{A SingleCellExperiment objects}
 
 \item{resolution}{Clustering resolution}
 
@@ -27,7 +27,7 @@ object_cluster(
 \item{...}{extra args passed to single cell packages}
 }
 \value{
-a single cell object with louvain clusters
+a SingleCellExperiment object with louvain clusters
 }
 \description{
 Run Louvain Clustering at Multiple Resolutions

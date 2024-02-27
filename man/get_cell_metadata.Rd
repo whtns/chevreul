@@ -7,7 +7,7 @@
 get_cell_metadata(object)
 }
 \arguments{
-\item{object}{a single cell object}
+\item{object}{a SingleCellExperiment object}
 }
 \value{
 dataframe containing object metadata

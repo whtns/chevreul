@@ -14,7 +14,7 @@ object_reduce_dimensions(object, experiment = "gene", ...)
 \item{...}{Extra parameters passed to object_reduce_dimensions}
 }
 \value{
-a single cell object with embeddings
+a SingleCellExperiment object with embeddings
 }
 \description{
 Run PCA, TSNE and UMAP on a singlecell objects

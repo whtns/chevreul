@@ -6,7 +6,7 @@
 #' @param gene Gene of interest
 #' @param organism Organism
 #'
-#' @return transcripts constituting a gene of interest in a single cell object
+#' @return transcripts constituting a gene of interest in a SingleCellExperiment object
 #' @export
 #'
 #' @examples
@@ -28,7 +28,7 @@ get_transcripts_from_object <- function(object, gene, organism = "human") {
 #' @param experiment_name name of the experiment
 #' @param organism human or mouse
 #'
-#' @return a single cell object
+#' @return a SingleCellExperiment object
 #' @export
 #' @examples
 #' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
@@ -85,9 +85,9 @@ record_experiment_data <- function(object, experiment_name = "default_experiment
 #'
 #' Recalculate counts/features per cell for a object
 #'
-#' @param object A single cell object
+#' @param object A SingleCellExperiment object
 #'
-#' @return a single cell object with nfeatures and ngenes stored in metadata
+#' @return a SingleCellExperiment object with nfeatures and ngenes stored in metadata
 #' @export
 #' @examples
 #' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
@@ -111,9 +111,9 @@ object_calcn <- function(object) {
 #' Propagate Metadata Changes
 #'
 #' @param meta updated metadata
-#' @param object a single cell object
+#' @param object a SingleCellExperiment object
 #'
-#' @return a single cell object
+#' @return a SingleCellExperiment object
 #' @export
 #' @examples
 #'
@@ -144,7 +144,7 @@ propagate_spreadsheet_changes <- function(meta, object) {
 #' @param sqlite_db Database to be created
 #' @param verbose print messages
 #'
-#' @return a sqlite database with single cell objects
+#' @return a sqlite database with SingleCellExperiment objects
 #' @export
 #' @examples
 #' \donttest{create_project_db()}
@@ -175,7 +175,7 @@ create_project_db <- function(cache_location = "~/.cache/chevreul", sqlite_db = 
 #' @param sqlite_db sqlite db
 #' @param verbose print messages
 #'
-#' @return a sqlite database with single cell objects
+#' @return a sqlite database with SingleCellExperiment objects
 #' @export
 #' @examples
 #' \donttest{update_project_db()}
@@ -220,7 +220,7 @@ update_project_db <- function(projects_dir = NULL,
 #' @param verbose print messages
 #'
 #'
-#' @return a sqlite database with single cell objects
+#' @return a sqlite database with SingleCellExperiment objects
 #' @export
 #' @examples
 #' \donttest{append_to_project_db("example_project_path")}
@@ -262,7 +262,7 @@ append_to_project_db <- function(new_project_path,
 #' @param sqlite_db sqlite db
 #' @param verbose print messages
 #'
-#' @return a tibble with single cell objects
+#' @return a tibble with SingleCellExperiment objects
 #' @export
 #' @examples
 #' \donttest{read_project_db()}
@@ -291,7 +291,7 @@ read_project_db <- function(
 #' @param cache_location Path to cache "~/.cache/chevreul"
 #' @param sqlite_db sqlite db containing bw files
 #'
-#' @return a sqlite database of bigwig files for cells in a single cell object
+#' @return a sqlite database of bigwig files for cells in a SingleCellExperiment object
 #' @export
 #' @examples
 #' \donttest{make_bigwig_db("example_project")}
@@ -321,7 +321,7 @@ make_bigwig_db <- function(new_project = NULL, cache_location = "~/.cache/chevre
 #' @param projects_dir path to project dir
 #' @param db_path path to .db file
 #'
-#' @return a tibble with cell level metadata from a single cell object
+#' @return a tibble with cell level metadata from a SingleCellExperiment object
 #' @examples
 #'
 #' \donttest{
@@ -366,9 +366,9 @@ make_chevreul_clean_names <- function(myvec) {
 #'
 #' Get metadata from the given object
 #'
-#' @param object a single cell object
+#' @param object a SingleCellExperiment object
 #'
-#' @return a tibble with metadata from a single cell object
+#' @return a tibble with metadata from a SingleCellExperiment object
 #' @export
 #' @examples
 #' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
@@ -380,11 +380,11 @@ metadata_from_object <- function(object) {
 
 #' Save object to <project>/output/sce/<feature>_object.rds
 #'
-#' @param object a single cell object
+#' @param object a SingleCellExperiment object
 #' @param prefix a prefix for saving
 #' @param proj_dir path to a project directory
 #'
-#' @return a path to an rds file containing a single cell object
+#' @return a path to an rds file containing a SingleCellExperiment object
 #' @export
 #'
 #' @examples

@@ -152,7 +152,7 @@ plotHeatmapui <- function(id) {
 
 #' Plot Heatmap
 #'
-#' @param object a single cell object
+#' @param object a SingleCellExperiment object
 #' @param featureType gene or transcript
 #' @param organism_type human or mouse
 #'
@@ -258,7 +258,7 @@ integrateProjui <- function(id) {
 #' Integrate Projects Server Function
 #'
 #' @param proj_matrices project matrices
-#' @param object a single cell object
+#' @param object a SingleCellExperiment object
 #' @param proj_dir project directory
 #' @param con a connection
 #'
@@ -423,7 +423,7 @@ changeEmbedParamsui <- function(id) {
 
 #' Change Embedding Parameters
 #'
-#' @param object a single cell object
+#' @param object a SingleCellExperiment object
 #'
 #' @noRd
 changeEmbedParams <- function(input, output, session, object) {
@@ -457,7 +457,7 @@ plotDimRedui <- function(id) {
 
 #' Plot Dimensional Reduduction
 #'
-#' @param object a single cell object
+#' @param object a SingleCellExperiment object
 #' @param plot_types plot types
 #' @param featureType gene or transcript
 #' @param organism_type human or mouse
@@ -587,7 +587,7 @@ tableSelectedui <- function(id) {
 
 #' Create Table of Selected Cells
 #'
-#' @param object a single cell object
+#' @param object a SingleCellExperiment object
 #'
 #'@noRd
 tableSelected <- function(input, output, session, object) {
@@ -729,7 +729,7 @@ cells_selected <- function(input) {
 
 #' Differential Expression
 #'
-#' @param object a single cell object
+#' @param object a SingleCellExperiment object
 #' @param featureType gene or transcript
 #' @param selected_cells selected cells
 #' @param tests tests to use
@@ -902,7 +902,7 @@ chevreulMarkersui <- function(id) {
 
 #' Find Markers
 #'
-#' @param object a single cell object
+#' @param object a SingleCellExperiment object
 #'
 #' @noRd
 chevreulMarkers <- function(input, output, session, object, plot_types, featureType) {
@@ -990,7 +990,7 @@ plotReadCountui <- function(id) {
 
 #' Plot Read Count
 #'
-#' @param object a single cell object
+#' @param object a SingleCellExperiment object
 #' @param plot_types plot types
 #'
 #' @noRd
@@ -1089,7 +1089,7 @@ allTranscriptsui <- function(id) {
 
 #' Plot All Transcripts Server
 #'
-#' @param object a single cell object
+#' @param object a SingleCellExperiment object
 #' @param featureType gene or transcript
 #'
 #' @noRd
@@ -1214,7 +1214,7 @@ plotVelocityui <- function(id) {
 
 #' RNA Velocity Server Module
 #'
-#' @param object a single cell object
+#' @param object a SingleCellExperiment object
 #' @param loom_path path to a loom file
 #'
 #' @noRd
@@ -1488,7 +1488,7 @@ techInfoui <- function(id) {
 
 #' Title
 #'
-#' @param object a single cell object
+#' @param object a SingleCellExperiment object
 #'
 #' @noRd
 #' @importFrom S4Vectors metadata
@@ -1634,7 +1634,7 @@ plotCoverage_UI <- function(id) {
 
 #' Plot Coverage Module
 #'
-#' @param object a single cell object
+#' @param object a SingleCellExperiment object
 #' @param plot_types plot types
 #' @param bigwig_dir bigwig directory
 #' @param organism_type human or mouse
@@ -1749,7 +1749,7 @@ reformatMetadataDRui <- function(id) {
 
 #' Reformat SingleCellExperiment Object Metadata Server
 #'
-#' @param object a single cell object
+#' @param object a SingleCellExperiment object
 #'
 #' @noRd
 reformatMetadataDR <- function(input, output, session, object, featureType = "gene",

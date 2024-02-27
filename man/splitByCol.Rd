@@ -7,7 +7,7 @@
 splitByCol(x, f = "batch")
 }
 \arguments{
-\item{x}{single cell object}
+\item{x}{SingleCellExperiment object}
 
 \item{f}{colData variable as a string}
 }

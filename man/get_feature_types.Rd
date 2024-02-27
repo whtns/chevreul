@@ -7,7 +7,7 @@
 get_feature_types(object)
 }
 \arguments{
-\item{object}{a single cell object}
+\item{object}{a SingleCellExperiment object}
 }
 \value{
 vector of feature types in an object
@@ -16,6 +16,6 @@ vector of feature types in an object
 Get Feature Types
 }
 \examples{
-chevreul_sce <- chevreuldata::human_gene_transcript_sce
+chevreul_sce <- chevreuldata::human_gene_transcript_sce()
 get_feature_types(chevreul_sce)
 }

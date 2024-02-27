@@ -33,7 +33,7 @@ object_integration_pipeline(
 \item{...}{extra args passed to object_integrate}
 }
 \value{
-an integrated single cell object
+an integrated SingleCellExperiment object
 }
 \description{
 Run batch correction, followed by:

@@ -7,14 +7,14 @@
 object_integrate(object_list, organism = "human", ...)
 }
 \arguments{
-\item{object_list}{List of two or more single cell objects}
+\item{object_list}{List of two or more SingleCellExperiment objects}
 
 \item{organism}{human or mouse}
 
 \item{...}{extra args passed to object_reduce_dimensions}
 }
 \value{
-an integrated single cell object
+an integrated SingleCellExperiment object
 }
 \description{
 Batch Correct Multiple Single Cell Objects

@@ -27,7 +27,7 @@ object_preprocess(
 \item{...}{extra args passed to scaling functions}
 }
 \value{
-a preprocessed single cell object
+a preprocessed SingleCellExperiment object
 }
 \description{
 Performs standard pre-processing workflow for scRNA-seq data

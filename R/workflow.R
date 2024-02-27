@@ -9,7 +9,7 @@
 #' @param organism either "human" or "mouse"
 #' @param ... extra args passed to object_integration_pipeline
 #'
-#' @return an integrated single cell object
+#' @return an integrated SingleCellExperiment object
 #' @export
 #' @examples
 #' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
@@ -47,14 +47,14 @@ integration_workflow <-  function(batches, excluded_cells = NULL, resolution = s
 #'
 #' Cluster and Reduce Dimensions of a object
 #'
-#' @param object a single cell object
+#' @param object a SingleCellExperiment object
 #' @param excluded_cells named list of cells to exclude
 #' @param resolution resolution(s) to use for clustering cells
 #' @param organism Organism
 #' @param experiment_name name of the experiment
 #' @param ... extra args passed to object_pipeline
 #'
-#' @return a clustered single cell object
+#' @return a clustered SingleCellExperiment object
 #' @export
 #' @examples
 #' chevreul_sce <- chevreuldata::human_gene_transcript_sce()

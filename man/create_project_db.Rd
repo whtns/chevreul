@@ -18,7 +18,7 @@ create_project_db(
 \item{verbose}{print messages}
 }
 \value{
-a sqlite database with single cell objects
+a sqlite database with SingleCellExperiment objects
 }
 \description{
 Create a database containing chevreul projects

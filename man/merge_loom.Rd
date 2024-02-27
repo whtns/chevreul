@@ -24,7 +24,7 @@ merge_loom(
 \item{check_loom}{FALSE}
 }
 \value{
-a single cell object with RNA velocity calculated
+a SingleCellExperiment object with RNA velocity calculated
 }
 \description{
 run scvelo on a gene or transcript level object
