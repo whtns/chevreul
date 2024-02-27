@@ -1,27 +1,3 @@
-#' Replace object Metadata
-#'
-#' Replace object metadata.
-#'
-#' @param object A object
-#' @param datapath Path to csv file containing metadata
-#'
-#' @return a single cell object
-#' @export
-#' @examples
-#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
-#' new_meta <- system.file("extdata", "new_meta.csv", package="chevreul")
-#' replace_object_metadata(chevreul_sce, new_meta)
-replace_object_metadata <- function(object, datapath) {
-        new_meta <- read_csv(datapath) %>%
-            mutate(across(contains("snn"), as.factor))
-
-        new_meta <- DataFrame(column_to_rownames(new_meta, colnames(new_meta)[1]))
-
-        colData(object) <- new_meta
-
-        return(object)
-    }
-
 #' Get Transcripts in object
 #'
 #' Get transcript ids in objects for one or more gene of interest

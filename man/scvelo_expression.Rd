@@ -2,26 +2,31 @@
 % Please edit documentation in R/run_scvelo.R
 \name{scvelo_expression}
 \alias{scvelo_expression}
-\title{scvelo expression}
+\title{plot  scvelo expression}
 \usage{
 scvelo_expression(
   object,
   mode = c("steady_state", "deterministic", "stochastic", "dynamical"),
+  embedding = c("UMAP", "PCA", "TSNE"),
   ...
 )
 }
 \arguments{
 \item{object}{a object}
 
+\item{mode}{deterministic, stochastis, or dynamical}
+
+\item{embedding}{UMAP, PCA or TSNE}
+
 \item{...}{extra args passed to run_scvelo}
-
-\item{loom_path}{path to matching loom file}
-
-\item{velocity_mode}{deterministic, stochastis, or dynamical}
 }
 \value{
 a single cell object with velocity calculated
 }
 \description{
 run scvelo on a gene or transcript level object
+}
+\examples{
+chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+scvelo_expression(chevreul_sce, embedding = "UMAP", color_by = "velocity_pseudotime")
 }

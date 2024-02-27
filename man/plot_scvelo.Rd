@@ -14,11 +14,11 @@ plot_scvelo(
 \arguments{
 \item{object}{a object}
 
+\item{mode}{deterministic, stochastis, or dynamical}
+
+\item{embedding}{UMAP, PCA or TSNE}
+
 \item{...}{extra args passed to run_scvelo}
-
-\item{loom_path}{path to matching loom file}
-
-\item{velocity_mode}{deterministic, stochastis, or dynamical}
 }
 \value{
 a single cell object with velocity calculated

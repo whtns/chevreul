@@ -92,39 +92,3 @@ convert_symbols_by_species <- function(src_genes, src_species) {
     return(make.unique(dest_symbols[[2]]))
 }
 
-#' Integrate SingleCellExperiment Objects from Mouse to Human
-#'
-#' @param mouse_object_list List of mouse single cell objects
-#' @param human_object_list List of human single cell objects
-#'
-#' @return a single cell object
-#' @export
-#'
-#' @examples
-#'
-#' cross_species_integrate(list(baron2016singlecell = baron2016singlecell), list(chevreul_sce = chevreul_sce))
-#'
-cross_species_integrate <- function(mouse_object_list, human_object_list){
-    mouse_object_list <- map(mouse_object_list, convert_mouse_object_to_human)
-
-    object_list <- c(mouse_object_list, human_object_list)
-
-
-    integrated_object <- object_integrate(object_list)
-
-    integrated_object <- object_reduce_dimensions(integrated_object)
-
-    # cluster merged objects
-    integrated_object <- object_cluster(integrated_object, resolution = seq(0.2, 2.0, by = 0.2))
-
-    # annotate cell cycle scoring to objects
-
-    integrated_object <- annotate_cell_cycle(integrated_object)
-
-    # add marker genes to objects
-
-    integrated_object <- find_all_markers(integrated_object)
-
-    return(integrated_object)
-}
-
