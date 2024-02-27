@@ -1848,8 +1848,8 @@ reformatMetadataDR <- function(input, output, session, object, featureType = "ge
         return(NULL)
       }
 
-      reformatted_object <- replace_object_metadata(object(), inFile$datapath)
-      object(reformatted_object)
+      colData(object()) <- colData(object()) <- read_csv(inFile$datapath)
+      object(object())
     } else if (input$updateMethod == "spreadsheet") {
       reformatted_object <- propagate_spreadsheet_changes(values$data_active, object())
       object(reformatted_object)
