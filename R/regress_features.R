@@ -3,7 +3,7 @@
 #' @param object A object
 #' @param regress whether to regress
 #'
-#' @return a single cell object with features regressed
+#' @return a SingleCellExperiment object with features regressed
 #' @export
 #' @importFrom batchelor regressBatches
 #' @examples

@@ -1,6 +1,6 @@
 #' Split SingleCellExperiment by colData variable
 #'
-#' @param x single cell object
+#' @param x SingleCellExperiment object
 #' @param f colData variable as a string
 #'
 #' @return a list of singlecellexperiments name by colData value
@@ -26,12 +26,12 @@ splitByCol <- function(x, f = "batch") {
 }
 
 
-#' Merge Small SingleCellExeriment Objects
+#' Merge Small SingleCellExperiment Objects
 #'
 #' @param ... two or more singlecell objects
 #' @param k.filter minimum cell number for integration
 #'
-#' @return a single cell object
+#' @return a SingleCellExperiment object
 #' @export
 #' @examples
 #' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
@@ -59,11 +59,11 @@ merge_small_objects <- function(..., k.filter = 50) {
 
 #' Batch Correct Multiple Single Cell Objects
 #'
-#' @param object_list List of two or more single cell objects
+#' @param object_list List of two or more SingleCellExperiment objects
 #' @param organism human or mouse
 #' @param ... extra args passed to object_reduce_dimensions
 #'
-#' @return an integrated single cell object
+#' @return an integrated SingleCellExperiment object
 #' @importFrom batchelor correctExperiments
 #' @export
 #' @examples
@@ -91,14 +91,14 @@ object_integrate <- function(object_list, organism = "human", ...) {
 
 #' Run Louvain Clustering at Multiple Resolutions
 #'
-#' @param object A single cell objects
+#' @param object A SingleCellExperiment objects
 #' @param resolution Clustering resolution
 #' @param custom_clust custom cluster
 #' @param reduction Set dimensional reduction object
 #' @param algorithm 1
 #' @param ... extra args passed to single cell packages
 #'
-#' @return a single cell object with louvain clusters
+#' @return a SingleCellExperiment object with louvain clusters
 #' @export
 #' @importFrom bluster NNGraphParam
 #' @importFrom scran clusterCells
@@ -140,7 +140,7 @@ object_cluster <- function(object = object, resolution = 0.6, custom_clust = NUL
 #' @param experiment Experiment of interest to be processed
 #' @param ... Extra parameters passed to object_reduce_dimensions
 #'
-#' @return a single cell object with embeddings
+#' @return a SingleCellExperiment object with embeddings
 #' @export
 #' @examples
 #' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
@@ -174,12 +174,12 @@ object_reduce_dimensions <- function(object, experiment = "gene", ...) {
         return(object)
     }
 
-#' Give a new project name to a single cell object
+#' Give a new project name to a SingleCellExperiment object
 #'
 #' @param object A SingleCellExperiment object
 #' @param new_name New name to assign
 #'
-#' @return a renamed single cell object
+#' @return a renamed SingleCellExperiment object
 #' @export
 #' @examples
 #' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
@@ -202,7 +202,7 @@ rename_object <- function (object, new_name)
 #' @param reduction to use default is pca
 #' @param ... extra args passed to object_integration_pipeline
 #'
-#' @return a single cell object
+#' @return a SingleCellExperiment object
 #' @export
 #' @examples
 #' chevreul_sce <- chevreuldata::human_gene_transcript_sce()

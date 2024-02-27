@@ -18,7 +18,7 @@ read_project_db(
 \item{verbose}{print messages}
 }
 \value{
-a tibble with single cell objects
+a tibble with SingleCellExperiment objects
 }
 \description{
 Reads database of chevreul projects to a data frame

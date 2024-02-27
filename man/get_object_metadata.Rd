@@ -7,10 +7,10 @@
 get_object_metadata(object)
 }
 \arguments{
-\item{object}{a single cell object}
+\item{object}{a SingleCellExperiment object}
 }
 \value{
-variable features from a single cell object
+variable features from a SingleCellExperiment object
 }
 \description{
 Get object metadata

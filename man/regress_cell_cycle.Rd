@@ -12,7 +12,7 @@ regress_cell_cycle(object, regress = TRUE)
 \item{regress}{whether to regress}
 }
 \value{
-a single cell object with features regressed
+a SingleCellExperiment object with features regressed
 }
 \description{
 Regress SingleCellExperiment Object by Given Set of Genes

@@ -7,7 +7,7 @@
 retrieve_experiment(object, experiment)
 }
 \arguments{
-\item{object}{a single cell object}
+\item{object}{a SingleCellExperiment object}
 
 \item{experiment}{an experiment name}
 }

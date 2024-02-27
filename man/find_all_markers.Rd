@@ -16,7 +16,7 @@ find_all_markers(object, group_by = NULL, experiment = "gene", ...)
 \item{...}{extra args passed to stash_marker_features}
 }
 \value{
-a single cell object containing marker genes
+a SingleCellExperiment object containing marker genes
 }
 \description{
 Find all markers at a range of resolutions

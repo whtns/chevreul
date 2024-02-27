@@ -2,7 +2,7 @@
 % Please edit documentation in R/integrate.R
 \name{merge_small_objects}
 \alias{merge_small_objects}
-\title{Merge Small SingleCellExeriment Objects}
+\title{Merge Small SingleCellExperiment Objects}
 \usage{
 merge_small_objects(..., k.filter = 50)
 }
@@ -12,10 +12,10 @@ merge_small_objects(..., k.filter = 50)
 \item{k.filter}{minimum cell number for integration}
 }
 \value{
-a single cell object
+a SingleCellExperiment object
 }
 \description{
-Merge Small SingleCellExeriment Objects
+Merge Small SingleCellExperiment Objects
 }
 \examples{
 chevreul_sce <- chevreuldata::human_gene_transcript_sce()

@@ -7,10 +7,10 @@
 metadata_from_object(object)
 }
 \arguments{
-\item{object}{a single cell object}
+\item{object}{a SingleCellExperiment object}
 }
 \value{
-a tibble with metadata from a single cell object
+a tibble with metadata from a SingleCellExperiment object
 }
 \description{
 Get metadata from the given object

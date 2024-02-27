@@ -8,7 +8,7 @@
 #' @param fit.quantile how to fit velocity
 #' @param check_loom FALSE
 #'
-#' @return a single cell object with RNA velocity calculated
+#' @return a SingleCellExperiment object with RNA velocity calculated
 #' @export
 #' @importFrom LoomExperiment import
 #' @examples \donttest{
@@ -38,7 +38,7 @@ merge_loom <- function(object, loom_path, assay = "gene", fit.quantile = 0.05, c
 #' @param embedding UMAP, PCA or TSNE
 #' @param ... extra args passed to run_scvelo
 #'
-#' @return a single cell object with velocity calculated
+#' @return a SingleCellExperiment object with velocity calculated
 #' @export
 #' @examples
 #' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
@@ -82,7 +82,7 @@ plot_scvelo <- function(object, mode = c("steady_state", "deterministic", "stoch
 #' @param embedding UMAP, PCA or TSNE
 #' @param ... extra args passed to run_scvelo
 #'
-#' @return a single cell object with velocity calculated
+#' @return a SingleCellExperiment object with velocity calculated
 #' @export
 #' @examples
 #' chevreul_sce <- chevreuldata::human_gene_transcript_sce()

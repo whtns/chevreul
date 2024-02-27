@@ -41,7 +41,7 @@ create_proj_matrix <- function(proj_list) {
 #' @param meta_path Path to new metadata
 #' @param object A object
 #'
-#' @return a single cell object
+#' @return a SingleCellExperiment object
 #'
 subset_by_meta <- function(meta_path, object) {
     upload_meta <- read_csv(meta_path, col_names = "sample_id") %>%
@@ -64,7 +64,7 @@ subset_by_meta <- function(meta_path, object) {
 #' @param proj_dir path to project directory
 #' @param prefix default "unfiltered"
 #'
-#' @return a single cell object
+#' @return a SingleCellExperiment object
 load_object_path <- function(proj_dir = getwd(), prefix = "unfiltered") {
   object_regex <- paste0(paste0(".*/", prefix, "_object.rds"))
 
@@ -88,7 +88,7 @@ load_object_path <- function(proj_dir = getwd(), prefix = "unfiltered") {
 #' @param proj_dir project directory
 #' @param ... extra args passed to load_object_path
 #'
-#' @return a single cell object
+#' @return a SingleCellExperiment object
 load_object_from_proj <- function(proj_dir, ...) {
   object_file <- load_object_path(proj_dir, ...)
   object_file <- readRDS(object_file)

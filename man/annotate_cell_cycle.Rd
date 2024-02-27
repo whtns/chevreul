@@ -7,10 +7,10 @@
 annotate_cell_cycle(object)
 }
 \arguments{
-\item{object}{A single cell object}
+\item{object}{A SingleCellExperiment object}
 }
 \value{
-a single cell object
+a SingleCellExperiment object
 }
 \description{
 Annotate Cell Cycle for Gene and Transcript SingleCellExperiment Objects

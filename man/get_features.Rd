@@ -7,12 +7,12 @@
 get_features(object, experiment = "gene")
 }
 \arguments{
-\item{object}{a single cell object}
+\item{object}{a SingleCellExperiment object}
 
 \item{experiment}{"gene" or "transcript"}
 }
 \value{
-variable features from a single cell object
+variable features from a SingleCellExperiment object
 }
 \description{
 Get feature names

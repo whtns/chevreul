@@ -27,7 +27,7 @@ integration_workflow(
 \item{...}{extra args passed to object_integration_pipeline}
 }
 \value{
-an integrated single cell object
+an integrated SingleCellExperiment object
 }
 \description{
 Integrate multiple objects and save to file

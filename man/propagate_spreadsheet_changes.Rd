@@ -4,25 +4,24 @@
 \alias{propagate_spreadsheet_changes}
 \title{Propagate Metadata Changes}
 \usage{
-propagate_spreadsheet_changes(updated_table, object)
+propagate_spreadsheet_changes(meta, object)
 }
 \arguments{
-\item{updated_table}{updated metadata}
+\item{meta}{updated metadata}
 
-\item{object}{a single cell object}
+\item{object}{a SingleCellExperiment object}
 }
 \value{
-a single cell object
+a SingleCellExperiment object
 }
 \description{
 Propagate Metadata Changes
 }
 \examples{
 
-\donttest{
 chevreul_sce <- chevreuldata::human_gene_transcript_sce()
-updated_table <- read_csv(system.file("extdata", "new_meta.csv", package="chevreul"))
+new_meta <- data.frame(row.names = colnames(chevreul_sce))
+new_meta$example = "example"
 
-propagate_spreadsheet_changes(updated_table, chevreul_sce)
-}
+propagate_spreadsheet_changes(new_meta, chevreul_sce)
 }

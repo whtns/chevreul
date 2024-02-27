@@ -12,7 +12,7 @@ load_object_from_proj(proj_dir, ...)
 \item{...}{extra args passed to load_object_path}
 }
 \value{
-a single cell object
+a SingleCellExperiment object
 }
 \description{
 Load SingleCellExperiment Files from a single project path

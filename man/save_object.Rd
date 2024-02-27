@@ -7,14 +7,14 @@
 save_object(object, prefix = "unfiltered", proj_dir = getwd())
 }
 \arguments{
-\item{object}{a single cell object}
+\item{object}{a SingleCellExperiment object}
 
 \item{prefix}{a prefix for saving}
 
 \item{proj_dir}{path to a project directory}
 }
 \value{
-a path to an rds file containing a single cell object
+a path to an rds file containing a SingleCellExperiment object
 }
 \description{
 Save object to \if{html}{\out{<project>}}/output/sce/\if{html}{\out{<feature>}}_object.rds

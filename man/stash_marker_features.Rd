@@ -24,7 +24,7 @@ stash_marker_features(
 \item{p_val_cutoff}{p value cut-off, Default value is "0.5"}
 }
 \value{
-a single cell object with marker genes
+a SingleCellExperiment object with marker genes
 }
 \description{
 Marker Genes will be stored in slot \verb{@misc$markers}

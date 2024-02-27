@@ -18,7 +18,7 @@ record_experiment_data(
 \item{organism}{human or mouse}
 }
 \value{
-a single cell object
+a SingleCellExperiment object
 }
 \description{
 Records miscellaneous data
