@@ -27,6 +27,8 @@ make_complex_heatmap(
 
 \item{cells}{Cells to retain}
 
+\item{assayName}{"counts" for raw data "scale.data" for log-normalized data}
+
 \item{experiment}{experiment to display}
 
 \item{group.bar.height}{height for group bars}
@@ -38,8 +40,6 @@ make_complex_heatmap(
 \item{mm_col_dend}{height of column dendrogram}
 
 \item{...}{additional arguments passed to Heatmap}
-
-\item{layer}{"counts" for raw data "scale.data" for log-normalized data}
 }
 \value{
 a complexheatmap

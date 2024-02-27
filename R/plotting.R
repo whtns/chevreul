@@ -210,7 +210,7 @@ annotate_cell_cycle <- function(object) {
 #' @param experiment experiment to plot default gene
 #' @param hide_technical whether to exclude mitochondrial or ribosomal genes
 #' @param unique_markers whether to plot only unique marker genes for each group
-#'
+#' @param p_val_cutoff cutoff for p value display
 #' @param ... extra parameters passed to ggplot2
 #'
 #' @return a ggplot with marker genes from group_by
@@ -340,7 +340,7 @@ plot_readcount<-  function(object, group_by = "nCount_RNA", color.by = "batch", 
 #' @param features Vector of features to plot. Features can come
 #' @param cells Cells to retain
 #' @param group.by  Name of one or more metadata columns to annotate columns by (for example, orig.ident)
-#' @param layer "counts" for raw data "scale.data" for log-normalized data
+#' @param assayName "counts" for raw data "scale.data" for log-normalized data
 #' @param experiment experiment to display
 #' @param group.bar.height height for group bars
 #' @param col_arrangement how to arrange columns whether with a dendrogram (Ward.D2, average, etc.) or exclusively by metadata category

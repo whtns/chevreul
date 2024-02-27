@@ -52,6 +52,7 @@ list_plot_types <- function(object) {
 #' @param object a single cell object
 #'
 #' @return dataframe containing object metadata
+#' @export
 #' @examples
 #' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
 #' get_cell_metadata(chevreul_sce)
@@ -137,9 +138,9 @@ get_feature_types <- function(object) {
 #' @export
 #'
 #' @examples
-#' chevreul_sce <- chevreuldata::human_gene_transcript_sce
-#' set_feature_types(chevreul_sce, "transcript")
-set_feature_types <- function(object, feature_type) {
+#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+#' set_feature_type(chevreul_sce, "transcript")
+set_feature_type <- function(object, feature_type) {
   if(feature_type %in% altExpNames(object)){
     object <- swapAltExp(object, feature_type, saved = mainExpName(object), withColData = TRUE)
   }

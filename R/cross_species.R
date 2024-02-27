@@ -1,31 +1,3 @@
-#' Convert SingleCellExperiment Objects from Mouse to Human
-#'
-#' @param object Mouse object
-#'
-#' @return a single cell object
-#' @export
-#'
-#' @examples
-#'
-#' convert_mouse_object_to_human(baron2016singlecell)
-convert_mouse_object_to_human <- function(object) {
-    # transfer default species expression data to a species-specific experiment
-    altExp(object, "mouse") <- object
-
-    new_rownames <- convert_symbols_by_species(src_genes = rownames(object), src_species = "mouse")
-
-    object_slots <- c("counts", "data", "scale.data", "meta.features")
-
-    for (i in object_slots) {
-        current_slot <- slot(object@experiments[["gene"]], i)
-        if (!(dim(current_slot) == c(0, 0))) {
-            rownames(slot(object@experiments[["gene"]], i)) <- new_rownames
-        }
-    }
-
-    return(object)
-}
-
 #' Convert SingleCellExperiment Objects from Human to Mouse
 #' @param object Human SingleCellExperiment object
 #' @param ... to be passed to \code{convert_symbols_by_species}

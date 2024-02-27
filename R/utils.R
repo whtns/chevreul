@@ -98,7 +98,7 @@ object_calcn <- function(object) {
   object[[glue("nFeature_{mainExpName(object)}")]] <- object$detected
   object[[glue("nCount_{mainExpName(object)}")]] <- object$sum
 
-  for (alt_exp_name in altExpNames(object)){
+  for (alt_exp_name in altExpNames(object)[!altExpNames(object) == "velocity"]){
     altExp(object, alt_exp_name) <- addPerCellQC(altExp(object, alt_exp_name))
     altExp(object, alt_exp_name)[[glue("nFeature_{alt_exp_name}")]] <- altExp(object, alt_exp_name)[["detected"]]
     altExp(object, alt_exp_name)[[glue("nCount_{alt_exp_name}")]] <- altExp(object, alt_exp_name)[["sum"]]
@@ -110,31 +110,28 @@ object_calcn <- function(object) {
 
 #' Propagate Metadata Changes
 #'
-#' @param updated_table updated metadata
+#' @param meta updated metadata
 #' @param object a single cell object
 #'
 #' @return a single cell object
 #' @export
 #' @examples
 #'
-#' \donttest{
 #' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
-#' updated_table <- read_csv(system.file("extdata", "new_meta.csv", package="chevreul"))
+#' new_meta <- data.frame(row.names = colnames(chevreul_sce))
+#' new_meta$example = "example"
 #'
-#' propagate_spreadsheet_changes(updated_table, chevreul_sce)
-#' }
-propagate_spreadsheet_changes <- function(updated_table, object) {
-    meta <- updated_table
-
-    sample_ids <- rownames(meta)
+#' propagate_spreadsheet_changes(new_meta, chevreul_sce)
+propagate_spreadsheet_changes <- function(meta, object) {
 
     meta <- meta %>%
-        mutate(meta, across(contains("snn"), as.factor)) %>%
-        mutate(across(where(is.ordered), ~ as.factor(as.character(.x))))
+      tibble::rownames_to_column("cell") %>%
+        mutate(across(contains("snn"), as.factor)) %>%
+        mutate(across(where(is.ordered), ~ as.factor(as.character(.x)))) %>%
+      tibble::column_to_rownames("cell") %>%
+      identity()
 
-    rownames(meta) <- sample_ids
-
-    colData(object) <- meta
+    colData(object) <- DataFrame(meta)
 
     return(object)
 }

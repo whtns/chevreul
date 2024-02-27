@@ -28,7 +28,7 @@ splitByCol <- function(x, f = "batch") {
 
 #' Merge Small SingleCellExeriment Objects
 #'
-#' @param object_list List of two or more singlecell objects
+#' @param ... two or more singlecell objects
 #' @param k.filter minimum cell number for integration
 #'
 #' @return a single cell object
@@ -60,7 +60,6 @@ merge_small_objects <- function(..., k.filter = 50) {
 #' Batch Correct Multiple Single Cell Objects
 #'
 #' @param object_list List of two or more single cell objects
-#' @param method Default "cca"
 #' @param organism human or mouse
 #' @param ... extra args passed to object_reduce_dimensions
 #'
@@ -138,8 +137,7 @@ object_cluster <- function(object = object, resolution = 0.6, custom_clust = NUL
 #' perplexity should not be bigger than 3 * perplexity < nrow(X) - 1, see details for interpretation
 #'
 #' @param object A SingleCellExperiment object
-#' @param experiment Assay of interest to be run on the singlecell objects
-#' @param reduction Set dimensional reduction object
+#' @param experiment Experiment of interest to be processed
 #' @param ... Extra parameters passed to object_reduce_dimensions
 #'
 #' @return a single cell object with embeddings

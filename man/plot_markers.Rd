@@ -37,6 +37,8 @@ plot_markers(
 
 \item{unique_markers}{whether to plot only unique marker genes for each group}
 
+\item{p_val_cutoff}{cutoff for p value display}
+
 \item{...}{extra parameters passed to ggplot2}
 }
 \value{

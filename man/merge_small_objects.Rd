@@ -7,9 +7,9 @@
 merge_small_objects(..., k.filter = 50)
 }
 \arguments{
-\item{k.filter}{minimum cell number for integration}
+\item{...}{two or more singlecell objects}
 
-\item{object_list}{List of two or more singlecell objects}
+\item{k.filter}{minimum cell number for integration}
 }
 \value{
 a single cell object

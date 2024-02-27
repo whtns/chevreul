@@ -9,11 +9,9 @@ object_reduce_dimensions(object, experiment = "gene", ...)
 \arguments{
 \item{object}{A SingleCellExperiment object}
 
-\item{experiment}{Assay of interest to be run on the singlecell objects}
+\item{experiment}{Experiment of interest to be processed}
 
 \item{...}{Extra parameters passed to object_reduce_dimensions}
-
-\item{reduction}{Set dimensional reduction object}
 }
 \value{
 a single cell object with embeddings
