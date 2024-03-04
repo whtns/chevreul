@@ -13,7 +13,6 @@
 #'
 #' @return a dataframe with differential expression information
 #' @export
-#' @importFrom scran findMarkers
 #' @examples
 #' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
 #' run_object_de(chevreul_sce, diffex_scheme = "louvain", cluster1 = 1, cluster2 = 2, tests = "t")
@@ -109,12 +108,11 @@ prep_slider_values <- function(default_val) {
 #'
 #' @return a shiny app
 #' @export
-#' @importFrom future plan
 #'
 #' @examples
 #' \donttest{chevreulApp()}
 #'
-chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "human", db_path = "~/.cache/chevreul/single-cell-projects.db", futureMb = 13000) {
+chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "human", db_path = "~/.cache/chevreul/single-cell-projects.db", futureMb = 13000, integrated_proj_dir = "/dataVolume/storage/single_cell_projects/integrated_projects/") {
     print(packageVersion("chevreul"))
     plan(strategy = "multicore", workers = 6)
     future_size <- futureMb * 1024^2
@@ -485,7 +483,8 @@ chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "
         })
         integrationResults <- callModule(
             integrateProj, "integrateproj",
-            proj_matrices, object, proj_dir, con()
+            proj_matrices, object, proj_dir, con(),
+            integrated_proj_dir
         )
         newprojList <- reactive({
             req(integrationResults())

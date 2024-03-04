@@ -138,7 +138,6 @@ plot_violin <- function(object, plot_var = "batch", plot_vals = NULL, features =
 #'
 #' @return an embedding colored by a feature of interest
 #' @export
-#' @importFrom ggplot2 aes
 #' @examples
 #' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
 #' plot_feature(chevreul_sce, embedding = "UMAP", features = "NRL")
@@ -226,7 +225,7 @@ plot_markers <- function(object, group_by = "batch", num_markers = 5, selected_v
         marker_table <- metadata(object)$markers[[group_by]]
         markers <- marker_table %>%
             enframe_markers() %>%
-            mutate(across(.fns = as.character))
+            mutate(across(everything(), .fns = as.character))
         if (!is.null(hide_technical)) {
             markers <- map(markers, c)
             if (hide_technical == "pseudo") {
@@ -272,7 +271,8 @@ plot_markers <- function(object, group_by = "batch", num_markers = 5, selected_v
         }
         vline_coords <- head(cumsum(table(sliced_markers$group)) + 0.5, -1)
         sliced_markers <- pull(sliced_markers, feature)
-        object[[group_by]][is.na(object[[group_by]])] <- "NA"
+
+        object[[group_by]] <- forcats::fct_na_value_to_level(object[[group_by]])
         markerplot <- plotDots(object, features = sliced_markers, group = group_by) +
             theme(axis.text.x = element_text(size = 10, angle = 45, vjust = 1, hjust = 1), axis.text.y = element_text(size = 10)) +
             # scale_y_discrete(position = "left") +
@@ -304,7 +304,6 @@ plot_markers <- function(object, group_by = "batch", num_markers = 5, selected_v
 #' @param ... extra args passed to ggplot2
 #'
 #' @return a histogram of read counts
-#' @importFrom ggplot2 ggplot aes geom_bar theme labs scale_y_log10
 #' @export
 #'
 #' @examples
@@ -349,8 +348,6 @@ plot_readcount<-  function(object, group_by = "nCount_RNA", color.by = "batch", 
 #' @param ... additional arguments passed to Heatmap
 #'
 #' @return a complexheatmap
-#' @importFrom cluster agnes
-#' @importFrom circlize colorRamp2
 #' @export
 #'
 #' @examples
@@ -446,7 +443,9 @@ make_complex_heatmap<-function(object, features = NULL, group.by = "ident", cell
 #' @export
 #'
 #' @examples
-#' plot_transcript_composition(human_gene_transcript_object, "NRL",
+#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+#'
+#' plot_transcript_composition(chevreul_sce, "NRL",
 #' group.by = "gene_snn_res.0.6")
 #'
 plot_transcript_composition <- function(object, gene_symbol, group.by = "batch", standardize = FALSE, drop_zero = FALSE) {
@@ -502,7 +501,7 @@ plot_transcript_composition <- function(object, gene_symbol, group.by = "batch",
 #' @export
 #'
 #' @examples
-#'
+#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
 #' plot_all_transcripts(chevreul_sce, "NRL")
 #'
 

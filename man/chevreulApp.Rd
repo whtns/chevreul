@@ -9,7 +9,8 @@ chevreulApp(
   appTitle = "chevreul",
   organism_type = "human",
   db_path = "~/.cache/chevreul/single-cell-projects.db",
-  futureMb = 13000
+  futureMb = 13000,
+  integrated_proj_dir = "/dataVolume/storage/single_cell_projects/integrated_projects/"
 )
 }
 \arguments{

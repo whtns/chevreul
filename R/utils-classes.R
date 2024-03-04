@@ -4,7 +4,6 @@
 #'
 #' @return plot_types a list of category_vars or continuous_vars
 #' @export
-#' @importFrom pillar new_pillar_type
 #' @examples
 #' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
 #' list_plot_types(chevreul_sce)
@@ -45,9 +44,9 @@ list_plot_types <- function(object) {
         return(plot_types)
     }
 
-# Pull metadata
+# Get cell metadata
 
-#' Pull the metadata from a given object
+#' Get cell metadata from a given object
 #'
 #' @param object a SingleCellExperiment object
 #'
@@ -59,7 +58,26 @@ list_plot_types <- function(object) {
 get_cell_metadata <- function(object) {
         colData(object) %>%
             as.data.frame()
-    }
+}
+
+# set cell metadata
+
+#' Set cell metadata from a given object
+#'
+#' @param object a SingleCellExperiment object
+#' @param meta a dataframe containing object metadata
+#'
+#' @return a SingleCellExperiment object with new colData
+#' @export
+#' @examples
+#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+#'  new_meta <- data.frame(row.names = colnames(chevreul_sce))
+#' new_meta$example = "example"
+#' set_cell_metadata(chevreul_sce, new_meta)
+set_cell_metadata <- function(object, meta) {
+  colData(object) <- meta
+  return(object)
+}
 
 #' Get object metadata
 #'
@@ -67,6 +85,7 @@ get_cell_metadata <- function(object) {
 #'
 #' @return variable features from a SingleCellExperiment object
 #' @export
+#' @importFrom S4Vectors metadata
 #' @examples
 #' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
 #' get_object_metadata(chevreul_sce)

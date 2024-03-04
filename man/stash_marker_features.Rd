@@ -19,7 +19,7 @@ stash_marker_features(
 
 \item{experiment}{An experiment to use}
 
-\item{top_n}{Use top n genes, Default "200"}
+\item{top_n}{Use top n genes, Default 200}
 
 \item{p_val_cutoff}{p value cut-off, Default value is "0.5"}
 }
@@ -27,7 +27,7 @@ stash_marker_features(
 a SingleCellExperiment object with marker genes
 }
 \description{
-Marker Genes will be stored in slot \verb{@misc$markers}
+Marker Genes will be stored in object metadata as \code{markers}
 }
 \examples{
 

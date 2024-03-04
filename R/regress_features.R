@@ -5,7 +5,6 @@
 #'
 #' @return a SingleCellExperiment object with features regressed
 #' @export
-#' @importFrom batchelor regressBatches
 #' @examples
 #' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
 #'

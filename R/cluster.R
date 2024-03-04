@@ -98,16 +98,15 @@ enframe_markers <- function(marker_table) {
 
 #' Stash Marker Genes in a SingleCellExperiment Object
 #'
-#' Marker Genes will be stored in slot `@misc$markers`
+#' Marker Genes will be stored in object metadata as `markers`
 #'
 #' @param group_by A metadata variable to group by
 #' @param object A object
 #' @param experiment An experiment to use
-#' @param top_n Use top n genes, Default "200"
+#' @param top_n Use top n genes, Default 200
 #' @param p_val_cutoff p value cut-off, Default value is "0.5"
 #'
 #' @return a SingleCellExperiment object with marker genes
-#' @importFrom scran findMarkers
 #'
 #' @examples
 #'

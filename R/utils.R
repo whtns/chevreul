@@ -218,8 +218,6 @@ update_project_db <- function(projects_dir = NULL,
 #' @param cache_location Path to cache "~/.cache/chevreul"
 #' @param sqlite_db sqlite db
 #' @param verbose print messages
-#'
-#'
 #' @return a sqlite database with SingleCellExperiment objects
 #' @export
 #' @examples

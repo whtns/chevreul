@@ -14,7 +14,7 @@
 #' \dontrun{dockerSingleCellExperimentApp(chevreul_sce)
 #' }
 #'
-dockerSingleCellExperimentApp <- function(object = chevreul_sce, loom_path = NULL, appTitle = NULL,
+dockerSingleCellExperimentApp <- function(object = NULL, loom_path = NULL, appTitle = NULL,
     organism_type = "human", futureMb = 13000, bigwig_db = "~/.cache/chevreul/bw-files.db") {
     plan(strategy = "multicore", workers = 6)
     future_size <- futureMb * 1024^2

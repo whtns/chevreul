@@ -263,7 +263,7 @@ integrateProjui <- function(id) {
 #' @param con a connection
 #'
 #' @noRd
-integrateProj <- function(input, output, session, proj_matrices, object, proj_dir, con) {
+integrateProj <- function(input, output, session, proj_matrices, object, proj_dir, con, integrated_proj_dir) {
     ns <- session$ns
 
     proj_matrix <- reactive({
@@ -319,15 +319,8 @@ integrateProj <- function(input, output, session, proj_matrices, object, proj_di
     newProjDir <- reactive({
         req(mergedObjects())
         print("foo created successfully")
-        # print(names(mergedObjects()))
-        #
-        # for (i in names(mergedObjects())) {
-        #   object[[i]] <- mergedObjects()[[i]]
-        # }
-        #
 
         newProjName <- paste0(map(path_file(selectedProjects()), ~ gsub("_proj", "", .x)), collapse = "_")
-        integrated_proj_dir <- "/dataVolume/storage/single_cell_projects/integrated_projects/"
         newProjDir <- path(integrated_proj_dir, newProjName)
 
         proj_dir(newProjDir)
@@ -338,7 +331,7 @@ integrateProj <- function(input, output, session, proj_matrices, object, proj_di
 
     volumes <- reactive({
         volumes <- c(
-            Home = "/dataVolume/storage/single_cell_projects/integrated_projects/",
+            Home = integrated_proj_dir,
             "R Installation" = R.home(),
             getVolumes()()
         )
@@ -1491,7 +1484,6 @@ techInfoui <- function(id) {
 #' @param object a SingleCellExperiment object
 #'
 #' @noRd
-#' @importFrom S4Vectors metadata
 techInfo <- function(input, output, session, object) {
   ns <- session$ns
   ## ----------------------------------------------------------------------------##
@@ -1848,8 +1840,7 @@ reformatMetadataDR <- function(input, output, session, object, featureType = "ge
         return(NULL)
       }
 
-      colData(object()) <- read_csv(inFile$datapath)
-      object(object())
+      object(set_cell_metadata(object(), read_csv(inFile$datapath)))
     } else if (input$updateMethod == "spreadsheet") {
       reformatted_object <- propagate_spreadsheet_changes(values$data_active, object())
       object(reformatted_object)

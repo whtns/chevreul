@@ -81,7 +81,8 @@ Imports:
     chevreuldata,
     S4Vectors,
     base,
-    grid
+    grid,
+    forcats
 Suggests:
     BiocStyle,
     knitr,

@@ -1,10 +1,14 @@
   ---
 title: "Shiny App"
 author: 
-  - name: Your name
+  - name: Kevin Stachelek
     affiliation:
-    - Your institution
-    email: your.email@somewhere.com
+    - University of Southern California   
+    email: kevin.stachelek@gmail.com
+  - name: Bhavana Bhat
+    affiliation:
+    - University of Southern California   
+    email: bbhat@usc.edu
 output: 
   BiocStyle::html_document:
     self_contained: yes
