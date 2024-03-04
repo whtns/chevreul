@@ -2,7 +2,7 @@
 #
 # ## Not run:
 # ## The code to prepare the .Rda file file from the marker file is:
-# hs_genes <- rownames(human_gene_transcript_object)
+# hs_genes <- rownames(chevreul_sce)
 #
 # biomaRt::listMarts(host="www.ensembl.org")
 # human_mart <- biomaRt::useMart(host="www.ensembl.org", "ENSEMBL_MART_ENSEMBL", dataset="hsapiens_gene_ensembl")

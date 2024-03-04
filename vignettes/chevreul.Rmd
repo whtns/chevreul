@@ -1,10 +1,14 @@
 ---
 title: "Chevreul"
 author: 
-  - name: Your name
+  - name: Kevin Stachelek
     affiliation:
-    - Your institution
-    email: your.email@somewhere.com
+    - University of Southern California   
+    email: kevin.stachelek@gmail.com
+  - name: Bhavana Bhat
+    affiliation:
+    - University of Southern California   
+    email: bbhat@usc.edu
 output: 
   BiocStyle::html_document:
     self_contained: yes
@@ -24,8 +28,14 @@ vignette: >
 knitr::opts_chunk$set(
     collapse = TRUE,
     comment = "#>",
+    # dev.args = list(png = list(type = "cairo")),
+    dpi = 900,
+    out.width = "100%",
+    message = FALSE,
+    warning = FALSE,
     crop = NULL ## Related to https://stat.ethz.ch/pipermail/bioc-devel/2020-April/016656.html
 )
+
 ```
 
 
@@ -68,7 +78,10 @@ BiocManager::valid()
 
 ## Required knowledge
 
-`r Biocpkg("chevreul")` is based on many other packages and in particular in those that have implemented the infrastructure needed for dealing with RNA-seq data (EDIT!). That is, packages like `r Biocpkg("SummarizedExperiment")` (EDIT!).
+`r Biocpkg("chevreul")` package is designed for single-cell RNA sequencing data. The functions included within this package are derived from other packages that have implemented the infrastructure needed for RNA-seq data preprocessing and analysis. Packages that have been instrumental in the development of `r Biocpkg("chevreul")` include, `Biocpkg("SummarizedExperiment")` and `Biocpkg("scater")`.
+
+<!-- It is based on many other packages and in particular in those that have implemented the infrastructure needed for dealing with RNA-seq data (EDIT!). That is, packages like `r Biocpkg("SummarizedExperiment")` (EDIT!). -->
+
 
 If you are asking yourself the question "Where do I start using Bioconductor?" you might be interested in [this blog post](http://lcolladotor.github.io/2014/10/16/startbioc/#.VkOKbq6rRuU).
 
@@ -91,15 +104,74 @@ Here is an example of you can cite your package inside the vignette:
 
 # Quick start to using `chevreul`
 
+The `chevreul` package contains functions to preprocess, cluster, visualize, and perform other analyses on scRNA-seq data. Chvereul uses SingelCellExperiment (SCE) object type (from `r Biocpkg("SingleCellExperiment")`) to store expression and other metadata from single-cell experiments. 
 
-```{r "start", message=FALSE}
+This package features functions capable of:
+* Performing Clustering at a range of resolutions and Dimensional reduction of Raw Sequencing Data.
+* Visualizing scRNA data using different plotting functions.
+* Integration of multiple datasets for consistent analyses. 
+* Cell cycle state regression and labeling.
+
+<!-- To demonstrate the workings of few useful functions in `Chevreul` we will load the preprocessed human_gene_transcript_sce dataset. For more details about creating SCE object and preprocessing, visit the "preprocessing" vignette. -->
+```{r, message=FALSE}
 library("chevreul")
+ 
+# Load the data
+chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+chevreul_sce
+```
+## Setting up
+
+We start with a count matrix containing expression count data and a table of corresponding cell metadata.
+
+```{r, eval=TRUE}
+
+# Object count matrix
+counts(chevreul_sce)[1:5, 1:5] 
+
+head(metadata(chevreul_sce))
 ```
 
-The main function of Chevreul is 
+Then using these 2 datasets, we create a SingleCellExpreiment object as shown below.
+```{r}
+myobject <- SingleCellExperiment::SingleCellExperiment(
+  assays = list(counts = counts(chevreul_sce)), 
+  colData = metadata(chevreul_sce), 
+  mainExpName = "gene")
+myobject
+```
 
+chevreul package contains functions that can be used in analysis and visualization of single cell RNA dataset.
 
+Chevreul includes a handy function to preprocess the data that handles normalization and scaling required for downstream analysis. If needed, parameters can be specified by the user.
 
+```{r}
+processed_sce <- object_preprocess(myobject)
+
+processed_sce
+
+```
+
+When analysing scRNA data from different batches, chevreul's `integration_workfolw()` function can be used to integrate the ‘child’ projects.
+
+```{r}
+batches <- splitByCol(processed_sce, "batch")
+
+# Perform integration of the multiple objects
+integrated_object <- integration_workflow(batches)
+```
+
+## Shiny app
+
+Chevreul includes a shiny app for exploratory scRNA data analysis and visualization which can be accessed via
+
+```{r "start", message=FALSE, eval = FALSE}
+minimalSceApp(integrated_object)
+```
+
+Note: the SCE object must be pre-processed and integrated (if required) prior to building the shiny app.
+
+The app is arranged into different sections each of which performs different function. More information about individual sections of the app is provided within the "shiny app" vignette. 
 
 # Reproducibility
 

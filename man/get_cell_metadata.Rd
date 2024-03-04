@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils-classes.R
 \name{get_cell_metadata}
 \alias{get_cell_metadata}
-\title{Pull the metadata from a given object}
+\title{Get cell metadata from a given object}
 \usage{
 get_cell_metadata(object)
 }
@@ -13,7 +13,7 @@ get_cell_metadata(object)
 dataframe containing object metadata
 }
 \description{
-Pull the metadata from a given object
+Get cell metadata from a given object
 }
 \examples{
 chevreul_sce <- chevreuldata::human_gene_transcript_sce()

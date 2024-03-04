@@ -1,10 +1,14 @@
 ---
 title: "Integration in Chevreul"
 author: 
-  - name: Your name
+  - name: Kevin Stachelek
     affiliation:
-    - Your institution
-    email: your.email@somewhere.com
+    - University of Southern California   
+    email: kevin.stachelek@gmail.com
+  - name: Bhavana Bhat
+    affiliation:
+    - University of Southern California   
+    email: bbhat@usc.edu
 output: 
   BiocStyle::html_document:
     self_contained: yes
@@ -65,7 +69,7 @@ Here, we are using the `chevreul_sce` dataset, which is produced in two batches 
 ```{r}
 chevreul_sce <- chevreuldata::human_gene_transcript_sce()
 batches <- splitByCol(chevreul_sce, "batch")
-
+batches
 # Perform integration of the multiple objects
 integrated_object <- integration_workflow(batches)
 ```
@@ -99,8 +103,6 @@ wrap_plots(markerp_batch, markerp_cluster, dp_batch, dp_cluster) +
 
 The `integration_workflow()` function can integrate datasets obtained from mouse or human source. The argument "organism" can be used to alter between the two. When integrating datasets obtained from mouse species, the data is processed according to standard integration workflow.  
 
-
-
 ## Steps of integration 
 
 The standard integration procedure in `integration_workflow()` includes multiple sub-functions responsible for performing different steps of integration.
@@ -125,11 +127,7 @@ wrap_plots(dp_batch, dp_cluster) +
 
 - Prior to integration, the SingleCellExperiment object must be pre-processed which can be done using the `object_preprocess` function in Chevreul which makes the two batches comparable. This function handles normalization and scaling required for downstream data analysis.
 
-
-
-
 # Session information 
-
 
 ```{r reproduce3, echo=FALSE}
 ## Session info

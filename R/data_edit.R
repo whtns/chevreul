@@ -133,11 +133,11 @@ reformatMetadataDR <- function(input, output, session, object, featureType = "ge
                 return(NULL)
             }
 
-            colData(object()) <- read_csv(inFile$datapath)
-            object(object())
+            object(set_cell_metadata(object(), read_csv(inFile$datapath)))
+
         } else if (input$updateMethod == "spreadsheet") {
-            reformatted_object <- propagate_spreadsheet_changes(values$data_active, object())
-            object(reformatted_object)
+
+            object(propagate_spreadsheet_changes(values$data_active, object()))
         }
     })
 

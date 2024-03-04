@@ -5,7 +5,7 @@
 \title{Create a obect app on a shinyproxy docker instance}
 \usage{
 dockerSingleCellExperimentApp(
-  object = chevreul_sce,
+  object = NULL,
   loom_path = NULL,
   appTitle = NULL,
   organism_type = "human",

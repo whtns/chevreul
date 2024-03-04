@@ -41,7 +41,8 @@ format_table <- function(mydf) {
         scroll_box(width = "800px", height = "200px")
 }
 
-load(url("http://cobrinik-1.saban-chla.usc.edu/chevreul_sce.rda"))
+#load(url("http://cobrinik-1.saban-chla.usc.edu/chevreul_sce.rda"))
+chevreul_sce <- chevreuldata::human_gene_transcript_sce()
 
 ```
 
@@ -60,66 +61,57 @@ library(ggraph)
 
 chevreul provides a single command to:
 
--   construct a SingleCellExperiment object
+-   construct a SingleCellExperiment object 
 
 -   filter genes by minimum expression and ubiquity
 
 -   normalize and scale expression by any of several methods packaged in SingleCellExperiment
 
-## Run clustering on a single object
+<!-- ## Run clustering on a single object -->
 
-By default clustering will be run at ten different resolutions between 0.2 and 2.0. Any resolution can be specified by providing the resolution argument as a numeric vector.
+<!-- By default clustering will be run at ten different resolutions between 0.2 and 2.0. Any resolution can be specified by providing the resolution argument as a numeric vector. -->
 
-```{r, results=FALSE, eval=FALSE}
+<!-- ```{r, results=FALSE} -->
 
-clustered_sce_object <- clustering_workflow(chevreul_sce,
-    experiment_name = "object_hu_trans"
-)
-```
+<!-- clustered_sce_object <- clustering_workflow(chevreul_sce, -->
+<!--     experiment_name = "object_human_transcript" -->
+<!-- ) -->
+<!-- ``` -->
 
-```{r, results=FALSE, echo=FALSE}
-clustered_sce_object <- chevreul_sce
-```
-
-
-#### Clustering at 0.6
-
-```{r, echo = FALSE}
-plotUMAP(clustered_sce_object, color_by = "gene_snn_res.0.6")
-```
+<!-- ```{r, results=FALSE, echo=FALSE} -->
+<!-- #clustered_sce_object <- chevreul_sce -->
+<!-- ``` -->
 
 
-## Get a first look at a processed dataset using an interactive shiny app
+<!-- #### Clustering at 0.6 -->
 
-```{r, eval = FALSE}
-minimalSceApp(clustered_sce_object)
-```
+<!-- ```{r, echo = FALSE} -->
+<!-- plotUMAP(clustered_sce_object, color_by = "gene_snn_res.0.6") -->
+<!-- ``` -->
+
+
+<!-- ## Get a first look at a processed dataset using an interactive shiny app -->
+
+<!-- ```{r, eval = FALSE} -->
+<!-- minimalSceApp(clustered_sce_object) -->
+<!-- ``` -->
 
 ## Set up a object
 
 We start with a gene by cell matrix of count/UMI values and a table of cell metadata
 
-```{r, eval=FALSE}
-#load(url("http://cobrinik-1.saban-chla.usc.edu/human_count.rda"))
+### Matrix containg count values
+```{r}
+load(url("http://cobrinik-1.saban-chla.usc.edu/human_count.rda"))
 
-human_count[1:5, 1:5]
-
-#load(url("http://cobrinik-1.saban-chla.usc.edu/human_meta.rda"))
-
-head(human_meta)
+human_count[1:5, 1:5]%>% format_table()
 ```
 
-```{r, echo=FALSE}
+### Dataframe containing object metadata
+```{r}
+load(url("http://cobrinik-1.saban-chla.usc.edu/human_meta.rda"))
 
-human_count[1:10, 1:10] %>%
-    format_table()
-```
-
-
-
-```{r, echo=FALSE}
-head(human_meta) %>%
-    format_table()
+head(human_meta)%>% format_table()
 ```
 
 Then using these 2 datasets we can create a SingleCellExperiment object in the usual manner using the `SingleCellExperiment` function
@@ -165,12 +157,12 @@ This function includes existing object functions which performs dimension reduct
 
 ## Community detection by clustering
 
-A separate Chevreul function, `object_cluster()`, can be used to perform clustering of scRNA-seq data. Here, clustering analysis is performed via Louvain algorithms, using exsisting functions that perform graph-based clustering. Clustering is performed at a range of resolutions with default value ranging from 0.2 to 2 and PCA reduction.
+A separate Chevreul function, `object_cluster()`, can be used to perform just the clustering of scRNA-seq data. Here, clustering analysis is performed via Louvain algorithms, using existing functions that perform graph-based clustering. Clustering is performed at a range of resolutions with default value ranging from 0.2 to 2 and PCA reduction.
 
 ```{r, results=FALSE, eval=TRUE}
-object <- object_cluster(object = myobject_red, 
+object <- object_cluster(object = myobject0, 
                          resolution = seq(0.2, 2, by = 0.2), reduction = "PCA")
-plotPCA(object, color_by = "nFeature_gene")
+plotPCA(object, color_by = "gene_snn_res.0.2")
 ```
 
 

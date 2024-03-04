@@ -150,7 +150,7 @@ splitting the dataset into subsets based on a single attribute indicated
 by the split.by argument
 
 ``` r
-split_human <- SplitObject(human_gene_transcript_object, split.by = "dataset")
+split_human <- SplitObject(chevreul_sce, split.by = "dataset")
 ```
 
 In this example the `split_human` object consists of a list of subsetted

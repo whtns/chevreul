@@ -64,13 +64,14 @@ merge_small_objects <- function(..., k.filter = 50) {
 #' @param ... extra args passed to object_reduce_dimensions
 #'
 #' @return an integrated SingleCellExperiment object
-#' @importFrom batchelor correctExperiments
 #' @export
 #' @examples
 #' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
 #' batches <- splitByCol(chevreul_sce, "batch")
 #' object_integrate(batches)
 object_integrate <- function(object_list, organism = "human", ...) {
+
+  object_list <- map(object_list, ~{colData(.x)[["batch"]] <- NULL; return(.x)})
 
     geneCorrected <- correctExperiments(object_list)
     mainExpName(geneCorrected) <- "integrated"
@@ -100,9 +101,6 @@ object_integrate <- function(object_list, organism = "human", ...) {
 #'
 #' @return a SingleCellExperiment object with louvain clusters
 #' @export
-#' @importFrom bluster NNGraphParam
-#' @importFrom scran clusterCells
-#' @importFrom glue glue
 #' @examples
 #' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
 #' object_cluster(chevreul_sce)

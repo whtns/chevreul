@@ -80,8 +80,6 @@ load_bigwigs <- function(object, bigwig_db = "~/.cache/chevreul/bw-files.db") {
 #'
 #' @return a ggplot with coverage faceted by group_by
 #' @export
-#' @importFrom EnsDb.Hsapiens.v86 EnsDb.Hsapiens.v86
-#' @importFrom EnsDb.Mmusculus.v79 EnsDb.Mmusculus.v79
 #' @examples
 #' \donttest{plot_gene_coverage_by_var()}
 plot_gene_coverage_by_var <- function(genes_of_interest = "NRL",

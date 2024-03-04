@@ -31,7 +31,9 @@ a stacked barplot of transcript counts
 plot the proportion of reads of a given gene map to each transcript
 }
 \examples{
-plot_transcript_composition(human_gene_transcript_object, "NRL",
+chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+
+plot_transcript_composition(chevreul_sce, "NRL",
 group.by = "gene_snn_res.0.6")
 
 }
