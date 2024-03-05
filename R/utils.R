@@ -263,11 +263,8 @@ append_to_project_db <- function(
 #' @param verbose print messages
 #'
 #' @return a tibble with SingleCellExperiment objects
-#' @export
-#' @examples
-#' \donttest{
-#' read_project_db()
-#' }
+#
+
 read_project_db <- function(
         cache_location = "~/.cache/chevreul",
         sqlite_db = "single-cell-projects.db",
