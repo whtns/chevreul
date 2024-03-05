@@ -15,69 +15,74 @@
 #' @export
 #' @examples
 #' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
-#' run_object_de(chevreul_sce, diffex_scheme = "louvain", cluster1 = 1, cluster2 = 2, tests = "t")
+#' run_object_de(chevreul_sce,
+#'     diffex_scheme = "louvain",
+#'     cluster1 = 1, cluster2 = 2, tests = "t"
+#' )
 #'
 #' cells1 <- colnames(chevreul_sce)[chevreul_sce$batch == "Zhong"]
 #' cells2 <- colnames(chevreul_sce)[chevreul_sce$batch == "Kuwahara"]
 #'
-#' run_object_de(chevreul_sce, diffex_scheme = "custom", cluster1 = cells1 , cluster2 = cells2, tests = "t")
-#'
+#' run_object_de(chevreul_sce,
+#'     diffex_scheme = "custom",
+#'     cluster1 = cells1, cluster2 = cells2, tests = "t"
+#' )
 #'
 run_object_de <- function(object, cluster1, cluster2, resolution = 0.2, diffex_scheme = "louvain", featureType = "gene", tests = c("t", "wilcox", "bimod")) {
-        match.arg(tests)
+    match.arg(tests)
 
-        if (featureType == "transcript") object <- altExp(object, "transcript")
+    if (featureType == "transcript") object <- altExp(object, "transcript")
 
-        if (diffex_scheme == "louvain") {
-            if (query_experiment(object, "integrated")) {
-                active_experiment <- "integrated"
-            } else {
-                active_experiment <- "gene"
-            }
-            colLabels(object) <- colData(object)[[paste0(active_experiment, "_snn_res.", resolution)]]
-            object <- object[, colLabels(object) %in% c(cluster1, cluster2)]
-            colLabels(object) <- factor(colLabels(object))
-        } else if (diffex_scheme == "custom") {
-            object <- object[, c(cluster1, cluster2)]
-            keep_cells <- c(cluster1, cluster2)
-            new_idents <- c(rep(1, length(cluster1)), rep(2, length(cluster2)))
-            names(new_idents) <- keep_cells
-            new_idents <- new_idents[colnames(object)]
-            colLabels(object) <- new_idents
-            cluster1 <- 1
-            cluster2 <- 2
+    if (diffex_scheme == "louvain") {
+        if (query_experiment(object, "integrated")) {
+            active_experiment <- "integrated"
+        } else {
+            active_experiment <- "gene"
         }
-        test_list <- vector("list", length(tests))
-        for (test in tests) {
-            print(test)
-            de <- findMarkers(object, test.type = test)
-            if (featureType == "transcript") {
-                de_cols <- c("enstxp", "ensgene", "symbol", "p_val" = "p.value", "avg_log2FC", "pct.1", "pct.2", "p_val_adj" = "FDR")
-                de <- de[[1]] %>%
-                    as.data.frame() %>%
-                    rownames_to_column("enstxp") %>%
-                    left_join(annotables::grch38_tx2gene, by = "enstxp") %>%
-                    left_join(annotables::grch38, by = "ensgene")
-                if ("summary.logFC" %in% colnames(de)) {
-                    de <- mutate(de, avg_log2FC = log(exp(summary.logFC), 2))
-                }
-                de <- select(de, any_of(de_cols))
-            } else if (featureType == "gene") {
-                de_cols <- c("ensgene", "symbol", "p_val" = "p.value", "avg_log2FC", "pct.1", "pct.2", "p_val_adj" = "FDR")
-                de <- de[[1]] %>%
-                    as.data.frame() %>%
-                    rownames_to_column("symbol") %>%
-                    left_join(annotables::grch38, by = "symbol")
-                if ("summary.logFC" %in% colnames(de)) {
-                    de <- mutate(de, avg_log2FC = log(exp(summary.logFC), 2))
-                }
-                de <- select(de, any_of(de_cols))
-            }
-            test_list[[match(test, tests)]] <- de
-        }
-        names(test_list) <- tests
-        return(test_list)
+        colLabels(object) <- colData(object)[[paste0(active_experiment, "_snn_res.", resolution)]]
+        object <- object[, colLabels(object) %in% c(cluster1, cluster2)]
+        colLabels(object) <- factor(colLabels(object))
+    } else if (diffex_scheme == "custom") {
+        object <- object[, c(cluster1, cluster2)]
+        keep_cells <- c(cluster1, cluster2)
+        new_idents <- c(rep(1, length(cluster1)), rep(2, length(cluster2)))
+        names(new_idents) <- keep_cells
+        new_idents <- new_idents[colnames(object)]
+        colLabels(object) <- new_idents
+        cluster1 <- 1
+        cluster2 <- 2
     }
+    test_list <- vector("list", length(tests))
+    for (test in tests) {
+        print(test)
+        de <- findMarkers(object, test.type = test)
+        if (featureType == "transcript") {
+            de_cols <- c("enstxp", "ensgene", "symbol", "p_val" = "p.value", "avg_log2FC", "pct.1", "pct.2", "p_val_adj" = "FDR")
+            de <- de[[1]] %>%
+                as.data.frame() %>%
+                rownames_to_column("enstxp") %>%
+                left_join(annotables::grch38_tx2gene, by = "enstxp") %>%
+                left_join(annotables::grch38, by = "ensgene")
+            if ("summary.logFC" %in% colnames(de)) {
+                de <- mutate(de, avg_log2FC = log(exp(summary.logFC), 2))
+            }
+            de <- select(de, any_of(de_cols))
+        } else if (featureType == "gene") {
+            de_cols <- c("ensgene", "symbol", "p_val" = "p.value", "avg_log2FC", "pct.1", "pct.2", "p_val_adj" = "FDR")
+            de <- de[[1]] %>%
+                as.data.frame() %>%
+                rownames_to_column("symbol") %>%
+                left_join(annotables::grch38, by = "symbol")
+            if ("summary.logFC" %in% colnames(de)) {
+                de <- mutate(de, avg_log2FC = log(exp(summary.logFC), 2))
+            }
+            de <- select(de, any_of(de_cols))
+        }
+        test_list[[match(test, tests)]] <- de
+    }
+    names(test_list) <- tests
+    return(test_list)
+}
 
 
 
@@ -108,7 +113,9 @@ prep_slider_values <- function(default_val) {
 #' @export
 #'
 #' @examples
-#' \donttest{chevreulApp()}
+#' \donttest{
+#' chevreulApp()
+#' }
 #'
 chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "human", db_path = "~/.cache/chevreul/single-cell-projects.db", futureMb = 13000, integrated_proj_dir = "/dataVolume/storage/single_cell_projects/integrated_projects/") {
     print(packageVersion("chevreul"))
@@ -118,7 +125,7 @@ chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "
     options(shiny.maxRequestSize = 40 * 1024^2)
     options(DT.options = list(
         pageLength = 2000, paging = FALSE,
-        info = TRUE, searching = TRUE, autoWidth = F, ordering = TRUE,
+        info = TRUE, searching = TRUE, autoWidth = FALSE, ordering = TRUE,
         scrollX = TRUE, language = list(search = "Filter:")
     ))
     header <- dashboardHeader(title = appTitle)
@@ -319,11 +326,11 @@ chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "
         # setBookmarkExclude(names(list_of_inputs))
 
         onBookmark(function(state) {
-            state$values$uploadSingleCellExperimentPath <- uploadSingleCellExperimentPath()
+            state$values$uploadSCEPath <- uploadSCEPath()
         })
 
         onRestore(function(state) {
-            uploadSingleCellExperimentPath(state$values$uploadSingleCellExperimentPath[[1]])
+            uploadSCEPath(state$values$uploadSCEPath[[1]])
         })
 
         w <- Waiter$new()
@@ -353,7 +360,7 @@ chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "
         output$projInput <- renderUI({
             selectizeInput("setProject", "Select Project to Load",
                 choices = projList(), selected = preset_project,
-                multiple = F
+                multiple = FALSE
             )
         })
 
@@ -363,7 +370,7 @@ chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "
 
         object <- reactiveVal()
         proj_dir <- reactiveVal()
-        uploadSingleCellExperimentPath <- reactiveVal()
+        uploadSCEPath <- reactiveVal()
 
         if (!is.null(preset_project)) {
             proj_dir(preset_project)
@@ -405,28 +412,28 @@ chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "
                 input$objectUpload
             )
             print(file)
-            uploadSingleCellExperimentPath(file$datapath)
+            uploadSCEPath(file$datapath)
         })
 
         observe({
-            req(uploadSingleCellExperimentPath())
+            req(uploadSCEPath())
             print("uploaded")
             withProgress(
                 message = paste0("Uploading Data"),
                 value = 0,
                 {
                     incProgress(2 / 10)
-                    print(uploadSingleCellExperimentPath())
-                    updated_object <- readRDS(uploadSingleCellExperimentPath())
+                    print(uploadSCEPath())
+                    updated_object <- readRDS(uploadSCEPath())
                     object(updated_object)
                     incProgress(6 / 10)
 
                     organism <- case_when(
-                        str_detect(uploadSingleCellExperimentPath(), "Hs") ~ "human",
-                        str_detect(uploadSingleCellExperimentPath(), "Mm") ~ "mouse"
+                        str_detect(uploadSCEPath(), "Hs") ~ "human",
+                        str_detect(uploadSCEPath(), "Mm") ~ "mouse"
                     )
 
-                    print(uploadSingleCellExperimentPath())
+                    print(uploadSCEPath())
                     print(names(object))
                     incProgress(8 / 10)
                 }
@@ -566,7 +573,7 @@ chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "
                     subset_object <- object()[, colnames(object()) %in% subset_selected_cells()]
                     object(subset_object)
                     if (length(unique(object()[["batch"]])) > 1) {
-                        message(paste0("reintegrating gene expression"))
+                        message("reintegrating gene expression")
                         reintegrated_object <- reintegrate_object(object(),
                             resolution = seq(0.2, 2, by = 0.2),
                             legacy_settings = input$legacySettingsSubset,
@@ -600,7 +607,7 @@ chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "
                     )
                     object(subset_object)
                     if (length(unique(object()[["batch"]])) > 1) {
-                        message(paste0("reintegrating gene expression"))
+                        message("reintegrating gene expression")
                         reintegrated_object <- reintegrate_object(object(),
                             resolution = seq(0.2, 2, by = 0.2),
                             legacy_settings = input$legacySettingsSubset,
@@ -663,17 +670,16 @@ chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "
                 title = "Regressing cycle effects",
                 "This process may take a minute or two!"
             ))
-            regressed_object <- regress_cell_cycle(object()
-            )
+            regressed_object <- regress_cell_cycle(object())
             object(regressed_object)
             removeModal()
         })
 
         observe({
-            req(uploadSingleCellExperimentPath())
+            req(uploadSCEPath())
             req(object())
 
-            proj_path <- str_replace(uploadSingleCellExperimentPath(), "output.*", "")
+            proj_path <- str_replace(uploadSCEPath(), "output.*", "")
 
             proj_name <- path_file(proj_path)
             print(proj_name)

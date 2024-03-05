@@ -35,9 +35,6 @@ knitr::opts_chunk$set(
     warning = FALSE,
     crop = NULL ## Related to https://stat.ethz.ch/pipermail/bioc-devel/2020-April/016656.html
 )
-
-
-
 ```
 
 
@@ -69,8 +66,8 @@ bib <- c(
 
 ```{r "install", eval = FALSE}
 if (!requireNamespace("BiocManager", quietly = TRUE)) {
-      install.packages("BiocManager")
-  }
+    install.packages("BiocManager")
+}
 
 BiocManager::install("chevreul")
 
@@ -118,8 +115,8 @@ This package features functions capable of:
 
 ```{r, message=FALSE}
 devtools::load_all()
-#library("chevreul")
- 
+# library("chevreul")
+
 # Load the data
 chevreul_sce <- chevreuldata::human_gene_transcript_sce()
 chevreul_sce
@@ -129,22 +126,22 @@ chevreul_sce
 We start with a count matrix containing expression count data and a table of corresponding cell metadata.
 
 ```{r, eval=TRUE}
-
 # Object count matrix
-human_count<-counts(chevreul_sce)
-human_count[1:5, 1:5]%>%knitr::kable(format = "pipe")
+human_count <- counts(chevreul_sce)
+human_count[1:5, 1:5] %>% knitr::kable(format = "pipe")
 
 # Object metadata
-human_meta<-colData(chevreul_sce) %>% as.data.frame()
-human_meta[1:5, 1:5]%>%knitr::kable(format = "pipe")
+human_meta <- colData(chevreul_sce) %>% as.data.frame()
+human_meta[1:5, 1:5] %>% knitr::kable(format = "pipe")
 ```
 
 Then using these 2 datasets, we create a SingleCellExpreiment object as shown below.
 ```{r}
 myobject <- SingleCellExperiment::SingleCellExperiment(
-  assays = list(counts = counts(chevreul_sce)), 
-  colData = colData(chevreul_sce), 
-  mainExpName = "gene")
+    assays = list(counts = counts(chevreul_sce)),
+    colData = colData(chevreul_sce),
+    mainExpName = "gene"
+)
 
 myobject
 ```
@@ -156,7 +153,6 @@ myobject
 ```{r}
 processed_sce <- object_preprocess(myobject)
 processed_sce
-
 ```
 
 When analysing scRNA data from different batches, chevreul's `integration_workfolw()` function can be used to integrate the ‘child’ projects.

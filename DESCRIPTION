@@ -7,11 +7,12 @@ Authors@R: c(
     person("Bhavana", "Bhat", , "bhavanabhat29@gmail.com", role = "aut")
   )
 Description: Tools for managing SingleCellExperiment objects as projects. 
-Inculdes functions for analysis and visulaization of single-cell data. 
-Also included is a shiny app for visualization of pre-processed scRNA data.
+  Includes functions for analysis and visulaization of single-cell data. 
+  Also included is a shiny app for visualization of pre-processed scRNA data.
 License: MIT + file LICENSE
 URL: https://github.com/whtns/chevreul,
     https://whtns.github.io/chevreul/
+Date: 2024-03-05
 BugReports: https://github.com/cobriniklab/chevreul/issues
 Depends:
     R (>= 4.4.0),
@@ -40,7 +41,6 @@ Imports:
     methods,
     patchwork,
     plotly,
-    Rcpp,
     reticulate,
     rlang,
     RSQLite,
@@ -75,7 +75,6 @@ Imports:
     EnsDb.Mmusculus.v79,
     scales,
     readr,
-    Nebulosa,
     velociraptor,
     LoomExperiment,
     chevreuldata,

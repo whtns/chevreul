@@ -12,7 +12,8 @@ add_percent_mito(object, experiment = "gene")
 \item{experiment}{gene}
 }
 \value{
-a single cell obejct with cell metadata column containing mitochondrial percentage
+a single cell obejct with
+cell metadata column containing mitochondrial percentage
 }
 \description{
 Add a Percentage of Mitochondrial Read Count Categorical Variable to the

@@ -1,5 +1,3 @@
-
-
 #' Gene Symbols to Ensembl Transcript Ids
 #'
 #' convert hgnc gene symbols to ensembl transcript ids
@@ -26,8 +24,7 @@ genes_to_transcripts <- function(symbols, organism = "human") {
         )
     }
 
-  feature_table[(feature_table[["gene_name"]] %in% symbols),"tx_id"]
-
+    feature_table[(feature_table[["gene_name"]] %in% symbols), "tx_id"]
 }
 
 #' Ensembl Transcript Ids to Gene Symbols
@@ -42,7 +39,8 @@ genes_to_transcripts <- function(symbols, organism = "human") {
 #'
 #' @examples
 #'
-#' NRL_transcripts_hs <- c("ENST00000359842", "ENST00000470566", "ENST00000465764", "ENST00000619224")
+#' NRL_transcripts_hs <-
+#' c("ENST00000359842", "ENST00000470566", "ENST00000465764", "ENST00000619224")
 #'
 #' transcripts_to_genes(transcripts = NRL_transcripts_hs)
 #'
@@ -70,15 +68,15 @@ transcripts_to_genes <- function(transcripts, organism = "human") {
 #' @param object A object
 #' @param experiment gene
 #'
-#' @return a single cell obejct with cell metadata column containing mitochondrial percentage
+#' @return a single cell obejct with
+#' cell metadata column containing mitochondrial percentage
 #' @export
 #' @examples
 #' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
 #' add_percent_mito(chevreul_sce)
 #'
 add_percent_mito <- function(object, experiment = "gene") {
-        is.mito <- grepl("^MT-*", rownames(object))
-        object <- addPerCellQCMetrics(object, subsets = list(Mito = is.mito))
-        return(object)
-    }
-
+    is.mito <- grepl("^MT-*", rownames(object))
+    object <- addPerCellQCMetrics(object, subsets = list(Mito = is.mito))
+    return(object)
+}

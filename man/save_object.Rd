@@ -19,10 +19,3 @@ a path to an rds file containing a SingleCellExperiment object
 \description{
 Save object to \if{html}{\out{<project>}}/output/sce/\if{html}{\out{<feature>}}_object.rds
 }
-\examples{
-\dontrun{
-save_object(gene = feature_objects$gene, transcript = feature_objects$transcript, proj_dir = proj_dir)
-
-save_object(gene = feature_objects$gene, transcript = feature_objects$transcript, prefix = "remove_nonPRs", proj_dir = proj_dir)
-}
-}

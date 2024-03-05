@@ -19,7 +19,7 @@ Set cell metadata from a given object
 }
 \examples{
 chevreul_sce <- chevreuldata::human_gene_transcript_sce()
- new_meta <- data.frame(row.names = colnames(chevreul_sce))
-new_meta$example = "example"
+new_meta <- data.frame(row.names = colnames(chevreul_sce))
+new_meta$example <- "example"
 set_cell_metadata(chevreul_sce, new_meta)
 }

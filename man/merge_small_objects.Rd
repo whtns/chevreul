@@ -20,8 +20,9 @@ Merge Small SingleCellExperiment Objects
 \examples{
 chevreul_sce <- chevreuldata::human_gene_transcript_sce()
 merge_small_objects(
-"small_batch1" = chevreul_sce[,1:40],
-"small_batch2" = chevreul_sce[,41:80],
-"large_batch" = chevreul_sce[,81:300])
+    "small_batch1" = chevreul_sce[, seq(1, 40)],
+    "small_batch2" = chevreul_sce[, seq(41, 80)],
+    "large_batch" = chevreul_sce[, seq(81, 300)]
+)
 
 }

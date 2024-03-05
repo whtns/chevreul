@@ -6,7 +6,7 @@
 \alias{chevreul-package}
 \title{chevreul: Tools for managing SingleCellExperiment objects as projects}
 \description{
-Tools for managing SingleCellExperiment objects as projects.
+Tools for managing SingleCellExperiment objects as projects. Includes functions for analysis and visulaization of single-cell data. Also included is a shiny app for visualization of pre-processed scRNA data.
 }
 \seealso{
 Useful links:
@@ -18,7 +18,7 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Kevin Stachelek \email{kevin.stachelek@gmail.com}
+\strong{Maintainer}: Kevin Stachelek \email{kevin.stachelek@gmail.com} (\href{https://orcid.org/0000-0003-2085-695X}{ORCID})
 
 Authors:
 \itemize{

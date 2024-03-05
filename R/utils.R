@@ -15,10 +15,10 @@
 #' NRL_transcripts <- get_transcripts_from_object(chevreul_sce, "NRL")
 #'
 get_transcripts_from_object <- function(object, gene, organism = "human") {
-        transcripts <- genes_to_transcripts(gene, organism)
+    transcripts <- genes_to_transcripts(gene, organism)
 
-        transcripts <- transcripts[transcripts %in% get_features(object, "transcript")]
-    }
+    transcripts <- transcripts[transcripts %in% get_features(object, "transcript")]
+}
 
 
 #' Record Experiment Metadata
@@ -35,51 +35,51 @@ get_transcripts_from_object <- function(object, gene, organism = "human") {
 #' record_experiment_data(chevreul_sce)
 #'
 record_experiment_data <- function(object, experiment_name = "default_experiment", organism = "human") {
-        if (!requireNamespace("SingleCellExperiment", quietly = TRUE)) {
-            stop("Package 'object' needed for this function to work. Please install it.",
-                call. = FALSE
-            )
-        }
-
-        organism <- metadata(object)[["experiment"]][["organism"]] %||% organism
-
-        experiment_name <- metadata(object)[["experiment"]][["experiment_name"]] %||% experiment_name
-
-        message(paste0("[", format(Sys.time(), "%H:%M:%S"), "] Logging Technical Details..."))
-        experiment <- list(
-            experiment_name = experiment_name,
-            organism = organism
+    if (!requireNamespace("SingleCellExperiment", quietly = TRUE)) {
+        stop("Package 'object' needed for this function to work. Please install it.",
+            call. = FALSE
         )
-        experiment$date_of_export <- Sys.Date()
-        experiment$date_of_analysis <- Sys.Date()
-
-        experiment$parameters <- list(
-            gene_nomenclature = "gene_symbol",
-            discard_genes_expressed_in_fewer_cells_than = 10,
-            keep_mitochondrial_genes = TRUE,
-            variables_to_regress_out = "nCount_RNA",
-            number_PCs = 30,
-            tSNE_perplexity = 30,
-            cluster_resolution = seq(0.2, 2.0, by = 0.2)
-        )
-        experiment$filtering <- list(
-            UMI_min = 50,
-            genes_min = 10
-        )
-        experiment$sessionInfo <- list(
-            capture.output(sessionInfo())
-        )
-
-        if (!is.null(objectVersion(object))) {
-            experiment$SingleCellExperiment_version <- objectVersion(object)
-        }
-
-        experiment$chevreul_version <- packageVersion("chevreul")
-
-        metadata(object)[["experiment"]] <- experiment
-
-        return(object)
     }
+
+    organism <- metadata(object)[["experiment"]][["organism"]] %||% organism
+
+    experiment_name <- metadata(object)[["experiment"]][["experiment_name"]] %||% experiment_name
+
+    message(glue("[{format(Sys.time(), '%H:%M:%S')} Logging Technical Details..."))
+    experiment <- list(
+        experiment_name = experiment_name,
+        organism = organism
+    )
+    experiment$date_of_export <- Sys.Date()
+    experiment$date_of_analysis <- Sys.Date()
+
+    experiment$parameters <- list(
+        gene_nomenclature = "gene_symbol",
+        discard_genes_expressed_in_fewer_cells_than = 10,
+        keep_mitochondrial_genes = TRUE,
+        variables_to_regress_out = "nCount_RNA",
+        number_PCs = 30,
+        tSNE_perplexity = 30,
+        cluster_resolution = seq(0.2, 2.0, by = 0.2)
+    )
+    experiment$filtering <- list(
+        UMI_min = 50,
+        genes_min = 10
+    )
+    experiment$sessionInfo <- list(
+        capture.output(sessionInfo())
+    )
+
+    if (!is.null(objectVersion(object))) {
+        experiment$SingleCellExperiment_version <- objectVersion(object)
+    }
+
+    experiment$chevreul_version <- packageVersion("chevreul")
+
+    metadata(object)[["experiment"]] <- experiment
+
+    return(object)
+}
 
 #' Calculate Read Count Metrics for a object
 #'
@@ -93,19 +93,18 @@ record_experiment_data <- function(object, experiment_name = "default_experiment
 #' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
 #' object_calcn(chevreul_sce)
 object_calcn <- function(object) {
+    object <- addPerCellQC(object)
+    object[[glue("nFeature_{mainExpName(object)}")]] <- object$detected
+    object[[glue("nCount_{mainExpName(object)}")]] <- object$sum
 
-  object <- addPerCellQC(object)
-  object[[glue("nFeature_{mainExpName(object)}")]] <- object$detected
-  object[[glue("nCount_{mainExpName(object)}")]] <- object$sum
-
-  for (alt_exp_name in altExpNames(object)[!altExpNames(object) == "velocity"]){
-    altExp(object, alt_exp_name) <- addPerCellQC(altExp(object, alt_exp_name))
-    altExp(object, alt_exp_name)[[glue("nFeature_{alt_exp_name}")]] <- altExp(object, alt_exp_name)[["detected"]]
-    altExp(object, alt_exp_name)[[glue("nCount_{alt_exp_name}")]] <- altExp(object, alt_exp_name)[["sum"]]
-  }
-
-        return(object)
+    for (alt_exp_name in altExpNames(object)[!altExpNames(object) == "velocity"]) {
+        altExp(object, alt_exp_name) <- addPerCellQC(altExp(object, alt_exp_name))
+        altExp(object, alt_exp_name)[[glue("nFeature_{alt_exp_name}")]] <- altExp(object, alt_exp_name)[["detected"]]
+        altExp(object, alt_exp_name)[[glue("nCount_{alt_exp_name}")]] <- altExp(object, alt_exp_name)[["sum"]]
     }
+
+    return(object)
+}
 
 
 #' Propagate Metadata Changes
@@ -119,17 +118,16 @@ object_calcn <- function(object) {
 #'
 #' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
 #' new_meta <- data.frame(row.names = colnames(chevreul_sce))
-#' new_meta$example = "example"
+#' new_meta$example <- "example"
 #'
 #' propagate_spreadsheet_changes(new_meta, chevreul_sce)
 propagate_spreadsheet_changes <- function(meta, object) {
-
     meta <- meta %>%
-      tibble::rownames_to_column("cell") %>%
+        tibble::rownames_to_column("cell") %>%
         mutate(across(contains("snn"), as.factor)) %>%
         mutate(across(where(is.ordered), ~ as.factor(as.character(.x)))) %>%
-      tibble::column_to_rownames("cell") %>%
-      identity()
+        tibble::column_to_rownames("cell") %>%
+        identity()
 
     colData(object) <- DataFrame(meta)
 
@@ -147,23 +145,25 @@ propagate_spreadsheet_changes <- function(meta, object) {
 #' @return a sqlite database with SingleCellExperiment objects
 #' @export
 #' @examples
-#' \donttest{create_project_db()}
+#' \donttest{
+#' create_project_db()
+#' }
 create_project_db <- function(cache_location = "~/.cache/chevreul", sqlite_db = "single-cell-projects.db", verbose = TRUE) {
-        if (!dir.exists(cache_location)) {
-            dir.create(cache_location)
-        }
-        con <- dbConnect(SQLite(), path(cache_location, sqlite_db))
-        projects_tbl <- tibble(project_name = character(), project_path = character(), project_slug = character(), project_type = character(), )
-        message(paste0("building table of chevreul projects at ", path(cache_location, sqlite_db)))
-        tryCatch({
-            dbWriteTable(con, "projects_tbl", projects_tbl)
-        }, warning = function(w) {
-            message(sprintf("Warning in %s: %s", deparse(w[["call"]]), w[["message"]]))
-        }, error = function(e) {
-            message("projects db already exists!")
-        }, finally = {
-        })
-        dbDisconnect(con)
+    if (!dir.exists(cache_location)) {
+        dir.create(cache_location)
+    }
+    con <- dbConnect(SQLite(), path(cache_location, sqlite_db))
+    projects_tbl <- tibble(project_name = character(), project_path = character(), project_slug = character(), project_type = character(), )
+    message(glue("building table of chevreul projects at {path(cache_location, sqlite_db)}"))
+    tryCatch({
+        dbWriteTable(con, "projects_tbl", projects_tbl)
+    }, warning = function(w) {
+        message(sprintf("Warning in %s: %s", deparse(w[["call"]]), w[["message"]]))
+    }, error = function(e) {
+        message("projects db already exists!")
+    }, finally = {
+    })
+    dbDisconnect(con)
 }
 
 #' Update a database of chevreul projects
@@ -178,11 +178,14 @@ create_project_db <- function(cache_location = "~/.cache/chevreul", sqlite_db = 
 #' @return a sqlite database with SingleCellExperiment objects
 #' @export
 #' @examples
-#' \donttest{update_project_db()}
-update_project_db <- function(projects_dir = NULL,
-    cache_location = "~/.cache/chevreul",
-    sqlite_db = "single-cell-projects.db",
-    verbose = TRUE) {
+#' \donttest{
+#' update_project_db()
+#' }
+update_project_db <- function(
+        projects_dir = NULL,
+        cache_location = "~/.cache/chevreul",
+        sqlite_db = "single-cell-projects.db",
+        verbose = TRUE) {
     if (!dir.exists(cache_location)) {
         dir.create(cache_location)
     }
@@ -219,13 +222,12 @@ update_project_db <- function(projects_dir = NULL,
 #' @param sqlite_db sqlite db
 #' @param verbose print messages
 #' @return a sqlite database with SingleCellExperiment objects
-#' @export
-#' @examples
-#' \donttest{append_to_project_db("example_project_path")}
-append_to_project_db <- function(new_project_path,
-    cache_location = "~/.cache/chevreul",
-    sqlite_db = "single-cell-projects.db",
-    verbose = TRUE) {
+
+append_to_project_db <- function(
+        new_project_path,
+        cache_location = "~/.cache/chevreul",
+        sqlite_db = "single-cell-projects.db",
+        verbose = TRUE) {
     if (!dir.exists(cache_location)) {
         dir.create(cache_location)
     }
@@ -263,11 +265,13 @@ append_to_project_db <- function(new_project_path,
 #' @return a tibble with SingleCellExperiment objects
 #' @export
 #' @examples
-#' \donttest{read_project_db()}
+#' \donttest{
+#' read_project_db()
+#' }
 read_project_db <- function(
-    cache_location = "~/.cache/chevreul",
-    sqlite_db = "single-cell-projects.db",
-    verbose = TRUE) {
+        cache_location = "~/.cache/chevreul",
+        sqlite_db = "single-cell-projects.db",
+        verbose = TRUE) {
     if (!dir.exists(cache_location)) {
         dir.create(cache_location)
     }
@@ -292,7 +296,9 @@ read_project_db <- function(
 #' @return a sqlite database of bigwig files for cells in a SingleCellExperiment object
 #' @export
 #' @examples
-#' \donttest{make_bigwig_db("example_project")}
+#' \donttest{
+#' make_bigwig_db("example_project")
+#' }
 make_bigwig_db <- function(new_project = NULL, cache_location = "~/.cache/chevreul/", sqlite_db = "bw-files.db") {
     new_bigwigfiles <- dir_ls(new_project, glob = "*.bw", recurse = TRUE) %>%
         set_names(path_file(.)) %>%
@@ -321,13 +327,14 @@ make_bigwig_db <- function(new_project = NULL, cache_location = "~/.cache/chevre
 #'
 #' @return a tibble with cell level metadata from a SingleCellExperiment object
 #' @examples
-#'
 #' \donttest{
 #' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
-#' metadata_from_batch(chevreul_sce)}
+#' metadata_from_batch(chevreul_sce)
+#' }
 #'
-metadata_from_batch <- function(batch, projects_dir = "/dataVolume/storage/single_cell_projects",
-    db_path = "single-cell-projects.db") {
+metadata_from_batch <- function(
+        batch, projects_dir = "/dataVolume/storage/single_cell_projects",
+        db_path = "single-cell-projects.db") {
     mydb <- dbConnect(SQLite(), path(projects_dir, db_path))
 
     projects_tbl <- dbReadTable(mydb, "projects_tbl") %>%
@@ -383,23 +390,18 @@ metadata_from_object <- function(object) {
 #' @param proj_dir path to a project directory
 #'
 #' @return a path to an rds file containing a SingleCellExperiment object
-#' @export
 #'
-#' @examples
-#' \donttest{
-#' save_object(gene = feature_objects$gene, transcript = feature_objects$transcript, proj_dir = proj_dir)
 #'
-#' save_object(gene = feature_objects$gene, transcript = feature_objects$transcript, prefix = "remove_nonPRs", proj_dir = proj_dir)
-#' }
+#'
 save_object <- function(object, prefix = "unfiltered", proj_dir = getwd()) {
-  object_dir <- path(proj_dir, "output", "singlecellexperiment")
+    object_dir <- path(proj_dir, "output", "singlecellexperiment")
 
-  dir.create(object_dir)
+    dir.create(object_dir)
 
-  object_path <- path(object_dir, paste0(prefix, "_object.rds"))
+    object_path <- path(object_dir, paste0(prefix, "_object.rds"))
 
-  message(paste0("saving to ", object_path))
-  saveRDS(object, object_path)
+    message(glue("saving to {object_path}"))
+    saveRDS(object, object_path)
 
-  return(object)
+    return(object)
 }

@@ -32,5 +32,6 @@ run scvelo on a gene or transcript level object
 \examples{
 \donttest{
 chevreul_sce <- chevreuldata::human_gene_transcript_sce()
-merge_loom(chevreul_sce, "my.loom")}
+merge_loom(chevreul_sce, "my.loom")
+}
 }

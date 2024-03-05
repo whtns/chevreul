@@ -39,8 +39,6 @@ knitr::opts_chunk$set(
 
 
 chevreul_sce <- chevreuldata::human_gene_transcript_sce()
-
-
 ```
 
 This article demonstrates the data visualization tools in Chevreul. We'll introduce included functions, their usage, and resulting plots 
@@ -90,8 +88,10 @@ plot_readcount(chevreul_sce,
 Make an interactive scatter plot of a metadata variable, where each point in the plot represents a cell whose position on the plot is given by the cell embedding determined by the dimensional reduction technique by default, "UMAP". The group argument specifies the colData variable by which to group the cells by, by default, "batch".
 
 ```{r}
-plot_var(chevreul_sce, group = "gene_snn_res.0.2", 
-         embedding = "UMAP")
+plot_var(chevreul_sce,
+    group = "gene_snn_res.0.2",
+    embedding = "UMAP"
+)
 ```
 
 This function utilizes a SingleCellExperiment function, `DimPlot()`, as sub function which produces the dimensional reduction plot. The interactive parameter, `return_plotly`, in plot_var when set to TRUE will convert the plot into an interactive plot using ggplotly function from R's plotly package
@@ -102,7 +102,6 @@ Marker genes of louvain clusters or additional experimental metadata can be plot
 
 
 ```{r}
-
 plot_markers(chevreul_sce,
     group_by = "gene_snn_res.0.2",
     marker_method = "wilcox"
@@ -147,16 +146,21 @@ We can plot an annotated complex heat map from the SingleCellExperiment object w
 ```{r}
 top_10_features <- getTopHVGs(chevreul_sce)[1:10]
 
-make_complex_heatmap(chevreul_sce, features = top_10_features, 
-                     group.by = "gene_snn_res.0.2")
+make_complex_heatmap(chevreul_sce,
+    features = top_10_features,
+    group.by = "gene_snn_res.0.2"
+)
 
-make_complex_heatmap(chevreul_sce, features = top_10_features, 
-                     group.by = "gene_snn_res.0.2", col_arrangement = "average")
+make_complex_heatmap(chevreul_sce,
+    features = top_10_features,
+    group.by = "gene_snn_res.0.2", col_arrangement = "average"
+)
 
-make_complex_heatmap(chevreul_sce, features = top_10_features, 
-                     group.by = c("Prep.Method", "gene_snn_res.0.2"), 
-                     col_arrangement = "gene_snn_res.0.2")
-
+make_complex_heatmap(chevreul_sce,
+    features = top_10_features,
+    group.by = c("Prep.Method", "gene_snn_res.0.2"),
+    col_arrangement = "gene_snn_res.0.2"
+)
 ```
 
 ## Session information

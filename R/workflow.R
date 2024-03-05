@@ -15,32 +15,31 @@
 #' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
 #' batches <- splitByCol(chevreul_sce, "batch")
 #' integration_workflow(batches)
-integration_workflow <-  function(batches, excluded_cells = NULL, resolution = seq(0.2, 2.0, by = 0.2), experiment_name = "default_experiment", organism = "human", ...) {
+integration_workflow <- function(batches, excluded_cells = NULL, resolution = seq(0.2, 2.0, by = 0.2), experiment_name = "default_experiment", organism = "human", ...) {
+    # organisms <- map(batches, Misc, c("experiment", "organism"))
 
-        # organisms <- map(batches, Misc, c("experiment", "organism"))
+    organisms <- map(batches, list("meta.data", "organism", 1))
 
-        organisms <- map(batches, list("meta.data", "organism", 1))
-
-        if (any(map_lgl(organisms, is.null))) {
-            organisms <- case_when(
-                grepl("Hs", names(batches)) ~ "human",
-                grepl("Mm", names(batches)) ~ "mouse",
-                TRUE ~ "human"
-            )
-            names(organisms) <- names(batches)
-        }
-
-        experiment_names <- names(batches)
-
-        batches <- pmap(list(batches, experiment_names, organisms), record_experiment_data)
-
-        merged_batches <- object_integration_pipeline(batches, resolution = resolution, organism = "human", ...)
-        metadata(merged_batches)$batches <- names(batches)
-
-        merged_batches <- record_experiment_data(merged_batches, experiment_name, organism)
-
-        return(merged_batches)
+    if (any(map_lgl(organisms, is.null))) {
+        organisms <- case_when(
+            grepl("Hs", names(batches)) ~ "human",
+            grepl("Mm", names(batches)) ~ "mouse",
+            TRUE ~ "human"
+        )
+        names(organisms) <- names(batches)
     }
+
+    experiment_names <- names(batches)
+
+    batches <- pmap(list(batches, experiment_names, organisms), record_experiment_data)
+
+    merged_batches <- object_integration_pipeline(batches, resolution = resolution, organism = "human", ...)
+    metadata(merged_batches)$batches <- names(batches)
+
+    merged_batches <- record_experiment_data(merged_batches, experiment_name, organism)
+
+    return(merged_batches)
+}
 
 
 #' Clustering Workflow
@@ -59,9 +58,8 @@ integration_workflow <-  function(batches, excluded_cells = NULL, resolution = s
 #' @examples
 #' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
 #' clustering_workflow(chevreul_sce)
-clustering_workflow <-  function(object, excluded_cells, resolution = seq(0.2, 2.0, by = 0.2), organism = "human", experiment_name = "default_experiment", ...) {
-        object <- object_pipeline(object, resolution = resolution, ...)
+clustering_workflow <- function(object, excluded_cells, resolution = seq(0.2, 2.0, by = 0.2), organism = "human", experiment_name = "default_experiment", ...) {
+    object <- object_pipeline(object, resolution = resolution, ...)
 
-        object <- record_experiment_data(object, experiment_name, organism)
-    }
-
+    object <- record_experiment_data(object, experiment_name, organism)
+}

@@ -7,6 +7,7 @@
 #' @importFrom batchelor NoCorrectParam
 #' @importFrom batchelor regressBatches
 #' @importFrom bluster NNGraphParam
+#' @importFrom chevreuldata human_gene_transcript_sce
 #' @importFrom circlize colorRamp2
 #' @importFrom cluster agnes
 #' @importFrom clustree clustree

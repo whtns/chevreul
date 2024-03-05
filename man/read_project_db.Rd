@@ -24,5 +24,7 @@ a tibble with SingleCellExperiment objects
 Reads database of chevreul projects to a data frame
 }
 \examples{
-\donttest{read_project_db()}
+\donttest{
+read_project_db()
+}
 }

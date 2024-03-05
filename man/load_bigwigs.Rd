@@ -20,5 +20,6 @@ Load a tibble of bigwig file paths by cell id
 \examples{
 \donttest{
 chevreul_sce <- chevreuldata::human_gene_transcript_sce()
-load_bigwigs(chevreul_sce)}
+load_bigwigs(chevreul_sce)
+}
 }

@@ -24,5 +24,7 @@ a sqlite database of bigwig files for cells in a SingleCellExperiment object
 Make Bigwig Database
 }
 \examples{
-\donttest{make_bigwig_db("example_project")}
+\donttest{
+make_bigwig_db("example_project")
+}
 }

@@ -66,20 +66,20 @@ subset_by_meta <- function(meta_path, object) {
 #'
 #' @return a SingleCellExperiment object
 load_object_path <- function(proj_dir = getwd(), prefix = "unfiltered") {
-  object_regex <- paste0(paste0(".*/", prefix, "_object.rds"))
+    object_regex <- paste0(paste0(".*/", prefix, "_object.rds"))
 
-  object_path <- path(proj_dir, "output", "singlecellexperiment") %>%
-    dir_ls(regexp = object_regex)
+    object_path <- path(proj_dir, "output", "singlecellexperiment") %>%
+        dir_ls(regexp = object_regex)
 
-  if (!is_empty(object_path)) {
-    return(object_path)
-  }
+    if (!is_empty(object_path)) {
+        return(object_path)
+    }
 
-  stop("'", object_path, "' does not exist",
-       paste0(" in current working directory ('", getwd(), "')"),
-       ".",
-       call. = FALSE
-  )
+    stop("'", object_path, "' does not exist",
+        paste0(" in current working directory ('", getwd(), "')"),
+        ".",
+        call. = FALSE
+    )
 }
 
 
@@ -90,6 +90,6 @@ load_object_path <- function(proj_dir = getwd(), prefix = "unfiltered") {
 #'
 #' @return a SingleCellExperiment object
 load_object_from_proj <- function(proj_dir, ...) {
-  object_file <- load_object_path(proj_dir, ...)
-  object_file <- readRDS(object_file)
+    object_file <- load_object_path(proj_dir, ...)
+    object_file <- readRDS(object_file)
 }

@@ -35,18 +35,16 @@ library(kableExtra)
 library(xfun)
 
 format_table <- function(mydf) {
-    
-  DT::renderDataTable({
-    DT::datatable(mydf,
-                  options = list(scrollX = TRUE,...)
-                  )      
-  })
-       mydf
+    DT::renderDataTable({
+        DT::datatable(mydf,
+            options = list(scrollX = TRUE, ...)
+        )
+    })
+    mydf
 }
 
 
 chevreul_sce <- chevreuldata::human_gene_transcript_sce()
-
 ```
 
 First step is to load Chevreul package and all other packages required 
@@ -78,26 +76,25 @@ We start with a gene by cell matrix of count/UMI values and a table of cell meta
 
 ### Matrix containg count values
 ```{r}
-human_count<-counts(chevreul_sce)
+human_count <- counts(chevreul_sce)
 
-human_count[1:5, 1:5]%>%knitr::kable(format = "pipe")
-                      
+human_count[1:5, 1:5] %>% knitr::kable(format = "pipe")
 ```
 
 ### Dataframe containing object metadata
 ```{r}
-
-human_meta<-colData(chevreul_sce) %>% as.data.frame()
-human_meta[1:5,1:5]%>%knitr::kable(format = "pipe")
+human_meta <- colData(chevreul_sce) %>% as.data.frame()
+human_meta[1:5, 1:5] %>% knitr::kable(format = "pipe")
 ```
 
 Then using these 2 datasets we can create a SingleCellExperiment object in the usual manner using the `SingleCellExperiment` function
 
 ```{r}
 myobject <- SingleCellExperiment::SingleCellExperiment(
-  assays = list(counts = human_count), 
-  colData = human_meta, 
-  mainExpName = "gene")
+    assays = list(counts = human_count),
+    colData = human_meta,
+    mainExpName = "gene"
+)
 myobject
 ```
 
@@ -108,7 +105,6 @@ Chevreul includes a handy function `object_preprocess()` that performs standard 
 ```{r}
 myobject0 <- object_preprocess(myobject)
 plotPCA(myobject0, color_by = "nFeature_gene")
-
 ```
 
 This single function includes sub-functions that normalize, identify highly variable features and scale the data:
@@ -141,8 +137,10 @@ This function includes existing object functions which performs dimension reduct
 A separate Chevreul function, `object_cluster()`, can be used to perform just the clustering of scRNA-seq data. Here, clustering analysis is performed via Louvain algorithms, using existing functions that perform graph-based clustering. Clustering is performed at a range of resolutions with default value ranging from 0.2 to 2 and PCA reduction.
 
 ```{r, results=FALSE, eval=TRUE}
-object <- object_cluster(object = myobject0, 
-                         resolution = seq(0.2, 2, by = 0.2), reduction = "PCA")
+object <- object_cluster(
+    object = myobject0,
+    resolution = seq(0.2, 2, by = 0.2), reduction = "PCA"
+)
 plotPCA(object, color_by = "gene_snn_res.0.2")
 ```
 
