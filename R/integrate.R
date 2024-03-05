@@ -71,19 +71,25 @@ merge_small_objects <- function(..., k.filter = 50) {
 #' object_integrate(batches)
 object_integrate <- function(object_list, organism = "human", ...) {
 
+  # drop 'colData' fields with same name as 'batchCorrect' output
   object_list <- map(object_list, ~{colData(.x)[["batch"]] <- NULL; return(.x)})
 
     geneCorrected <- correctExperiments(object_list)
     mainExpName(geneCorrected) <- "integrated"
 
     geneMerged <- correctExperiments(object_list)
-
-    transcriptBatches <- map(object_list, swapAltExp, "transcript")
-
-    transcriptMerged <- correctExperiments(transcriptBatches, PARAM=NoCorrectParam())
-
     altExp(geneCorrected, "gene") <- geneMerged
-    altExp(geneCorrected, "transcript") <- transcriptMerged
+
+    alt_exp_names <- map(object_list, altExpNames)
+
+    if(all(map_lgl(alt_exp_names, ~{length(.x) > 0 & "transcript" %in% .x}))){
+      # drop 'colData' fields with same name as 'batchCorrect' output
+      object_list <- map(object_list, ~{colData(.x)[["batch"]] <- NULL; return(.x)})
+
+      transcriptBatches <- map(object_list, swapAltExp, "transcript")
+      transcriptMerged <- correctExperiments(transcriptBatches, PARAM=NoCorrectParam())
+      altExp(geneCorrected, "transcript") <- transcriptMerged
+    }
 
     geneCorrected <- record_experiment_data(geneCorrected, experiment_name = "integrated", organism = organism)
 

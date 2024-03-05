@@ -35,13 +35,16 @@ library(kableExtra)
 library(xfun)
 
 format_table <- function(mydf) {
-    mydf %>%
-        kableExtra::kbl() %>%
-        kable_material() %>%
-        scroll_box(width = "800px", height = "200px")
+    
+  DT::renderDataTable({
+    DT::datatable(mydf,
+                  options = list(scrollX = TRUE,...)
+                  )      
+  })
+       mydf
 }
 
-#load(url("http://cobrinik-1.saban-chla.usc.edu/chevreul_sce.rda"))
+
 chevreul_sce <- chevreuldata::human_gene_transcript_sce()
 
 ```
@@ -67,34 +70,7 @@ chevreul provides a single command to:
 
 -   normalize and scale expression by any of several methods packaged in SingleCellExperiment
 
-<!-- ## Run clustering on a single object -->
 
-<!-- By default clustering will be run at ten different resolutions between 0.2 and 2.0. Any resolution can be specified by providing the resolution argument as a numeric vector. -->
-
-<!-- ```{r, results=FALSE} -->
-
-<!-- clustered_sce_object <- clustering_workflow(chevreul_sce, -->
-<!--     experiment_name = "object_human_transcript" -->
-<!-- ) -->
-<!-- ``` -->
-
-<!-- ```{r, results=FALSE, echo=FALSE} -->
-<!-- #clustered_sce_object <- chevreul_sce -->
-<!-- ``` -->
-
-
-<!-- #### Clustering at 0.6 -->
-
-<!-- ```{r, echo = FALSE} -->
-<!-- plotUMAP(clustered_sce_object, color_by = "gene_snn_res.0.6") -->
-<!-- ``` -->
-
-
-<!-- ## Get a first look at a processed dataset using an interactive shiny app -->
-
-<!-- ```{r, eval = FALSE} -->
-<!-- minimalSceApp(clustered_sce_object) -->
-<!-- ``` -->
 
 ## Set up a object
 
@@ -102,16 +78,17 @@ We start with a gene by cell matrix of count/UMI values and a table of cell meta
 
 ### Matrix containg count values
 ```{r}
-load(url("http://cobrinik-1.saban-chla.usc.edu/human_count.rda"))
+human_count<-counts(chevreul_sce)
 
-human_count[1:5, 1:5]%>% format_table()
+human_count[1:5, 1:5]%>%knitr::kable(format = "pipe")
+                      
 ```
 
 ### Dataframe containing object metadata
 ```{r}
-load(url("http://cobrinik-1.saban-chla.usc.edu/human_meta.rda"))
 
-head(human_meta)%>% format_table()
+human_meta<-colData(chevreul_sce) %>% as.data.frame()
+human_meta[1:5,1:5]%>%knitr::kable(format = "pipe")
 ```
 
 Then using these 2 datasets we can create a SingleCellExperiment object in the usual manner using the `SingleCellExperiment` function
@@ -142,7 +119,11 @@ This single function includes sub-functions that normalize, identify highly vari
 
 -   Finally, PCA is performed on the data using the function `runPCA` using subset of top HVG from `getTopHVGs` to remove noise. Then, subset the dimensionality reduction result to the desired number of PCs using `getClusteredPCs`.
 
+### Get a first look at a processed dataset using an interactive shiny app
 
+```{r, eval = FALSE}
+minimalSceApp(myobject0)
+```
 
 ## Perform dimension reduction
 

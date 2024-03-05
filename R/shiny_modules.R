@@ -39,7 +39,7 @@ plotViolinui <- function(id) {
             uiOutput(ns("vln_group")),
             selectizeInput(ns("customFeature"),
                 "Gene or transcript expression by which to color the plot eg. 'NRL' or 'ENST00000488147'",
-                choices = NULL, multiple = TRUE
+                choices = NULL, multiple = FALSE
             ),
             radioButtons(ns("slot"), "Data Type", choices = c("transformed" = "data", "raw counts" = "counts")),
             downloadButton(ns("downloadPlot")),
@@ -141,7 +141,7 @@ plotHeatmapui <- function(id) {
             actionButton(ns("actionHeatmap"), "Plot Heatmap"),
             downloadButton(ns("downloadPlot"), "Download Heatmap"),
             selectizeInput(ns("customFeature"), "Gene or transcript expression by which to color the plot; eg. 'NRL' or 'ENST00000488147'",
-                choices = NULL, multiple = TRUE
+                choices = NULL, multiple = FALSE
             ),
             plotOutput(ns("heatmap"), height = 750),
             width = 12
@@ -442,7 +442,7 @@ plotDimRedui <- function(id) {
             selectizeInput(ns("dim2"), "Dimension 2", choices = seq(1, 99), selected = 2)
         ),
         selectizeInput(ns("plottype"), "Variable to Plot", choices = NULL, multiple = TRUE),
-        selectizeInput(ns("customFeature"), "Gene or transcript expression by which to color the plot; eg. 'NRL' or 'ENST00000488147'", choices = NULL, multiple = TRUE),
+        selectizeInput(ns("customFeature"), "Gene or transcript expression by which to color the plot; eg. 'NRL' or 'ENST00000488147'", choices = NULL, multiple = FALSE),
         plotlyOutput(ns("dplot"), height = 500),
         width = 6
     )

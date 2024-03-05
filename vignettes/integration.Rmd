@@ -1,14 +1,14 @@
 ---
 title: "Integration in Chevreul"
 author: 
-  - name: Kevin Stachelek
-    affiliation:
-    - University of Southern California   
-    email: kevin.stachelek@gmail.com
-  - name: Bhavana Bhat
-    affiliation:
-    - University of Southern California   
-    email: bbhat@usc.edu
+- name: Kevin Stachelek
+  affiliation:
+  - University of Southern California   
+  email: kevin.stachelek@gmail.com
+- name: Bhavana Bhat
+  affiliation:
+  - University of Southern California   
+  email: bbhat@usc.edu
 output: 
   BiocStyle::html_document:
     self_contained: yes

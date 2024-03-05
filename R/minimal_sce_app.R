@@ -157,10 +157,6 @@ minimalSceApp <- function(single_cell_object = chevreul_sce, loom_path = NULL, a
                             "regressAction",
                             "Regress Objects By Genes"
                         ),
-                        checkboxInput("runRegression",
-                            "Run Regression?",
-                            value = FALSE
-                        ),
                         width = 12
                     ) %>%
                         default_helper(type = "markdown", content = "regressFeatures")
@@ -386,8 +382,7 @@ minimalSceApp <- function(single_cell_object = chevreul_sce, loom_path = NULL, a
                 title = "Regressing out cell cycle effects",
                 "This process may take a minute or two!"
             ))
-            regressed_object <- regress_cell_cycle(object(),
-                regress = input$runRegression
+            regressed_object <- regress_cell_cycle(object()
             )
             object(regressed_object)
             removeModal()

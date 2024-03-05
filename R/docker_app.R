@@ -156,10 +156,6 @@ dockerSingleCellExperimentApp <- function(object = NULL, loom_path = NULL, appTi
                             "regressAction",
                             "Regress SingleCellExperiment Objects By Genes"
                         ),
-                        checkboxInput("runRegression",
-                            "Run Regression?",
-                            value = FALSE
-                        ),
                         width = 12
                     ) %>%
                         default_helper(type = "markdown", content = "regressFeatures")
@@ -370,8 +366,7 @@ dockerSingleCellExperimentApp <- function(object = NULL, loom_path = NULL, appTi
                 title = "Regressing out cell cycle effects",
                 "This process may take a minute or two!"
             ))
-            regressed_object <- regress_cell_cycle(object(),
-                regress = input$runRegression
+            regressed_object <- regress_cell_cycle(object()
             )
             object(regressed_object)
             removeModal()

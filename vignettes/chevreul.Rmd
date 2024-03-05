@@ -36,6 +36,8 @@ knitr::opts_chunk$set(
     crop = NULL ## Related to https://stat.ethz.ch/pipermail/bioc-devel/2020-April/016656.html
 )
 
+
+
 ```
 
 
@@ -104,7 +106,9 @@ Here is an example of you can cite your package inside the vignette:
 
 # Quick start to using `chevreul`
 
-The `chevreul` package contains functions to preprocess, cluster, visualize, and perform other analyses on scRNA-seq data. Chvereul uses SingelCellExperiment (SCE) object type (from `r Biocpkg("SingleCellExperiment")`) to store expression and other metadata from single-cell experiments. 
+The `chevreul` package contains functions to preprocess, cluster, visualize, and perform other analyses on scRNA-seq data. It also contains a shiny app for easy visualization and analysis of scRNA data.
+
+`chvereul` uses SingelCellExperiment (SCE) object type (from `r Biocpkg("SingleCellExperiment")`) to store expression and other metadata from single-cell experiments. 
 
 This package features functions capable of:
 * Performing Clustering at a range of resolutions and Dimensional reduction of Raw Sequencing Data.
@@ -112,9 +116,9 @@ This package features functions capable of:
 * Integration of multiple datasets for consistent analyses. 
 * Cell cycle state regression and labeling.
 
-<!-- To demonstrate the workings of few useful functions in `Chevreul` we will load the preprocessed human_gene_transcript_sce dataset. For more details about creating SCE object and preprocessing, visit the "preprocessing" vignette. -->
 ```{r, message=FALSE}
-library("chevreul")
+devtools::load_all()
+#library("chevreul")
  
 # Load the data
 chevreul_sce <- chevreuldata::human_gene_transcript_sce()
@@ -127,27 +131,30 @@ We start with a count matrix containing expression count data and a table of cor
 ```{r, eval=TRUE}
 
 # Object count matrix
-counts(chevreul_sce)[1:5, 1:5] 
+human_count<-counts(chevreul_sce)
+human_count[1:5, 1:5]%>%knitr::kable(format = "pipe")
 
-head(metadata(chevreul_sce))
+# Object metadata
+human_meta<-colData(chevreul_sce) %>% as.data.frame()
+human_meta[1:5, 1:5]%>%knitr::kable(format = "pipe")
 ```
 
 Then using these 2 datasets, we create a SingleCellExpreiment object as shown below.
 ```{r}
 myobject <- SingleCellExperiment::SingleCellExperiment(
   assays = list(counts = counts(chevreul_sce)), 
-  colData = metadata(chevreul_sce), 
+  colData = colData(chevreul_sce), 
   mainExpName = "gene")
+
 myobject
 ```
 
-chevreul package contains functions that can be used in analysis and visualization of single cell RNA dataset.
+`chevreul` package contains functions that can be used in analysis and visualization of single cell RNA dataset.
 
-Chevreul includes a handy function to preprocess the data that handles normalization and scaling required for downstream analysis. If needed, parameters can be specified by the user.
+`chevreul` includes a handy function to preprocess the data that handles normalization and scaling required for downstream analysis. If needed, parameters can be specified by the user.
 
 ```{r}
 processed_sce <- object_preprocess(myobject)
-
 processed_sce
 
 ```
@@ -159,6 +166,7 @@ batches <- splitByCol(processed_sce, "batch")
 
 # Perform integration of the multiple objects
 integrated_object <- integration_workflow(batches)
+integrated_object
 ```
 
 ## Shiny app

@@ -1,7 +1,6 @@
 #' Regress SingleCellExperiment Object by Given Set of Genes
 #'
 #' @param object A object
-#' @param regress whether to regress
 #'
 #' @return a SingleCellExperiment object with features regressed
 #' @export
@@ -10,7 +9,7 @@
 #'
 #' regressed_object <- regress_cell_cycle(chevreul_sce)
 #'
-regress_cell_cycle <- function (object, regress = TRUE)
+regress_cell_cycle <- function (object)
           {
             message("regressing objects by cell cycle")
 
@@ -20,8 +19,7 @@ regress_cell_cycle <- function (object, regress = TRUE)
   if(!"Phase" %in% colnames(colData(object))){
     object <- annotate_cell_cycle(object)
   }
-
-            if (regress) {
+            if (!any(str_detect(c(mainExpName(object), altExpNames(object)), pattern = ".*regress.*"))) {
               dec.nocycle <- modelGeneVar(object, block=colData(object)[["Phase"]])
               reg.nocycle <- regressBatches(object, batch=colData(object)[["Phase"]])
 
