@@ -20,7 +20,7 @@ Convert ensembl transcript ids to hgnc gene symbols
 \examples{
 
 NRL_transcripts_hs <-
-    c("ENST00000359842", "ENST00000470566", "ENST00000465764", "ENST00000619224")
+c("ENST00000359842", "ENST00000470566", "ENST00000465764", "ENST00000619224")
 
 transcripts_to_genes(transcripts = NRL_transcripts_hs)
 
