@@ -13,8 +13,8 @@ plotClustree_UI <- function(id) {
 #' @noRd
 plotClustree <- function(input, output, session, object) {
     # set appropriate experiment
-    experiment = reactive({
-      ifelse(query_experiment(object(), "integrated"), "integrated", "gene")
+    experiment <- reactive({
+        ifelse(query_experiment(object(), "integrated"), "integrated", "gene")
     })
 
     output$clustree <- renderPlot({
@@ -117,7 +117,7 @@ plotViolin <- function(input, output, session, object, featureType, organism_typ
 
         vln_plot <- ggplotly(vln_plot(), height = 700) %>%
             style(opacity = 0.5) %>%
-            style(hoverinfo = "skip", traces = c(1:exclude_trace_number)) %>%
+            style(hoverinfo = "skip", traces = c(seq_len(exclude_trace_number))) %>%
             plotly_settings(width = 1200) %>%
             toWebGL() %>%
             identity()
@@ -174,7 +174,7 @@ plotHeatmap <- function(input, output, session, object, featureType, organism_ty
             experiment <- "gene"
         }
 
-        preset_features <- get_variable_features(object(), experiment = experiment)[1:50]
+        preset_features <- get_variable_features(object(), experiment = experiment)[seq(50)]
 
         updateSelectizeInput(session, "customFeature",
             choices = get_features(object(), experiment = experiment),
@@ -235,7 +235,7 @@ plotHeatmap <- function(input, output, session, object, featureType, organism_ty
 #' Integrate Project UI
 #'
 #'
-#'@noRd
+#' @noRd
 integrateProjui <- function(id) {
     ns <- NS(id)
     tagList(
@@ -408,7 +408,7 @@ changeEmbedParamsui <- function(id) {
     negsamprate_vals <- prep_slider_values(5)
 
     tagList(
-        selectizeInput(ns("dims"), label = "Dimensions from PCA", choices = seq(1, 99), multiple = TRUE, selected = 1:30),
+        selectizeInput(ns("dims"), label = "Dimensions from PCA", choices = seq(1, 99), multiple = TRUE, selected = seq(30)),
         sliderInput(ns("minDist"), label = "Minimum Distance", min = minDist_vals$min, max = minDist_vals$max, value = minDist_vals$value, step = minDist_vals$step),
         sliderInput(ns("negativeSampleRate"), label = "Negative Sample Rate", min = negsamprate_vals$min, max = negsamprate_vals$max, value = negsamprate_vals$value, step = negsamprate_vals$step)
     )
@@ -457,8 +457,9 @@ plotDimRedui <- function(id) {
 #' @param reductions embeddings
 #'
 #' @noRd
-plotDimRed <- function(input, output, session, object, plot_types, featureType,
-    organism_type, reductions) {
+plotDimRed <- function(
+        input, output, session, object, plot_types, featureType,
+        organism_type, reductions) {
     ns <- session$ns
 
     output$myPanel <- renderUI({
@@ -512,7 +513,7 @@ plotDimRed <- function(input, output, session, object, plot_types, featureType,
     })
     observe({
         req(prefill_feature())
-      req(featureType())
+        req(featureType())
         req(object())
         updateSelectizeInput(session, "customFeature",
             choices = get_features(object(), featureType()),
@@ -582,7 +583,7 @@ tableSelectedui <- function(id) {
 #'
 #' @param object a SingleCellExperiment object
 #'
-#'@noRd
+#' @noRd
 tableSelected <- function(input, output, session, object) {
     ns <- session$ns
     brush <- reactive({
@@ -605,7 +606,7 @@ tableSelected <- function(input, output, session, object) {
         # selection = list(mode = 'multiple', selected = c(1, 3, 8), target = 'row'),
         datatable(selected_meta,
             extensions = "Buttons",
-            selection = list(mode = "multiple", selected = 1:nrow(selected_meta), target = "row"),
+            selection = list(mode = "multiple", selected = seq_len(nrow(selected_meta)), target = "row"),
             options = list(dom = "Bft", buttons = c("copy", "csv"), scrollX = "100px", scrollY = "800px")
         )
     })
@@ -1086,8 +1087,9 @@ allTranscriptsui <- function(id) {
 #' @param featureType gene or transcript
 #'
 #' @noRd
-allTranscripts <- function(input, output, session, object,
-    featureType, organism_type) {
+allTranscripts <- function(
+        input, output, session, object,
+        featureType, organism_type) {
     ns <- session$ns
 
     observe({
@@ -1141,7 +1143,7 @@ allTranscripts <- function(input, output, session, object,
 
     pList <- reactive({
         req(transcripts())
-      req(input$embedding)
+        req(input$embedding)
         pList <- plot_all_transcripts(object(), transcripts(), input$embedding, from_gene = FALSE, combine = FALSE)
     })
 
@@ -1263,15 +1265,15 @@ plotVelocity <- function(input, output, session, object, loom_path) {
 
 
     velocityEmbeddingPlot <- eventReactive(input$plot_velocity_embedding, {
-      req(loom_object())
-      req(input$varSelect)
+        req(loom_object())
+        req(input$varSelect)
 
-      plot_scvelo(loom_object(), colour_by = input$varSelect, embedding = input$embedding)
+        plot_scvelo(loom_object(), colour_by = input$varSelect, embedding = input$embedding)
     })
 
-      output$velocityEmbeddingPlot <- renderPlot({
+    output$velocityEmbeddingPlot <- renderPlot({
         velocityEmbeddingPlot()
-        })
+    })
 
     velocityExpressionPlot <- eventReactive(input$plot_velocity_expression, {
         req(loom_object())
@@ -1283,13 +1285,11 @@ plotVelocity <- function(input, output, session, object, loom_path) {
             experiment <- "gene"
         }
         scvelo_expression(loom_object(), colour_by = input$varSelect, embedding = input$embedding)
-
     })
 
     output$velocityExpressionPlot <- renderPlot({
-      velocityExpressionPlot()
+        velocityExpressionPlot()
     })
-
 }
 
 
@@ -1327,7 +1327,7 @@ pathwayEnrichment <- function(input, output, session, object, featureType) {
         req(object())
         if (featureType() == "gene") {
             enriched_object <- tryCatch(getEnrichedPathways(object()), error = function(e) e)
-            enrichr_available <- !any(class(enriched_object) == "error")
+            enrichr_available <- !any(is(enriched_object, "error"))
             if (enrichr_available) {
                 object <- enriched_object
             }
@@ -1485,111 +1485,111 @@ techInfoui <- function(id) {
 #'
 #' @noRd
 techInfo <- function(input, output, session, object) {
-  ns <- session$ns
-  ## ----------------------------------------------------------------------------##
-  ## Tab: Analysis info.
-  ## ----------------------------------------------------------------------------##
+    ns <- session$ns
+    ## ----------------------------------------------------------------------------##
+    ## Tab: Analysis info.
+    ## ----------------------------------------------------------------------------##
 
-  object_metadata <- reactive({
-    req(object())
-    metadata(object())
-  })
-
-  observe({
-    # general info
-    output$sample_info_general <- renderText({
-      info <- paste0(
-        "<strong><u>General</u></strong>",
-        "<ul>",
-        "<li><b>Date of analysis:</b> ",
-        object_metadata()$experiment$date_of_analysis,
-        "<li><b>Date of export:</b> ",
-        object_metadata()$experiment$date_of_export,
-        "<li><b>Experiment name:</b> ",
-        object_metadata()$experiment$experiment_name,
-        "<li><b>Organism:</b> ",
-        object_metadata()$experiment$organism,
-        "</ul>",
-        "<strong><u>Parameters</u></strong>",
-        "<ul>",
-        "<li><b>Discard genes in fewer than X cells:</b> ",
-        object_metadata()$experiment$parameters$discard_genes_expressed_in_fewer_cells_than,
-        "<li><b>Keep mitochondrial genes:</b> ",
-        object_metadata()$experiment$parameters$keep_mitochondrial_genes,
-        "<li><b>Min/max # of UMI:</b> ",
-        paste0(
-          object_metadata()$experiment$filtering$UMI_min, " / ",
-          object_metadata()$experiment$filtering$UMI_max
-        ),
-        "<li><b>Min/max # of expressed genes:</b> ",
-        paste0(
-          object_metadata()$experiment$filtering$genes_min, " / ",
-          object_metadata()$experiment$filtering$genes_max
-        ),
-        "<li><b>Cluster resolution: </b>",
-        paste(object_metadata()$experiment$parameters$cluster_resolution, collapse = ","),
-        "<li><b>Number of principal components: </b>",
-        object_metadata()$experiment$parameters$number_PCs,
-        "<li><b>Variables to regress: </b>",
-        object_metadata()$experiment$parameters$variables_to_regress_out,
-        "<li><b>tSNE perplexity: </b>",
-        object_metadata()$experiment$parameters$tSNE_perplexity,
-        "</ul>",
-        "<strong><u>Marker genes</u></strong>",
-        "<ul>",
-        # "<li><b>Only positive:</b> ",
-        # object_metadata()$marker_genes$parameters$only_positive,
-        # "<li><b>Fraction of cells in group of interest that must express marker gene:</b> ",
-        # object_metadata()$marker_genes$parameters$minimum_percentage,
-        # "<li><b>LogFC threshold:</b> ",
-        # object_metadata()$marker_genes$parameters$logFC_threshold,
-        "<li><b>p-value threshold:</b> ",
-        "0.05",
-        # object_metadata()$marker_genes$parameters$p_value_threshold,
-        "</ul>",
-        "<strong><u>Pathway enrichment</u></strong>",
-        "<ul>",
-        "<li><b>Enrichr:</b>",
-        "<ul>",
-        "<li><b>Databases:</b> ",
-        paste0(object_metadata()$enriched_pathways$enrichr$parameters$databases, collapse = ", "),
-        "<li><b>Adj. p-value cut-off:</b> ",
-        object_metadata()$enriched_pathways$enrichr$parameters$adj_p_cutoff,
-        "<li><b>Max. terms:</b> ",
-        object_metadata()$enriched_pathways$enrichr$parameters$max_terms,
-        "</ul>",
-        "</ul>"
-      )
-      info_R_raw <- object_metadata()$experiment$technical_info$R
-      info_R <- c()
-      for (i in 1:length(info_R_raw)) {
-        info_R <- paste(info_R, "<br>", info_R_raw[i])
-      }
-      paste0(
-        info,
-        "<strong><u>Technical info (package versions)</u></strong>",
-        "<ul>",
-        "<li><strong>chevreul version:</strong> ",
-        object_metadata()$experiment$technical_info$chevreul_version,
-        "<li><strong>SingleCellExperiment version:</strong> ",
-        object_metadata()$technical_info$object_version,
-        "<li><strong>Session info:</strong> ",
-        "</ul>",
-        "<pre>",
-        info_R,
-        "</pre>"
-      )
+    object_metadata <- reactive({
+        req(object())
+        metadata(object())
     })
 
-    # R info
-    output$sample_info_R <- renderPrint({
-      if (!is.null(object_metadata()$technical_info$R)) {
-        capture.output(object_metadata()$technical_info$R)
-      } else {
-        print("Not available")
-      }
+    observe({
+        # general info
+        output$sample_info_general <- renderText({
+            info <- paste0(
+                "<strong><u>General</u></strong>",
+                "<ul>",
+                "<li><b>Date of analysis:</b> ",
+                object_metadata()$experiment$date_of_analysis,
+                "<li><b>Date of export:</b> ",
+                object_metadata()$experiment$date_of_export,
+                "<li><b>Experiment name:</b> ",
+                object_metadata()$experiment$experiment_name,
+                "<li><b>Organism:</b> ",
+                object_metadata()$experiment$organism,
+                "</ul>",
+                "<strong><u>Parameters</u></strong>",
+                "<ul>",
+                "<li><b>Discard genes in fewer than X cells:</b> ",
+                object_metadata()$experiment$parameters$discard_genes_expressed_in_fewer_cells_than,
+                "<li><b>Keep mitochondrial genes:</b> ",
+                object_metadata()$experiment$parameters$keep_mitochondrial_genes,
+                "<li><b>Min/max # of UMI:</b> ",
+                paste0(
+                    object_metadata()$experiment$filtering$UMI_min, " / ",
+                    object_metadata()$experiment$filtering$UMI_max
+                ),
+                "<li><b>Min/max # of expressed genes:</b> ",
+                paste0(
+                    object_metadata()$experiment$filtering$genes_min, " / ",
+                    object_metadata()$experiment$filtering$genes_max
+                ),
+                "<li><b>Cluster resolution: </b>",
+                paste(object_metadata()$experiment$parameters$cluster_resolution, collapse = ","),
+                "<li><b>Number of principal components: </b>",
+                object_metadata()$experiment$parameters$number_PCs,
+                "<li><b>Variables to regress: </b>",
+                object_metadata()$experiment$parameters$variables_to_regress_out,
+                "<li><b>tSNE perplexity: </b>",
+                object_metadata()$experiment$parameters$tSNE_perplexity,
+                "</ul>",
+                "<strong><u>Marker genes</u></strong>",
+                "<ul>",
+                # "<li><b>Only positive:</b> ",
+                # object_metadata()$marker_genes$parameters$only_positive,
+                # "<li><b>Fraction of cells in group of interest that must express marker gene:</b> ",
+                # object_metadata()$marker_genes$parameters$minimum_percentage,
+                # "<li><b>LogFC threshold:</b> ",
+                # object_metadata()$marker_genes$parameters$logFC_threshold,
+                "<li><b>p-value threshold:</b> ",
+                "0.05",
+                # object_metadata()$marker_genes$parameters$p_value_threshold,
+                "</ul>",
+                "<strong><u>Pathway enrichment</u></strong>",
+                "<ul>",
+                "<li><b>Enrichr:</b>",
+                "<ul>",
+                "<li><b>Databases:</b> ",
+                paste0(object_metadata()$enriched_pathways$enrichr$parameters$databases, collapse = ", "),
+                "<li><b>Adj. p-value cut-off:</b> ",
+                object_metadata()$enriched_pathways$enrichr$parameters$adj_p_cutoff,
+                "<li><b>Max. terms:</b> ",
+                object_metadata()$enriched_pathways$enrichr$parameters$max_terms,
+                "</ul>",
+                "</ul>"
+            )
+            info_R_raw <- object_metadata()$experiment$technical_info$R
+            info_R <- c()
+            for (i in seq_along(info_R_raw)) {
+                info_R <- paste(info_R, "<br>", info_R_raw[i])
+            }
+            paste0(
+                info,
+                "<strong><u>Technical info (package versions)</u></strong>",
+                "<ul>",
+                "<li><strong>chevreul version:</strong> ",
+                object_metadata()$experiment$technical_info$chevreul_version,
+                "<li><strong>SingleCellExperiment version:</strong> ",
+                object_metadata()$technical_info$object_version,
+                "<li><strong>Session info:</strong> ",
+                "</ul>",
+                "<pre>",
+                info_R,
+                "</pre>"
+            )
+        })
+
+        # R info
+        output$sample_info_R <- renderPrint({
+            if (!is.null(object_metadata()$technical_info$R)) {
+                capture.output(object_metadata()$technical_info$R)
+            } else {
+                print("Not available")
+            }
+        })
     })
-  })
 }
 
 
@@ -1712,31 +1712,31 @@ plotCoverage <- function(input, output, session, object, plot_types, proj_dir, o
 #'
 #' @noRd
 reformatMetadataDRui <- function(id) {
-  ns <- NS(id)
-  tagList(
-    chevreulBox(
-      title = "Reformat Metadata",
-      checkboxInput(ns("header"), "Header", TRUE),
-      fileInput(ns("metaFile"), "Choose CSV File of metadata with cell names in first column",
+    ns <- NS(id)
+    tagList(
+        chevreulBox(
+            title = "Reformat Metadata",
+            checkboxInput(ns("header"), "Header", TRUE),
+            fileInput(ns("metaFile"), "Choose CSV File of metadata with cell names in first column",
                 accept = c(
-                  "text/csv",
-                  "text/comma-separated-values,text/plain",
-                  ".csv"
+                    "text/csv",
+                    "text/comma-separated-values,text/plain",
+                    ".csv"
                 )
-      ),
-      actionButton(ns("updateMetadata"), "Update Metadata"),
-      radioButtons(ns("updateMethod"), "Update By:", choices = c("table (below)" = "spreadsheet", "uploaded file" = "file"), inline = TRUE),
-      width = 12,
-      dataSelectUI(ns("select1")),
-      dataFilterUI(ns("filter1")),
-      hidden(actionButton(ns("sync"), label = NULL, icon = icon("sync"))),
-      dataOutputUI(ns("output-active")),
-      dataOutputUI(ns("output-update"), icon = "file-download"),
-      hidden(actionButton(ns("cut"), label = NULL, icon = icon("cut"))),
-      dataEditUI(ns("edit1"))
-    ) %>%
-      default_helper(type = "markdown", content = "reformatMetadata")
-  )
+            ),
+            actionButton(ns("updateMetadata"), "Update Metadata"),
+            radioButtons(ns("updateMethod"), "Update By:", choices = c("table (below)" = "spreadsheet", "uploaded file" = "file"), inline = TRUE),
+            width = 12,
+            dataSelectUI(ns("select1")),
+            dataFilterUI(ns("filter1")),
+            hidden(actionButton(ns("sync"), label = NULL, icon = icon("sync"))),
+            dataOutputUI(ns("output-active")),
+            dataOutputUI(ns("output-update"), icon = "file-download"),
+            hidden(actionButton(ns("cut"), label = NULL, icon = icon("cut"))),
+            dataEditUI(ns("edit1"))
+        ) %>%
+            default_helper(type = "markdown", content = "reformatMetadata")
+    )
 }
 
 #' Reformat SingleCellExperiment Object Metadata Server
@@ -1745,167 +1745,167 @@ reformatMetadataDRui <- function(id) {
 #'
 #' @noRd
 reformatMetadataDR <- function(input, output, session, object, featureType = "gene",
-                               col_bind = NULL,
-                               col_edit = TRUE,
-                               col_options = NULL,
-                               col_stretch = FALSE,
-                               col_names = TRUE,
-                               col_readonly = NULL,
-                               col_factor = FALSE,
-                               row_bind = NULL,
-                               row_edit = TRUE,
-                               save_as = NULL,
-                               title = NULL,
-                               logo = NULL,
-                               logo_size = 30,
-                               logo_side = "left",
-                               viewer = "dialog",
-                               viewer_height = 800,
-                               viewer_width = 2000,
-                               theme = "yeti",
-                               read_fun = "read.csv",
-                               read_args = NULL,
-                               write_fun = "write.csv",
-                               write_args = NULL,
-                               quiet = FALSE,
-                               code = FALSE,
-                               hide = FALSE) {
-  ns <- session$ns
+    col_bind = NULL,
+    col_edit = TRUE,
+    col_options = NULL,
+    col_stretch = FALSE,
+    col_names = TRUE,
+    col_readonly = NULL,
+    col_factor = FALSE,
+    row_bind = NULL,
+    row_edit = TRUE,
+    save_as = NULL,
+    title = NULL,
+    logo = NULL,
+    logo_size = 30,
+    logo_side = "left",
+    viewer = "dialog",
+    viewer_height = 800,
+    viewer_width = 2000,
+    theme = "yeti",
+    read_fun = "read.csv",
+    read_args = NULL,
+    write_fun = "write.csv",
+    write_args = NULL,
+    quiet = FALSE,
+    code = FALSE,
+    hide = FALSE) {
+    ns <- session$ns
 
-  table_out <- reactive({
-    req(object())
-    get_cell_metadata(object())
-  })
+    table_out <- reactive({
+        req(object())
+        get_cell_metadata(object())
+    })
 
-  values <- reactiveValues(
-    data = NULL, data_active = NULL,
-    rows = NULL, columns = NULL, cut = FALSE
-  )
-
-  observeEvent(table_out(), {
-    values$rows <- NULL
-    values$columns <- NULL
-
-    values$data <- table_out() %>%
-      data_bind_rows(row_bind = row_bind) %>%
-      data_bind_cols(col_bind = col_bind) %>%
-      identity()
-  })
-
-  data_select <- dataSelectServer("select1",
-                                  data = reactive(values$data),
-                                  hide = hide
-  )
-  data_filter <- dataFilterServer("filter1",
-                                  data = reactive(values$data),
-                                  hide = hide
-  )
-  observe({
-    values$rows <- data_filter$rows()
-    values$columns <- data_select$columns()
-  })
-
-  observe({
-    if (length(values$rows) == 0 & length(values$columns) == 0) {
-      values$data_active <- values$data
-    } else {
-      if (length(values$rows) != 0 & length(values$columns) == 0) {
-        values$data_active <- values$data[values$rows, , drop = FALSE]
-      } else if (length(values$rows) == 0 & length(values$columns) != 0) {
-        values$data_active <- values$data[, values$columns, drop = FALSE]
-      } else if (length(values$rows) != 0 & length(values$columns) != 0) {
-        values$data_active <- values$data[values$rows, values$columns, drop = FALSE]
-      }
-    }
-  })
-
-  data_update <- dataEditServer("edit1",
-                                data = reactive({
-                                  values$data_active
-                                }),
-                                col_bind = NULL, col_edit = col_edit, col_options = col_options,
-                                col_stretch = col_stretch, col_names = col_names,
-                                col_readonly = col_readonly, col_factor = col_factor,
-                                row_bind = NULL, row_edit = row_edit, quiet = quiet, height = viewer_height, width = viewer_width
-  )
-  observe({
-    values$data_active <- data_update()
-  })
-
-  observeEvent(input$updateMetadata, {
-    if (input$updateMethod == "file") {
-      inFile <- input$metaFile
-
-      if (is.null(inFile)) {
-        return(NULL)
-      }
-
-      object(set_cell_metadata(object(), read_csv(inFile$datapath)))
-    } else if (input$updateMethod == "spreadsheet") {
-      reformatted_object <- propagate_spreadsheet_changes(values$data_active, object())
-      object(reformatted_object)
-    }
-  })
-
-
-  observeEvent(input$sync, {
-    if (length(values$rows) == 0 & length(values$columns) == 0) {
-      values$data <- values$data_active
-    } else {
-      if (length(values$rows) != 0 & length(values$columns) == 0) {
-        values$data[values$rows, ] <- values$data_active
-      } else if (length(values$rows) == 0 & length(values$columns) != 0) {
-        values$data[, values$columns] <- values$data_active
-      } else if (length(values$rows) != 0 & length(values$columns) != 0) {
-        values$data[values$rows, values$columns] <- values$data_active
-      }
-      if (!is.null(values$data_active)) {
-        if (!all(rownames(values$data_active) == rownames(values$data)[values$rows])) {
-          rownames(values$data)[values$rows] <- rownames(values$data_active)
-        }
-        if (!all(colnames(values$data_active) == colnames(values$data)[values$columns])) {
-          colnames(values$data)[values$columns] <- colnames(values$data_active)
-        }
-      }
-    }
-  })
-
-  dataOutputServer("output-active",
-                   data = reactive({
-                     values$data_active
-                   }), save_as = "metadata.csv", write_fun = write_fun, write_args = write_args,
-                   hide = hide
-  )
-  dataOutputServer("output-update",
-                   data = reactive({
-                     values$data
-                   }), save_as = "metadata.csv", write_fun = write_fun, write_args = write_args,
-                   hide = hide
-  )
-
-  # SAVE AS
-  if (!hide & !is.null(save_as)) {
-    do.call(
-      write_fun,
-      c(list(x_edit, save_as), write_args)
+    values <- reactiveValues(
+        data = NULL, data_active = NULL,
+        rows = NULL, columns = NULL, cut = FALSE
     )
-  }
 
-  observeEvent(input$cut, {
-    if (values$cut) {
-      values$cut <- FALSE
-      updateButton(session, "cut", NULL,
-                   block = FALSE,
-                   style = "danger"
-      )
-    } else {
-      values$cut <- TRUE
-      updateButton(session, "cut", NULL,
-                   block = FALSE,
-                   style = "success"
-      )
+    observeEvent(table_out(), {
+        values$rows <- NULL
+        values$columns <- NULL
+
+        values$data <- table_out() %>%
+            data_bind_rows(row_bind = row_bind) %>%
+            data_bind_cols(col_bind = col_bind) %>%
+            identity()
+    })
+
+    data_select <- dataSelectServer("select1",
+        data = reactive(values$data),
+        hide = hide
+    )
+    data_filter <- dataFilterServer("filter1",
+        data = reactive(values$data),
+        hide = hide
+    )
+    observe({
+        values$rows <- data_filter$rows()
+        values$columns <- data_select$columns()
+    })
+
+    observe({
+        if (length(values$rows) == 0 & length(values$columns) == 0) {
+            values$data_active <- values$data
+        } else {
+            if (length(values$rows) != 0 & length(values$columns) == 0) {
+                values$data_active <- values$data[values$rows, , drop = FALSE]
+            } else if (length(values$rows) == 0 & length(values$columns) != 0) {
+                values$data_active <- values$data[, values$columns, drop = FALSE]
+            } else if (length(values$rows) != 0 & length(values$columns) != 0) {
+                values$data_active <- values$data[values$rows, values$columns, drop = FALSE]
+            }
+        }
+    })
+
+    data_update <- dataEditServer("edit1",
+        data = reactive({
+            values$data_active
+        }),
+        col_bind = NULL, col_edit = col_edit, col_options = col_options,
+        col_stretch = col_stretch, col_names = col_names,
+        col_readonly = col_readonly, col_factor = col_factor,
+        row_bind = NULL, row_edit = row_edit, quiet = quiet, height = viewer_height, width = viewer_width
+    )
+    observe({
+        values$data_active <- data_update()
+    })
+
+    observeEvent(input$updateMetadata, {
+        if (input$updateMethod == "file") {
+            inFile <- input$metaFile
+
+            if (is.null(inFile)) {
+                return(NULL)
+            }
+
+            object(set_cell_metadata(object(), read_csv(inFile$datapath)))
+        } else if (input$updateMethod == "spreadsheet") {
+            reformatted_object <- propagate_spreadsheet_changes(values$data_active, object())
+            object(reformatted_object)
+        }
+    })
+
+
+    observeEvent(input$sync, {
+        if (length(values$rows) == 0 & length(values$columns) == 0) {
+            values$data <- values$data_active
+        } else {
+            if (length(values$rows) != 0 & length(values$columns) == 0) {
+                values$data[values$rows, ] <- values$data_active
+            } else if (length(values$rows) == 0 & length(values$columns) != 0) {
+                values$data[, values$columns] <- values$data_active
+            } else if (length(values$rows) != 0 & length(values$columns) != 0) {
+                values$data[values$rows, values$columns] <- values$data_active
+            }
+            if (!is.null(values$data_active)) {
+                if (!all(rownames(values$data_active) == rownames(values$data)[values$rows])) {
+                    rownames(values$data)[values$rows] <- rownames(values$data_active)
+                }
+                if (!all(colnames(values$data_active) == colnames(values$data)[values$columns])) {
+                    colnames(values$data)[values$columns] <- colnames(values$data_active)
+                }
+            }
+        }
+    })
+
+    dataOutputServer("output-active",
+        data = reactive({
+            values$data_active
+        }), save_as = "metadata.csv", write_fun = write_fun, write_args = write_args,
+        hide = hide
+    )
+    dataOutputServer("output-update",
+        data = reactive({
+            values$data
+        }), save_as = "metadata.csv", write_fun = write_fun, write_args = write_args,
+        hide = hide
+    )
+
+    # SAVE AS
+    if (!hide & !is.null(save_as)) {
+        do.call(
+            write_fun,
+            c(list(x_edit, save_as), write_args)
+        )
     }
-  })
 
-  return(object)
+    observeEvent(input$cut, {
+        if (values$cut) {
+            values$cut <- FALSE
+            updateButton(session, "cut", NULL,
+                block = FALSE,
+                style = "danger"
+            )
+        } else {
+            values$cut <- TRUE
+            updateButton(session, "cut", NULL,
+                block = FALSE,
+                style = "success"
+            )
+        }
+    })
+
+    return(object)
 }

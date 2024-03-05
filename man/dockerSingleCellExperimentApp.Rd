@@ -33,7 +33,8 @@ a dockerized shiny app
 Create a obect app on a shinyproxy docker instance
 }
 \examples{
-\dontrun{dockerSingleCellExperimentApp(chevreul_sce)
+\donttest{
+dockerSingleCellExperimentApp(chevreul_sce)
 }
 
 }

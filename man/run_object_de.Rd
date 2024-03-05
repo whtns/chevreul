@@ -37,12 +37,17 @@ Run Differential Expression
 }
 \examples{
 chevreul_sce <- chevreuldata::human_gene_transcript_sce()
-run_object_de(chevreul_sce, diffex_scheme = "louvain", cluster1 = 1, cluster2 = 2, tests = "t")
+run_object_de(chevreul_sce,
+    diffex_scheme = "louvain",
+    cluster1 = 1, cluster2 = 2, tests = "t"
+)
 
 cells1 <- colnames(chevreul_sce)[chevreul_sce$batch == "Zhong"]
 cells2 <- colnames(chevreul_sce)[chevreul_sce$batch == "Kuwahara"]
 
-run_object_de(chevreul_sce, diffex_scheme = "custom", cluster1 = cells1 , cluster2 = cells2, tests = "t")
-
+run_object_de(chevreul_sce,
+    diffex_scheme = "custom",
+    cluster1 = cells1, cluster2 = cells2, tests = "t"
+)
 
 }

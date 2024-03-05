@@ -8,7 +8,9 @@
 #' @return a path to a bigwig file sqlite database
 #' @export
 #' @examples
-#' \donttest{build_bigwig_db()}
+#' \donttest{
+#' build_bigwig_db()
+#' }
 build_bigwig_db <- function(bam_files, bigwig_db = "~/.cache/chevreul/bw-files.db") {
     bam_files <- normalizePath(bam_files)
 
@@ -37,7 +39,8 @@ build_bigwig_db <- function(bam_files, bigwig_db = "~/.cache/chevreul/bw-files.d
 #' @examples
 #' \donttest{
 #' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
-#' load_bigwigs(chevreul_sce)}
+#' load_bigwigs(chevreul_sce)
+#' }
 load_bigwigs <- function(object, bigwig_db = "~/.cache/chevreul/bw-files.db") {
     con <- dbConnect(SQLite(), dbname = bigwig_db)
 
@@ -81,21 +84,24 @@ load_bigwigs <- function(object, bigwig_db = "~/.cache/chevreul/bw-files.db") {
 #' @return a ggplot with coverage faceted by group_by
 #' @export
 #' @examples
-#' \donttest{plot_gene_coverage_by_var()}
-plot_gene_coverage_by_var <- function(genes_of_interest = "NRL",
-    cell_metadata,
-    bigwig_tbl,
-    group_by = "batch",
-    values_of_interest = NULL,
-    organism = "human",
-    edb = NULL,
-    heights = c(3, 1),
-    scale_y = "log10",
-    reverse_x = FALSE,
-    start = NULL,
-    end = NULL,
-    summarize_transcripts = FALSE,
-    ...) {
+#' \donttest{
+#' plot_gene_coverage_by_var()
+#' }
+plot_gene_coverage_by_var <- function(
+        genes_of_interest = "NRL",
+        cell_metadata,
+        bigwig_tbl,
+        group_by = "batch",
+        values_of_interest = NULL,
+        organism = "human",
+        edb = NULL,
+        heights = c(3, 1),
+        scale_y = "log10",
+        reverse_x = FALSE,
+        start = NULL,
+        end = NULL,
+        summarize_transcripts = FALSE,
+        ...) {
     if (organism == "mouse") {
         edb <- EnsDb.Mmusculus.v79
     } else {

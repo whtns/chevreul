@@ -24,5 +24,7 @@ a sqlite database with SingleCellExperiment objects
 Create a database containing chevreul projects
 }
 \examples{
-\donttest{create_project_db()}
+\donttest{
+create_project_db()
+}
 }

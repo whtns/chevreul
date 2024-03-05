@@ -48,31 +48,31 @@ unite_metadata <-
 #' plot_var(chevreul_sce, "batch", return_plotly = TRUE)
 #'
 plot_var <- function(object, group = "batch", embedding = "UMAP", dims = c(1, 2), highlight = NULL, pt.size = 1.0, return_plotly = FALSE, ...) {
-        metadata <- get_cell_metadata(object)
-        key <- rownames(metadata)
+    metadata <- get_cell_metadata(object)
+    key <- rownames(metadata)
 
-        if (embedding == "UMAP") {
-            dims <- c(1, 2)
-        } else if (embedding == "TSNE") {
-            dims <- c(1, 2)
-        }
-
-        dims <- as.numeric(dims)
-
-        d <- plotReducedDim(object = object, dimred = embedding, ncomponents = 2, color_by = group, ...) +
-            aes(key = key, cellid = key) +
-            # theme(legend.text=element_text(size=10)) +
-            NULL
-
-        if (return_plotly == FALSE) {
-            return(d)
-        }
-
-        plotly_plot <- ggplotly(d, tooltip = "cellid", height = 500) %>%
-            plotly_settings() %>%
-            toWebGL() %>%
-            identity()
+    if (embedding == "UMAP") {
+        dims <- c(1, 2)
+    } else if (embedding == "TSNE") {
+        dims <- c(1, 2)
     }
+
+    dims <- as.numeric(dims)
+
+    d <- plotReducedDim(object = object, dimred = embedding, ncomponents = 2, color_by = group, ...) +
+        aes(key = key, cellid = key) +
+        # theme(legend.text=element_text(size=10)) +
+        NULL
+
+    if (return_plotly == FALSE) {
+        return(d)
+    }
+
+    plotly_plot <- ggplotly(d, tooltip = "cellid", height = 500) %>%
+        plotly_settings() %>%
+        toWebGL() %>%
+        identity()
+}
 
 
 #' Plotly settings
@@ -83,7 +83,7 @@ plot_var <- function(object, group = "batch", embedding = "UMAP", dims = c(1, 2)
 #' @param width Default set to '600'
 #' @param height Default set to '700'
 #'
-#'@noRd
+#' @noRd
 plotly_settings <- function(plotly_plot, width = 600, height = 700) {
     plotly_plot %>%
         layout(dragmode = "lasso") %>%
@@ -112,14 +112,14 @@ plotly_settings <- function(plotly_plot, width = 600, height = 700) {
 #' plot_violin(chevreul_sce, plot_var = "batch", features = "NRL")
 #'
 plot_violin <- function(object, plot_var = "batch", plot_vals = NULL, features = "NRL", experiment = "gene", ...) {
-        if (is.null(plot_vals)) {
-            plot_vals <- unique(get_cell_metadata(object)[[plot_var]])
-            plot_vals <- plot_vals[!is.na(plot_vals)]
-        }
-        object <- object[, get_cell_metadata(object)[[plot_var]] %in% plot_vals]
-        vln_plot <- plotExpression(object, features = features, x = plot_var, color_by = plot_var) + geom_boxplot(width = 0.2) + NULL
-        print(vln_plot)
+    if (is.null(plot_vals)) {
+        plot_vals <- unique(get_cell_metadata(object)[[plot_var]])
+        plot_vals <- plot_vals[!is.na(plot_vals)]
     }
+    object <- object[, get_cell_metadata(object)[[plot_var]] %in% plot_vals]
+    vln_plot <- plotExpression(object, features = features, x = plot_var, color_by = plot_var) + geom_boxplot(width = 0.2) + NULL
+    print(vln_plot)
+}
 
 
 
@@ -142,40 +142,40 @@ plot_violin <- function(object, plot_var = "batch", plot_vals = NULL, features =
 #' plot_feature(chevreul_sce, embedding = "UMAP", features = "NRL")
 #'
 plot_feature <- function(object, embedding = c("UMAP", "PCA", "TSNE"), features, dims = c(1, 2), return_plotly = FALSE, pt.size = 1.0) {
-        embedding <- toupper(embedding)
+    embedding <- toupper(embedding)
 
-        metadata <- get_cell_metadata(object)
-        key <- rownames(metadata)
+    metadata <- get_cell_metadata(object)
+    key <- rownames(metadata)
 
-        if (embedding %in% c("TSNE", "UMAP")) {
-            dims <- c(1, 2)
-        }
-
-        dims <- as.numeric(dims)
-
-        # if (length(features) == 1) {
-        #     fp <- plotReducedDim(object = object, color_by = features, dimred = embedding) +
-        #         aes(key = key, cellid = key, alpha = 0.7)
-        # } else if (length(features) > 1) {
-        #     nebulosa_plots <- plot_density(object = object, features = features, dims = dims, reduction = embedding, size = pt.size, joint = TRUE, combine = FALSE)
-        #
-        #     fp <- last(nebulosa_plots) +
-        #         aes(key = key, cellid = key, alpha = 0.7)
-        # }
-
-        fp <- plotReducedDim(object = object, color_by = features, dimred = embedding) +
-                  aes(key = key, cellid = key, alpha = 0.7)
-
-        if (return_plotly == FALSE) {
-            return(fp)
-        }
-
-        plotly_plot <- ggplotly(fp, tooltip = "cellid", height = 500) %>%
-            plotly_settings() %>%
-            toWebGL() %>%
-            # partial_bundle() %>%
-            identity()
+    if (embedding %in% c("TSNE", "UMAP")) {
+        dims <- c(1, 2)
     }
+
+    dims <- as.numeric(dims)
+
+    # if (length(features) == 1) {
+    #     fp <- plotReducedDim(object = object, color_by = features, dimred = embedding) +
+    #         aes(key = key, cellid = key, alpha = 0.7)
+    # } else if (length(features) > 1) {
+    #     nebulosa_plots <- plot_density(object = object, features = features, dims = dims, reduction = embedding, size = pt.size, joint = TRUE, combine = FALSE)
+    #
+    #     fp <- last(nebulosa_plots) +
+    #         aes(key = key, cellid = key, alpha = 0.7)
+    # }
+
+    fp <- plotReducedDim(object = object, color_by = features, dimred = embedding) +
+        aes(key = key, cellid = key, alpha = 0.7)
+
+    if (return_plotly == FALSE) {
+        return(fp)
+    }
+
+    plotly_plot <- ggplotly(fp, tooltip = "cellid", height = 500) %>%
+        plotly_settings() %>%
+        toWebGL() %>%
+        # partial_bundle() %>%
+        identity()
+}
 
 #' Annotate Cell Cycle
 #'
@@ -187,14 +187,14 @@ plot_feature <- function(object, embedding = c("UMAP", "PCA", "TSNE"), features,
 #' @export
 #' @examples
 #' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
-#' human_gene_phase<-annotate_cell_cycle(chevreul_sce)
+#' human_gene_phase <- annotate_cell_cycle(chevreul_sce)
 #' human_gene_phase$phases
 #'
 annotate_cell_cycle <- function(object) {
-  assignments <- cyclone(object, cc.genes.cyclone, gene.names = rownames(object))
-  colData(object)[colnames(assignments$scores)] <- assignments$scores
-  colData(object)["Phase"] <- assignments$phases
-  return(object)
+    assignments <- cyclone(object, cc.genes.cyclone, gene.names = rownames(object))
+    colData(object)[colnames(assignments$scores)] <- assignments$scores
+    colData(object)["Phase"] <- assignments$phases
+    return(object)
 }
 
 #' Plot Cluster Marker Genes
@@ -218,80 +218,80 @@ annotate_cell_cycle <- function(object) {
 #' @export
 #'
 #' @examples
-#'chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
 #' plot_markers(chevreul_sce, group_by = "gene_snn_res.0.2")
 #'
 plot_markers <- function(object, group_by = "batch", num_markers = 5, selected_values = NULL, return_plotly = FALSE, marker_method = "wilcox", experiment = "gene", hide_technical = NULL, unique_markers = FALSE, p_val_cutoff = 1, ...) {
-        # Idents(object) <- get_cell_metadata(object)[[group_by]]
-        object <- find_all_markers(object, group_by, experiment = experiment, p_val_cutoff = p_val_cutoff)
-        marker_table <- metadata(object)$markers[[group_by]]
-        markers <- marker_table %>%
-            enframe_markers() %>%
-            mutate(across(everything(), .fns = as.character))
-        if (!is.null(hide_technical)) {
-            markers <- map(markers, c)
-            if (hide_technical == "pseudo") {
-                markers <- map(markers, ~ .x[!.x %in% pseudogenes[[experiment]]])
-            } else if (hide_technical == "mito_ribo") {
-                markers <- map(markers, ~ .x[!str_detect(.x, "^MT-")])
-                markers <- map(markers, ~ .x[!str_detect(.x, "^RPS")])
-                markers <- map(markers, ~ .x[!str_detect(.x, "^RPL")])
-            } else if (hide_technical == "all") {
-                markers <- map(markers, ~ .x[!.x %in% pseudogenes[[experiment]]])
-                markers <- map(markers, ~ .x[!str_detect(.x, "^MT-")])
-                markers <- map(markers, ~ .x[!str_detect(.x, "^RPS")])
-                markers <- map(markers, ~ .x[!str_detect(.x, "^RPL")])
-            }
-            min_length <- min(map_int(markers, length))
-            markers <- map(markers, head, min_length) %>% bind_cols()
+    # Idents(object) <- get_cell_metadata(object)[[group_by]]
+    object <- find_all_markers(object, group_by, experiment = experiment, p_val_cutoff = p_val_cutoff)
+    marker_table <- metadata(object)$markers[[group_by]]
+    markers <- marker_table %>%
+        enframe_markers() %>%
+        mutate(across(everything(), .fns = as.character))
+    if (!is.null(hide_technical)) {
+        markers <- map(markers, c)
+        if (hide_technical == "pseudo") {
+            markers <- map(markers, ~ .x[!.x %in% pseudogenes[[experiment]]])
+        } else if (hide_technical == "mito_ribo") {
+            markers <- map(markers, ~ .x[!str_detect(.x, "^MT-")])
+            markers <- map(markers, ~ .x[!str_detect(.x, "^RPS")])
+            markers <- map(markers, ~ .x[!str_detect(.x, "^RPL")])
+        } else if (hide_technical == "all") {
+            markers <- map(markers, ~ .x[!.x %in% pseudogenes[[experiment]]])
+            markers <- map(markers, ~ .x[!str_detect(.x, "^MT-")])
+            markers <- map(markers, ~ .x[!str_detect(.x, "^RPS")])
+            markers <- map(markers, ~ .x[!str_detect(.x, "^RPL")])
         }
-        if (unique_markers) {
-            markers <- markers %>%
-                mutate(precedence = row_number()) %>%
-                pivot_longer(-precedence, names_to = "group", values_to = "markers") %>%
-                arrange(markers, precedence) %>%
-                group_by(markers) %>%
-                filter(row_number() == 1) %>%
-                arrange(group, precedence) %>%
-                drop_na() %>%
-                group_by(group) %>%
-                mutate(precedence = row_number()) %>%
-                pivot_wider(names_from = "group", values_from = "markers") %>%
-                select(-precedence)
-        }
-        sliced_markers <- markers %>%
-            slice_head(n = num_markers) %>%
-            pivot_longer(everything(), names_to = "group", values_to = "feature") %>%
-            arrange(group) %>%
-            distinct(feature, .keep_all = TRUE) %>%
-            identity()
-        if (!is.null(selected_values)) {
-            object <- object[, get_cell_metadata(object)[[group_by]] %in% selected_values]
-            sliced_markers <- sliced_markers %>%
-                filter(group %in% selected_values) %>%
-                distinct(feature, .keep_all = TRUE)
-        }
-        vline_coords <- head(cumsum(table(sliced_markers$group)) + 0.5, -1)
-        sliced_markers <- pull(sliced_markers, feature)
-
-        object[[group_by]] <- forcats::fct_na_value_to_level(object[[group_by]])
-        markerplot <- plotDots(object, features = sliced_markers, group = group_by) +
-            theme(axis.text.x = element_text(size = 10, angle = 45, vjust = 1, hjust = 1), axis.text.y = element_text(size = 10)) +
-            # scale_y_discrete(position = "left") +
-            # scale_x_discrete(limits = sliced_markers) +
-            geom_hline(yintercept = vline_coords, linetype = 2) +
-            NULL
-        if (return_plotly == FALSE) {
-            return(markerplot)
-        }
-        plot_height <- (150 * num_markers)
-        plot_width <- (100 * length(levels(as.factor(get_cell_metadata(object)[[group_by]]))))
-        markerplot <- ggplotly(markerplot, height = plot_height, width = plot_width) %>%
-            plotly_settings() %>%
-            toWebGL() %>%
-            identity()
-        return(list(plot = markerplot, markers = marker_table))
+        min_length <- min(map_int(markers, length))
+        markers <- map(markers, head, min_length) %>% bind_cols()
     }
+    if (unique_markers) {
+        markers <- markers %>%
+            mutate(precedence = row_number()) %>%
+            pivot_longer(-precedence, names_to = "group", values_to = "markers") %>%
+            arrange(markers, precedence) %>%
+            group_by(markers) %>%
+            filter(row_number() == 1) %>%
+            arrange(group, precedence) %>%
+            drop_na() %>%
+            group_by(group) %>%
+            mutate(precedence = row_number()) %>%
+            pivot_wider(names_from = "group", values_from = "markers") %>%
+            select(-precedence)
+    }
+    sliced_markers <- markers %>%
+        slice_head(n = num_markers) %>%
+        pivot_longer(everything(), names_to = "group", values_to = "feature") %>%
+        arrange(group) %>%
+        distinct(feature, .keep_all = TRUE) %>%
+        identity()
+    if (!is.null(selected_values)) {
+        object <- object[, get_cell_metadata(object)[[group_by]] %in% selected_values]
+        sliced_markers <- sliced_markers %>%
+            filter(group %in% selected_values) %>%
+            distinct(feature, .keep_all = TRUE)
+    }
+    vline_coords <- head(cumsum(table(sliced_markers$group)) + 0.5, -1)
+    sliced_markers <- pull(sliced_markers, feature)
+
+    object[[group_by]] <- forcats::fct_na_value_to_level(object[[group_by]])
+    markerplot <- plotDots(object, features = sliced_markers, group = group_by) +
+        theme(axis.text.x = element_text(size = 10, angle = 45, vjust = 1, hjust = 1), axis.text.y = element_text(size = 10)) +
+        # scale_y_discrete(position = "left") +
+        # scale_x_discrete(limits = sliced_markers) +
+        geom_hline(yintercept = vline_coords, linetype = 2) +
+        NULL
+    if (return_plotly == FALSE) {
+        return(markerplot)
+    }
+    plot_height <- (150 * num_markers)
+    plot_width <- (100 * length(levels(as.factor(get_cell_metadata(object)[[group_by]]))))
+    markerplot <- ggplotly(markerplot, height = plot_height, width = plot_width) %>%
+        plotly_settings() %>%
+        toWebGL() %>%
+        identity()
+    return(list(plot = markerplot, markers = marker_table))
+}
 
 
 #' Plot Read Count
@@ -315,24 +315,24 @@ plot_markers <- function(object, group_by = "batch", num_markers = 5, selected_v
 #'
 #' # static plot
 #' plot_readcount((chevreul_sce), return_plotly = FALSE)
-plot_readcount<-  function(object, group_by = "nCount_RNA", color.by = "batch", yscale = "linear", return_plotly = FALSE, ...) {
-        object_tbl <- rownames_to_column(get_cell_metadata(object), "SID") %>% select(SID, !!as.symbol(group_by), !!as.symbol(color.by))
-        rc_plot <- ggplot(object_tbl, aes(x = reorder(SID, -!!as.symbol(group_by)), y = !!as.symbol(group_by), fill = !!as.symbol(color.by))) +
-            geom_bar(position = "identity", stat = "identity") +
-            theme(axis.text.x = element_blank()) +
-            labs(title = group_by, x = "Sample") +
-            NULL
-        if (yscale == "log") {
-            rc_plot <- rc_plot + scale_y_log10()
-        }
-        if (return_plotly == FALSE) {
-            return(rc_plot)
-        }
-        rc_plot <- ggplotly(rc_plot, tooltip = "cellid", height = 500) %>%
-            plotly_settings() %>%
-            toWebGL() %>%
-            identity()
+plot_readcount <- function(object, group_by = "nCount_RNA", color.by = "batch", yscale = "linear", return_plotly = FALSE, ...) {
+    object_tbl <- rownames_to_column(get_cell_metadata(object), "SID") %>% select(SID, !!as.symbol(group_by), !!as.symbol(color.by))
+    rc_plot <- ggplot(object_tbl, aes(x = reorder(SID, -!!as.symbol(group_by)), y = !!as.symbol(group_by), fill = !!as.symbol(color.by))) +
+        geom_bar(position = "identity", stat = "identity") +
+        theme(axis.text.x = element_blank()) +
+        labs(title = group_by, x = "Sample") +
+        NULL
+    if (yscale == "log") {
+        rc_plot <- rc_plot + scale_y_log10()
     }
+    if (return_plotly == FALSE) {
+        return(rc_plot)
+    }
+    rc_plot <- ggplotly(rc_plot, tooltip = "cellid", height = 500) %>%
+        plotly_settings() %>%
+        toWebGL() %>%
+        identity()
+}
 
 
 #' Plot Annotated Complexheatmap from SingleCellExperiment object
@@ -354,80 +354,77 @@ plot_readcount<-  function(object, group_by = "nCount_RNA", color.by = "batch", 
 #'
 #' @examples
 #' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
-#' top_25_features <- get_variable_features(chevreul_sce)[1:25]
+#' top_25_features <- get_variable_features(chevreul_sce)[seq(25)]
 #' make_complex_heatmap(chevreul_sce, features = top_25_features)
-
-make_complex_heatmap<-function(object, features = NULL, group.by = "ident", cells = NULL, assayName = "logcounts", experiment = NULL, group.bar.height = 0.01, column_split = NULL, col_arrangement = "ward.D2", mm_col_dend = 30, ...) {
-
-
-        cells <- cells %||% colnames(x = object)
-        if (is.numeric(x = cells)) {
-            cells <- colnames(x = object)[cells]
-        }
-        experiment <- experiment %||% mainExpName(object)
-        if (!experiment == mainExpName(object)) {
-            object <- swapAltExp(object, name = experiment)
-        }
-        features <- features %||% getTopHVGs(object)
-        features <- rev(unique(features))
-        possible.features <- rownames(x = assay(object, assayName))
-        if (any(!features %in% possible.features)) {
-            bad.features <- features[!features %in% possible.features]
-            features <- features[features %in% possible.features]
-            if (length(x = features) == 0) {
-                stop("No requested features found in the ", layer, " layer for the ", experiment, " experiment.")
-            }
-            warning("The following features were omitted as they were not found in the ", assay, " assay for the ", experiment, " experiment: ", paste(bad.features, collapse = ", "))
-        }
-        data <- as.data.frame(x = t(x = as.matrix(x = assay(object, assayName)[features, cells, drop = FALSE])))
-
-        if (any(col_arrangement %in% c("ward.D", "single", "complete", "average", "mcquitty", "median", "centroid", "ward.D2"))) {
-            if ("PCA" %in% reducedDimNames(object)) {
-                cluster_columns <- reducedDim(object, "PCA") %>%
-                    dist() %>%
-                    hclust(col_arrangement)
-            } else {
-                message("pca not computed for this dataset; cells will be clustered by displayed features")
-                cluster_columns <- function(m) as.dendrogram(agnes(m), method = col_arrangement)
-            }
-        } else {
-            cells <- colData(object)[col_arrangement] %>%
-              as.data.frame() %>%
-                arrange(across(all_of(col_arrangement))) %>%
-                rownames()
-            data <- data[cells, ]
-            group.by <- base::union(group.by, col_arrangement)
-            cluster_columns <- FALSE
-        }
-        group.by <- group.by %||% "ident"
-        groups.use <- colData(object)[group.by] %>% as.data.frame()
-        groups.use <- groups.use %>%
-            rownames_to_column("sample_id") %>%
-            mutate(across(where(is.character), ~ str_wrap(str_replace_all(.x, ",", " "), 10))) %>%
-            mutate(across(where(is.character), as.factor)) %>%
-            data.frame(row.names = 1) %>%
-            identity()
-        groups.use.factor <- groups.use[sapply(groups.use, is.factor)]
-        ha_cols.factor <- NULL
-        if (length(groups.use.factor) > 0) {
-            ha_col_names.factor <- lapply(groups.use.factor, levels)
-            ha_cols.factor <- map(ha_col_names.factor, ~ (hue_pal())(length(.x))) %>% map2(ha_col_names.factor, set_names)
-        }
-        groups.use.numeric <- groups.use[sapply(groups.use, is.numeric)]
-        ha_cols.numeric <- NULL
-        if (length(groups.use.numeric) > 0) {
-            numeric_col_fun <- function(myvec, color) {
-                colorRamp2(range(myvec), c("white", color))
-            }
-            ha_col_names.numeric <- names(groups.use.numeric)
-            ha_col_hues.numeric <- (hue_pal())(length(ha_col_names.numeric))
-            ha_cols.numeric <- map2(groups.use[ha_col_names.numeric], ha_col_hues.numeric, numeric_col_fun)
-        }
-        ha_cols <- c(ha_cols.factor, ha_cols.numeric)
-        column_ha <- HeatmapAnnotation(df = groups.use, height = unit(group.bar.height, "points"), col = ha_cols)
-        hm <- Heatmap(t(data), name = "log expression", top_annotation = column_ha, cluster_columns = cluster_columns, show_column_names = FALSE, column_dend_height = unit(mm_col_dend, "mm"), column_split = column_split, column_title = NULL, ...)
-        return(hm)
+make_complex_heatmap <- function(object, features = NULL, group.by = "ident", cells = NULL, assayName = "logcounts", experiment = NULL, group.bar.height = 0.01, column_split = NULL, col_arrangement = "ward.D2", mm_col_dend = 30, ...) {
+    cells <- cells %||% colnames(x = object)
+    if (is.numeric(x = cells)) {
+        cells <- colnames(x = object)[cells]
     }
+    experiment <- experiment %||% mainExpName(object)
+    if (!experiment == mainExpName(object)) {
+        object <- swapAltExp(object, name = experiment)
+    }
+    features <- features %||% getTopHVGs(object)
+    features <- rev(unique(features))
+    possible.features <- rownames(x = assay(object, assayName))
+    if (any(!features %in% possible.features)) {
+        bad.features <- features[!features %in% possible.features]
+        features <- features[features %in% possible.features]
+        if (length(x = features) == 0) {
+            stop("No requested features found in the ", layer, " layer for the ", experiment, " experiment.")
+        }
+        warning("The following features were omitted as they were not found in the ", assay, " assay for the ", experiment, " experiment: ", paste(bad.features, collapse = ", "))
+    }
+    data <- as.data.frame(x = t(x = as.matrix(x = assay(object, assayName)[features, cells, drop = FALSE])))
+
+    if (any(col_arrangement %in% c("ward.D", "single", "complete", "average", "mcquitty", "median", "centroid", "ward.D2"))) {
+        if ("PCA" %in% reducedDimNames(object)) {
+            cluster_columns <- reducedDim(object, "PCA") %>%
+                dist() %>%
+                hclust(col_arrangement)
+        } else {
+            message("pca not computed for this dataset; cells will be clustered by displayed features")
+            cluster_columns <- function(m) as.dendrogram(agnes(m), method = col_arrangement)
+        }
+    } else {
+        cells <- colData(object)[col_arrangement] %>%
+            as.data.frame() %>%
+            arrange(across(all_of(col_arrangement))) %>%
+            rownames()
+        data <- data[cells, ]
+        group.by <- base::union(group.by, col_arrangement)
+        cluster_columns <- FALSE
+    }
+    group.by <- group.by %||% "ident"
+    groups.use <- colData(object)[group.by] %>% as.data.frame()
+    groups.use <- groups.use %>%
+        rownames_to_column("sample_id") %>%
+        mutate(across(where(is.character), ~ str_wrap(str_replace_all(.x, ",", " "), 10))) %>%
+        mutate(across(where(is.character), as.factor)) %>%
+        data.frame(row.names = 1) %>%
+        identity()
+    groups.use.factor <- groups.use[sapply(groups.use, is.factor)]
+    ha_cols.factor <- NULL
+    if (length(groups.use.factor) > 0) {
+        ha_col_names.factor <- lapply(groups.use.factor, levels)
+        ha_cols.factor <- map(ha_col_names.factor, ~ (hue_pal())(length(.x))) %>% map2(ha_col_names.factor, set_names)
+    }
+    groups.use.numeric <- groups.use[sapply(groups.use, is.numeric)]
+    ha_cols.numeric <- NULL
+    if (length(groups.use.numeric) > 0) {
+        numeric_col_fun <- function(myvec, color) {
+            colorRamp2(range(myvec), c("white", color))
+        }
+        ha_col_names.numeric <- names(groups.use.numeric)
+        ha_col_hues.numeric <- (hue_pal())(length(ha_col_names.numeric))
+        ha_cols.numeric <- map2(groups.use[ha_col_names.numeric], ha_col_hues.numeric, numeric_col_fun)
+    }
+    ha_cols <- c(ha_cols.factor, ha_cols.numeric)
+    column_ha <- HeatmapAnnotation(df = groups.use, height = unit(group.bar.height, "points"), col = ha_cols)
+    hm <- Heatmap(t(data), name = "log expression", top_annotation = column_ha, cluster_columns = cluster_columns, show_column_names = FALSE, column_dend_height = unit(mm_col_dend, "mm"), column_split = column_split, column_title = NULL, ...)
+    return(hm)
+}
 
 
 #' Plot Transcript Composition
@@ -448,45 +445,46 @@ make_complex_heatmap<-function(object, features = NULL, group.by = "ident", cell
 #' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
 #'
 #' plot_transcript_composition(chevreul_sce, "NRL",
-#' group.by = "gene_snn_res.0.6")
+#'     group.by = "gene_snn_res.0.6"
+#' )
 #'
 plot_transcript_composition <- function(object, gene_symbol, group.by = "batch", standardize = FALSE, drop_zero = FALSE) {
-        transcripts <- annotables::grch38 %>%
-            filter(symbol == gene_symbol) %>%
-            left_join(annotables::grch38_tx2gene, by = "ensgene") %>%
-            pull(enstxp)
-        metadata <- get_cell_metadata(object)
-        metadata$sample_id <- NULL
-        metadata <- metadata %>%
-            rownames_to_column("sample_id") %>%
-            select(sample_id, group.by = {{ group.by }})
+    transcripts <- annotables::grch38 %>%
+        filter(symbol == gene_symbol) %>%
+        left_join(annotables::grch38_tx2gene, by = "ensgene") %>%
+        pull(enstxp)
+    metadata <- get_cell_metadata(object)
+    metadata$sample_id <- NULL
+    metadata <- metadata %>%
+        rownames_to_column("sample_id") %>%
+        select(sample_id, group.by = {{ group.by }})
 
-        transcripts <- transcripts[transcripts %in% rownames(altExp(object, "transcript"))]
+    transcripts <- transcripts[transcripts %in% rownames(altExp(object, "transcript"))]
 
-        data <- counts(altExp(object, "transcript"))[transcripts, ] %>%
-            as.matrix() %>%
-            t()
+    data <- counts(altExp(object, "transcript"))[transcripts, ] %>%
+        as.matrix() %>%
+        t()
 
-        data <- data %>%
-            as.data.frame() %>%
-            rownames_to_column("sample_id") %>%
-            pivot_longer(cols = starts_with("ENST"), names_to = "transcript", values_to = "expression") %>%
-            left_join(metadata, by = "sample_id") %>%
-            mutate(group.by = as.factor(group.by), transcript = as.factor(transcript))
-        data <- group_by(data, group.by, transcript)
-        if (drop_zero) {
-            data <- filter(data, expression != 0)
-        }
-        data <- summarize(data, expression = mean(expression))
-        position <- ifelse(standardize, "fill", "stack")
-        p <- ggplot(data = data, aes(x = group.by, y = expression, fill = transcript)) +
-            geom_col(position = position) +
-            theme_minimal() +
-            theme(axis.title.x = element_blank(), axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1, size = 12)) +
-            labs(title = paste("Mean expression by", group.by, "-", gene_symbol)) +
-            NULL
-        return(list(plot = p, data = data))
+    data <- data %>%
+        as.data.frame() %>%
+        rownames_to_column("sample_id") %>%
+        pivot_longer(cols = starts_with("ENST"), names_to = "transcript", values_to = "expression") %>%
+        left_join(metadata, by = "sample_id") %>%
+        mutate(group.by = as.factor(group.by), transcript = as.factor(transcript))
+    data <- group_by(data, group.by, transcript)
+    if (drop_zero) {
+        data <- filter(data, expression != 0)
     }
+    data <- summarize(data, expression = mean(expression))
+    position <- ifelse(standardize, "fill", "stack")
+    p <- ggplot(data = data, aes(x = group.by, y = expression, fill = transcript)) +
+        geom_col(position = position) +
+        theme_minimal() +
+        theme(axis.title.x = element_blank(), axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1, size = 12)) +
+        labs(title = paste("Mean expression by", group.by, "-", gene_symbol)) +
+        NULL
+    return(list(plot = p, data = data))
+}
 
 
 #' Plot All Transcripts
@@ -506,19 +504,17 @@ plot_transcript_composition <- function(object, gene_symbol, group.by = "batch",
 #' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
 #' plot_all_transcripts(chevreul_sce, "NRL")
 #'
-
 plot_all_transcripts <- function(object, features, embedding = "UMAP", from_gene = TRUE, combine = TRUE) {
-        if (from_gene) {
-            features <- genes_to_transcripts(features)
-        }
-        features <- features[features %in% rownames(altExp(object, "transcript"))]
-        transcript_cols <- assay(altExp(object, "transcript"))[features, ]
-        colData(object)[features] <- t(as.matrix(transcript_cols))
-        # plot_out <- plotReducedDim(altExp(object), features = features, dimred = embedding)
-        plot_out <- map(paste0(features), ~ plot_feature(object, embedding = embedding, features = .x, return_plotly = FALSE)) %>% set_names(features)
-        if (combine) {
-            plot_out <- wrap_plots(plot_out)
-        }
-        return(plot_out)
+    if (from_gene) {
+        features <- genes_to_transcripts(features)
     }
-
+    features <- features[features %in% rownames(altExp(object, "transcript"))]
+    transcript_cols <- assay(altExp(object, "transcript"))[features, ]
+    colData(object)[features] <- t(as.matrix(transcript_cols))
+    # plot_out <- plotReducedDim(altExp(object), features = features, dimred = embedding)
+    plot_out <- map(paste0(features), ~ plot_feature(object, embedding = embedding, features = .x, return_plotly = FALSE)) %>% set_names(features)
+    if (combine) {
+        plot_out <- wrap_plots(plot_out)
+    }
+    return(plot_out)
+}

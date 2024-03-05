@@ -3,7 +3,7 @@
 #' @param ... to be passed to \code{convert_symbols_by_species}
 #'
 #' @return a SingleCellExperiment object
-#' @export
+#'
 convert_human_object_to_mouse <- function(object, ...) {
     new_rownames <- convert_symbols_by_species(src_genes = rownames(object), src_species = "human")
 
@@ -63,4 +63,3 @@ convert_symbols_by_species <- function(src_genes, src_species) {
 
     return(make.unique(dest_symbols[[2]]))
 }
-

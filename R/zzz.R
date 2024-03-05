@@ -9,11 +9,10 @@
 # matplotlib <- NULL
 # pyplot <- NULL
 .onLoad <- function(libname, pkgname) {
-
-    loadRData <- function(fileName){
-      #loads an RData file, and returns it
-      load(fileName)
-      get(ls()[ls() != "fileName"])
+    loadRData <- function(fileName) {
+        # loads an RData file, and returns it
+        load(fileName)
+        get(ls()[ls() != "fileName"])
     }
 
     # chevreuldata::human_gene_transcript_sce <<- loadRData(url("http://cobrinik-1.saban-chla.usc.edu/chevreuldata::human_gene_transcript_sce.rda"))
@@ -21,19 +20,4 @@
     # human_gene_transcript_loom_path <<- "http://cobrinik-1.saban-chla.usc.edu/human_gene_transcript.loom"
     # human_fetal_retina_sce <<- readRDS(url("http://cobrinik-1.saban-chla.usc.edu/chevreuldata/human_fetal_retina_sce.rds"))
     # baron2016singlecell <<- loadRData(url("http://cobrinik-1.saban-chla.usc.edu/chevreuldata/baron2016singlecell.rda"))
-}
-
-#' Install scvelo
-#'
-#' @param method deterministic, stochastic, or dynamical
-#' @param conda conda env
-#'
-#' @return package installed
-#' @export
-#'
-#' @examples
-#' \donttest{install_scvelo()}
-install_scvelo <- function(method = "auto", conda = "auto") {
-    reticulate::py_install("scvelo", method = method, conda = conda, pip = TRUE)
-    reticulate::py_install("matplotlib", method = method, conda = conda)
 }

@@ -33,6 +33,8 @@ a shiny app
 Create a shiny app for a project on disk
 }
 \examples{
-\donttest{chevreulApp()}
+\donttest{
+chevreulApp()
+}
 
 }

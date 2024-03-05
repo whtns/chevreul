@@ -57,5 +57,7 @@ a ggplot with coverage faceted by group_by
 Plot BigWig coverage for genes of interest colored by a given variable
 }
 \examples{
-\donttest{plot_gene_coverage_by_var()}
+\donttest{
+plot_gene_coverage_by_var()
+}
 }

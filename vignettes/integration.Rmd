@@ -53,7 +53,6 @@ Large single-cell RNA sequencing (scRNA-seq) usually need to generate data acros
 First step in this process is to load all the packages required
 
 ```{r setup, message = FALSE}
-
 library(chevreul)
 library(SingleCellExperiment)
 library(tidyverse)
@@ -83,13 +82,17 @@ For instance, the dataset `chevreul_sce` contains data obtained following two di
 
 
 ```{r }
-## Dot plot of features 
-markerp_batch <- plot_markers(chevreul_sce, group_by = "batch", 
-                              num_markers = 10)
-markerp_cluster <- plot_markers(chevreul_sce, group_by = "gene_snn_res.0.2", 
-                                num_markers = 10)
+## Dot plot of features
+markerp_batch <- plot_markers(chevreul_sce,
+    group_by = "batch",
+    num_markers = 10
+)
+markerp_cluster <- plot_markers(chevreul_sce,
+    group_by = "gene_snn_res.0.2",
+    num_markers = 10
+)
 # Plot UMAP
-dp_batch  <- plot_var(chevreul_sce, group = "batch")
+dp_batch <- plot_var(chevreul_sce, group = "batch")
 dp_cluster <- plot_var(chevreul_sce, group = "gene_snn_res.0.2")
 
 wrap_plots(markerp_batch, markerp_cluster, dp_batch, dp_cluster) +
@@ -120,7 +123,6 @@ dp_cluster <- plot_var(integrated_object, group = "gene_snn_res.0.2")
 
 wrap_plots(dp_batch, dp_cluster) +
     plot_layout(widths = c(3, 3), ncol = 2)
-
 ```
 
 # Asumtions of the input data

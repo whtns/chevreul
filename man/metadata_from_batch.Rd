@@ -24,9 +24,9 @@ a tibble with cell level metadata from a SingleCellExperiment object
 Retrieve Metadata from Batch
 }
 \examples{
-
 \donttest{
 chevreul_sce <- chevreuldata::human_gene_transcript_sce()
-metadata_from_batch(chevreul_sce)}
+metadata_from_batch(chevreul_sce)
+}
 
 }

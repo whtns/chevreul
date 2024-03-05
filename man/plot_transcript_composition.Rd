@@ -34,6 +34,7 @@ plot the proportion of reads of a given gene map to each transcript
 chevreul_sce <- chevreuldata::human_gene_transcript_sce()
 
 plot_transcript_composition(chevreul_sce, "NRL",
-group.by = "gene_snn_res.0.6")
+    group.by = "gene_snn_res.0.6"
+)
 
 }

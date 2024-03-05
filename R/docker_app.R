@@ -11,18 +11,20 @@
 #' @export
 #'
 #' @examples
-#' \donttest{dockerSingleCellExperimentApp(chevreul_sce)
+#' \donttest{
+#' dockerSingleCellExperimentApp(chevreul_sce)
 #' }
 #'
-dockerSingleCellExperimentApp <- function(object = NULL, loom_path = NULL, appTitle = NULL,
-    organism_type = "human", futureMb = 13000, bigwig_db = "~/.cache/chevreul/bw-files.db") {
+dockerSingleCellExperimentApp <- function(
+        object = NULL, loom_path = NULL, appTitle = NULL,
+        organism_type = "human", futureMb = 13000, bigwig_db = "~/.cache/chevreul/bw-files.db") {
     plan(strategy = "multicore", workers = 6)
     future_size <- futureMb * 1024^2
     options(future.globals.maxSize = future_size)
     options(shiny.maxRequestSize = 40 * 1024^2)
     options(DT.options = list(
         pageLength = 2000, paging = FALSE,
-        info = TRUE, searching = TRUE, autoWidth = F, ordering = TRUE,
+        info = TRUE, searching = TRUE, autoWidth = FALSE, ordering = TRUE,
         scrollX = TRUE, language = list(search = "Filter:")
     ))
     header <- dashboardHeader(title = appTitle)
@@ -211,7 +213,7 @@ dockerSingleCellExperimentApp <- function(object = NULL, loom_path = NULL, appTi
 
         reductions <- reactive({
             req(object())
-          reducedDimNames(object)
+            reducedDimNames(object)
         })
 
         observe({
@@ -305,7 +307,7 @@ dockerSingleCellExperimentApp <- function(object = NULL, loom_path = NULL, appTi
                     subset_object <- object()[, colnames(object()) %in% subset_selected_cells()]
                     object(subset_object)
                     if (length(unique(object()$batch)) > 1) {
-                        message(paste0("reintegrating gene expression"))
+                        message("reintegrating gene expression")
                         reintegrated_object <- reintegrate_object(object(),
                             resolution = seq(0.2, 2, by = 0.2),
                             organism = metadata(object())[["experiment"]][["organism"]]
@@ -339,7 +341,7 @@ dockerSingleCellExperimentApp <- function(object = NULL, loom_path = NULL, appTi
                     object(subset_object)
 
                     if (length(unique(object()[["batch"]])) > 1) {
-                        message(paste0("reintegrating gene expression"))
+                        message("reintegrating gene expression")
                         reintegrated_object <- reintegrate_object(object(),
                             resolution = seq(0.2, 2, by = 0.2),
                             organism = metadata(object())[["experiment"]][["organism"]]
@@ -366,8 +368,7 @@ dockerSingleCellExperimentApp <- function(object = NULL, loom_path = NULL, appTi
                 title = "Regressing out cell cycle effects",
                 "This process may take a minute or two!"
             ))
-            regressed_object <- regress_cell_cycle(object()
-            )
+            regressed_object <- regress_cell_cycle(object())
             object(regressed_object)
             removeModal()
         })

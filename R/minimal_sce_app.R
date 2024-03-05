@@ -212,8 +212,7 @@ minimalSceApp <- function(single_cell_object = chevreul_sce, loom_path = NULL, a
 
         reductions <- reactive({
             req(object())
-          reducedDimNames(object())
-
+            reducedDimNames(object())
         })
 
         observe({
@@ -321,7 +320,7 @@ minimalSceApp <- function(single_cell_object = chevreul_sce, loom_path = NULL, a
                     subset_object <- object()[, colnames(object()) %in% subset_selected_cells()]
                     object(subset_object)
                     if (length(unique(object()$batch)) > 1) {
-                        message(paste0("reintegrating gene expression"))
+                        message("reintegrating gene expression")
                         reintegrated_object <- reintegrate_object(object(),
                             resolution = seq(0.2, 2, by = 0.2),
                             organism = metadata(object())$experiment$organism
@@ -355,7 +354,7 @@ minimalSceApp <- function(single_cell_object = chevreul_sce, loom_path = NULL, a
                     object(subset_object)
 
                     if (length(unique(object()[["batch"]])) > 1) {
-                        message(paste0("reintegrating gene expression"))
+                        message("reintegrating gene expression")
                         reintegrated_object <- reintegrate_object(object(),
                             resolution = seq(0.2, 2, by = 0.2),
                             organism = metadata(object())$experiment$organism
@@ -382,8 +381,7 @@ minimalSceApp <- function(single_cell_object = chevreul_sce, loom_path = NULL, a
                 title = "Regressing out cell cycle effects",
                 "This process may take a minute or two!"
             ))
-            regressed_object <- regress_cell_cycle(object()
-            )
+            regressed_object <- regress_cell_cycle(object())
             object(regressed_object)
             removeModal()
         })

@@ -27,5 +27,7 @@ a sqlite database with SingleCellExperiment objects
 Append projects to database
 }
 \examples{
-\donttest{append_to_project_db("example_project_path")}
+\donttest{
+append_to_project_db("example_project_path")
+}
 }

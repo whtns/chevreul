@@ -218,4 +218,12 @@ RNA velocity necessitates the calculation of spliced and unspliced transcript co
 
 ![](images/Screenshot_2023-08-25_at_1.28.26_PM.png)
 
+## Session information
+
+```{r reproduce3, echo=FALSE}
+## Session info
+library("sessioninfo")
+options(width = 120)
+session_info()
+```
 
