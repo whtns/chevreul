@@ -19,5 +19,5 @@ Retrieve Assay
 }
 \examples{
 chevreul_sce <- chevreuldata::human_gene_transcript_sce()
-retrieve_experiment(chevreul_sce)
+retrieve_experiment(chevreul_sce, experiment = "gene")
 }

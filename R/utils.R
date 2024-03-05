@@ -386,7 +386,7 @@ metadata_from_object <- function(object) {
 #' @export
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' save_object(gene = feature_objects$gene, transcript = feature_objects$transcript, proj_dir = proj_dir)
 #'
 #' save_object(gene = feature_objects$gene, transcript = feature_objects$transcript, prefix = "remove_nonPRs", proj_dir = proj_dir)

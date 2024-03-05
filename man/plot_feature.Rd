@@ -18,7 +18,7 @@ plot_feature(
 
 \item{embedding}{Dimensional reduction technique to be used}
 
-\item{features}{Features to plot}
+\item{features}{Feature to plot}
 
 \item{dims}{Dimensions to plot, must be a two-length numeric vector}
 
@@ -31,8 +31,6 @@ an embedding colored by a feature of interest
 }
 \description{
 Plots gene or transcript expression overlaid on a given embedding.
-If multiple features are supplied the joint density of all features
-will be plotted using \href{https://www.bioconductor.org/packages/devel/bioc/html/Nebulosa.html}{Nebulosa}
 }
 \examples{
 chevreul_sce <- chevreuldata::human_gene_transcript_sce()
