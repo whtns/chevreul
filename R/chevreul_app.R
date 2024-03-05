@@ -84,7 +84,7 @@ run_object_de <- function(object, cluster1, cluster2, resolution = 0.2, diffex_s
 
 #' Prep Slider Values
 #'
-#' @param default_val
+#' @param default_val Provide a default value
 #'
 #' @noRd
 prep_slider_values <- function(default_val) {
@@ -101,11 +101,9 @@ prep_slider_values <- function(default_val) {
 #' @param preset_project A preloaded project to start the app with
 #' @param appTitle A title of the App
 #' @param futureMb amount of Mb allocated to future package
-#' @param preset_project preset project
 #' @param organism_type human or mouse
 #' @param db_path sqlite database with list of saved SingleCellExperiment objects
-#' @param futureMb megabytes for use with future package
-#'
+#' @param integrated_proj_dir Path to integrated project directory
 #' @return a shiny app
 #' @export
 #'
@@ -287,10 +285,6 @@ chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "
                         actionButton(
                             "regressAction",
                             "Regress SingleCellExperiment Objects By Genes"
-                        ),
-                        checkboxInput("runRegression",
-                            "Run Regression?",
-                            value = FALSE
                         ),
                         width = 12
                     ) %>%
@@ -669,8 +663,7 @@ chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "
                 title = "Regressing cycle effects",
                 "This process may take a minute or two!"
             ))
-            regressed_object <- regress_cell_cycle(object(),
-                regress = input$runRegression
+            regressed_object <- regress_cell_cycle(object()
             )
             object(regressed_object)
             removeModal()

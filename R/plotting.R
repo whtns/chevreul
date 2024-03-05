@@ -15,9 +15,9 @@ unite_metadata <-
         newcolname <- paste(group_bys, collapse = "_by_")
         newdata <- colData(object)[group_bys] %>%
             as.data.frame() %>%
-            unite(!!newcolname, group_bys) %>%
+            unite(!!newcolname, any_of(group_bys)) %>%
             deframe()
-        # Idents(object) <- newdata
+
         return(object)
     }
 
@@ -126,12 +126,11 @@ plot_violin <- function(object, plot_var = "batch", plot_vals = NULL, features =
 #' Plot Feature
 #'
 #' Plots gene or transcript expression overlaid on a given embedding.
-#' If multiple features are supplied the joint density of all features
-#' will be plotted using [Nebulosa](https://www.bioconductor.org/packages/devel/bioc/html/Nebulosa.html)
+#'
 #'
 #' @param object A SingleCellExperiment object
 #' @param embedding Dimensional reduction technique to be used
-#' @param features Features to plot
+#' @param features Feature to plot
 #' @param dims Dimensions to plot, must be a two-length numeric vector
 #' @param return_plotly return plotly object
 #' @param pt.size size of points in ggplot
@@ -154,15 +153,18 @@ plot_feature <- function(object, embedding = c("UMAP", "PCA", "TSNE"), features,
 
         dims <- as.numeric(dims)
 
-        if (length(features) == 1) {
-            fp <- plotReducedDim(object = object, color_by = features, dimred = embedding) +
-                aes(key = key, cellid = key, alpha = 0.7)
-        } else if (length(features) > 1) {
-            nebulosa_plots <- plot_density(object = object, features = features, dims = dims, reduction = embedding, size = pt.size, joint = TRUE, combine = FALSE)
+        # if (length(features) == 1) {
+        #     fp <- plotReducedDim(object = object, color_by = features, dimred = embedding) +
+        #         aes(key = key, cellid = key, alpha = 0.7)
+        # } else if (length(features) > 1) {
+        #     nebulosa_plots <- plot_density(object = object, features = features, dims = dims, reduction = embedding, size = pt.size, joint = TRUE, combine = FALSE)
+        #
+        #     fp <- last(nebulosa_plots) +
+        #         aes(key = key, cellid = key, alpha = 0.7)
+        # }
 
-            fp <- last(nebulosa_plots) +
-                aes(key = key, cellid = key, alpha = 0.7)
-        }
+        fp <- plotReducedDim(object = object, color_by = features, dimred = embedding) +
+                  aes(key = key, cellid = key, alpha = 0.7)
 
         if (return_plotly == FALSE) {
             return(fp)
@@ -478,7 +480,7 @@ plot_transcript_composition <- function(object, gene_symbol, group.by = "batch",
         data <- summarize(data, expression = mean(expression))
         position <- ifelse(standardize, "fill", "stack")
         p <- ggplot(data = data, aes(x = group.by, y = expression, fill = transcript)) +
-            geom_col(stat = "identity", position = position) +
+            geom_col(position = position) +
             theme_minimal() +
             theme(axis.title.x = element_blank(), axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1, size = 12)) +
             labs(title = paste("Mean expression by", group.by, "-", gene_symbol)) +

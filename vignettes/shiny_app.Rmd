@@ -1,14 +1,14 @@
-  ---
+---
 title: "Shiny App"
-author: 
-  - name: Kevin Stachelek
-    affiliation:
-    - University of Southern California   
-    email: kevin.stachelek@gmail.com
-  - name: Bhavana Bhat
-    affiliation:
-    - University of Southern California   
-    email: bbhat@usc.edu
+author:
+- name: Kevin Stachelek
+  affiliation:
+  - University of Southern California   
+  email: kevin.stachelek@gmail.com
+- name: Bhavana Bhat
+  affiliation:
+  - University of Southern California   
+  email: bbhat@usc.edu
 output: 
   BiocStyle::html_document:
     self_contained: yes
@@ -23,7 +23,6 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}  
 ---
-
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
@@ -41,15 +40,14 @@ library(kableExtra)
 ```
 
 
-Chevreul allows exploratory data analysis of a single cell dataset processed using `SingleCellExperiment` with the command `minimalSingleCellExperimentApp()`
+Chevreul allows exploratory data analysis of a single cell dataset processed using `SingleCellExperiment` with the command `minimalSceApp()`
 
 Here we'll provide a brief tour of this app organized by section with app functions organized as tabs along the sidebar upon startup.
 
 ### Reformat Metadata 
 
-<!-- ** Make spreadsheet smaller in the app** -->
 Arbitrary variables can be appended to the cell metadata based on the results of exploratory data analysis. 
-<!-- **** where is the split by option in the app? -->
+
 Metadata addition can be executed by uploading a csv with row names matching cell ids with new variables as columns. Metadata editing can also be accomplished using a built-in spreadsheet tool. 
 
 ### Plot Data
@@ -62,7 +60,7 @@ In addition, gene and transcript feature expression can be overlaid on embedding
 ![](images/louvain_and_feature_umap_plot.png)
 
 #### read/UMI count histograms 
-To facilitate quality control, cell-level summarized umi and read count values can also be overlaid with cell metadata and clustering results.   
+To facilitate quality control, cell-level summarized UMI and read count values can also be overlaid with cell metadata and clustering results.   
 
 ![](images/pair_of_histograms.png)
 
@@ -144,18 +142,18 @@ Direct comparison of the contribution of individual transcripts can be achieved 
 ![](images/transcript_composisiont.png)
 
 
-### Pobjectdotime Analysis by [Monocle 3](https://cole-trapnell-lab.github.io/monocle3/)
+<!-- ### Pobjectdotime Analysis by [Monocle 3](https://cole-trapnell-lab.github.io/monocle3/) -->
 
-Pobjectdotime analysis is broken into several steps, mirroring a typical command-line workflow. 
-1. Users can subset an embedded dataset then calculate a trajectory graph. 
-1. Root cells can be specified and cells ordered in pseudotime with monocle3. 
-2. Features that vary significantly over pseudotime based on autocorrelation can then be determined and grouped into modules that vary similarly over pseudotime. 
+<!-- Pobjectdotime analysis is broken into several steps, mirroring a typical command-line workflow.  -->
+<!-- 1. Users can subset an embedded dataset then calculate a trajectory graph.  -->
+<!-- 1. Root cells can be specified and cells ordered in pseudotime with monocle3.  -->
+<!-- 2. Features that vary significantly over pseudotime based on autocorrelation can then be determined and grouped into modules that vary similarly over pseudotime.  -->
 
-![](images/monocle_first_steps.png)
+<!-- ![](images/monocle_first_steps.png) -->
 
-Heat maps and scatter plots are available at gene and module levels.
+<!-- Heat maps and scatter plots are available at gene and module levels. -->
 
-![](images/monocle_final_steps.png)
+<!-- ![](images/monocle_final_steps.png) -->
 
 ### Regress Features
 

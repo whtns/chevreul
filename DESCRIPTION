@@ -4,9 +4,7 @@ Title: Tools for managing SingleCellExperiment objects as projects
 Version: 0.99.0
 Authors@R: c(
     person("Kevin", "Stachelek", , "kevin.stachelek@gmail.com", role = c("aut", "cre")),
-    person("Bhavana", "Bhat", , "bhavanabhat29@gmail.com", role = "aut"),
-    person("Roman", "Hillje", role = "ctb",
-           comment = "Author of included Cerebro fragments")
+    person("Bhavana", "Bhat", , "bhavanabhat29@gmail.com", role = "aut")
   )
 Description: Tools for managing SingleCellExperiment objects as projects.
 License: MIT + file LICENSE
