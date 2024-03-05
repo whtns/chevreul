@@ -25,10 +25,5 @@ Authors:
   \item Bhavana Bhat \email{bhavanabhat29@gmail.com}
 }
 
-Other contributors:
-\itemize{
-  \item Roman Hillje (Author of included Cerebro fragments) [contributor]
-}
-
 }
 \keyword{internal}

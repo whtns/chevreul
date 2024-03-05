@@ -11,7 +11,7 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{dockerSingleCellExperimentApp(chevreul_sce)
+#' \donttest{dockerSingleCellExperimentApp(chevreul_sce)
 #' }
 #'
 dockerSingleCellExperimentApp <- function(object = NULL, loom_path = NULL, appTitle = NULL,

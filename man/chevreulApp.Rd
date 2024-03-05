@@ -14,7 +14,7 @@ chevreulApp(
 )
 }
 \arguments{
-\item{preset_project}{preset project}
+\item{preset_project}{A preloaded project to start the app with}
 
 \item{appTitle}{A title of the App}
 
@@ -22,7 +22,9 @@ chevreulApp(
 
 \item{db_path}{sqlite database with list of saved SingleCellExperiment objects}
 
-\item{futureMb}{megabytes for use with future package}
+\item{futureMb}{amount of Mb allocated to future package}
+
+\item{integrated_proj_dir}{Path to integrated project directory}
 }
 \value{
 a shiny app

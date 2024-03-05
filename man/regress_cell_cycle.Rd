@@ -4,12 +4,10 @@
 \alias{regress_cell_cycle}
 \title{Regress SingleCellExperiment Object by Given Set of Genes}
 \usage{
-regress_cell_cycle(object, regress = TRUE)
+regress_cell_cycle(object)
 }
 \arguments{
 \item{object}{A object}
-
-\item{regress}{whether to regress}
 }
 \value{
 a SingleCellExperiment object with features regressed

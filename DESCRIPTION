@@ -3,16 +3,18 @@ Package: chevreul
 Title: Tools for managing SingleCellExperiment objects as projects
 Version: 0.99.0
 Authors@R: c(
-    person("Kevin", "Stachelek", , "kevin.stachelek@gmail.com", role = c("aut", "cre")),
+    person("Kevin", "Stachelek", , "kevin.stachelek@gmail.com", role = c("aut", "cre"), comment = c(ORCID = "0000-0003-2085-695X")),
     person("Bhavana", "Bhat", , "bhavanabhat29@gmail.com", role = "aut")
   )
-Description: Tools for managing SingleCellExperiment objects as projects.
+Description: Tools for managing SingleCellExperiment objects as projects. 
+Inculdes functions for analysis and visulaization of single-cell data. 
+Also included is a shiny app for visualization of pre-processed scRNA data.
 License: MIT + file LICENSE
 URL: https://github.com/whtns/chevreul,
     https://whtns.github.io/chevreul/
 BugReports: https://github.com/cobriniklab/chevreul/issues
 Depends:
-    R (>= 4.3.0),
+    R (>= 4.4.0),
     SingleCellExperiment,
     scater,
     shiny (>= 1.6.0),
@@ -90,11 +92,8 @@ Suggests:
     testthat (>= 3.0.0)
 VignetteBuilder:
     knitr
-Remotes:
-    cole-trapnell-lab/monocle3,
-    satijalab/seurat-wrappers
 Encoding: UTF-8
-LazyData: true
+LazyData: false
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.1
 biocViews: Coverage, RNASeq, Sequencing, Visualization, GeneExpression, Transcription, SingleCell
