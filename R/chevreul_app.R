@@ -54,7 +54,7 @@ run_object_de <- function(object, cluster1, cluster2, resolution = 0.2, diffex_s
     }
     test_list <- vector("list", length(tests))
     for (test in tests) {
-        print(test)
+        message(test)
         de <- findMarkers(object, test.type = test)
         if (featureType == "transcript") {
             de_cols <- c("enstxp", "ensgene", "symbol", "p_val" = "p.value", "avg_log2FC", "pct.1", "pct.2", "p_val_adj" = "FDR")
@@ -389,7 +389,7 @@ chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "
             paste0("Loaded Project: ", path_file(proj_dir()))
         })
         dataset_volumes <- reactive({
-            print(proj_dir())
+            message(proj_dir())
             dataset_volumes <- c(
                 Home = path(
                     proj_dir(),
@@ -411,19 +411,19 @@ chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "
                 dataset_volumes(),
                 input$objectUpload
             )
-            print(file)
+            message(file)
             uploadSCEPath(file$datapath)
         })
 
         observe({
             req(uploadSCEPath())
-            print("uploaded")
+            message("uploaded")
             withProgress(
                 message = paste0("Uploading Data"),
                 value = 0,
                 {
                     incProgress(2 / 10)
-                    print(uploadSCEPath())
+                    message(uploadSCEPath())
                     updated_object <- readRDS(uploadSCEPath())
                     object(updated_object)
                     incProgress(6 / 10)
@@ -433,8 +433,8 @@ chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "
                         str_detect(uploadSCEPath(), "Mm") ~ "mouse"
                     )
 
-                    print(uploadSCEPath())
-                    print(names(object))
+                    message(uploadSCEPath())
+                    message(names(object))
                     incProgress(8 / 10)
                 }
             )
@@ -682,10 +682,10 @@ chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "
             proj_path <- str_replace(uploadSCEPath(), "output.*", "")
 
             proj_name <- path_file(proj_path)
-            print(proj_name)
+            message(proj_name)
 
             loom_path <- path(proj_path, "output", "velocyto", paste0(proj_name, ".loom"))
-            print(loom_path)
+            message(loom_path)
             # need to check if this file exists
 
             callModule(plotVelocity, "plotvelocity", object, loom_path)

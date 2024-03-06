@@ -153,16 +153,6 @@ plot_feature <- function(object, embedding = c("UMAP", "PCA", "TSNE"), features,
 
     dims <- as.numeric(dims)
 
-    # if (length(features) == 1) {
-    #     fp <- plotReducedDim(object = object, color_by = features, dimred = embedding) +
-    #         aes(key = key, cellid = key, alpha = 0.7)
-    # } else if (length(features) > 1) {
-    #     nebulosa_plots <- plot_density(object = object, features = features, dims = dims, reduction = embedding, size = pt.size, joint = TRUE, combine = FALSE)
-    #
-    #     fp <- last(nebulosa_plots) +
-    #         aes(key = key, cellid = key, alpha = 0.7)
-    # }
-
     fp <- plotReducedDim(object = object, color_by = features, dimred = embedding) +
         aes(key = key, cellid = key, alpha = 0.7)
 
@@ -187,6 +177,7 @@ plot_feature <- function(object, embedding = c("UMAP", "PCA", "TSNE"), features,
 #' @export
 #' @examples
 #' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+#' data(cc.genes.cyclone)
 #' human_gene_phase <- annotate_cell_cycle(chevreul_sce)
 #' human_gene_phase$phases
 #'

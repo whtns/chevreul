@@ -23,7 +23,7 @@ minimalSceApp <- function(single_cell_object = chevreul_sce, loom_path = NULL, a
     options(shiny.maxRequestSize = 40 * 1024^2)
     options(DT.options = list(
         pageLength = 2000, paging = FALSE,
-        info = TRUE, searching = TRUE, autoWidth = F, ordering = TRUE,
+        info = TRUE, searching = TRUE, autoWidth = FALSE, ordering = TRUE,
         scrollX = TRUE, language = list(search = "Filter:")
     ))
     header <- dashboardHeader(title = appTitle)

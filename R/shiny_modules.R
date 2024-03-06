@@ -304,7 +304,7 @@ integrateProj <- function(input, output, session, proj_matrices, object, proj_di
                     map(readRDS)
 
                 names(batches) <- names(selectedProjects())
-                print(names(batches))
+                message(names(batches))
                 mergedObjects(integration_workflow(batches, legacy_settings = input$legacySettings))
                 # mergedObjects(batches[[1]])
 
@@ -318,7 +318,6 @@ integrateProj <- function(input, output, session, proj_matrices, object, proj_di
 
     newProjDir <- reactive({
         req(mergedObjects())
-        print("foo created successfully")
 
         newProjName <- paste0(map(path_file(selectedProjects()), ~ gsub("_proj", "", .x)), collapse = "_")
         newProjDir <- path(integrated_proj_dir, newProjName)
@@ -1216,7 +1215,7 @@ plotVelocityui <- function(id) {
 plotVelocity <- function(input, output, session, object, loom_path) {
     ns <- session$ns
 
-    print("running scvelo")
+    message("running scvelo")
 
     observe({
         req(object())
@@ -1586,7 +1585,7 @@ techInfo <- function(input, output, session, object) {
             if (!is.null(object_metadata()$technical_info$R)) {
                 capture.output(object_metadata()$technical_info$R)
             } else {
-                print("Not available")
+                message("Not available")
             }
         })
     })
