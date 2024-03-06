@@ -14,11 +14,14 @@ integration_workflow(
 )
 }
 \arguments{
-\item{batches}{objects for all batches provided as a list. If named, the resulting integrated object will be identified with corresponding values in 'batch' metadata}
+\item{batches}{objects for all batches provided as a list. If named, the
+resulting integrated object will be identified with corresponding values in
+'batch' metadata}
 
 \item{excluded_cells}{named list of cells to exclude}
 
-\item{resolution}{value(s) to control the clustering resolution via \code{scran::findMarkers}}
+\item{resolution}{value(s) to control the clustering resolution
+via \code{scran::findMarkers}}
 
 \item{experiment_name}{arbitrary name to identify experiment}
 

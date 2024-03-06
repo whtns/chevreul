@@ -395,13 +395,13 @@ make_complex_heatmap <- function(object, features = NULL, group.by = "ident", ce
         mutate(across(where(is.character), as.factor)) %>%
         data.frame(row.names = 1) %>%
         identity()
-    groups.use.factor <- groups.use[sapply(groups.use, is.factor)]
+    groups.use.factor <- groups.use[map_lgl(groups.use, is.factor)]
     ha_cols.factor <- NULL
     if (length(groups.use.factor) > 0) {
         ha_col_names.factor <- lapply(groups.use.factor, levels)
         ha_cols.factor <- map(ha_col_names.factor, ~ (hue_pal())(length(.x))) %>% map2(ha_col_names.factor, set_names)
     }
-    groups.use.numeric <- groups.use[sapply(groups.use, is.numeric)]
+    groups.use.numeric <- groups.use[map_lgl(groups.use, is.numeric)]
     ha_cols.numeric <- NULL
     if (length(groups.use.numeric) > 0) {
         numeric_col_fun <- function(myvec, color) {

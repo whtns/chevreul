@@ -14,7 +14,10 @@
 build_bigwig_db <- function(bam_files, bigwig_db = "~/.cache/chevreul/bw-files.db") {
     bam_files <- normalizePath(bam_files)
 
-    bigwigfiles <- map_chr(bam_files, ~ megadepth::bam_to_bigwig(.x, prefix = path_ext_remove(.x), overwrite = TRUE)) %>%
+    bigwigfiles <- map_chr(bam_files,
+                           ~ megadepth::bam_to_bigwig(.x,
+                                                      prefix = path_ext_remove(.x),
+                                                      overwrite = TRUE)) %>%
         set_names(path_file) %>%
         enframe("name", "bigWig") %>%
         mutate(sample_id = str_remove(name, "_Aligned.sortedByCoord.out.bw")) %>%
@@ -68,7 +71,9 @@ load_bigwigs <- function(object, bigwig_db = "~/.cache/chevreul/bw-files.db") {
 #'
 #' @param genes_of_interest Gene of interest
 #' @param cell_metadata a dataframe with cell metadata from object
-#' @param bigwig_tbl a tibble with colnames "name", "bigWig", and "sample_id" matching the filename, absolute path, and sample name of each cell in the cell_metadata
+#' @param bigwig_tbl a tibble with colnames "name", "bigWig", and "sample_id"
+#' matching the filename, absolute path, and sample name of each cell in the
+#' cell_metadata
 #' @param group_by Variable to color by
 #' @param values_of_interest values of interest
 #' @param organism Organism
@@ -121,7 +126,8 @@ plot_gene_coverage_by_var <- function(
             everything()
         ) %>%
         mutate(scaling_factor = 1) %>% # rescale(nCount_RNA)
-        mutate(condition = as.factor(condition), colour_group = as.factor(colour_group)) %>%
+        mutate(condition = as.factor(condition),
+               colour_group = as.factor(colour_group)) %>%
         left_join(bigwig_tbl, by = "sample_id") %>%
         filter(!is.na(bigWig)) %>%
         identity()
