@@ -16,7 +16,10 @@
 #' minimalSceApp(chevreul_sce)
 #' }
 #'
-minimalSceApp <- function(single_cell_object = chevreul_sce, loom_path = NULL, appTitle = NULL, organism_type = "human", futureMb = 13000, bigwig_db = "~/.cache/chevreul/bw-files.db") {
+minimalSceApp <- function(single_cell_object = chevreul_sce, loom_path = NULL,
+                          appTitle = NULL, organism_type = "human",
+                          futureMb = 13000,
+                          bigwig_db = "~/.cache/chevreul/bw-files.db") {
     future::plan(strategy = "multicore", workers = 6)
     future_size <- futureMb * 1024^2
     options(future.globals.maxSize = future_size)
@@ -34,7 +37,8 @@ minimalSceApp <- function(single_cell_object = chevreul_sce, loom_path = NULL, a
             menuItem("Reformat Metadata",
                 tabName = "reformatMetadata", icon = icon("columns")
             ), menuItem("Plot Data",
-                tabName = "comparePlots", icon = icon("chart-bar"), selected = TRUE
+                tabName = "comparePlots", icon = icon("chart-bar"),
+                selected = TRUE
             ), menuItem("Heatmap/Violin Plots",
                 tabName = "violinPlots", icon = icon("sort")
                 # ), menuItem("Coverage Plots",
@@ -107,8 +111,10 @@ minimalSceApp <- function(single_cell_object = chevreul_sce, loom_path = NULL, a
                 plotDimRedui("subset"),
                 chevreulBox(
                     title = "Subset Settings",
-                    checkboxInput("legacySettingsSubset", "Use Legacy Settings", value = FALSE),
-                    actionButton("subsetAction", "subset object by selected cells"),
+                    checkboxInput("legacySettingsSubset",
+                                  "Use Legacy Settings", value = FALSE),
+                    actionButton("subsetAction",
+                                 "subset object by selected cells"),
                     actionButton("subsetCsv", "subset object by uploaded csv"),
                     fileInput("uploadCsv",
                         "Upload .csv file with cells to include",
@@ -159,7 +165,8 @@ minimalSceApp <- function(single_cell_object = chevreul_sce, loom_path = NULL, a
                         ),
                         width = 12
                     ) %>%
-                        default_helper(type = "markdown", content = "regressFeatures")
+                        default_helper(type = "markdown",
+                                       content = "regressFeatures")
                 )
             ), tabItem(
                 tabName = "techInfo",
@@ -178,7 +185,10 @@ minimalSceApp <- function(single_cell_object = chevreul_sce, loom_path = NULL, a
     server <- function(input, output, session) {
         w <- Waiter$new()
 
-        observe_helpers(help_dir = system.file("helpers", package = "chevreul", lib.loc = "/dataVolume/storage/rpkgs/devel_install/"))
+        observe_helpers(help_dir =
+                          system.file("helpers", package = "chevreul",
+                                      lib.loc =
+                                        "/dataVolume/storage/rpkgs/devel_install/"))
         options(warn = -1)
 
         object <- reactiveVal(NULL)

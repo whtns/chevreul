@@ -97,7 +97,8 @@ The parameters that could to be chosen here are:
 
 ### Differential expression
 
-Chevreul provides different methods of differential expression analysis that users can choose from to determine differential expression of gene. DE methods included in Chevreul are t-test, Wilcoxon rank-sum test, Likelihood ratio test, and MAST
+Chevreul provides different methods of differential expression analysis that users can choose from to determine differential expression of gene. DE methods 
+included in Chevreul are t-test, Wilcoxon rank-sum test, Likelihood ratio test, and MAST
 
 Running DE testing results in a data frame containing the following information:
 *  p_val : Unadjusted p-value 
@@ -112,8 +113,9 @@ d1 <- read.csv("Dominic.csv", header = TRUE)
 
 #### _Volcano Plots_
 
+The results of differential expression analyses can be visualized using a volcano plot.
 
-
+![](images/volcanoPlot.png)
 ### Find Markers
 
 Marker features based on louvain/leiden cluster identities or cell metadata can be defined based on results of wilcoxon rank-sum test via [presto](https://www.biorxiv.org/content/10.1101/653253v1) or measures of cluster specificity with genesorteR (Ibrahim, 2020) . Variable numbers of marker genes per cell group can be specified based on adjusted p value and thresholded log fold change.

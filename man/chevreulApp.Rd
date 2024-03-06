@@ -20,7 +20,8 @@ chevreulApp(
 
 \item{organism_type}{human or mouse}
 
-\item{db_path}{sqlite database with list of saved SingleCellExperiment objects}
+\item{db_path}{sqlite database with list of saved
+SingleCellExperiment objects}
 
 \item{futureMb}{amount of Mb allocated to future package}
 

@@ -28,7 +28,9 @@
 #'     cluster1 = cells1, cluster2 = cells2, tests = "t"
 #' )
 #'
-run_object_de <- function(object, cluster1, cluster2, resolution = 0.2, diffex_scheme = "louvain", featureType = "gene", tests = c("t", "wilcox", "bimod")) {
+run_object_de <- function(object, cluster1, cluster2, resolution = 0.2,
+                          diffex_scheme = "louvain", featureType = "gene",
+                          tests = c("t", "wilcox", "bimod")) {
     match.arg(tests)
 
     if (featureType == "transcript") object <- altExp(object, "transcript")
@@ -39,7 +41,8 @@ run_object_de <- function(object, cluster1, cluster2, resolution = 0.2, diffex_s
         } else {
             active_experiment <- "gene"
         }
-        colLabels(object) <- colData(object)[[paste0(active_experiment, "_snn_res.", resolution)]]
+        colLabels(object) <- colData(object)[[paste0(active_experiment,
+                                                     "_snn_res.", resolution)]]
         object <- object[, colLabels(object) %in% c(cluster1, cluster2)]
         colLabels(object) <- factor(colLabels(object))
     } else if (diffex_scheme == "custom") {
@@ -57,7 +60,8 @@ run_object_de <- function(object, cluster1, cluster2, resolution = 0.2, diffex_s
         message(test)
         de <- findMarkers(object, test.type = test)
         if (featureType == "transcript") {
-            de_cols <- c("enstxp", "ensgene", "symbol", "p_val" = "p.value", "avg_log2FC", "pct.1", "pct.2", "p_val_adj" = "FDR")
+            de_cols <- c("enstxp", "ensgene", "symbol", "p_val" = "p.value",
+                         "avg_log2FC", "pct.1", "pct.2", "p_val_adj" = "FDR")
             de <- de[[1]] %>%
                 as.data.frame() %>%
                 rownames_to_column("enstxp") %>%
@@ -68,7 +72,8 @@ run_object_de <- function(object, cluster1, cluster2, resolution = 0.2, diffex_s
             }
             de <- select(de, any_of(de_cols))
         } else if (featureType == "gene") {
-            de_cols <- c("ensgene", "symbol", "p_val" = "p.value", "avg_log2FC", "pct.1", "pct.2", "p_val_adj" = "FDR")
+            de_cols <- c("ensgene", "symbol", "p_val" = "p.value", "avg_log2FC",
+                         "pct.1", "pct.2", "p_val_adj" = "FDR")
             de <- de[[1]] %>%
                 as.data.frame() %>%
                 rownames_to_column("symbol") %>%
@@ -107,7 +112,8 @@ prep_slider_values <- function(default_val) {
 #' @param appTitle A title of the App
 #' @param futureMb amount of Mb allocated to future package
 #' @param organism_type human or mouse
-#' @param db_path sqlite database with list of saved SingleCellExperiment objects
+#' @param db_path sqlite database with list of saved
+#' SingleCellExperiment objects
 #' @param integrated_proj_dir Path to integrated project directory
 #' @return a shiny app
 #' @export
@@ -117,8 +123,14 @@ prep_slider_values <- function(default_val) {
 #' chevreulApp()
 #' }
 #'
-chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "human", db_path = "~/.cache/chevreul/single-cell-projects.db", futureMb = 13000, integrated_proj_dir = "/dataVolume/storage/single_cell_projects/integrated_projects/") {
-    print(packageVersion("chevreul"))
+chevreulApp <-
+  function(preset_project, appTitle = "chevreul",
+           organism_type = "human",
+           db_path = "~/.cache/chevreul/single-cell-projects.db",
+           futureMb = 13000,
+           integrated_proj_dir =
+             "/dataVolume/storage/single_cell_projects/integrated_projects/") {
+    message(packageVersion("chevreul"))
     plan(strategy = "multicore", workers = 6)
     future_size <- futureMb * 1024^2
     options(future.globals.maxSize = future_size)
@@ -143,7 +155,7 @@ chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "
             "Please select a .rds file",
             multiple = FALSE
         ),
-        shinySaveButton("saveSingleCellExperiment", "Save Current Dataset",
+        shinySaveButton("saveSCE", "Save Current Dataset",
             "Save file as...",
             filetype = list(rds = "rds")
         ),
@@ -154,7 +166,8 @@ chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "
             ), menuItem("Reformat Metadata",
                 tabName = "reformatMetadataDR", icon = icon("columns")
             ), menuItem("Plot Data",
-                tabName = "comparePlots", icon = icon("chart-bar"), selected = TRUE
+                tabName = "comparePlots", icon = icon("chart-bar"),
+                selected = TRUE
             ), menuItem("Heatmap/Violin Plots",
                 tabName = "violinPlots", icon = icon("sort")
             ), menuItem("Coverage Plots",
@@ -232,12 +245,15 @@ chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "
             tabItem(
                 tabName = "subsetSingleCellExperiment",
                 h2("Subset SingleCellExperiment Input") %>%
-                    default_helper(type = "markdown", content = "subsetSingleCellExperiment"),
+                    default_helper(type = "markdown",
+                                   content = "subsetSingleCellExperiment"),
                 plotDimRedui("subset"),
                 chevreulBox(
                     title = "Subset Settings",
-                    checkboxInput("legacySettingsSubset", "Use Legacy Settings", value = FALSE),
-                    actionButton("subsetAction", "subset object by selected cells"),
+                    checkboxInput("legacySettingsSubset", "Use Legacy Settings",
+                                  value = FALSE),
+                    actionButton("subsetAction",
+                                 "subset object by selected cells"),
                     actionButton("subsetCsv", "subset object by uploaded csv"),
                     fileInput("uploadCsv",
                         "Upload .csv file with cells to include",
@@ -295,7 +311,8 @@ chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "
                         ),
                         width = 12
                     ) %>%
-                        default_helper(type = "markdown", content = "regressFeatures")
+                        default_helper(type = "markdown",
+                                       content = "regressFeatures")
                 )
             ), tabItem(
                 tabName = "techInfo",
@@ -447,7 +464,7 @@ chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "
 
         observe({
             req(dataset_volumes())
-            shinyFileSave(input, "saveSingleCellExperiment",
+            shinyFileSave(input, "saveSCE",
                 # roots = dataset_volumes(),
                 roots = c(Home = path(
                     proj_dir(),
@@ -456,15 +473,15 @@ chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "
                 session = session, restrictions = system.file(package = "base")
             )
         })
-        subSingleCellExperimentPath <- eventReactive(input$saveSingleCellExperiment, {
+        subSingleCellExperimentPath <- eventReactive(input$saveSCE, {
             req(object())
             savefile <- parseSavePath(
                 dataset_volumes(),
-                input$saveSingleCellExperiment
+                input$saveSCE
             )
             return(savefile$datapath)
         })
-        observeEvent(input$saveSingleCellExperiment, {
+        observeEvent(input$saveSCE, {
             req(object())
             req(subSingleCellExperimentPath())
 
@@ -507,7 +524,9 @@ chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "
         })
 
         observe({
-            reformatted_object <- callModule(reformatMetadataDR, "reformatMetadataDR", object, featureType)
+            reformatted_object <- callModule(reformatMetadataDR,
+                                             "reformatMetadataDR", object,
+                                             featureType)
             object(reformatted_object())
         })
 
@@ -519,10 +538,12 @@ chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "
         observe({
             req(object())
 
-            callModule(plotDimRed, "plotdimred1", object, plot_types, featureType,
+            callModule(plotDimRed, "plotdimred1", object, plot_types,
+                       featureType,
                 organism_type = organism_type, reductions
             )
-            callModule(plotDimRed, "plotdimred2", object, plot_types, featureType,
+            callModule(plotDimRed, "plotdimred2", object, plot_types,
+                       featureType,
                 organism_type = organism_type, reductions
             )
             callModule(plotDimRed, "diffex", object, plot_types, featureType,
@@ -531,7 +552,8 @@ chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "
             callModule(plotDimRed, "subset", object, plot_types, featureType,
                 organism_type = organism_type, reductions
             )
-            callModule(plotDimRed, "markerScatter", object, plot_types, featureType,
+            callModule(plotDimRed, "markerScatter", object, plot_types,
+                       featureType,
                 organism_type = organism_type, reductions
             )
         })
@@ -548,7 +570,8 @@ chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "
         )
 
         callModule(
-            plotCoverage, "coverageplots", object, plot_types, proj_dir, organism_type
+            plotCoverage, "coverageplots", object, plot_types, proj_dir,
+            organism_type
         )
         callModule(plotClustree, "clustreePlot", object)
         callModule(tableSelected, "tableselected", object)
@@ -570,7 +593,8 @@ chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "
                     html("subsetMessages", "")
                     message("Beginning")
 
-                    subset_object <- object()[, colnames(object()) %in% subset_selected_cells()]
+                    subset_object <-
+                      object()[, colnames(object()) %in% subset_selected_cells()]
                     object(subset_object)
                     if (length(unique(object()[["batch"]])) > 1) {
                         message("reintegrating gene expression")
@@ -581,7 +605,8 @@ chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "
                         )
                         object(reintegrated_object)
                     } else {
-                        subset_object <- object_pipeline(object(), resolution = seq(0.2, 2, by = 0.2), legacy_settings = input$legacySettingsSubset) # markermarker
+                        subset_object <- object_pipeline(object(),
+                                                         resolution = seq(0.2, 2, by = 0.2), legacy_settings = input$legacySettingsSubset) # markermarker
                         object(subset_object)
                     }
                     message("Complete!")
@@ -645,7 +670,8 @@ chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "
             )
             removeModal()
         })
-        callModule(chevreulMarkers, "findmarkers", object, plot_types, featureType)
+        callModule(chevreulMarkers, "findmarkers", object, plot_types,
+                   featureType)
         diffex_results <- callModule(
             diffex, "diffex", object, featureType,
             diffex_selected_cells
@@ -659,7 +685,8 @@ chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "
                 organism_type
             )
 
-            callModule(plotDimRed, "alltranscripts2", object, plot_types, featureType,
+            callModule(plotDimRed, "alltranscripts2", object, plot_types,
+                       featureType,
                 organism_type = organism_type, reductions
             )
         })
@@ -684,7 +711,8 @@ chevreulApp <- function(preset_project, appTitle = "chevreul", organism_type = "
             proj_name <- path_file(proj_path)
             message(proj_name)
 
-            loom_path <- path(proj_path, "output", "velocyto", paste0(proj_name, ".loom"))
+            loom_path <- path(proj_path, "output", "velocyto", paste0(proj_name,
+                                                                      ".loom"))
             message(loom_path)
             # need to check if this file exists
 
