@@ -68,6 +68,7 @@ Here, we are using the `chevreul_sce` dataset, which is produced in two batches 
 ```{r}
 chevreul_sce <- chevreuldata::human_gene_transcript_sce()
 batches <- splitByCol(chevreul_sce, "batch")
+# Batches to be integrated 
 batches
 # Perform integration of the multiple objects
 integrated_object <- integration_workflow(batches)
@@ -87,15 +88,11 @@ markerp_batch <- plot_markers(chevreul_sce,
     group_by = "batch",
     num_markers = 10
 )
-markerp_cluster <- plot_markers(chevreul_sce,
-    group_by = "gene_snn_res.0.2",
-    num_markers = 10
-)
+
 # Plot UMAP
 dp_batch <- plot_var(chevreul_sce, group = "batch")
-dp_cluster <- plot_var(chevreul_sce, group = "gene_snn_res.0.2")
 
-wrap_plots(markerp_batch, markerp_cluster, dp_batch, dp_cluster) +
+wrap_plots(markerp_batch, dp_batch) +
     plot_layout(widths = c(8, 8), ncol = 2)
 ```
 
@@ -118,11 +115,7 @@ Finally, the resulting integrated datasets can be visualized by plotting the out
 
 ```{r, eval=TRUE}
 dp_batch <- plot_var(integrated_object, group = "Prep.Method", )
-
-dp_cluster <- plot_var(integrated_object, group = "gene_snn_res.0.2")
-
-wrap_plots(dp_batch, dp_cluster) +
-    plot_layout(widths = c(3, 3), ncol = 2)
+dp_batch
 ```
 
 # Asumtions of the input data

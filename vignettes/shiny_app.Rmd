@@ -145,19 +145,6 @@ Direct comparison of the contribution of individual transcripts can be achieved 
 ![](images/transcript_composisiont.png)
 
 
-<!-- ### Pobjectdotime Analysis by [Monocle 3](https://cole-trapnell-lab.github.io/monocle3/) -->
-
-<!-- Pobjectdotime analysis is broken into several steps, mirroring a typical command-line workflow.  -->
-<!-- 1. Users can subset an embedded dataset then calculate a trajectory graph.  -->
-<!-- 1. Root cells can be specified and cells ordered in pseudotime with monocle3.  -->
-<!-- 2. Features that vary significantly over pseudotime based on autocorrelation can then be determined and grouped into modules that vary similarly over pseudotime.  -->
-
-<!-- ![](images/monocle_first_steps.png) -->
-
-<!-- Heat maps and scatter plots are available at gene and module levels. -->
-
-<!-- ![](images/monocle_final_steps.png) -->
-
 ### Regress Features
 
 To correct for expression variation in analysis due to phenomena unrelated to focus of the study,
@@ -165,14 +152,10 @@ rather than excluding count values attributable to such process, we can adjust t
 
 Such regression can be performed for any arbitrary gene set. Some preset gene lists are included in `Chevreul` including cell-cycle, mitochondrial, and apoptosis related gene sets.
 
-![](images/Screenshot_2023-08-25_at_1.40.35_PM.png)
 
 ### Technical information
 
 Technical information regarding upstream processing, software version numbers, and dataset features can be viewed. 
-
-![](images/Screenshot_2023-08-25_at_1.40.57_PM.png)
-
 
 
 ## Server Mode
@@ -195,6 +178,8 @@ The following sections will give details on this expanded functionality.
 ### Integrate Projects
 
 While operating Chevreul in server mode, separate sequencing batches can be [integrated](https://www.cell.com/cell/fulltext/S0092-8674(19)30559-8) and compared to validate sample processing steps and exclude technical variation in favor of relevant biological variation. 
+
+![](images/integration_result.png){width=80% height=80%}
 
 This section includes a list of projects that can be selected, integrated, and saved for future analysis.
 
