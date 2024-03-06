@@ -16,3 +16,12 @@ Rprof.out
 convert_cyclone_pairs_to_symbol.R
 chevreul_0.5.0.tar.gz
 .Rprofile
+.DS_Store
+.Renviron
+.dockerignore
+.here
+.travis.yml
+Dockerfile
+README_cache
+codecov.yml
+rsconnect
