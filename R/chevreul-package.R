@@ -81,7 +81,6 @@
 #' @importFrom janitor make_clean_names
 #' @importFrom methods slot
 #' @importFrom methods slot<-
-#' @importFrom Nebulosa plot_density
 #' @importFrom patchwork wrap_plots
 #' @importFrom pillar new_pillar_type
 #' @importFrom plotly config

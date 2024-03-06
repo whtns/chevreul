@@ -25,15 +25,3 @@
 #' @source cyclone
 "cc.genes.cyclone"
 
-#' Mitochondial Features
-#'
-#' Mitochondrial genes in mouse and human
-#'
-#' @format a list of human  with G1, G2, and S gene expression
-#' \describe{
-#'   \item{human}{human mitochondrial features: genes and transcripts}
-#'   \item{mouse}{mouse mitochondrial features: genes and transcripts}
-#'   ...
-#' }
-#' @source bioMart
-"mito_features"

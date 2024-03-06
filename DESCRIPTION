@@ -41,7 +41,6 @@ Imports:
     methods,
     patchwork,
     plotly,
-    reticulate,
     rlang,
     RSQLite,
     shinyFiles,
