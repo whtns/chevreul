@@ -97,8 +97,7 @@ The parameters that could to be chosen here are:
 
 ### Differential expression
 
-Chevreul provides different methods of differential expression analysis that users can choose from to determine differential expression of gene. DE methods 
-included in Chevreul are t-test, Wilcoxon rank-sum test, Likelihood ratio test, and MAST
+Chevreul provides different methods of differential expression analysis that users can choose from to determine differential expression of gene. DE methods included in Chevreul are t-test, Wilcoxon rank-sum test, Likelihood ratio test, and MAST
 
 Running DE testing results in a data frame containing the following information:
 *  p_val : Unadjusted p-value 
@@ -113,7 +112,7 @@ d1 <- read.csv("Dominic.csv", header = TRUE)
 
 #### _Volcano Plots_
 
-The results of differential expression analyses can be visualized using a volcano plot.
+The results of differential expression analyses can be visualized using a volcano plot. This plot helps in visual identification of genes with large fold changes that are also statistically significant. 
 
 ![](images/volcanoPlot.png)
 ### Find Markers
