@@ -151,5 +151,5 @@ plotPCA(object, color_by = "gene_snn_res.0.2")
 ## Session info
 library("sessioninfo")
 options(width = 120)
-session_info()$platform
+sessionInfo()
 ```

@@ -226,6 +226,6 @@ RNA velocity necessitates the calculation of spliced and unspliced transcript co
 ## Session info
 library("sessioninfo")
 options(width = 120)
-session_info()
+sessionInfo()
 ```
 
