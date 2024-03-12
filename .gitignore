@@ -25,3 +25,5 @@ Dockerfile
 README_cache
 codecov.yml
 rsconnect
+/doc/
+/Meta/
