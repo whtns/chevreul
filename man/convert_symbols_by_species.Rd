@@ -17,10 +17,3 @@ a SingleCellExperiment object
 \description{
 Convert gene symbols between mouse and human
 }
-\examples{
-
-convert_symbols_by_species("NRL", "human")
-
-convert_symbols_by_species("NRL", "mouse")
-
-}

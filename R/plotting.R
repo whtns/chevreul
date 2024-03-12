@@ -177,12 +177,13 @@ plot_feature <- function(object, embedding = c("UMAP", "PCA", "TSNE"), features,
 #' @export
 #' @examples
 #' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
-#' data(cc.genes.cyclone)
+#'
 #' human_gene_phase <- annotate_cell_cycle(chevreul_sce)
 #' human_gene_phase$phases
 #'
 annotate_cell_cycle <- function(object) {
-    assignments <- cyclone(object, cc.genes.cyclone, gene.names = rownames(object))
+   data(cc.genes.cyclone)
+   assignments <- cyclone(object, cc.genes.cyclone, gene.names = rownames(object))
     colData(object)[colnames(assignments$scores)] <- assignments$scores
     colData(object)["Phase"] <- assignments$phases
     return(object)
@@ -197,7 +198,7 @@ annotate_cell_cycle <- function(object) {
 #' @param group_by the metadata variable from which to pick clusters
 #' @param num_markers default is 5
 #' @param selected_values selected values to display
-#' @param return_plotly whether to return an interactive ploly plot
+#' @param return_plotly whether to return an interactive plotly plot
 #' @param marker_method "wilcox"
 #' @param experiment experiment to plot default gene
 #' @param hide_technical whether to exclude mitochondrial or ribosomal genes
@@ -293,7 +294,7 @@ plot_markers <- function(object, group_by = "batch", num_markers = 5, selected_v
 #' @param group_by Metadata variable to plot. Default set to "nCount_RNA"
 #' @param color.by Variable to color bins by. Default set to "batch"
 #' @param yscale Scale of y axis. Default set to "linear"
-#' @param return_plotly whether to return an interactive ploly plot. Default set to FALSE
+#' @param return_plotly whether to return an interactive plotly plot. Default set to FALSE
 #' @param ... extra args passed to ggplot2
 #'
 #' @return a histogram of read counts
@@ -336,7 +337,7 @@ plot_readcount <- function(object, group_by = "nCount_RNA", color.by = "batch", 
 #' @param experiment experiment to display
 #' @param group.bar.height height for group bars
 #' @param col_arrangement how to arrange columns whether with a dendrogram (Ward.D2, average, etc.) or exclusively by metadata category
-#' @param column_split whether to split columns by metadat value
+#' @param column_split whether to split columns by metadata value
 #' @param mm_col_dend height of column dendrogram
 #' @param ... additional arguments passed to Heatmap
 #'
@@ -363,7 +364,7 @@ make_complex_heatmap <- function(object, features = NULL, group.by = "ident", ce
         bad.features <- features[!features %in% possible.features]
         features <- features[features %in% possible.features]
         if (length(x = features) == 0) {
-            stop("No requested features found in the ", layer, " layer for the ", experiment, " experiment.")
+            stop("No requested features found in the ", assayName, " assay for the ", experiment, " experiment.")
         }
         warning("The following features were omitted as they were not found in the ", assay, " assay for the ", experiment, " experiment: ", paste(bad.features, collapse = ", "))
     }
@@ -423,7 +424,7 @@ make_complex_heatmap <- function(object, features = NULL, group.by = "ident", ce
 #' plot the proportion of reads of a given gene map to each transcript
 #'
 #' @param object A object
-#' @param gene_symbol Gene symbol of gene of intrest
+#' @param gene_symbol Gene symbol of gene of interest
 #' @param group.by Name of one or more metadata columns to annotate columns by
 #' (for example, orig.ident)
 #' @param standardize whether to standardize values

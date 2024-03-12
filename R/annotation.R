@@ -68,7 +68,7 @@ transcripts_to_genes <- function(transcripts, organism = "human") {
 #' @param object A object
 #' @param experiment gene
 #'
-#' @return a single cell obejct with
+#' @return a single cell object with
 #' cell metadata column containing mitochondrial percentage
 #' @export
 #' @examples

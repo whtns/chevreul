@@ -200,14 +200,14 @@ rename_object <- function(object, new_name) {
     return(object)
 }
 
-#' Reintegrate (filtered) singlecell objectss
+#' Reintegrate (filtered) SingleCellExperiment objects
 #'
-#' This function takes a SCE object and perfroms teh below steps
+#' This function takes a SCE object and performs the below steps
 #' 1) split by batch
 #' 2) integrate
 #' 3) run integration pipeline and save
 #'
-#' @param object A singlecell objects
+#' @param object A SingleCellExperiment objects
 #' @param suffix to be appended to file saved in output dir
 #' @param reduction to use default is pca
 #' @param ... extra args passed to object_integration_pipeline

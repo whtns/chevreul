@@ -136,12 +136,12 @@ plotHeatmapui <- function(id) {
         chevreulBox(
             title = "Heatmap",
             uiOutput(ns("colAnnoVarui")),
-            radioButtons(ns("layer"), "Data Scaling", choices = c(scaled = "scale.data", unscaled = "data"), selected = "scale.data", inline = TRUE),
+            radioButtons(ns("assayName"), "Data Scaling", choices = c(scaled = "scaledata", unscaled = "logcounts"), selected = "scaledata", inline = TRUE),
             selectizeInput(ns("dendroSelect"), "Clustering algorithm or metadata for column arrangement", choices = NULL, selected = NULL, multiple = TRUE),
             actionButton(ns("actionHeatmap"), "Plot Heatmap"),
             downloadButton(ns("downloadPlot"), "Download Heatmap"),
             selectizeInput(ns("customFeature"), "Gene or transcript expression by which to color the plot; eg. 'NRL' or 'ENST00000488147'",
-                choices = NULL, multiple = FALSE
+                choices = NULL, multiple = TRUE
             ),
             plotOutput(ns("heatmap"), height = 750),
             width = 12
@@ -211,7 +211,7 @@ plotHeatmap <- function(input, output, session, object, featureType, organism_ty
             experiment <- "gene"
         }
 
-        hm <- make_complex_heatmap(object(), features = input$customFeature, experiment = experiment, group.by = input$colAnnoVar, layer = input$layer, col_arrangement = input$dendroSelect)
+        hm <- make_complex_heatmap(object(), features = input$customFeature, experiment = experiment, group.by = input$colAnnoVar, assayName = input$assayName, col_arrangement = input$dendroSelect)
 
         hm <- draw(hm)
         return(hm)
@@ -385,8 +385,6 @@ integrateProj <- function(input, output, session, proj_matrices, object, proj_di
                     velocyto_dir <- path(integratedProjectSavePath(), "output", "velocyto")
                     dir.create(velocyto_dir)
                     new_loom_path <- path(velocyto_dir, path_file(integratedProjectSavePath()))
-                    # need to configure conda for line below
-                    combine_looms(selectedProjects(), new_loom_path)
                 }
             )
         }
@@ -1491,7 +1489,7 @@ techInfo <- function(input, output, session, object) {
 
     object_metadata <- reactive({
         req(object())
-        metadata(object())
+        metadata(object())$experiment
     })
 
     observe({
@@ -1501,38 +1499,38 @@ techInfo <- function(input, output, session, object) {
                 "<strong><u>General</u></strong>",
                 "<ul>",
                 "<li><b>Date of analysis:</b> ",
-                object_metadata()$experiment$date_of_analysis,
+                object_metadata()$date_of_analysis,
                 "<li><b>Date of export:</b> ",
-                object_metadata()$experiment$date_of_export,
+                object_metadata()$date_of_export,
                 "<li><b>Experiment name:</b> ",
-                object_metadata()$experiment$experiment_name,
+                object_metadata()$experiment_name,
                 "<li><b>Organism:</b> ",
-                object_metadata()$experiment$organism,
+                object_metadata()$organism,
                 "</ul>",
                 "<strong><u>Parameters</u></strong>",
                 "<ul>",
                 "<li><b>Discard genes in fewer than X cells:</b> ",
-                object_metadata()$experiment$parameters$discard_genes_expressed_in_fewer_cells_than,
+                object_metadata()$parameters$discard_genes_expressed_in_fewer_cells_than,
                 "<li><b>Keep mitochondrial genes:</b> ",
-                object_metadata()$experiment$parameters$keep_mitochondrial_genes,
+                object_metadata()$parameters$keep_mitochondrial_genes,
                 "<li><b>Min/max # of UMI:</b> ",
                 paste0(
-                    object_metadata()$experiment$filtering$UMI_min, " / ",
-                    object_metadata()$experiment$filtering$UMI_max
+                    object_metadata()$filtering$UMI_min, " / ",
+                    object_metadata()$filtering$UMI_max
                 ),
                 "<li><b>Min/max # of expressed genes:</b> ",
                 paste0(
-                    object_metadata()$experiment$filtering$genes_min, " / ",
-                    object_metadata()$experiment$filtering$genes_max
+                    object_metadata()$filtering$genes_min, " / ",
+                    object_metadata()$filtering$genes_max
                 ),
                 "<li><b>Cluster resolution: </b>",
-                paste(object_metadata()$experiment$parameters$cluster_resolution, collapse = ","),
+                paste(object_metadata()$parameters$cluster_resolution, collapse = ","),
                 "<li><b>Number of principal components: </b>",
-                object_metadata()$experiment$parameters$number_PCs,
+                object_metadata()$parameters$number_PCs,
                 "<li><b>Variables to regress: </b>",
-                object_metadata()$experiment$parameters$variables_to_regress_out,
+                object_metadata()$parameters$variables_to_regress_out,
                 "<li><b>tSNE perplexity: </b>",
-                object_metadata()$experiment$parameters$tSNE_perplexity,
+                object_metadata()$parameters$tSNE_perplexity,
                 "</ul>",
                 "<strong><u>Marker genes</u></strong>",
                 "<ul>",
@@ -1548,45 +1546,31 @@ techInfo <- function(input, output, session, object) {
                 "</ul>",
                 "<strong><u>Pathway enrichment</u></strong>",
                 "<ul>",
-                "<li><b>Enrichr:</b>",
-                "<ul>",
-                "<li><b>Databases:</b> ",
-                paste0(object_metadata()$enriched_pathways$enrichr$parameters$databases, collapse = ", "),
-                "<li><b>Adj. p-value cut-off:</b> ",
-                object_metadata()$enriched_pathways$enrichr$parameters$adj_p_cutoff,
-                "<li><b>Max. terms:</b> ",
-                object_metadata()$enriched_pathways$enrichr$parameters$max_terms,
-                "</ul>",
+                # "<li><b>Enrichr:</b>",
+                # "<ul>",
+                # "<li><b>Databases:</b> ",
+                # paste0(object_metadata()$enriched_pathways$enrichr$parameters$databases, collapse = ", "),
+                # "<li><b>Adj. p-value cut-off:</b> ",
+                # object_metadata()$enriched_pathways$enrichr$parameters$adj_p_cutoff,
+                # "<li><b>Max. terms:</b> ",
+                # object_metadata()$enriched_pathways$enrichr$parameters$max_terms,
+                # "</ul>",
                 "</ul>"
             )
-            info_R_raw <- object_metadata()$experiment$technical_info$R
-            info_R <- c()
-            for (i in seq_along(info_R_raw)) {
-                info_R <- paste(info_R, "<br>", info_R_raw[i])
-            }
             paste0(
-                info,
+              info,
                 "<strong><u>Technical info (package versions)</u></strong>",
                 "<ul>",
                 "<li><strong>chevreul version:</strong> ",
-                object_metadata()$experiment$technical_info$chevreul_version,
+                object_metadata()$chevreul_version,
                 "<li><strong>SingleCellExperiment version:</strong> ",
-                object_metadata()$technical_info$object_version,
+                object_metadata()$SingleCellExperiment_version,
                 "<li><strong>Session info:</strong> ",
                 "</ul>",
-                "<pre>",
-                info_R,
-                "</pre>"
+              "<pre>",
+              object_metadata()$sessionInfo,
+              "</pre>"
             )
-        })
-
-        # R info
-        output$sample_info_R <- renderPrint({
-            if (!is.null(object_metadata()$technical_info$R)) {
-                capture.output(object_metadata()$technical_info$R)
-            } else {
-                message("Not available")
-            }
         })
     })
 }

@@ -8,7 +8,7 @@
 #' @param resolution resolution
 #' @param diffex_scheme scheme for differential expression
 #' @param featureType gene or transcript
-#' @param tests t wicox or bimod
+#' @param tests t, wilcox, or bimod
 #'
 #'
 #' @return a dataframe with differential expression information
@@ -605,8 +605,10 @@ chevreulApp <-
                         )
                         object(reintegrated_object)
                     } else {
-                        subset_object <- object_pipeline(object(),
-                                                         resolution = seq(0.2, 2, by = 0.2), legacy_settings = input$legacySettingsSubset) # markermarker
+                        subset_object <- object_pipeline(
+                          object(),
+                          resolution = seq(0.2, 2, by = 0.2),
+                          legacy_settings = input$legacySettingsSubset)
                         object(subset_object)
                     }
                     message("Complete!")

@@ -67,6 +67,7 @@ integration_workflow <- function(batches, excluded_cells = NULL,
 #' @export
 #' @examples
 #' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+#' data(cc.genes.cyclone)
 #' clustering_workflow(chevreul_sce)
 clustering_workflow <- function(object, excluded_cells,
                                 resolution = seq(0.2, 2.0, by = 0.2),

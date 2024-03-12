@@ -29,8 +29,3 @@ a SingleCellExperiment object with marker genes
 \description{
 Marker Genes will be stored in object metadata as \code{markers}
 }
-\examples{
-
-object <- stash_marker_features(group_by = "batch", object, experiment = "gene")
-
-}

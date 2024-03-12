@@ -107,10 +107,6 @@ enframe_markers <- function(marker_table) {
 #'
 #' @return a SingleCellExperiment object with marker genes
 #'
-#' @examples
-#'
-#' object <- stash_marker_features(group_by = "batch", object, experiment = "gene")
-#'
 stash_marker_features <- function(object, group_by, experiment = "gene", top_n = 200, p_val_cutoff = 0.5) {
     message("stashing markers for ", group_by)
     markers <- list()

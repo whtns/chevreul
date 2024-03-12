@@ -19,6 +19,7 @@
 #'
 #' @examples
 #' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+#' data(cc.genes.cyclone)
 #' batches <- splitByCol(chevreul_sce, "batch")
 #' integrated_object <- object_integration_pipeline(batches)
 object_integration_pipeline <- function(object_list, resolution = seq(0.2, 2.0, by = 0.2), suffix = "", organism = "human", annotate_cell_cycle = FALSE, annotate_percent_mito = FALSE, reduction = "PCA", ...) {
@@ -83,7 +84,7 @@ object_integration_pipeline <- function(object_list, resolution = seq(0.2, 2.0, 
 #'
 #' @examples
 #' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
-#'
+#' data(cc.genes.cyclone)
 #' processed_object <- object_pipeline(chevreul_sce)
 #'
 object_pipeline <- function(object, experiment = "gene", resolution = 0.6, reduction = "PCA", organism = "human", ...) {

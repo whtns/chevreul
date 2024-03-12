@@ -45,6 +45,7 @@ Run batch correction, followed by:
 }
 \examples{
 chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+data(cc.genes.cyclone)
 batches <- splitByCol(chevreul_sce, "batch")
 integrated_object <- object_integration_pipeline(batches)
 }

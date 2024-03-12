@@ -24,13 +24,7 @@ convert_human_object_to_mouse <- function(object, ...) {
 #' @param src_species Source species
 #'
 #' @return a SingleCellExperiment object
-#' @export
 #'
-#' @examples
-#'
-#' convert_symbols_by_species("NRL", "human")
-#'
-#' convert_symbols_by_species("NRL", "mouse")
 #'
 convert_symbols_by_species <- function(src_genes, src_species) {
     if (src_species == "human") {
