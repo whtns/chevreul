@@ -48,9 +48,9 @@ format_table <- function(mydf) {
 
 # Introduction
 
-Large single-cell RNA sequencing (scRNA-seq) usually need to generate data across multiple batches. When joint analysis of two or more single cell sequencing data is to be performed, we need to first integrate the individual datasets. In Chevreul, a single function `integration_workflow()` is capable of integrating multiple SingleCellExperiment objects provided as a list.
+Often single-cell RNA sequencing (scRNA-seq) experiments consist of multiple batches. When joint analysis of two or more scRNA-seq datasets is to be performed, we need to first integrate the individual datasets. 
 
-First step in this process is to load all the packages required
+The first step in this process is to load all the packages required
 
 ```{r setup, message = FALSE}
 library(chevreul)
@@ -63,7 +63,9 @@ library(patchwork)
 
 # TLDR 
 
-Here, we are using the `chevreul_sce` dataset, which is produced in two batches using different technologies. The `splitByCol()` function in chevreul splits the object into a list containing each batch as element. This list of objects can then be integrated using the `integration_workflow()` function, which identifies shared cell states that are present across different single cell datasets.
+Here, we are using the `chevreul_sce` dataset, which consists of human retinal organoids prepared using two  different technologies. The `splitByCol()` function in chevreul splits the object into a list containing each batch as element. 
+
+In Chevreul, a single function `integration_workflow()` can be used to integrate multiple SingleCellExperiment objects provided as a list. `integration_workflow()` identifies shared cell states that are present across multiple single cell datasets.
 
 ```{r}
 chevreul_sce <- chevreuldata::human_gene_transcript_sce()
@@ -77,9 +79,15 @@ integrated_object <- integration_workflow(batches)
 
 # Batch effects are problematic
 
-When analyzing data across multiple batches, batch effects can become problematic and compromise integration and interpretation of the data, creating challenges for downstream analysis. 
+When analyzing data across multiple batches, batch effects can become problematic 
+and compromise integration and interpretation of the data, creating challenges
+for downstream analysis. 
 
-For instance, the dataset `chevreul_sce` contains data obtained following two different preparation method. When this data is analyzed without integration we notice that in the Zhong method cluster 2 is barely represented. From the plot of marker features we know that cluster 2 has high expression of features associated with cones. this absence of cluster 2 in Zhong method can become problematic during downstream analysis
+For instance, the dataset `chevreul_sce` contains data obtained following two 
+different preparation method. When this data is analyzed without integration we
+notice that in the Zhong method cluster 2 is barely represented. From the plot 
+of marker features we know that cluster 2 has high expression of features 
+associated with cones. this absence of cluster 2 in Zhong method can become problematic during downstream analysis
 
 
 ```{r }
@@ -101,7 +109,7 @@ wrap_plots(markerp_batch, dp_batch) +
 
 ## Integrate within species
 
-The `integration_workflow()` function can integrate datasets obtained from mouse or human source. The argument "organism" can be used to alter between the two. When integrating datasets obtained from mouse species, the data is processed according to standard integration workflow.  
+The `integration_workflow()` function can integrate datasets obtained either from mouse or human sources. The argument "organism" can be used to alternate between the two. 
 
 ## Steps of integration 
 
@@ -118,9 +126,9 @@ dp_batch <- plot_var(integrated_object, group = "Prep.Method", )
 dp_batch
 ```
 
-# Asumtions of the input data
+# Assumptions of the input data
 
-- Prior to integration, the SingleCellExperiment object must be pre-processed which can be done using the `object_preprocess` function in Chevreul which makes the two batches comparable. This function handles normalization and scaling required for downstream data analysis.
+- Prior to integration, the SingleCellExperiment object must be pre-processed using the `object_preprocess` function. This function handles normalization and scaling required for downstream data analysis.
 
 # Session information 
 

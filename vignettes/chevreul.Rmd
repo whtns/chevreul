@@ -77,16 +77,11 @@ BiocManager::valid()
 
 ## Required knowledge
 
-`r Biocpkg("chevreul")` package is designed for single-cell RNA sequencing data. The functions included within this package are derived from other packages that have implemented the infrastructure needed for RNA-seq data preprocessing and analysis. Packages that have been instrumental in the development of `r Biocpkg("chevreul")` include, `Biocpkg("SummarizedExperiment")` and `Biocpkg("scater")`.
-
-<!-- It is based on many other packages and in particular in those that have implemented the infrastructure needed for dealing with RNA-seq data (EDIT!). That is, packages like `r Biocpkg("SummarizedExperiment")` (EDIT!). -->
-
-
-If you are asking yourself the question "Where do I start using Bioconductor?" you might be interested in [this blog post](http://lcolladotor.github.io/2014/10/16/startbioc/#.VkOKbq6rRuU).
+The `r Biocpkg("chevreul")` package is designed for single-cell RNA sequencing data. The functions included within this package are derived from other packages that have implemented the infrastructure needed for RNA-seq data processing and analysis. Packages that have been instrumental in the development of `r Biocpkg("chevreul")` include, `Biocpkg("SummarizedExperiment")` and `Biocpkg("scater")`.
 
 ## Asking for help
 
-As package developers, we try to explain clearly how to use our packages and in which order to use the functions. But `R` and `Bioconductor` have a steep learning curve so it is critical to learn where to ask for help. The blog post quoted above mentions some but we would like to highlight the [Bioconductor support site](https://support.bioconductor.org/) as the main resource for getting help: remember to use the `chevreul` tag and check [the older posts](https://support.bioconductor.org/tag/chevreul/). Other alternatives are available such as creating GitHub issues and tweeting. However, please note that if you want to receive help you should adhere to the [posting guidelines](http://www.bioconductor.org/help/support/posting-guide/). It is particularly critical that you provide a small reproducible example and your session information so package developers can track down the source of the error.
+`R` and `Bioconductor` have a steep learning curve so it is critical to learn where to ask for help. The [Bioconductor support site](https://support.bioconductor.org/) is the main resource for getting help: remember to use the `chevreul` tag and check [the older posts](https://support.bioconductor.org/tag/chevreul/). 
 
 ## Citing `chevreul`
 
@@ -128,14 +123,14 @@ We start with a count matrix containing expression count data and a table of cor
 ```{r, eval=TRUE}
 # Object count matrix
 human_count <- counts(chevreul_sce)
-human_count[1:5, 1:5] %>% knitr::kable(format = "pipe")
+human_count[1:5, 1:5] %>% as.matrix() %>% knitr::kable(format = "pipe")
 
 # Object metadata
 human_meta <- colData(chevreul_sce) %>% as.data.frame()
-human_meta[1:5, 1:5] %>% knitr::kable(format = "pipe")
+human_meta[1:5, 1:5] %>% as.matrix() %>% knitr::kable(format = "pipe")
 ```
 
-Then using these 2 datasets, we create a SingleCellExpreiment object as shown below.
+Then using these 2 datasets, we create a SingleCellExperiment object as shown below.
 ```{r}
 myobject <- SingleCellExperiment::SingleCellExperiment(
     assays = list(counts = counts(chevreul_sce)),

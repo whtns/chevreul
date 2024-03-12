@@ -34,7 +34,7 @@ merge_loom <- function(object, loom_path, assay = "gene", fit.quantile = 0.05, c
 #' run scvelo on a gene or transcript level object
 #'
 #' @param object a object
-#' @param mode deterministic, stochastis, or dynamical
+#' @param mode deterministic, stochastic, or dynamical
 #' @param embedding UMAP, PCA or TSNE
 #' @param ... extra args passed to run_scvelo
 #'
@@ -79,7 +79,7 @@ plot_scvelo <- function(object, mode = c("steady_state", "deterministic", "stoch
 #' run scvelo on a gene or transcript level object
 #'
 #' @param object a object
-#' @param mode deterministic, stochastis, or dynamical
+#' @param mode deterministic, stochastic, or dynamical
 #' @param embedding UMAP, PCA or TSNE
 #' @param ... extra args passed to run_scvelo
 #'

@@ -78,7 +78,7 @@ We start with a gene by cell matrix of count/UMI values and a table of cell meta
 ```{r}
 human_count <- counts(chevreul_sce)
 
-human_count[1:5, 1:5] %>% knitr::kable(format = "pipe")
+human_count[1:5, 1:5] %>% as.matrix() %>% knitr::kable(format = "pipe")
 ```
 
 ### Dataframe containing object metadata

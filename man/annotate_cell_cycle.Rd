@@ -17,7 +17,7 @@ Annotate Cell Cycle for Gene and Transcript SingleCellExperiment Objects
 }
 \examples{
 chevreul_sce <- chevreuldata::human_gene_transcript_sce()
-data(cc.genes.cyclone)
+
 human_gene_phase <- annotate_cell_cycle(chevreul_sce)
 human_gene_phase$phases
 

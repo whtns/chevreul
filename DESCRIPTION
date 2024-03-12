@@ -7,7 +7,7 @@ Authors@R: c(
     person("Bhavana", "Bhat", , "bhavanabhat29@gmail.com", role = "aut")
   )
 Description: Tools for managing SingleCellExperiment objects as projects. 
-  Includes functions for analysis and visulaization of single-cell data. 
+  Includes functions for analysis and visualization of single-cell data. 
   Also included is a shiny app for visualization of pre-processed scRNA data.
 License: MIT + file LICENSE
 URL: https://github.com/whtns/chevreul,
@@ -21,6 +21,7 @@ Depends:
     shiny (>= 1.6.0),
     shinydashboard
 Imports:
+    SummarizedExperiment,
     annotables (>= 0.1.91),
     clustree,
     ComplexHeatmap (>= 2.5.4),

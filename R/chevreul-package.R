@@ -79,6 +79,7 @@
 #' @importFrom httr GET
 #' @importFrom httr POST
 #' @importFrom janitor make_clean_names
+#' @importFrom methods is
 #' @importFrom methods slot
 #' @importFrom methods slot<-
 #' @importFrom patchwork wrap_plots
@@ -175,6 +176,7 @@
 #' @importFrom tidyr pivot_wider
 #' @importFrom tidyr unite
 #' @importFrom utils capture.output
+#' @importFrom utils data
 #' @importFrom utils head
 #' @importFrom utils packageVersion
 #' @importFrom utils sessionInfo
@@ -189,14 +191,10 @@
 ## usethis namespace: end
 #' @import ggplot2
 #' @import SingleCellExperiment
+#' @import SummarizedExperiment
 #' @import shiny
 #' @import dplyr
 #' @import stringr
 #' @import tidyr
 NULL
 
-# 1. change to ~/rpkgs
-# 2. run /opt/R/devel/bin/R CMD build chevreul
-# 3. run /opt/R/devel/bin/R CMD check chevreul_0.5.0.tar.gz
-# 4. run /opt/R/devel/bin/R
-# 5. run BiocCheck::BiocCheck()

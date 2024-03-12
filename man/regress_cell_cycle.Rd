@@ -17,7 +17,7 @@ Regress SingleCellExperiment Object by Given Set of Genes
 }
 \examples{
 chevreul_sce <- chevreuldata::human_gene_transcript_sce()
-
+data(cc.genes.cyclone)
 regressed_object <- regress_cell_cycle(chevreul_sce)
 
 }

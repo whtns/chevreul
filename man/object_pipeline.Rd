@@ -34,7 +34,7 @@ This functions allows you to Preprocess, Cluster and Reduce Dimensions for a sin
 }
 \examples{
 chevreul_sce <- chevreuldata::human_gene_transcript_sce()
-
+data(cc.genes.cyclone)
 processed_object <- object_pipeline(chevreul_sce)
 
 }

@@ -75,7 +75,7 @@ get_cell_metadata <- function(object) {
 #' new_meta$example <- "example"
 #' set_cell_metadata(chevreul_sce, new_meta)
 set_cell_metadata <- function(object, meta) {
-    colData(object) <- meta
+    colData(object) <- DataFrame(meta)
     return(object)
 }
 
