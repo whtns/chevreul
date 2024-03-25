@@ -27,7 +27,7 @@ run_object_de(
 
 \item{featureType}{gene or transcript}
 
-\item{tests}{t wicox or bimod}
+\item{tests}{t, wilcox, or bimod}
 }
 \value{
 a dataframe with differential expression information

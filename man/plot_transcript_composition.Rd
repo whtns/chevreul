@@ -15,7 +15,7 @@ plot_transcript_composition(
 \arguments{
 \item{object}{A object}
 
-\item{gene_symbol}{Gene symbol of gene of intrest}
+\item{gene_symbol}{Gene symbol of gene of interest}
 
 \item{group.by}{Name of one or more metadata columns to annotate columns by
 (for example, orig.ident)}

@@ -14,7 +14,7 @@ scvelo_expression(
 \arguments{
 \item{object}{a object}
 
-\item{mode}{deterministic, stochastis, or dynamical}
+\item{mode}{deterministic, stochastic, or dynamical}
 
 \item{embedding}{UMAP, PCA or TSNE}
 
