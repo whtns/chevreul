@@ -22,5 +22,6 @@
 #' @source \url{http://ensembl.org/homo_sapiens}
 #'
 #' @examples
+#' data("grch38")
 #' head(grch38)
 "grch38"

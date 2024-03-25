@@ -26,6 +26,7 @@ Variables:
 }
 }
 \examples{
+data(grch38_tx2gene)
 head(grch38_tx2gene)
 }
 \keyword{datasets}

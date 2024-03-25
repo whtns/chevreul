@@ -16,5 +16,6 @@
 #' @source \url{http://ensembl.org/homo_sapiens}
 #'
 #' @examples
+#' data(grch38_tx2gene)
 #' head(grch38_tx2gene)
 "grch38_tx2gene"
