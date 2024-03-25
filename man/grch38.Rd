@@ -32,6 +32,7 @@ Variables:
 }
 }
 \examples{
+data("grch38")
 head(grch38)
 }
 \keyword{datasets}
