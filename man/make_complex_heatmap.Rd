@@ -33,7 +33,7 @@ make_complex_heatmap(
 
 \item{group.bar.height}{height for group bars}
 
-\item{column_split}{whether to split columns by metadat value}
+\item{column_split}{whether to split columns by metadata value}
 
 \item{col_arrangement}{how to arrange columns whether with a dendrogram (Ward.D2, average, etc.) or exclusively by metadata category}
 

@@ -65,8 +65,8 @@ run_object_de <- function(object, cluster1, cluster2, resolution = 0.2,
             de <- de[[1]] %>%
                 as.data.frame() %>%
                 rownames_to_column("enstxp") %>%
-                left_join(annotables::grch38_tx2gene, by = "enstxp") %>%
-                left_join(annotables::grch38, by = "ensgene")
+                left_join(grch38_tx2gene, by = "enstxp") %>%
+                left_join(grch38, by = "ensgene")
             if ("summary.logFC" %in% colnames(de)) {
                 de <- mutate(de, avg_log2FC = log(exp(summary.logFC), 2))
             }
@@ -77,7 +77,7 @@ run_object_de <- function(object, cluster1, cluster2, resolution = 0.2,
             de <- de[[1]] %>%
                 as.data.frame() %>%
                 rownames_to_column("symbol") %>%
-                left_join(annotables::grch38, by = "symbol")
+                left_join(grch38, by = "symbol")
             if ("summary.logFC" %in% colnames(de)) {
                 de <- mutate(de, avg_log2FC = log(exp(summary.logFC), 2))
             }

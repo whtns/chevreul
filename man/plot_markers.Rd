@@ -27,7 +27,7 @@ plot_markers(
 
 \item{selected_values}{selected values to display}
 
-\item{return_plotly}{whether to return an interactive ploly plot}
+\item{return_plotly}{whether to return an interactive plotly plot}
 
 \item{marker_method}{"wilcox"}
 

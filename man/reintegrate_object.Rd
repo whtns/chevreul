@@ -2,12 +2,12 @@
 % Please edit documentation in R/integrate.R
 \name{reintegrate_object}
 \alias{reintegrate_object}
-\title{Reintegrate (filtered) singlecell objectss}
+\title{Reintegrate (filtered) SingleCellExperiment objects}
 \usage{
 reintegrate_object(object, suffix = "", reduction = "PCA", ...)
 }
 \arguments{
-\item{object}{A singlecell objects}
+\item{object}{A SingleCellExperiment objects}
 
 \item{suffix}{to be appended to file saved in output dir}
 
@@ -19,7 +19,7 @@ reintegrate_object(object, suffix = "", reduction = "PCA", ...)
 a SingleCellExperiment object
 }
 \description{
-This function takes a SCE object and perfroms teh below steps
+This function takes a SCE object and performs the below steps
 \enumerate{
 \item split by batch
 \item integrate

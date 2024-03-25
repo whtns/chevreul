@@ -46,11 +46,11 @@ genes_to_transcripts <- function(symbols, organism = "human") {
 #'
 transcripts_to_genes <- function(transcripts, organism = "human") {
     if (organism == "human") {
-        gene_table <- annotables::grch38
-        transcript_table <- annotables::grch38_tx2gene
+        gene_table <- grch38
+        transcript_table <- grch38_tx2gene
     } else if (organism == "mouse") {
-        gene_table <- annotables::grcm38
-        transcript_table <- annotables::grcm38_tx2gene
+        gene_table <- grcm38
+        transcript_table <- grcm38_tx2gene
     }
 
     tibble(enstxp = transcripts) %>%

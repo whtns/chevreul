@@ -22,7 +22,6 @@ Depends:
     shinydashboard
 Imports:
     SummarizedExperiment,
-    annotables (>= 0.1.91),
     clustree,
     ComplexHeatmap (>= 2.5.4),
     DataEditR (>= 0.0.9),

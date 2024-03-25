@@ -441,9 +441,9 @@ make_complex_heatmap <- function(object, features = NULL, group.by = "ident", ce
 #' )
 #'
 plot_transcript_composition <- function(object, gene_symbol, group.by = "batch", standardize = FALSE, drop_zero = FALSE) {
-    transcripts <- annotables::grch38 %>%
+    transcripts <- grch38 %>%
         filter(symbol == gene_symbol) %>%
-        left_join(annotables::grch38_tx2gene, by = "ensgene") %>%
+        left_join(grch38_tx2gene, by = "ensgene") %>%
         pull(enstxp)
     metadata <- get_cell_metadata(object)
     metadata$sample_id <- NULL

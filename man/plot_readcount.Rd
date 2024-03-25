@@ -22,7 +22,7 @@ plot_readcount(
 
 \item{yscale}{Scale of y axis. Default set to "linear"}
 
-\item{return_plotly}{whether to return an interactive ploly plot. Default set to FALSE}
+\item{return_plotly}{whether to return an interactive plotly plot. Default set to FALSE}
 
 \item{...}{extra args passed to ggplot2}
 }
