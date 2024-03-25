@@ -1,0 +1,15 @@
+name: Human
+species: Homo sapiens
+host: https://www.ensembl.org
+biomart: ENSEMBL_MART_ENSEMBL
+dataset: hsapiens_gene_ensembl
+attributes:
+  ensgene: ensembl_gene_id
+  entrez: entrezgene_id
+  symbol: external_gene_name
+  chr: chromosome_name
+  start: start_position
+  end: end_position
+  strand: strand
+  biotype: gene_biotype
+  description: description
