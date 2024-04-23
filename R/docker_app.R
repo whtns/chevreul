@@ -12,12 +12,15 @@
 #'
 #' @examples
 #' \donttest{
-#' dockerSingleCellExperimentApp(chevreul_sce)
+#' dockerChevreulApp(chevreul_sce)
 #' }
 #'
-dockerSingleCellExperimentApp <- function(
+dockerChevreulApp <- function(
         object = NULL, loom_path = NULL, appTitle = NULL,
-        organism_type = "human", futureMb = 13000, bigwig_db = "~/.cache/chevreul/bw-files.db") {
+        organism_type = "human", futureMb = 13000) {
+
+  bigwig_db = file.path(rappdirs::user_cache_dir(appname="chevreul"), "bw-files.db")
+
     plan(strategy = "multicore", workers = 6)
     future_size <- futureMb * 1024^2
     options(future.globals.maxSize = future_size)

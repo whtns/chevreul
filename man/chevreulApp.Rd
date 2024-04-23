@@ -8,9 +8,8 @@ chevreulApp(
   preset_project,
   appTitle = "chevreul",
   organism_type = "human",
-  db_path = "~/.cache/chevreul/single-cell-projects.db",
   futureMb = 13000,
-  integrated_proj_dir = "/dataVolume/storage/single_cell_projects/integrated_projects/"
+  db_name = "single-cell-projects.db"
 )
 }
 \arguments{
@@ -20,12 +19,10 @@ chevreulApp(
 
 \item{organism_type}{human or mouse}
 
-\item{db_path}{sqlite database with list of saved
-SingleCellExperiment objects}
-
 \item{futureMb}{amount of Mb allocated to future package}
 
-\item{integrated_proj_dir}{Path to integrated project directory}
+\item{db_name}{sqlite database with list of saved
+SingleCellExperiment objects}
 }
 \value{
 a shiny app

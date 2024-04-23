@@ -81,7 +81,8 @@ Imports:
     S4Vectors,
     base,
     grid,
-    forcats
+    forcats,
+    rappdirs
 Suggests:
     BiocStyle,
     knitr,

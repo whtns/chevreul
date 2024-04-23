@@ -395,7 +395,7 @@ save_object <- function(object, prefix = "unfiltered", proj_dir = getwd()) {
 
     dir.create(object_dir)
 
-    object_path <- path(object_dir, paste0(prefix, "_object.rds"))
+    object_path <- path(object_dir, paste0(prefix, "_sce.rds"))
 
     message(glue("saving to {object_path}"))
     saveRDS(object, object_path)

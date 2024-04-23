@@ -241,6 +241,7 @@ integrateProjui <- function(id) {
     tagList(
         chevreulBox(
             title = "Integrate Projects",
+            shinyFilesButton(ns('integratedProjDir'), label='Integrated Project Directory', title='Choose a directory to store integrated datasets', multiple=FALSE),
             actionButton(ns("integrateAction"), "Integrate Selected Projects"),
             # useShinyjs(),
             # runcodeUI(code = "alert('Hello!')", id = "subsetcode"),
@@ -263,8 +264,24 @@ integrateProjui <- function(id) {
 #' @param con a connection
 #'
 #' @noRd
-integrateProj <- function(input, output, session, proj_matrices, object, proj_dir, con, integrated_proj_dir) {
+integrateProj <- function(input, output, session, proj_matrices, object, proj_dir, con) {
     ns <- session$ns
+
+    dataset_volumes <- reactive({
+      dataset_volumes <- c(
+        Home =
+          dirname(proj_dir()),
+        "R Installation" = R.home(),
+        getVolumes()()
+      )
+    })
+
+    observe({
+      req(dataset_volumes())
+      shinyFileChoose(input, "integratedProjDir",
+                      roots = dataset_volumes(), session = session
+      )
+    })
 
     proj_matrix <- reactive({
         proj_matrices()$primary_projects
@@ -320,7 +337,7 @@ integrateProj <- function(input, output, session, proj_matrices, object, proj_di
         req(mergedObjects())
 
         newProjName <- paste0(map(path_file(selectedProjects()), ~ gsub("_proj", "", .x)), collapse = "_")
-        newProjDir <- path(integrated_proj_dir, newProjName)
+        newProjDir <- path(input$integratedProjDir, newProjName)
 
         proj_dir(newProjDir)
 
@@ -330,7 +347,7 @@ integrateProj <- function(input, output, session, proj_matrices, object, proj_di
 
     volumes <- reactive({
         volumes <- c(
-            Home = integrated_proj_dir,
+            Home = input$integratedProjDir,
             "R Installation" = R.home(),
             getVolumes()()
         )
@@ -370,8 +387,8 @@ integrateProj <- function(input, output, session, proj_matrices, object, proj_di
                     # Sys.sleep(6)
                     incProgress(2 / 10)
                     save_object(mergedObjects(), proj_dir = integratedProjectSavePath())
-                    set_permissions_call <- paste0("chmod -R 775 ", integratedProjectSavePath())
-                    system(set_permissions_call)
+                    # set_permissions_call <- paste0("chmod -R 775 ", integratedProjectSavePath())
+                    # system(set_permissions_call)
                     writeLines(character(), path(integratedProjectSavePath(), ".here"))
                     # create_proj_db()
                     dbAppendTable(con, "projects_tbl", data.frame(
