@@ -112,9 +112,8 @@ prep_slider_values <- function(default_val) {
 #' @param appTitle A title of the App
 #' @param futureMb amount of Mb allocated to future package
 #' @param organism_type human or mouse
-#' @param db_path sqlite database with list of saved
+#' @param db_name sqlite database with list of saved
 #' SingleCellExperiment objects
-#' @param integrated_proj_dir Path to integrated project directory
 #' @return a shiny app
 #' @export
 #'
@@ -126,10 +125,11 @@ prep_slider_values <- function(default_val) {
 chevreulApp <-
   function(preset_project, appTitle = "chevreul",
            organism_type = "human",
-           db_path = "~/.cache/chevreul/single-cell-projects.db",
            futureMb = 13000,
-           integrated_proj_dir =
-             "/dataVolume/storage/single_cell_projects/integrated_projects/") {
+           db_name = "single-cell-projects.db") {
+
+    db_path = file.path(rappdirs::user_cache_dir(appname="chevreul"), db_name)
+
     message(packageVersion("chevreul"))
     plan(strategy = "multicore", workers = 6)
     future_size <- futureMb * 1024^2
@@ -499,10 +499,10 @@ chevreulApp <-
                 }
             )
         })
+
         integrationResults <- callModule(
             integrateProj, "integrateproj",
-            proj_matrices, object, proj_dir, con(),
-            integrated_proj_dir
+            proj_matrices, object, proj_dir, con()
         )
         newprojList <- reactive({
             req(integrationResults())
