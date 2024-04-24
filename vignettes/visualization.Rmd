@@ -163,6 +163,8 @@ map to each transcript. The gene of interest is specified by the argument
 'gene_symbol'. 
  
 ```{r, results=FALSE, echo=FALSE}
+data("grch38")
+data("grch38_tx2gene")
 plot_transcript_composition(chevreul_sce, "NRL",
     group.by = "gene_snn_res.0.2", standardize = TRUE
 )

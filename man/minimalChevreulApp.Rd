@@ -9,7 +9,8 @@ minimalChevreulApp(
   loom_path = NULL,
   appTitle = NULL,
   organism_type = "human",
-  futureMb = 13000
+  futureMb = 13000,
+  db_name = "single-cell-projects.db"
 )
 }
 \arguments{
@@ -23,7 +24,7 @@ minimalChevreulApp(
 
 \item{futureMb}{the megabytes available for the future package}
 
-\item{bigwig_db}{a database of bigwig files}
+\item{db_name}{a database of bigwig files}
 }
 \value{
 a minimal chevreul app

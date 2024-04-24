@@ -5,7 +5,7 @@
 #' @param appTitle a title for the app
 #' @param organism_type human or mouse
 #' @param futureMb the megabytes available for the future package
-#' @param bigwig_db  path to sqlite database listing bigwig files for cells in the obect object
+#' @param db_name  path to sqlite database listing bigwig files for cells in the obect object
 #'
 #' @return a dockerized shiny app
 #' @export
@@ -16,10 +16,14 @@
 #' }
 #'
 dockerChevreulApp <- function(
-        object = NULL, loom_path = NULL, appTitle = NULL,
-        organism_type = "human", futureMb = 13000) {
+        object = NULL,
+        loom_path = NULL,
+        appTitle = NULL,
+        organism_type = "human",
+        futureMb = 13000,
+        db_name = "single-cell-projects.db") {
 
-  bigwig_db = file.path(rappdirs::user_cache_dir(appname="chevreul"), "bw-files.db")
+  db_path = file.path(rappdirs::user_cache_dir(appname="chevreul"), db_name)
 
     plan(strategy = "multicore", workers = 6)
     future_size <- futureMb * 1024^2

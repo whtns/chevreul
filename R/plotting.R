@@ -435,12 +435,16 @@ make_complex_heatmap <- function(object, features = NULL, group.by = "ident", ce
 #'
 #' @examples
 #' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
-#'
+#' data("grch38_tx2gene")
+#' data("grch38")
 #' plot_transcript_composition(chevreul_sce, "NRL",
 #'     group.by = "gene_snn_res.0.6"
 #' )
 #'
 plot_transcript_composition <- function(object, gene_symbol, group.by = "batch", standardize = FALSE, drop_zero = FALSE) {
+  data("grch38")
+  data("grch38_tx2gene")
+
     transcripts <- grch38 %>%
         filter(symbol == gene_symbol) %>%
         left_join(grch38_tx2gene, by = "ensgene") %>%
