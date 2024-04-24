@@ -387,8 +387,6 @@ integrateProj <- function(input, output, session, proj_matrices, object, proj_di
                     # Sys.sleep(6)
                     incProgress(2 / 10)
                     save_object(mergedObjects(), proj_dir = integratedProjectSavePath())
-                    # set_permissions_call <- paste0("chmod -R 775 ", integratedProjectSavePath())
-                    # system(set_permissions_call)
                     writeLines(character(), path(integratedProjectSavePath(), ".here"))
                     # create_proj_db()
                     dbAppendTable(con, "projects_tbl", data.frame(
