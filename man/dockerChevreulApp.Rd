@@ -9,7 +9,8 @@ dockerChevreulApp(
   loom_path = NULL,
   appTitle = NULL,
   organism_type = "human",
-  futureMb = 13000
+  futureMb = 13000,
+  db_name = "single-cell-projects.db"
 )
 }
 \arguments{
@@ -23,7 +24,7 @@ dockerChevreulApp(
 
 \item{futureMb}{the megabytes available for the future package}
 
-\item{bigwig_db}{path to sqlite database listing bigwig files for cells in the obect object}
+\item{db_name}{path to sqlite database listing bigwig files for cells in the obect object}
 }
 \value{
 a dockerized shiny app

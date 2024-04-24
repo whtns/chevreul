@@ -31,6 +31,10 @@
 run_object_de <- function(object, cluster1, cluster2, resolution = 0.2,
                           diffex_scheme = "louvain", featureType = "gene",
                           tests = c("t", "wilcox", "bimod")) {
+
+  data("grch38")
+  data("grch38_tx2gene")
+
     match.arg(tests)
 
     if (featureType == "transcript") object <- altExp(object, "transcript")
@@ -110,8 +114,8 @@ prep_slider_values <- function(default_val) {
 #'
 #' @param preset_project A preloaded project to start the app with
 #' @param appTitle A title of the App
-#' @param futureMb amount of Mb allocated to future package
 #' @param organism_type human or mouse
+#' @param futureMb amount of Mb allocated to future package
 #' @param db_name sqlite database with list of saved
 #' SingleCellExperiment objects
 #' @return a shiny app
@@ -123,7 +127,8 @@ prep_slider_values <- function(default_val) {
 #' }
 #'
 chevreulApp <-
-  function(preset_project, appTitle = "chevreul",
+  function(preset_project,
+           appTitle = "chevreul",
            organism_type = "human",
            futureMb = 13000,
            db_name = "single-cell-projects.db") {

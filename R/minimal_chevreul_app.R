@@ -5,7 +5,7 @@
 #' @param appTitle a title for the app
 #' @param organism_type human or mouse
 #' @param futureMb the megabytes available for the future package
-#' @param bigwig_db a database of bigwig files
+#' @param db_name a database of bigwig files
 #'
 #' @return a minimal chevreul app
 #' @export
@@ -16,11 +16,14 @@
 #' minimalChevreulApp(chevreul_sce)
 #' }
 #'
-minimalChevreulApp <- function(single_cell_object = chevreul_sce, loom_path = NULL,
-                          appTitle = NULL, organism_type = "human",
-                          futureMb = 13000) {
+minimalChevreulApp <- function(single_cell_object = chevreul_sce,
+                               loom_path = NULL,
+                          appTitle = NULL,
+                          organism_type = "human",
+                          futureMb = 13000,
+                          db_name = "single-cell-projects.db") {
 
-  bigwig_db = file.path(rappdirs::user_cache_dir(appname="chevreul"), "bw-files.db")
+  db_path = file.path(rappdirs::user_cache_dir(appname="chevreul"), db_name)
 
     future::plan(strategy = "multicore", workers = 6)
     future_size <- futureMb * 1024^2
