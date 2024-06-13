@@ -27,6 +27,8 @@ a SingleCellExperiment object with velocity calculated
 run scvelo on a gene or transcript level object
 }
 \examples{
+\donttest{
 chevreul_sce <- chevreuldata::human_gene_transcript_sce()
 plot_scvelo(chevreul_sce, embedding = "UMAP", color_by = "velocity_pseudotime")
+}
 }
