@@ -1,4 +1,4 @@
-# Subset a Seurat Object
+# Subset a SingleCellExperiment Object
 
 Often we want to subset a dataset to remove outlier cells. Such cells may be present for technical or biological reasons. If excluded for principled reasons, such filtering can allow meaningful analysis. 
 

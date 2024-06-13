@@ -40,9 +40,10 @@ merge_loom <- function(object, loom_path, assay = "gene", fit.quantile = 0.05, c
 #'
 #' @return a SingleCellExperiment object with velocity calculated
 #' @export
-#' @examples
+#' @examples \donttest{
 #' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
 #' plot_scvelo(chevreul_sce, embedding = "UMAP", color_by = "velocity_pseudotime")
+#' }
 plot_scvelo <- function(object, mode = c("steady_state", "deterministic", "stochastic", "dynamical"), embedding = c("UMAP", "PCA", "TSNE"), ...) {
     embedding <- match.arg(embedding)
     original_exp <- mainExpName(object)
@@ -85,9 +86,10 @@ plot_scvelo <- function(object, mode = c("steady_state", "deterministic", "stoch
 #'
 #' @return a SingleCellExperiment object with velocity calculated
 #' @export
-#' @examples
+#' @examples \donttest{
 #' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
 #' scvelo_expression(chevreul_sce, embedding = "UMAP", color_by = "velocity_pseudotime")
+#' }
 scvelo_expression <- function(object, mode = c("steady_state", "deterministic", "stochastic", "dynamical"), embedding = c("UMAP", "PCA", "TSNE"), ...) {
     embedding <- match.arg(embedding)
     original_exp <- mainExpName(object)
