@@ -16,7 +16,6 @@ There are also convenient functions for:
 - Integration and Label Transfer
 - Louvain Clustering at a Range of Resolutions
 - Cell cycle state regression and labeling
-- RNA velocity calculation with Velocyto.R and scvelo
 
 > \[!WARNING\] Chevreul was designed for full-length smart-seq based
 > single cell data. Default settings may not be appropriate for droplet

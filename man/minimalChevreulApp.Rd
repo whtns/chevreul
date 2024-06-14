@@ -6,7 +6,6 @@
 \usage{
 minimalChevreulApp(
   single_cell_object = chevreul_sce,
-  loom_path = NULL,
   appTitle = NULL,
   organism_type = "human",
   futureMb = 13000,
@@ -15,8 +14,6 @@ minimalChevreulApp(
 }
 \arguments{
 \item{single_cell_object}{a singlecell object}
-
-\item{loom_path}{path to a loom file}
 
 \item{appTitle}{a title for the app}
 

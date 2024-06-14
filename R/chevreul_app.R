@@ -285,13 +285,6 @@ chevreulApp <-
                 allTranscriptsui("alltranscripts1")
             ),
             tabItem(
-                tabName = "plotVelocity",
-                h2("RNA Velocity"),
-                fluidRow(
-                    plotVelocityui("plotvelocity"),
-                )
-            ),
-            tabItem(
                 tabName = "diffex",
                 h2("Differential Expression") %>%
                     default_helper(type = "markdown", content = "diffex"),
@@ -717,13 +710,6 @@ chevreulApp <-
 
             proj_name <- path_file(proj_path)
             message(proj_name)
-
-            loom_path <- path(proj_path, "output", "velocyto", paste0(proj_name,
-                                                                      ".loom"))
-            message(loom_path)
-            # need to check if this file exists
-
-            callModule(plotVelocity, "plotvelocity", object, loom_path)
         })
 
         callModule(techInfo, "techInfo", object)

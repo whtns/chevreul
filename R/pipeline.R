@@ -89,7 +89,7 @@ object_integration_pipeline <- function(object_list, resolution = seq(0.2, 2.0, 
 #'
 object_pipeline <- function(object, experiment = "gene", resolution = 0.6, reduction = "PCA", organism = "human", ...) {
     object <- object_preprocess(object, scale = TRUE, ...)
-    for (experiment in altExpNames(object)[!altExpNames(object) == "velocity"]) {
+    for (experiment in altExpNames(object)) {
         altExp(object, experiment) <- object_preprocess(altExp(object, experiment), scale = TRUE, ...)
     }
 

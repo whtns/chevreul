@@ -1,7 +1,6 @@
 #' Create a minimal chevreul app using SingleCellExperiment input
 #'
 #' @param single_cell_object a singlecell object
-#' @param loom_path path to a loom file
 #' @param appTitle a title for the app
 #' @param organism_type human or mouse
 #' @param futureMb the megabytes available for the future package
@@ -17,7 +16,6 @@
 #' }
 #'
 minimalChevreulApp <- function(single_cell_object = chevreul_sce,
-                               loom_path = NULL,
                           appTitle = NULL,
                           organism_type = "human",
                           futureMb = 13000,
@@ -203,10 +201,6 @@ minimalChevreulApp <- function(single_cell_object = chevreul_sce,
 
         organism_type <- reactive({
             "human"
-        })
-
-        loom_path <- reactive({
-            loom_path
         })
 
         plot_types <- reactive({
