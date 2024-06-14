@@ -1,7 +1,6 @@
 #' Create a obect app on a shinyproxy docker instance
 #'
 #' @param object a obect object
-#' @param loom_path path to a loom file
 #' @param appTitle a title for the app
 #' @param organism_type human or mouse
 #' @param futureMb the megabytes available for the future package
@@ -17,7 +16,6 @@
 #'
 dockerChevreulApp <- function(
         object = NULL,
-        loom_path = NULL,
         appTitle = NULL,
         organism_type = "human",
         futureMb = 13000,
@@ -196,10 +194,6 @@ dockerChevreulApp <- function(
 
         organism_type <- reactive({
             "human"
-        })
-
-        loom_path <- reactive({
-            loom_path
         })
 
         plot_types <- reactive({

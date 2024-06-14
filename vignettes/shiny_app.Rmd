@@ -218,7 +218,6 @@ management tasks including:
 
 Finally, server mode is necessary for some expanded functionality including:
 * Coverage plotting
-* RNA velocity
 
 *server mode* requires access to a few sqlite databases with file path details 
 stored in `~/.cache/chevreul`. `single_cell_projects.db` and `bigwig_files.db` 
@@ -254,22 +253,6 @@ The three user input parameters are:
 3. 'Groups to display'- Select the groups to be displayed
 
 ![](images/PlotCoverage2.0.png){width=80% height=80%}
-
-### RNA Velocity
-
-RNA velocity can be used to forecast the future state of a given cell in a 
-developmental or time-dependent process. Chevreul provides visualization and 
-processing functionality using [velocyto](https://velocyto.org/). Velocity can 
-be represented on UMAP or tSNE plots in multiple formats and exported as needed. 
-
-RNA velocity necessitates the calculation of spliced and unspliced transcript 
-counts as implemented on the command-line in velocyto. As a result integration 
-within Chevreul demands some familiarity with the command-line and the 
-availability of a properly formatted [loom](https://velocyto.org/velocyto.py/tutorial/cli.html#about-the-output-loom-file) 
-file. To enable plotting of RNA velocity, the path to the corresponding loom 
-file must be provided.
-
-![](images/Screenshot_2023-08-25_at_1.28.26_PM.png)
 
 ## Session information
 

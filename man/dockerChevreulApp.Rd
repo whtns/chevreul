@@ -6,7 +6,6 @@
 \usage{
 dockerChevreulApp(
   object = NULL,
-  loom_path = NULL,
   appTitle = NULL,
   organism_type = "human",
   futureMb = 13000,
@@ -15,8 +14,6 @@ dockerChevreulApp(
 }
 \arguments{
 \item{object}{a obect object}
-
-\item{loom_path}{path to a loom file}
 
 \item{appTitle}{a title for the app}
 

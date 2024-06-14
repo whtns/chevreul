@@ -97,7 +97,7 @@ object_calcn <- function(object) {
     object[[glue("nFeature_{mainExpName(object)}")]] <- object$detected
     object[[glue("nCount_{mainExpName(object)}")]] <- object$sum
 
-    for (alt_exp_name in altExpNames(object)[!altExpNames(object) == "velocity"]) {
+    for (alt_exp_name in altExpNames(object)) {
         altExp(object, alt_exp_name) <- addPerCellQC(altExp(object, alt_exp_name))
         altExp(object, alt_exp_name)[[glue("nFeature_{alt_exp_name}")]] <- altExp(object, alt_exp_name)[["detected"]]
         altExp(object, alt_exp_name)[[glue("nCount_{alt_exp_name}")]] <- altExp(object, alt_exp_name)[["sum"]]
