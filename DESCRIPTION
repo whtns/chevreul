@@ -84,7 +84,6 @@ Imports:
 Suggests:
     BiocStyle,
     knitr,
-    monocle3 (>= 0.2.1),
     RefManageR,
     rmarkdown,
     testthat (>= 3.0.0)
