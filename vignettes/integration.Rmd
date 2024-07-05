@@ -36,14 +36,6 @@ knitr::opts_chunk$set(
     crop = NULL ## Related to https://stat.ethz.ch/pipermail/bioc-devel/2020-April/016656.html
 )
 
-library(xfun)
-
-format_table <- function(mydf) {
-    mydf %>%
-        kableExtra::kbl() %>%
-        kable_paper() %>%
-        scroll_box(width = "800px", height = "200px")
-}
 ```
 
 # Introduction
