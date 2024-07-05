@@ -47,7 +47,7 @@ introduce included functions, their usage, and resulting plots
 First step is to load Chevreul package and all other packages required 
 
 ```{r packages}
-devtools::load_all()
+library(chevreul)
 library(scater)
 library(tidyverse)
 library(ggraph)

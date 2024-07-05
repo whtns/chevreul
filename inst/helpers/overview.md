@@ -5,7 +5,6 @@ SeuratTools is a shiny app for exploratory data analysis of single cell sequenci
 seuratTools brings together several tools for single cell analysis, including:
 
 1. Batch integration as implemented in [seurat](https://www.cell.com/cell/fulltext/S0092-8674(19)30559-8)
-2. RNA velocity analysis as implemented in [velocyto](https://velocyto.org/)
 
 There are currently several shiny apps for single cell exploratory data analysis including [iSEE](https://bioconductor.org/packages/release/bioc/html/iSEE.html), [scclustviz](https://baderlab.github.io/scClustViz/), and [Cerebro](https://github.com/romanhaa/Cerebro). SeuratTools is distinct from these applications in that it is oriented toward analysis of full-length sequencing data via Smart-seq or similar technologies. In addition, seuratTools is designed for labs working with single cell data composed of multiple batches for whome integration is a primary concern.
 

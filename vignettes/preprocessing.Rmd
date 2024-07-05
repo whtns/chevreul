@@ -31,17 +31,6 @@ knitr::opts_chunk$set(
     warning = FALSE
 )
 
-library(kableExtra)
-library(xfun)
-
-format_table <- function(mydf) {
-    DT::renderDataTable({
-        DT::datatable(mydf,
-            options = list(scrollX = TRUE, ...)
-        )
-    })
-    mydf
-}
 
 
 chevreul_sce <- chevreuldata::human_gene_transcript_sce()
@@ -50,7 +39,7 @@ chevreul_sce <- chevreuldata::human_gene_transcript_sce()
 First step is to load Chevreul package and all other packages required 
 
 ```{r packages }
-devtools::load_all()
+library(chevreul)
 library(scran)
 library(scuttle)
 library(SingleCellExperiment)

@@ -109,8 +109,8 @@ This package features functions capable of:
 * Cell cycle state regression and labeling.
 
 ```{r, message=FALSE}
-devtools::load_all()
-# library("chevreul")
+
+library("chevreul")
 
 # Load the data
 chevreul_sce <- chevreuldata::human_gene_transcript_sce()
