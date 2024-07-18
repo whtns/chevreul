@@ -49,6 +49,7 @@ First step is to load Chevreul package and all other packages required
 ```{r packages}
 library(chevreul)
 library(scater)
+library(scran)
 library(tidyverse)
 library(ggraph)
 library(patchwork)
