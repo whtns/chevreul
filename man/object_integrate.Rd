@@ -19,8 +19,3 @@ an integrated SingleCellExperiment object
 \description{
 Batch Correct Multiple Single Cell Objects
 }
-\examples{
-chevreul_sce <- chevreuldata::human_gene_transcript_sce()
-batches <- splitByCol(chevreul_sce, "batch")
-object_integrate(batches)
-}

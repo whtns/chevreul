@@ -65,11 +65,7 @@ merge_small_objects <- function(..., k.filter = 50) {
 #' @param ... extra args passed to object_reduce_dimensions
 #'
 #' @return an integrated SingleCellExperiment object
-#' @export
-#' @examples
-#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
-#' batches <- splitByCol(chevreul_sce, "batch")
-#' object_integrate(batches)
+
 object_integrate <- function(object_list, organism = "human", ...) {
     # drop 'colData' fields with same name as 'batchCorrect' output
     object_list <- map(object_list, ~ {
@@ -104,102 +100,6 @@ object_integrate <- function(object_list, organism = "human", ...) {
     return(geneCorrected)
 }
 
-#' Run Louvain Clustering at Multiple Resolutions
-#'
-#' @param object A SingleCellExperiment objects
-#' @param resolution Clustering resolution
-#' @param custom_clust custom cluster
-#' @param reduction Set dimensional reduction object
-#' @param algorithm 1
-#' @param ... extra args passed to single cell packages
-#'
-#' @return a SingleCellExperiment object with louvain clusters
-#' @export
-#' @examples
-#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
-#' object_cluster(chevreul_sce)
-object_cluster <- function(object = object, resolution = 0.6, custom_clust = NULL, reduction = "PCA", algorithm = 1, ...) {
-    message(glue("[{format(Sys.time(), '%H:%M:%S')}] Clustering Cells..."))
-    if (length(resolution) > 1) {
-        for (i in resolution) {
-            message(glue("clustering at {i} resolution"))
-            cluster_labels <- clusterCells(object,
-                use.dimred = reduction,
-                BLUSPARAM = NNGraphParam(cluster.fun = "louvain", cluster.args = list(resolution = i))
-            )
-            colData(object)[[glue("gene_snn_res.{i}")]] <- cluster_labels
-        }
-    } else if (length(resolution) == 1) {
-        message(glue("clustering at {resolution} resolution"))
-        cluster_labels <- clusterCells(object,
-            use.dimred = reduction,
-            BLUSPARAM = NNGraphParam(cluster.fun = "louvain", cluster.args = list(resolution = resolution))
-        )
-
-
-        colData(object)[[glue("gene_snn_res.{resolution}")]] <- cluster_labels
-    }
-
-    return(object)
-}
-
-#' Dimensional Reduction
-#'
-#' Run PCA, TSNE and UMAP on a singlecell objects
-#' perplexity should not be bigger than 3 * perplexity < nrow(X) - 1, see details for interpretation
-#'
-#' @param object A SingleCellExperiment object
-#' @param experiment Experiment of interest to be processed
-#' @param ... Extra parameters passed to object_reduce_dimensions
-#'
-#' @return a SingleCellExperiment object with embeddings
-#' @export
-#' @examples
-#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
-#' object_reduce_dimensions(chevreul_sce)
-object_reduce_dimensions <- function(object, experiment = "gene", ...) {
-    num_samples <- dim(object)[[2]]
-    if (num_samples < 50) {
-        npcs <- num_samples - 1
-    } else {
-        npcs <- 50
-    }
-    if ("gene" == experiment) {
-        object <- runPCA(x = object, subset_row = getTopHVGs(stats = object), ncomponents = npcs, ...)
-    } else {
-        object <- runPCA(x = object, altexp = experiment, subset_row = getTopHVGs(stats = object), ncomponents = npcs, ...)
-    }
-
-    if ((ncol(object) - 1) > 3 * 30) {
-        if ("gene" == experiment) {
-            object <- runTSNE(x = object, dimred = "PCA", n_dimred = seq(30))
-        } else {
-            object <- runTSNE(x = object, altexp = experiment, dimred = "PCA", n_dimred = seq(30))
-        }
-        if ("gene" == experiment) {
-            object <- runUMAP(x = object, dimred = "PCA", n_dimred = seq(30))
-        } else {
-            object <- runUMAP(x = object, altexp = experiment, dimred = "PCA", n_dimred = seq(30))
-        }
-    }
-    return(object)
-}
-
-#' Give a new project name to a SingleCellExperiment object
-#'
-#' @param object A SingleCellExperiment object
-#' @param new_name New name to assign
-#'
-#' @return a renamed SingleCellExperiment object
-#' @export
-#' @examples
-#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
-#' rename_object(chevreul_sce, "new_name")
-rename_object <- function(object, new_name) {
-    metadata(object)["project.name"] <- new_name
-    return(object)
-}
-
 #' Reintegrate (filtered) SingleCellExperiment objects
 #'
 #' This function takes a SCE object and performs the below steps
@@ -213,14 +113,11 @@ rename_object <- function(object, new_name) {
 #' @param ... extra args passed to object_integration_pipeline
 #'
 #' @return a SingleCellExperiment object
-#' @export
-#' @examples
-#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
-#' reintegrate_object(chevreul_sce)
+
 reintegrate_object <- function(object, suffix = "", reduction = "PCA", ...) {
-    organism <- metadata(object)$experiment$organism
-    experiment_name <- metadata(object)$experiment$experiment_name
-    objects <- splitByCol(object, "batch")
-    object <- object_integration_pipeline(objects, suffix = suffix, ...)
-    object <- record_experiment_data(object, experiment_name, organism)
+	organism <- metadata(object)$experiment$organism
+	experiment_name <- metadata(object)$experiment$experiment_name
+	objects <- splitByCol(object, "batch")
+	object <- object_integration_pipeline(objects, suffix = suffix, ...)
+	object <- record_experiment_data(object, experiment_name, organism)
 }

@@ -249,7 +249,7 @@ integrateProjui <- function(id) {
             checkboxInput(ns("legacySettings"), "Use Legacy Settings", value = FALSE),
             textOutput(ns("integrationResult")),
             shinySaveButton(ns("saveIntegratedProject"), "Save Integrated Project", "Save project as..."),
-            dataTableOutput(ns("myDatatable")),
+            DTOutput(ns("myDatatable")),
             width = 12
         ) %>%
             default_helper(type = "markdown", content = "integrateProjects")
@@ -677,7 +677,7 @@ diffexui <- function(id) {
                 "Run Differential Expression"
             ),
             downloadLink(ns("downloadData"), "Download Complete DE Results"),
-            dataTableOutput(ns("DT1")),
+            DTOutput(ns("DT1")),
             width = 6
         ),
         chevreulBox(
@@ -1250,7 +1250,7 @@ pathwayEnrichment <- function(input, output, session, object, featureType) {
                                 uiOutput(ns("enriched_pathways_by_cluster_select_db_UI"))
                             )
                         ),
-                        dataTableOutput(ns("enriched_pathways_by_cluster_table_present"))
+                        DTOutput(ns("enriched_pathways_by_cluster_table_present"))
                     )
                 } else if (enriched_pathways()$enrichr$by_cluster == "no_markers_found") {
                     textOutput(ns("enriched_pathways_by_cluster_table_no_markers_found"))
@@ -1295,7 +1295,7 @@ pathwayEnrichment <- function(input, output, session, object, featureType) {
     })
 
     # table
-    output$enriched_pathways_by_cluster_table_present <- renderDataTable(server = FALSE, {
+    output$enriched_pathways_by_cluster_table_present <- renderDT(server = FALSE, {
         req(
             input$enriched_pathways_by_cluster_select_source,
             input$enriched_pathways_by_cluster_select_cluster,

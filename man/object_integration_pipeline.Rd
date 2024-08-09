@@ -43,9 +43,3 @@ Run batch correction, followed by:
 \item saving to <proj_dir>/output/sce/\if{html}{\out{<feature>}}\emph{object}\if{html}{\out{<suffix>}}.rds
 }
 }
-\examples{
-chevreul_sce <- chevreuldata::human_gene_transcript_sce()
-data(cc.genes.cyclone)
-batches <- splitByCol(chevreul_sce, "batch")
-integrated_object <- object_integration_pipeline(batches)
-}

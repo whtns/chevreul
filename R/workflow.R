@@ -13,11 +13,7 @@
 #' @param ... extra args passed to object_integration_pipeline
 #'
 #' @return an integrated SingleCellExperiment object
-#' @export
-#' @examples
-#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
-#' batches <- splitByCol(chevreul_sce, "batch")
-#' integration_workflow(batches)
+
 integration_workflow <- function(batches, excluded_cells = NULL,
                                  resolution = seq(0.2, 2.0, by = 0.2),
                                  experiment_name = "default_experiment",
@@ -64,11 +60,7 @@ integration_workflow <- function(batches, excluded_cells = NULL,
 #' @param ... extra args passed to object_pipeline
 #'
 #' @return a clustered SingleCellExperiment object
-#' @export
-#' @examples
-#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
-#' data(cc.genes.cyclone)
-#' clustering_workflow(chevreul_sce)
+
 clustering_workflow <- function(object, excluded_cells,
                                 resolution = seq(0.2, 2.0, by = 0.2),
                                 organism = "human",
