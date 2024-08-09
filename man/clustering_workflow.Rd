@@ -32,8 +32,3 @@ a clustered SingleCellExperiment object
 \description{
 Cluster and Reduce Dimensions of a object
 }
-\examples{
-chevreul_sce <- chevreuldata::human_gene_transcript_sce()
-data(cc.genes.cyclone)
-clustering_workflow(chevreul_sce)
-}

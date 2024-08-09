@@ -10,13 +10,7 @@
 #' @param ... extra args passed to scaling functions
 #'
 #' @return a preprocessed SingleCellExperiment object
-#' @export
-#'
-#' @examples
-#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
-#'
-#' chevreul_sce <- object_preprocess(chevreul_sce)
-#'
+
 object_preprocess <- function(object, scale = TRUE, normalize = TRUE, features = NULL, legacy_settings = FALSE, ...) {
     clusters <- quickCluster(object)
     object <- computeSumFactors(object, clusters = clusters)

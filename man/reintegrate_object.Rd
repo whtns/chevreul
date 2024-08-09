@@ -26,7 +26,3 @@ This function takes a SCE object and performs the below steps
 \item run integration pipeline and save
 }
 }
-\examples{
-chevreul_sce <- chevreuldata::human_gene_transcript_sce()
-reintegrate_object(chevreul_sce)
-}

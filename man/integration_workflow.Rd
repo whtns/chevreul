@@ -35,8 +35,3 @@ an integrated SingleCellExperiment object
 \description{
 Integrate multiple objects and save to file
 }
-\examples{
-chevreul_sce <- chevreuldata::human_gene_transcript_sce()
-batches <- splitByCol(chevreul_sce, "batch")
-integration_workflow(batches)
-}
