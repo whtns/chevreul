@@ -15,7 +15,6 @@
 #' @param annotate_percent_mito logical scalar whether to annotate mitochondrial percentage
 #'
 #' @return an integrated SingleCellExperiment object
-
 object_integration_pipeline <- function(object_list, resolution = seq(0.2, 2.0, by = 0.2), suffix = "", organism = "human", annotate_cell_cycle = FALSE, annotate_percent_mito = FALSE, reduction = "PCA", ...) {
     experiment_names <- names(object_list)
 
@@ -74,7 +73,6 @@ object_integration_pipeline <- function(object_list, resolution = seq(0.2, 2.0, 
 #' @param ... extra parameters passed to internal functions
 #'
 #' @return a processed SingleCellExperiment object
-
 object_pipeline <- function(object, experiment = "gene", resolution = 0.6, reduction = "PCA", organism = "human", ...) {
     object <- object_preprocess(object, scale = TRUE, ...)
     for (experiment in altExpNames(object)) {
@@ -105,7 +103,6 @@ object_pipeline <- function(object, experiment = "gene", resolution = 0.6, reduc
 
     return(object)
 }
-
 
 #' Run Louvain Clustering at Multiple Resolutions
 #'

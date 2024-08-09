@@ -1,0 +1,144 @@
+---
+title: "Preprocessing"
+author: 
+  - name: Kevin Stachelek
+    affiliation:
+    - University of Southern California
+    email: kevin.stachelek@gmail.com
+output: 
+  BiocStyle::html_document:
+    self_contained: yes
+    toc: true
+    toc_float: true
+    toc_depth: 2
+    code_folding: show
+date: "`r doc_date()`"
+package: "`r pkg_ver('chevreul')`"
+vignette: >
+  %\VignetteIndexEntry{Preprocessing}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}  
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+    collapse = TRUE,
+    comment = "#>",
+    crop = NULL, ## Related to https://stat.ethz.ch/pipermail/bioc-devel/2020-April/016656.html
+    dpi = 900,
+    out.width = "100%",
+    message = FALSE,
+    warning = FALSE
+)
+
+
+
+chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+```
+
+First step is to load Chevreul package and all other packages required 
+
+```{r packages }
+library(chevreul)
+library(scran)
+library(scuttle)
+library(SingleCellExperiment)
+library(tidyverse)
+library(ggraph)
+```
+
+## TLDR
+
+chevreul provides a single command to:
+
+-   construct a SingleCellExperiment object 
+
+-   filter genes by minimum expression and ubiquity
+
+-   normalize and scale expression by any of several methods packaged in SingleCellExperiment
+
+
+
+## Set up a object
+
+We start with a gene by cell matrix of count/UMI values and a table of cell metadata
+
+### Matrix containg count values
+```{r}
+human_count <- counts(chevreul_sce)
+
+human_count[1:5, 1:5] %>% as.matrix() %>% knitr::kable(format = "pipe")
+```
+
+### Dataframe containing object metadata
+```{r}
+human_meta <- colData(chevreul_sce) %>% as.data.frame()
+human_meta[1:5, 1:5] %>% knitr::kable(format = "pipe")
+```
+
+Then using these 2 datasets we can create a SingleCellExperiment object in the usual manner using the `SingleCellExperiment` function
+
+```{r}
+myobject <- SingleCellExperiment::SingleCellExperiment(
+    assays = list(counts = human_count),
+    colData = human_meta,
+    mainExpName = "gene"
+)
+myobject
+```
+
+## Preprocess the object
+
+Chevreul includes a handy function `object_preprocess()` that performs standard preprocessing workflow for scRNA-seq data. This function handles normalization and scaling required for downstream data analysis using existing functions. If needed, parameters can be specified by the user.
+
+```{r}
+myobject0 <- object_preprocess(myobject)
+plotPCA(myobject0, color_by = "nFeature_gene")
+```
+
+This single function includes sub-functions that normalize, identify highly variable features and scale the data:
+
+-   First, the sub-function `quickCluster` clusters similar cells based on expression levels, then cell-specific biases are normalized using the `computeSumFactors`, which implements the deconvolution strategy for scaling normalization.
+
+-   After normalization, `modelGeneVar` models the variance of the log-expression profiles for each gene, using this the function `getTopHVGs` identifies top 10% of genes that exhibit high cell-to-cell variation in the dataset.
+
+-   Finally, PCA is performed on the data using the function `runPCA` using subset of top HVG from `getTopHVGs` to remove noise. Then, subset the dimensionality reduction result to the desired number of PCs using `getClusteredPCs`.
+
+### Get a first look at a processed dataset using an interactive shiny app
+
+```{r, eval = FALSE}
+minimalSceApp(myobject0)
+```
+
+## Perform dimension reduction
+
+Chevreul also includes a separate function `object_reduce_dimentions()` capable of implementing a standardized dimension reduction step to select variable features at a user-specified threshold. This function performs tSNE and UMAP in addition to PCA. The default experiment the dimension reduction is being run on is "gene".
+
+```{r, results=FALSE}
+myobject_red <- object_reduce_dimensions(myobject0)
+plotUMAP(myobject_red, color_by = "nFeature_gene")
+```
+
+This function includes existing object functions which performs dimension reduction techniques. 
+
+## Community detection by clustering
+
+A separate Chevreul function, `object_cluster()`, can be used to perform just the clustering of scRNA-seq data. Here, clustering analysis is performed via Louvain algorithms, using existing functions that perform graph-based clustering. Clustering is performed at a range of resolutions with default value ranging from 0.2 to 2 and PCA reduction.
+
+```{r, results=FALSE, eval=TRUE}
+object <- object_cluster(
+    object = myobject0,
+    resolution = seq(0.2, 2, by = 0.2), reduction = "PCA"
+)
+plotPCA(object, color_by = "gene_snn_res.0.2")
+```
+
+
+## `R` session information.
+
+```{r reproduce3, echo=FALSE}
+## Session info
+library("sessioninfo")
+options(width = 120)
+sessionInfo()
+```
