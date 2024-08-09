@@ -143,24 +143,6 @@ object <- object_cluster(object = Dim_Red_object, resolution = seq(0.2, 2, by = 
 This function produces clustering analysis via two steps performed using two different sub-functions
 
 
-## Split included dataset based on collection technology
-
-Chevreul includes a function, `SplitObject`, which is capable of splitting the dataset into subsets based on a single attribute indicated by the split.by argument 
-
-```{r}
-split_human <- SplitObject(chevreul_sce, split.by = "dataset")
-```
-In this example the `split_human` object consists of a list of subsetted objects which are split based on batch
-
-
-## Run object batch integration on 'child' projects
-
-When joint analysis of 2 or more datasets is to be performed `integration_workflow` function can be used, which takes in a list of objects as input and returns an integrated object
-
-```{r, results="hide", cache = FALSE}
-integrated_object <- integration_workflow(split_human)
-```
-
 ## View analysis details
 
 ```{r, eval = FALSE}
