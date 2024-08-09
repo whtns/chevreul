@@ -10,7 +10,6 @@
 #' @param ... extra args passed to scaling functions
 #'
 #' @return a preprocessed SingleCellExperiment object
-
 object_preprocess <- function(object, scale = TRUE, normalize = TRUE, features = NULL, legacy_settings = FALSE, ...) {
     clusters <- quickCluster(object)
     object <- computeSumFactors(object, clusters = clusters)

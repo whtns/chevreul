@@ -1,0 +1,135 @@
+---
+title: "Integration in Chevreul"
+author: 
+- name: Kevin Stachelek
+  affiliation:
+  - University of Southern California   
+  email: kevin.stachelek@gmail.com
+- name: Bhavana Bhat
+  affiliation:
+  - University of Southern California   
+  email: bbhat@usc.edu
+output: 
+  BiocStyle::html_document:
+    self_contained: yes
+    toc: true
+    toc_float: true
+    toc_depth: 2
+    code_folding: show
+date: "`r doc_date()`"
+package: "`r pkg_ver('chevreul')`"
+vignette: >
+  %\VignetteIndexEntry{Integration}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}  
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+    collapse = TRUE,
+    comment = "#>",
+    # dev.args = list(png = list(type = "cairo")),
+    dpi = 900,
+    out.width = "100%",
+    message = FALSE,
+    warning = FALSE,
+    crop = NULL ## Related to https://stat.ethz.ch/pipermail/bioc-devel/2020-April/016656.html
+)
+
+```
+
+# Introduction
+
+Often single-cell RNA sequencing (scRNA-seq) experiments consist of multiple batches. When joint analysis of two or more scRNA-seq datasets is to be performed, we need to first integrate the individual datasets. 
+
+The first step in this process is to load all the packages required
+
+```{r setup, message = FALSE}
+library(chevreul)
+library(SingleCellExperiment)
+library(tidyverse)
+library(ggraph)
+library(patchwork)
+```
+
+
+# TLDR 
+
+Here, we are using the `chevreul_sce` dataset, which consists of human retinal organoids prepared using two  different technologies. The `splitByCol()` function in chevreul splits the object into a list containing each batch as element. 
+
+In Chevreul, a single function `integration_workflow()` can be used to integrate multiple SingleCellExperiment objects provided as a list. `integration_workflow()` identifies shared cell states that are present across multiple single cell datasets.
+
+```{r}
+chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+batches <- splitByCol(chevreul_sce, "batch")
+# Batches to be integrated 
+batches
+# Perform integration of the multiple objects
+integrated_object <- integration_workflow(batches)
+```
+
+
+# Batch effects are problematic
+
+When analyzing data across multiple batches, batch effects can become problematic 
+and compromise integration and interpretation of the data, creating challenges
+for downstream analysis. 
+
+For instance, the dataset `chevreul_sce` contains data obtained following two 
+different preparation method. When this data is analyzed without integration we
+notice that in the Zhong method cluster 2 is barely represented. From the plot 
+of marker features we know that cluster 2 has high expression of features 
+associated with cones. this absence of cluster 2 in Zhong method can become problematic during downstream analysis
+
+
+```{r }
+## Dot plot of features
+markerp_batch <- plot_markers(chevreul_sce,
+    group_by = "batch",
+    num_markers = 10
+)
+
+# Plot UMAP
+dp_batch <- plot_var(chevreul_sce, group = "batch")
+
+wrap_plots(markerp_batch, dp_batch) +
+    plot_layout(widths = c(8, 8), ncol = 2)
+```
+
+
+# Integration Workflow
+
+## Integrate within species
+
+The `integration_workflow()` function can integrate datasets obtained either from mouse or human sources. The argument "organism" can be used to alternate between the two. 
+
+## Steps of integration 
+
+The standard integration procedure in `integration_workflow()` includes multiple sub-functions responsible for performing different steps of integration.
+
+First, the `object_integrate()` sub-function in Chevreul applies correction to the multiple batch objects and combines the assay data and column metadata for easy downstream use.  The function wraps the `correctExperiments() ` function from batchelor.
+
+The batch corrected object is then used by `object_integration_pipeline()` sub-function which scales the integrated data, reduces the dimensions of object, performs clustering at different resolutions and identifies marker genes.
+
+Finally, the resulting integrated datasets can be visualized by plotting the output
+
+```{r, eval=TRUE}
+dp_batch <- plot_var(integrated_object, group = "Prep.Method", )
+dp_batch
+```
+
+# Assumptions of the input data
+
+- Prior to integration, the SingleCellExperiment object must be pre-processed using the `object_preprocess` function. This function handles normalization and scaling required for downstream data analysis.
+
+# Session information 
+
+```{r reproduce3, echo=FALSE}
+## Session info
+library("sessioninfo")
+options(width = 120)
+sessionInfo()
+```
+
+
+

@@ -98,12 +98,15 @@ Here is an example of you can cite your package inside the vignette:
 
 # Quick start to using `chevreul`
 
-The `chevreul` package contains a shiny app for easy visualization and analysis of scRNA data.
+The `chevreul` package contains functions to preprocess, cluster, visualize, and perform other analyses on scRNA-seq data. It also contains a shiny app for easy visualization and analysis of scRNA data.
 
 `chvereul` uses SingelCellExperiment (SCE) object type (from `r Biocpkg("SingleCellExperiment")`) to store expression and other metadata from single-cell experiments. 
 
 This package features functions capable of:
+
+* Performing Clustering at a range of resolutions and Dimensional reduction of Raw Sequencing Data.
 * Visualizing scRNA data using different plotting functions.
+* Integration of multiple datasets for consistent analyses. 
 * Cell cycle state regression and labeling.
 
 ```{r, message=FALSE}
@@ -144,7 +147,9 @@ myobject
 Chevreul includes a shiny app for exploratory scRNA data analysis and visualization which can be accessed via
 
 ```{r "start", message=FALSE, eval = FALSE}
+
 minimalSceApp(chevreul_sce)
+
 ```
 
 Note: the SCE object must be pre-processed and integrated (if required) prior to building the shiny app.

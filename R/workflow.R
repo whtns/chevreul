@@ -13,7 +13,6 @@
 #' @param ... extra args passed to object_integration_pipeline
 #'
 #' @return an integrated SingleCellExperiment object
-
 integration_workflow <- function(batches, excluded_cells = NULL,
                                  resolution = seq(0.2, 2.0, by = 0.2),
                                  experiment_name = "default_experiment",
@@ -60,7 +59,6 @@ integration_workflow <- function(batches, excluded_cells = NULL,
 #' @param ... extra args passed to object_pipeline
 #'
 #' @return a clustered SingleCellExperiment object
-
 clustering_workflow <- function(object, excluded_cells,
                                 resolution = seq(0.2, 2.0, by = 0.2),
                                 organism = "human",

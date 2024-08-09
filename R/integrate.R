@@ -65,7 +65,6 @@ merge_small_objects <- function(..., k.filter = 50) {
 #' @param ... extra args passed to object_reduce_dimensions
 #'
 #' @return an integrated SingleCellExperiment object
-
 object_integrate <- function(object_list, organism = "human", ...) {
     # drop 'colData' fields with same name as 'batchCorrect' output
     object_list <- map(object_list, ~ {
@@ -113,11 +112,10 @@ object_integrate <- function(object_list, organism = "human", ...) {
 #' @param ... extra args passed to object_integration_pipeline
 #'
 #' @return a SingleCellExperiment object
-
 reintegrate_object <- function(object, suffix = "", reduction = "PCA", ...) {
-	organism <- metadata(object)$experiment$organism
-	experiment_name <- metadata(object)$experiment$experiment_name
-	objects <- splitByCol(object, "batch")
-	object <- object_integration_pipeline(objects, suffix = suffix, ...)
-	object <- record_experiment_data(object, experiment_name, organism)
+    organism <- metadata(object)$experiment$organism
+    experiment_name <- metadata(object)$experiment$experiment_name
+    objects <- splitByCol(object, "batch")
+    object <- object_integration_pipeline(objects, suffix = suffix, ...)
+    object <- record_experiment_data(object, experiment_name, organism)
 }
