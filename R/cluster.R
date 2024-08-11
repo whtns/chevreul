@@ -46,14 +46,14 @@ object_preprocess <- function(object, scale = TRUE, normalize = TRUE, features =
 #'
 #' @examples
 #' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
-#' markers_stashed_object <- find_all_markers(chevreul_sce)
+#' markers_stashed_object <- find_all_markers(chevreul_sce, group_by = "Age")
 find_all_markers <- function(object, group_by = NULL, experiment = "gene", ...) {
     if (is.null(group_by)) {
         resolutions <- colnames(get_cell_metadata(object))[grepl(paste0(experiment, "_snn_res."), colnames(get_cell_metadata(object)))]
         cluster_index <- grepl(paste0(experiment, "_snn_res."), colnames(get_cell_metadata(object)))
         if (!any(cluster_index)) {
             warning("no clusters found in metadata. runnings object_cluster")
-            object <- object_cluster(object, resolution = seq(0.2, 2, by = 0.2))
+            object <- object_cluster(object, resolution = seq(0.2, 1, by = 0.2))
         }
         clusters <- get_cell_metadata(object)[, cluster_index]
         cluster_levels <- map_int(clusters, ~ length(unique(.x)))

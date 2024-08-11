@@ -310,12 +310,12 @@ dockerChevreulApp <- function(
                     if (length(unique(object()$batch)) > 1) {
                         message("reintegrating gene expression")
                         reintegrated_object <- reintegrate_object(object(),
-                            resolution = seq(0.2, 2, by = 0.2),
+                            resolution = seq(0.2, 1, by = 0.2),
                             organism = metadata(object())[["experiment"]][["organism"]]
                         )
                         object(reintegrated_object)
                     } else {
-                        processed_object <- obect_pipeline(object(), resolution = seq(0.2, 2, by = 0.2))
+                        processed_object <- obect_pipeline(object(), resolution = seq(0.2, 1, by = 0.2))
                         object(processed_object)
                     }
                     message("Complete!")
@@ -344,12 +344,12 @@ dockerChevreulApp <- function(
                     if (length(unique(object()[["batch"]])) > 1) {
                         message("reintegrating gene expression")
                         reintegrated_object <- reintegrate_object(object(),
-                            resolution = seq(0.2, 2, by = 0.2),
+                            resolution = seq(0.2, 1, by = 0.2),
                             organism = metadata(object())[["experiment"]][["organism"]]
                         )
                         object(reintegrated_object)
                     } else {
-                        processed_object <- obect_pipeline(object(), resolution = seq(0.2, 2, by = 0.2))
+                        processed_object <- obect_pipeline(object(), resolution = seq(0.2, 1, by = 0.2))
                         object(processed_object)
                     }
                     message("Complete!")

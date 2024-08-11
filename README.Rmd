@@ -137,7 +137,7 @@ myobject <- object_reduce_dimensions(myobject, experiment = "RNA")
 Clustering analysis is performed via Louvain(default) or alternative algorithms available in SingleCellExperiment. Clustering is performed at a range of resolutions with default value ranging from 0.2 to 2 and pca reduction
 
 ```{r, message = FALSE, result = FALSE, chache = FALSE, warning = FALSE}
-object <- object_cluster(object = Dim_Red_object, resolution = seq(0.2, 2, by = 0.2))
+object <- object_cluster(object = Dim_Red_object, resolution = seq(0.2, 1, by = 0.2))
 ```
 
 This function produces clustering analysis via two steps performed using two different sub-functions

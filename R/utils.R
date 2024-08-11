@@ -291,7 +291,6 @@ read_project_db <- function(
 #' @param sqlite_db sqlite db containing bw files
 #'
 #' @return a sqlite database of bigwig files for cells in a SingleCellExperiment object
-#' @export
 #' @examples
 #' \donttest{
 #' make_bigwig_db("example_project")

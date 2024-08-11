@@ -32,7 +32,10 @@ run_object_de <- function(object, cluster1, cluster2, resolution = 0.2,
                           diffex_scheme = "louvain", featureType = "gene",
                           tests = c("t", "wilcox", "bimod")) {
 
-  data("grch38")
+	data_env <- new.env(parent = emptyenv())
+	data("grch38", envir = data_env, package = "chevreul")
+	grch38 <- data_env[["grch38"]]
+	
   data("grch38_tx2gene")
 
     match.arg(tests)
@@ -119,7 +122,6 @@ prep_slider_values <- function(default_val) {
 #' @param db_name sqlite database with list of saved
 #' SingleCellExperiment objects
 #' @return a shiny app
-#' @export
 #'
 #' @examples
 #' \donttest{
@@ -597,7 +599,7 @@ chevreulApp <-
                     if (length(unique(object()[["batch"]])) > 1) {
                         message("reintegrating gene expression")
                         reintegrated_object <- reintegrate_object(object(),
-                            resolution = seq(0.2, 2, by = 0.2),
+                            resolution = seq(0.2, 1, by = 0.2),
                             legacy_settings = input$legacySettingsSubset,
                             organism = metadata(object())$experiment$organism
                         )
@@ -605,7 +607,7 @@ chevreulApp <-
                     } else {
                         subset_object <- object_pipeline(
                           object(),
-                          resolution = seq(0.2, 2, by = 0.2),
+                          resolution = seq(0.2, 1, by = 0.2),
                           legacy_settings = input$legacySettingsSubset)
                         object(subset_object)
                     }
@@ -634,7 +636,7 @@ chevreulApp <-
                     if (length(unique(object()[["batch"]])) > 1) {
                         message("reintegrating gene expression")
                         reintegrated_object <- reintegrate_object(object(),
-                            resolution = seq(0.2, 2, by = 0.2),
+                            resolution = seq(0.2, 1, by = 0.2),
                             legacy_settings = input$legacySettingsSubset,
                             organism = metadata(object())$experiment$organism
                         )

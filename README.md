@@ -136,7 +136,7 @@ a range of resolutions with default value ranging from 0.2 to 2 and pca
 reduction
 
 ``` r
-object <- object_cluster(object = Dim_Red_object, resolution = seq(0.2, 2, by = 0.2))
+object <- object_cluster(object = Dim_Red_object, resolution = seq(0.2, 1, by = 0.2))
 ```
 
 This function produces clustering analysis via two steps performed using
