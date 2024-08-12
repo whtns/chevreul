@@ -37,8 +37,6 @@ knitr::opts_chunk$set(
     fig.height = 6
 )
 
-
-chevreul_sce <- chevreuldata::human_gene_transcript_sce()
 ```
 
 This article demonstrates the data visualization tools in Chevreul. We'll 
@@ -53,6 +51,8 @@ library(scran)
 library(tidyverse)
 library(ggraph)
 library(patchwork)
+# library(chevreuldata)
+chevreul_sce <- chevreuldata::human_gene_transcript_sce()
 ```
 
 
