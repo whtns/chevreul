@@ -114,7 +114,8 @@ This package features functions capable of:
 library("chevreul")
 
 # Load the data
-chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+library(chevreuldata)
+chevreul_sce <- human_gene_transcript_sce()
 chevreul_sce
 ```
 ## Setting up

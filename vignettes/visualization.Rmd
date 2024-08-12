@@ -51,8 +51,8 @@ library(scran)
 library(tidyverse)
 library(ggraph)
 library(patchwork)
-# library(chevreuldata)
-chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+library(chevreuldata)
+chevreul_sce <- human_gene_transcript_sce()
 ```
 
 
