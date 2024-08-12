@@ -21,7 +21,3 @@ a SingleCellExperiment object containing marker genes
 \description{
 Find all markers at a range of resolutions
 }
-\examples{
-chevreul_sce <- chevreuldata::human_gene_transcript_sce()
-markers_stashed_object <- find_all_markers(chevreul_sce, group_by = "Age")
-}
