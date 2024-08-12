@@ -42,11 +42,7 @@ object_preprocess <- function(object, scale = TRUE, normalize = TRUE, features =
 #' @param ... extra args passed to stash_marker_features
 #'
 #' @return a SingleCellExperiment object containing marker genes
-#' @export
 #'
-#' @examples
-#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
-#' markers_stashed_object <- find_all_markers(chevreul_sce, group_by = "Age")
 find_all_markers <- function(object, group_by = NULL, experiment = "gene", ...) {
     if (is.null(group_by)) {
         resolutions <- colnames(get_cell_metadata(object))[grepl(paste0(experiment, "_snn_res."), colnames(get_cell_metadata(object)))]

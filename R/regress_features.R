@@ -3,12 +3,6 @@
 #' @param object A object
 #'
 #' @return a SingleCellExperiment object with features regressed
-#' @export
-#' @examples
-#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
-#' data(cc.genes.cyclone)
-#' regressed_object <- regress_cell_cycle(chevreul_sce)
-#'
 regress_cell_cycle <- function(object) {
     message("regressing objects by cell cycle")
 

@@ -175,12 +175,6 @@ plot_feature <- function(object, embedding = c("UMAP", "PCA", "TSNE"), features,
 #'
 #' @return a SingleCellExperiment object
 #' @export
-#' @examples
-#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
-#'
-#' human_gene_phase <- annotate_cell_cycle(chevreul_sce)
-#' human_gene_phase$phases
-#'
 annotate_cell_cycle <- function(object) {
    data(cc.genes.cyclone)
    assignments <- cyclone(object, cc.genes.cyclone, gene.names = rownames(object))
