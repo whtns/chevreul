@@ -80,7 +80,8 @@ Imports:
     base,
     grid,
     forcats,
-    rappdirs
+    rappdirs,
+    ExperimentHub
 Suggests:
     BiocStyle,
     knitr,
