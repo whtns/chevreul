@@ -20,7 +20,3 @@ a SingleCellExperiment object with embeddings
 Run PCA, TSNE and UMAP on a singlecell objects
 perplexity should not be bigger than 3 * perplexity < nrow(X) - 1, see details for interpretation
 }
-\examples{
-chevreul_sce <- chevreuldata::human_gene_transcript_sce()
-object_reduce_dimensions(chevreul_sce)
-}
