@@ -30,10 +30,6 @@ get_transcripts_from_object <- function(object, gene, organism = "human") {
 #'
 #' @return a SingleCellExperiment object
 #' @export
-#' @examples
-#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
-#' record_experiment_data(chevreul_sce)
-#'
 record_experiment_data <- function(object, experiment_name = "default_experiment", organism = "human") {
     if (!requireNamespace("SingleCellExperiment", quietly = TRUE)) {
         stop("Package 'object' needed for this function to work. Please install it.",

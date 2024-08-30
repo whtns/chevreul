@@ -23,8 +23,3 @@ a SingleCellExperiment object
 \description{
 Records miscellaneous data
 }
-\examples{
-chevreul_sce <- chevreuldata::human_gene_transcript_sce()
-record_experiment_data(chevreul_sce)
-
-}
