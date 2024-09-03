@@ -21,7 +21,7 @@ Propagate Metadata Changes
 
 
 
-chevreul_sce <- mockSCE(ncells=200, ngenes=1000)
+chevreul_sce <- small_example_dataset
 new_meta <- data.frame(row.names = colnames(chevreul_sce))
 new_meta$example <- "example"
 

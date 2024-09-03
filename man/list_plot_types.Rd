@@ -18,6 +18,6 @@ Collate list of variables to be plotted
 \examples{
 
 
-chevreul_sce <- mockSCE(ncells=200, ngenes=1000)
+chevreul_sce <- small_example_dataset
 list_plot_types(chevreul_sce)
 }

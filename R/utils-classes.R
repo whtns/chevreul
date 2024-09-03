@@ -7,7 +7,7 @@
 #' @examples
 #' 
 #' 
-#' chevreul_sce <- mockSCE(ncells=200, ngenes=1000)
+#' chevreul_sce <- small_example_dataset
 #' list_plot_types(chevreul_sce)
 list_plot_types <- function(object) {
     meta_types <- tibble(
@@ -57,7 +57,7 @@ list_plot_types <- function(object) {
 #' @examples
 #' 
 #' 
-#' chevreul_sce <- mockSCE(ncells=200, ngenes=1000)
+#' chevreul_sce <- small_example_dataset
 #' get_cell_metadata(chevreul_sce)
 get_cell_metadata <- function(object) {
     colData(object) %>%
@@ -76,7 +76,7 @@ get_cell_metadata <- function(object) {
 #' @examples
 #' 
 #' 
-#' chevreul_sce <- mockSCE(ncells=200, ngenes=1000)
+#' chevreul_sce <- small_example_dataset
 #' new_meta <- data.frame(row.names = colnames(chevreul_sce))
 #' new_meta$example <- "example"
 #' set_cell_metadata(chevreul_sce, new_meta)
@@ -95,7 +95,7 @@ set_cell_metadata <- function(object, meta) {
 #' @examples
 #' 
 #' 
-#' chevreul_sce <- mockSCE(ncells=200, ngenes=1000)
+#' chevreul_sce <- small_example_dataset
 #' get_object_metadata(chevreul_sce)
 get_object_metadata <- function(object) {
     metadata(object)
@@ -153,7 +153,7 @@ get_features <- function(object, experiment = "gene") {
 #' @examples
 #' 
 #' 
-#' chevreul_sce <- mockSCE(ncells=200, ngenes=1000)
+#' chevreul_sce <- small_example_dataset
 #' get_feature_types(chevreul_sce)
 get_feature_types <- function(object) {
     sort(c(mainExpName(object), altExpNames(object)))
@@ -169,7 +169,7 @@ get_feature_types <- function(object) {
 #' @examples
 #' 
 #' 
-#' chevreul_sce <- mockSCE(ncells=200, ngenes=1000)
+#' chevreul_sce <- small_example_dataset
 #' set_feature_type(chevreul_sce, "transcript")
 set_feature_type <- function(object, feature_type) {
     if (feature_type %in% altExpNames(object)) {
@@ -189,7 +189,7 @@ set_feature_type <- function(object, feature_type) {
 #' @examples
 #' 
 #' 
-#' chevreul_sce <- mockSCE(ncells=200, ngenes=1000)
+#' chevreul_sce <- small_example_dataset
 #' mainExpName(chevreul_sce) <- "gene"
 #' retrieve_experiment(chevreul_sce, experiment = "gene")
 retrieve_experiment <- function(object, experiment) {
@@ -200,18 +200,12 @@ retrieve_experiment <- function(object, experiment) {
     }
 }
 
-#' Query Assay
+#' Query Experiment
 #'
 #' @param object a SingleCellExperiment object
 #' @param experiment an experiment name
 #'
 #' @return logical scalar indicating if experiment is present in object
-#' @export
-#'
-#' @examples
-#'
-#'chevreul_sce <- mockSCE(ncells=200, ngenes=1000)
-#' query_experiment(chevreul_sce, "gene")
 query_experiment <- function(object, experiment) {
     return(experiment %in% c(mainExpName(object), altExpNames(object)))
 }

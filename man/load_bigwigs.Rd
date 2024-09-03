@@ -21,7 +21,7 @@ Load a tibble of bigwig file paths by cell id
 \donttest{
 
 
-chevreul_sce <- mockSCE(ncells=200, ngenes=1000)
+chevreul_sce <- small_example_dataset
 load_bigwigs(chevreul_sce)
 }
 }

@@ -33,7 +33,7 @@ Create a minimal chevreul app using SingleCellExperiment input
 \donttest{
 
 
-chevreul_sce <- mockSCE(ncells=200, ngenes=1000)
+chevreul_sce <- small_example_dataset
 minimalChevreulApp(chevreul_sce)
 }
 

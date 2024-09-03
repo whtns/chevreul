@@ -18,6 +18,6 @@ Get object metadata
 \examples{
 
 
-chevreul_sce <- mockSCE(ncells=200, ngenes=1000)
+chevreul_sce <- small_example_dataset
 get_object_metadata(chevreul_sce)
 }

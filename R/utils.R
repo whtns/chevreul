@@ -33,7 +33,7 @@ get_transcripts_from_object <- function(object, gene, organism = "human") {
 #' @examples
 #' 
 #' 
-#' chevreul_sce <- mockSCE(ncells=200, ngenes=1000)
+#' chevreul_sce <- small_example_dataset
 #' record_experiment_data(chevreul_sce)
 #'
 record_experiment_data <- function(object, experiment_name = "default_experiment", organism = "human") {
@@ -93,7 +93,7 @@ record_experiment_data <- function(object, experiment_name = "default_experiment
 #' @export
 #' @examples
 #' 
-#' chevreul_sce <- mockSCE(ncells=200, ngenes=1000)
+#' chevreul_sce <- small_example_dataset
 #' object_calcn(chevreul_sce)
 object_calcn <- function(object) {
     object <- addPerCellQC(object)
@@ -122,7 +122,7 @@ object_calcn <- function(object) {
 #'
 #' 
 #' 
-#' chevreul_sce <- mockSCE(ncells=200, ngenes=1000)
+#' chevreul_sce <- small_example_dataset
 #' new_meta <- data.frame(row.names = colnames(chevreul_sce))
 #' new_meta$example <- "example"
 #'
@@ -332,7 +332,7 @@ make_bigwig_db <- function(new_project = NULL, cache_location = "~/.cache/chevre
 #' \donttest{
 #' 
 #' 
-#' chevreul_sce <- mockSCE(ncells=200, ngenes=1000)
+#' chevreul_sce <- small_example_dataset
 #' metadata_from_batch(chevreul_sce)
 #' }
 #'
@@ -366,7 +366,7 @@ metadata_from_batch <- function(
 #' @examples
 #' 
 #' 
-#' chevreul_sce <- mockSCE(ncells=200, ngenes=1000)
+#' chevreul_sce <- small_example_dataset
 #' make_chevreul_clean_names(colnames(get_cell_metadata(chevreul_sce)))
 make_chevreul_clean_names <- function(myvec) {
     myvec %>%
@@ -384,7 +384,7 @@ make_chevreul_clean_names <- function(myvec) {
 #' @examples
 #' 
 #' 
-#' chevreul_sce <- mockSCE(ncells=200, ngenes=1000)
+#' chevreul_sce <- small_example_dataset
 #' metadata_from_object(chevreul_sce)
 #'
 metadata_from_object <- function(object) {

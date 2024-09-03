@@ -18,6 +18,6 @@ Get cell metadata from a given object
 \examples{
 
 
-chevreul_sce <- mockSCE(ncells=200, ngenes=1000)
+chevreul_sce <- small_example_dataset
 get_cell_metadata(chevreul_sce)
 }

@@ -1,3 +1,11 @@
+#' Small example SingleCellExperiment
+#'
+#' created with scuttle::mockSCE
+#'
+#' @format An SCE with 200 cells and 1000 genes
+#' @source scuttle::mockSCE
+"small_example_dataset"
+
 #' Gene Homologs Between Human and Mouse
 #'
 #' Homologs drawn from Biomart

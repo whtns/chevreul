@@ -32,9 +32,3 @@ a preprocessed SingleCellExperiment object
 \description{
 Performs standard pre-processing workflow for scRNA-seq data
 }
-\examples{
-chevreul_sce <- mockSCE(ncells=200, ngenes=1000)
-object_preprocess(chevreul_sce)
-
-
-}

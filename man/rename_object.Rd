@@ -20,6 +20,6 @@ Give a new project name to a SingleCellExperiment object
 \examples{
 
 
-chevreul_sce <- mockSCE(ncells=200, ngenes=1000)
+chevreul_sce <- small_example_dataset
 rename_object(chevreul_sce, "new_name")
 }

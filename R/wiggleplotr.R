@@ -15,7 +15,7 @@ build_bigwig_db <- function(bam_files, bigwig_db = "~/.cache/chevreul/bw-files.d
     bam_files <- normalizePath(bam_files)
 
     bigwigfiles <- map_chr(bam_files,
-                           ~ megadepth::bam_to_bigwig(.x,
+                           ~ bam_to_bigwig(.x,
                                                       prefix = path_ext_remove(.x),
                                                       overwrite = TRUE)) %>%
         set_names(path_file) %>%
@@ -43,7 +43,7 @@ build_bigwig_db <- function(bam_files, bigwig_db = "~/.cache/chevreul/bw-files.d
 #' \donttest{
 #' 
 #' 
-#' chevreul_sce <- mockSCE(ncells=200, ngenes=1000)
+#' chevreul_sce <- small_example_dataset
 #' load_bigwigs(chevreul_sce)
 #' }
 load_bigwigs <- function(object, bigwig_db = "~/.cache/chevreul/bw-files.db") {

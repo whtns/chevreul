@@ -27,7 +27,7 @@ Retrieve Metadata from Batch
 \donttest{
 
 
-chevreul_sce <- mockSCE(ncells=200, ngenes=1000)
+chevreul_sce <- small_example_dataset
 metadata_from_batch(chevreul_sce)
 }
 

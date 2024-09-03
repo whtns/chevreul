@@ -183,6 +183,7 @@
 #' @importFrom waiter use_waiter
 #' @importFrom waiter Waiter
 #' @importFrom wiggleplotr plotCoverageFromEnsembldb
+#' @importFrom megadepth bam_to_bigwig
 ## usethis namespace: end
 #' @import ggplot2
 #' @import SingleCellExperiment

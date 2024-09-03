@@ -33,9 +33,3 @@ a violin plot
 Plots a Violin plot of a single data (gene expression, metrics, etc.)
 grouped by a metadata variable
 }
-\examples{
-
-chevreul_sce <- chevreuldata::human_gene_transcript_sce()
-plot_violin(chevreul_sce, plot_var = "batch", features = "NRL")
-
-}

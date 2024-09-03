@@ -9,8 +9,7 @@
 #' @examples
 #' 
 #' 
-#' chevreul_sce <- mockSCE(ncells=200, ngenes=1000)
-#' splitByCol(chevreul_sce, "batch")
+#' splitByCol(small_example_dataset, "batch")
 splitByCol <- function(x, f = "batch") {
     f <- colData(x)[[f]]
 

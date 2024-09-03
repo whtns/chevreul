@@ -18,6 +18,6 @@ Cleans names of objects provided in a vector form
 \examples{
 
 
-chevreul_sce <- mockSCE(ncells=200, ngenes=1000)
+chevreul_sce <- small_example_dataset
 make_chevreul_clean_names(colnames(get_cell_metadata(chevreul_sce)))
 }

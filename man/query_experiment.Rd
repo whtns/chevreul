@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils-classes.R
 \name{query_experiment}
 \alias{query_experiment}
-\title{Query Assay}
+\title{Query Experiment}
 \usage{
 query_experiment(object, experiment)
 }
@@ -15,10 +15,5 @@ query_experiment(object, experiment)
 logical scalar indicating if experiment is present in object
 }
 \description{
-Query Assay
-}
-\examples{
-
-chevreul_sce <- mockSCE(ncells=200, ngenes=1000)
-query_experiment(chevreul_sce, "gene")
+Query Experiment
 }

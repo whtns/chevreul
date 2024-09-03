@@ -18,6 +18,6 @@ Get Feature Types
 \examples{
 
 
-chevreul_sce <- mockSCE(ncells=200, ngenes=1000)
+chevreul_sce <- small_example_dataset
 get_feature_types(chevreul_sce)
 }

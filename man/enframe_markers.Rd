@@ -15,9 +15,3 @@ a table of marker genes
 \description{
 Enframe Markers
 }
-\examples{
-chevreul_sce <- chevreuldata::human_gene_transcript_sce()
-marker_table <- metadata(chevreul_sce)$markers[["batch"]]
-enframe_markers(marker_table)
-
-}

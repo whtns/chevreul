@@ -8,12 +8,6 @@
 #' @param features Identify highly variable features
 #' @param legacy_settings Use legacy settings
 #' @param ... extra args passed to scaling functions
-#' @export
-#' @examples
-#' chevreul_sce <- mockSCE(ncells=200, ngenes=1000)
-#' object_preprocess(chevreul_sce)
-#' 
-#'
 #' @return a preprocessed SingleCellExperiment object
 object_preprocess <- function(object, scale = TRUE, normalize = TRUE, features = NULL, legacy_settings = FALSE, ...) {
     clusters <- quickCluster(object)
@@ -75,12 +69,6 @@ find_all_markers <- function(object, group_by = NULL, experiment = "gene", ...) 
 #' @param marker_table a table of marker genes
 #'
 #' @return a table of marker genes
-#' @export
-#' @examples
-#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
-#' marker_table <- metadata(chevreul_sce)$markers[["batch"]]
-#' enframe_markers(marker_table)
-#'
 enframe_markers <- function(marker_table) {
     marker_table %>%
         select(Gene.Name, Cluster) %>%

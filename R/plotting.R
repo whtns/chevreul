@@ -9,7 +9,7 @@
 #' @examples
 #' 
 #' 
-#' chevreul_sce <- mockSCE(ncells=200, ngenes=1000)
+#' chevreul_sce <- small_example_dataset
 #' unite_metadata(chevreul_sce, "Mutation_Status")
 #'
 unite_metadata <-
@@ -107,13 +107,6 @@ plotly_settings <- function(plotly_plot, width = 600, height = 700) {
 #' @param ... extra parameters passed to ggplot2
 #'
 #' @return a violin plot
-#' @export
-#'
-#' @examples
-#' 
-#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
-#' plot_violin(chevreul_sce, plot_var = "batch", features = "NRL")
-#'
 plot_violin <- function(object, plot_var = "batch", plot_vals = NULL, features = "NRL", experiment = "gene", ...) {
     if (is.null(plot_vals)) {
         plot_vals <- unique(get_cell_metadata(object)[[plot_var]])
@@ -493,14 +486,6 @@ plot_transcript_composition <- function(object, gene_symbol, group.by = "batch",
 #' @param combine TRUE
 #'
 #' @return a list of embedding plots colored by a feature of interest
-#' @export
-#'
-#' @examples
-#' 
-#' 
-#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
-#' plot_all_transcripts(chevreul_sce, "NRL")
-#'
 plot_all_transcripts <- function(object, features, embedding = "UMAP", from_gene = TRUE, combine = TRUE) {
     if (from_gene) {
         features <- genes_to_transcripts(features)

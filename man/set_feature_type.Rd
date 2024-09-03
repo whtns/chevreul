@@ -20,6 +20,6 @@ Set Feature Types
 \examples{
 
 
-chevreul_sce <- mockSCE(ncells=200, ngenes=1000)
+chevreul_sce <- small_example_dataset
 set_feature_type(chevreul_sce, "transcript")
 }

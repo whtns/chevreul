@@ -20,7 +20,7 @@ Retrieve Assay
 \examples{
 
 
-chevreul_sce <- mockSCE(ncells=200, ngenes=1000)
+chevreul_sce <- small_example_dataset
 mainExpName(chevreul_sce) <- "gene"
 retrieve_experiment(chevreul_sce, experiment = "gene")
 }

@@ -75,7 +75,7 @@ transcripts_to_genes <- function(transcripts, organism = "human") {
 #' @export
 #' @examples
 #' 
-#' chevreul_sce <- mockSCE(ncells=200, ngenes=1000)
+#' chevreul_sce <- small_example_dataset
 #' add_percent_mito(chevreul_sce)
 #'
 add_percent_mito <- function(object, experiment = "gene") {

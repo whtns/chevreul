@@ -133,20 +133,6 @@ plot_markers(chevreul_sce,
 ```
 
 
-## Violin plot
-
-To visualize the distribution of expression level of a feature in different 
-groups of cells Chevreul draws a violin plot. This function uses 
-SingleCellExperiment's `VInPlot()` function as a sub-function to create 
-the violin plot, where the metadata variable, provided to the function 
-through the variable `plot_var`, is used to group the cells and based on the
-level of feature expression a violin plot is produced. 
-
-```{r}
-plot_violin(chevreul_sce, plot_var = "Kit_ID", features = "NRL")
-```
-
-
 ## Plotting all transcripts 
 
 Expression level of all the transcripts present in a given SingleCellExperiment
