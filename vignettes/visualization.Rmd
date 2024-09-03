@@ -83,14 +83,14 @@ investigation.
 ## Plot read count or other QC measurements
 
 The `plot_readcount` function displays a histogram of cell read counts colored 
-according to a categorical variable using the argument `color.by`. Here we can 
+according to a categorical variable using the argument `fill_by`. Here we can 
 see that read counts for this dataset are not distinctly different depending on
 the method of organoid preparation used (Kuwahara or Zhong)
 
 ```{r}
 plot_readcount(chevreul_sce,
     group_by = "nCount_RNA",
-    color.by = "Prep.Method"
+    fill_by = "Prep.Method"
 )
 ```
 

@@ -9,6 +9,4 @@
 library(testthat)
 library(chevreul)
 
-chevreul_sce <- chevreuldata::human_gene_transcript_sce()
-
 test_check("chevreul")

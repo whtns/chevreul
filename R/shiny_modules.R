@@ -1025,9 +1025,9 @@ plotReadCount <- function(input, output, session, object, plot_types) {
             }
 
             louvain_resolution <- paste0(experiment, "_snn_res.", input$resolution)
-            plot_readcount(object(), group_by = input$group_by, color.by = louvain_resolution, yscale = input$yScale, return_plotly = TRUE)
+            plot_readcount(object(), group_by = input$group_by, fill_by = louvain_resolution, yscale = input$yScale, return_plotly = TRUE)
         } else if (input$colorby %in% flatten_chr(plot_types())) {
-            plot_readcount(object(), group_by = input$group_by, color.by = input$colorby, yscale = input$yScale, return_plotly = TRUE)
+            plot_readcount(object(), group_by = input$group_by, fill_by = input$colorby, yscale = input$yScale, return_plotly = TRUE)
         }
     })
 }

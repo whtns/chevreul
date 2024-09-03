@@ -110,8 +110,7 @@ get_object_metadata <- function(object) {
 #' @export
 #' @examples
 #' 
-#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
-#' get_variable_features(chevreul_sce)
+#' get_variable_features(small_example_dataset)
 get_variable_features <- function(object, experiment = "gene") {
     if (experiment == mainExpName(object)) {
         getTopHVGs(object)
@@ -132,8 +131,7 @@ get_variable_features <- function(object, experiment = "gene") {
 #' @examples
 #' 
 #' 
-#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
-#' get_features(chevreul_sce)
+#' get_features(small_example_dataset)
 get_features <- function(object, experiment = "gene") {
     if (experiment == mainExpName(object)) {
         rownames(object)

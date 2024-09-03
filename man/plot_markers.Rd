@@ -50,8 +50,6 @@ available methods are wilcoxon rank-sum test
 }
 \examples{
 
-
-chevreul_sce <- chevreuldata::human_gene_transcript_sce()
-plot_markers(chevreul_sce, group_by = "gene_snn_res.0.2")
+plot_markers(small_example_dataset, group_by = "gene_snn_res.1")
 
 }

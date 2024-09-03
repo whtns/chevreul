@@ -17,6 +17,5 @@ Recalculate counts/features per cell for a object
 }
 \examples{
 
-chevreul_sce <- small_example_dataset
-object_calcn(chevreul_sce)
+object_calcn(small_example_dataset)
 }

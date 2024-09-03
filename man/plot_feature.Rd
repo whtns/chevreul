@@ -35,7 +35,6 @@ Plots gene or transcript expression overlaid on a given embedding.
 \examples{
 
 
-chevreul_sce <- chevreuldata::human_gene_transcript_sce()
-plot_feature(chevreul_sce, embedding = "UMAP", features = "NRL")
+plot_feature(small_example_dataset, embedding = "UMAP", features = "Gene_0001")
 
 }

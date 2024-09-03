@@ -6,8 +6,8 @@
 \usage{
 plot_readcount(
   object,
-  group_by = "nCount_RNA",
-  color.by = "batch",
+  group_by = NULL,
+  fill_by = NULL,
   yscale = "linear",
   return_plotly = FALSE,
   ...
@@ -18,7 +18,7 @@ plot_readcount(
 
 \item{group_by}{Metadata variable to plot. Default set to "nCount_RNA"}
 
-\item{color.by}{Variable to color bins by. Default set to "batch"}
+\item{fill_by}{Variable to color bins by. Default set to "batch"}
 
 \item{yscale}{Scale of y axis. Default set to "linear"}
 
@@ -35,10 +35,10 @@ Draw a box plot for read count data of a metadata variable
 \examples{
 
 
-chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+small_example_dataset <- object_calcn(small_example_dataset)
 # interactive plotly
-plot_readcount((chevreul_sce), return_plotly = TRUE)
+plot_readcount((small_example_dataset), return_plotly = TRUE)
 
 # static plot
-plot_readcount((chevreul_sce), return_plotly = FALSE)
+plot_readcount((small_example_dataset), return_plotly = FALSE)
 }

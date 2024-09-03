@@ -20,6 +20,5 @@ Get feature names
 \examples{
 
 
-chevreul_sce <- chevreuldata::human_gene_transcript_sce()
-get_features(chevreul_sce)
+get_features(small_example_dataset)
 }

@@ -43,12 +43,11 @@ unite_metadata <-
 #'
 #' @examples
 #' 
-#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
 #' # static mode
-#' plot_var(chevreul_sce, "batch", return_plotly = FALSE)
+#' plot_var(small_example_dataset, "Mutation_Status", return_plotly = FALSE)
 #'
 #' # interactive plotly plot
-#' plot_var(chevreul_sce, "batch", return_plotly = TRUE)
+#' plot_var(small_example_dataset, "Mutation_Status", return_plotly = TRUE)
 #'
 plot_var <- function(object, group = "batch", embedding = "UMAP", dims = c(1, 2), highlight = NULL, pt.size = 1.0, return_plotly = FALSE, ...) {
     metadata <- get_cell_metadata(object)
@@ -136,8 +135,7 @@ plot_violin <- function(object, plot_var = "batch", plot_vals = NULL, features =
 #' @examples
 #' 
 #' 
-#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
-#' plot_feature(chevreul_sce, embedding = "UMAP", features = "NRL")
+#' plot_feature(small_example_dataset, embedding = "UMAP", features = "Gene_0001")
 #'
 plot_feature <- function(object, embedding = c("UMAP", "PCA", "TSNE"), features, dims = c(1, 2), return_plotly = FALSE, pt.size = 1.0) {
     embedding <- toupper(embedding)
@@ -203,9 +201,7 @@ annotate_cell_cycle <- function(object) {
 #'
 #' @examples
 #' 
-#' 
-#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
-#' plot_markers(chevreul_sce, group_by = "gene_snn_res.0.2")
+#' plot_markers(small_example_dataset, group_by = "gene_snn_res.1")
 #'
 plot_markers <- function(object, group_by = "batch", num_markers = 5, selected_values = NULL, return_plotly = FALSE, marker_method = "wilcox", experiment = "gene", hide_technical = NULL, unique_markers = FALSE, p_val_cutoff = 1, ...) {
     # Idents(object) <- get_cell_metadata(object)[[group_by]]
@@ -286,7 +282,7 @@ plot_markers <- function(object, group_by = "batch", num_markers = 5, selected_v
 #'
 #' @param object A object
 #' @param group_by Metadata variable to plot. Default set to "nCount_RNA"
-#' @param color.by Variable to color bins by. Default set to "batch"
+#' @param fill_by Variable to color bins by. Default set to "batch"
 #' @param yscale Scale of y axis. Default set to "linear"
 #' @param return_plotly whether to return an interactive plotly plot. Default set to FALSE
 #' @param ... extra args passed to ggplot2
@@ -297,15 +293,18 @@ plot_markers <- function(object, group_by = "batch", num_markers = 5, selected_v
 #' @examples
 #' 
 #' 
-#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+#' small_example_dataset <- object_calcn(small_example_dataset)
 #' # interactive plotly
-#' plot_readcount((chevreul_sce), return_plotly = TRUE)
+#' plot_readcount((small_example_dataset), return_plotly = TRUE)
 #'
 #' # static plot
-#' plot_readcount((chevreul_sce), return_plotly = FALSE)
-plot_readcount <- function(object, group_by = "nCount_RNA", color.by = "batch", yscale = "linear", return_plotly = FALSE, ...) {
-    object_tbl <- rownames_to_column(get_cell_metadata(object), "SID") %>% select(SID, !!as.symbol(group_by), !!as.symbol(color.by))
-    rc_plot <- ggplot(object_tbl, aes(x = reorder(SID, -!!as.symbol(group_by)), y = !!as.symbol(group_by), fill = !!as.symbol(color.by))) +
+#' plot_readcount((small_example_dataset), return_plotly = FALSE)
+plot_readcount <- function(object, group_by = NULL, fill_by = NULL, yscale = "linear", return_plotly = FALSE, ...) {
+	group_by <- group_by %||% glue("nCount_{mainExpName(object)}")
+	fill_by <- group_by %||% glue("nCount_{mainExpName(object)}")
+	
+    object_tbl <- rownames_to_column(get_cell_metadata(object), "SID") %>% select(SID, !!as.symbol(group_by), !!as.symbol(fill_by))
+    rc_plot <- ggplot(object_tbl, aes(x = reorder(SID, -!!as.symbol(group_by)), y = !!as.symbol(group_by), fill = !!as.symbol(fill_by))) +
         geom_bar(position = "identity", stat = "identity") +
         theme(axis.text.x = element_blank()) +
         labs(title = group_by, x = "Sample") +
