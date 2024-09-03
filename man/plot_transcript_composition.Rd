@@ -32,12 +32,10 @@ plot the proportion of reads of a given gene map to each transcript
 }
 \examples{
 
-
-chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+data(tiny_sce)
 data("grch38_tx2gene")
 data("grch38")
-plot_transcript_composition(chevreul_sce, "NRL",
-    group.by = "gene_snn_res.0.6"
+plot_transcript_composition(tiny_sce, "NRL"
 )
 
 }

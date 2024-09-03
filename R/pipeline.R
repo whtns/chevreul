@@ -114,12 +114,6 @@ object_pipeline <- function(object, experiment = "gene", resolution = 0.6, reduc
 #' @param ... extra args passed to single cell packages
 #'
 #' @return a SingleCellExperiment object with louvain clusters
-#' @export
-#' @examples
-#' 
-#' 
-#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
-#' object_cluster(chevreul_sce)
 object_cluster <- function(object = object, resolution = 0.6, custom_clust = NULL, reduction = "PCA", algorithm = 1, ...) {
 	message(glue("[{format(Sys.time(), '%H:%M:%S')}] Clustering Cells..."))
 	if (length(resolution) > 1) {

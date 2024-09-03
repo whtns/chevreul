@@ -19,9 +19,3 @@ transcripts constituting a gene of interest in a SingleCellExperiment object
 \description{
 Get transcript ids in objects for one or more gene of interest
 }
-\examples{
-
-chevreul_sce <- chevreuldata::human_gene_transcript_sce()
-NRL_transcripts <- get_transcripts_from_object(chevreul_sce, "NRL")
-
-}

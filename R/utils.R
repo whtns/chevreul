@@ -7,13 +7,6 @@
 #' @param organism Organism
 #'
 #' @return transcripts constituting a gene of interest in a SingleCellExperiment object
-#' @export
-#'
-#' @examples
-#' 
-#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
-#' NRL_transcripts <- get_transcripts_from_object(chevreul_sce, "NRL")
-#'
 get_transcripts_from_object <- function(object, gene, organism = "human") {
     transcripts <- genes_to_transcripts(gene, organism)
 
