@@ -21,7 +21,6 @@ Object (based on nCount_RNA)
 }
 \examples{
 
-
 chevreul_sce <- mockSCE(ncells=200, ngenes=1000)
 add_percent_mito(chevreul_sce)
 
