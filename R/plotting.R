@@ -345,14 +345,6 @@ plot_readcount <- function(object, group_by = "nCount_RNA", color.by = "batch", 
 #' @param ... additional arguments passed to Heatmap
 #'
 #' @return a complexheatmap
-#' @export
-#'
-#' @examples
-#' 
-#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
-#' top_25_features <- get_variable_features(chevreul_sce)[seq(25)]
-#' make_complex_heatmap(chevreul_sce, features = top_25_features)
-#' 
 make_complex_heatmap <- function(object, features = NULL, group.by = "ident", cells = NULL, assayName = "logcounts", experiment = NULL, group.bar.height = 0.01, column_split = NULL, col_arrangement = "ward.D2", mm_col_dend = 30, ...) {
     cells <- cells %||% colnames(x = object)
     if (is.numeric(x = cells)) {

@@ -34,17 +34,6 @@ splitByCol <- function(x, f = "batch") {
 #' @param k.filter minimum cell number for integration
 #'
 #' @return a SingleCellExperiment object
-#' @export
-#' @examples
-#' 
-#' chevreul_sce <- mockSCE(ncells=200, ngenes=1000)
-#' chevreul_sce <- object_preprocess(chevreul_sce)
-#' merge_small_objects(
-#'     "small_batch1" = chevreul_sce[, seq(1, 40)],
-#'     "small_batch2" = chevreul_sce[, seq(41, 80)],
-#'     "large_batch" = chevreul_sce[, seq(81, 200)]
-#' )
-#'
 merge_small_objects <- function(..., k.filter = 50) {
     object_list <- list(...)
 

@@ -47,10 +47,3 @@ a complexheatmap
 \description{
 Plot Annotated Complexheatmap from SingleCellExperiment object
 }
-\examples{
-
-chevreul_sce <- chevreuldata::human_gene_transcript_sce()
-top_25_features <- get_variable_features(chevreul_sce)[seq(25)]
-make_complex_heatmap(chevreul_sce, features = top_25_features)
-
-}

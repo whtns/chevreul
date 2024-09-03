@@ -12,24 +12,6 @@
 #'
 #'
 #' @return a dataframe with differential expression information
-#' @export
-#' @examples
-#' 
-#' 
-#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
-#' run_object_de(chevreul_sce,
-#'     diffex_scheme = "louvain",
-#'     cluster1 = 1, cluster2 = 2, tests = "t"
-#' )
-#'
-#' cells1 <- colnames(chevreul_sce)[chevreul_sce$batch == "Zhong"]
-#' cells2 <- colnames(chevreul_sce)[chevreul_sce$batch == "Kuwahara"]
-#'
-#' run_object_de(chevreul_sce,
-#'     diffex_scheme = "custom",
-#'     cluster1 = cells1, cluster2 = cells2, tests = "t"
-#' )
-#'
 run_object_de <- function(object, cluster1, cluster2, resolution = 0.2,
                           diffex_scheme = "louvain", featureType = "gene",
                           tests = c("t", "wilcox", "bimod")) {

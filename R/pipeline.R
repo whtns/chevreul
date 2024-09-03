@@ -155,13 +155,6 @@ object_cluster <- function(object = object, resolution = 0.6, custom_clust = NUL
 #' @param ... Extra parameters passed to object_reduce_dimensions
 #'
 #' @return a SingleCellExperiment object with embeddings
-#' @export
-#' @examples
-#' 
-#' 
-#' chevreul_sce <- mockSCE(ncells=200, ngenes=1000)
-#' chevreul_sce <- object_preprocess(chevreul_sce)
-#' object_reduce_dimensions(chevreul_sce)
 object_reduce_dimensions <- function(object, experiment = "gene", ...) {
 	num_samples <- dim(object)[[2]]
 	if (num_samples < 50) {
