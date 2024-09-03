@@ -20,10 +20,9 @@ Propagate Metadata Changes
 \examples{
 
 
-
-chevreul_sce <- small_example_dataset
-new_meta <- data.frame(row.names = colnames(chevreul_sce))
+data(small_example_dataset)
+new_meta <- data.frame(row.names = colnames(small_example_dataset))
 new_meta$example <- "example"
 
-propagate_spreadsheet_changes(new_meta, chevreul_sce)
+propagate_spreadsheet_changes(new_meta, small_example_dataset)
 }

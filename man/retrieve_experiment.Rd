@@ -19,8 +19,7 @@ Retrieve Assay
 }
 \examples{
 
-
-chevreul_sce <- small_example_dataset
-mainExpName(chevreul_sce) <- "gene"
-retrieve_experiment(chevreul_sce, experiment = "gene")
+data(small_example_dataset)
+mainExpName(small_example_dataset) <- "gene"
+retrieve_experiment(small_example_dataset, experiment = "gene")
 }

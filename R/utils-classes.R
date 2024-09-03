@@ -6,9 +6,8 @@
 #' @export
 #' @examples
 #' 
-#' 
-#' chevreul_sce <- small_example_dataset
-#' list_plot_types(chevreul_sce)
+#' data(small_example_dataset)
+#' list_plot_types(small_example_dataset)
 list_plot_types <- function(object) {
     meta_types <- tibble(
         vars = colnames(colData(object)),
@@ -56,9 +55,8 @@ list_plot_types <- function(object) {
 #' @export
 #' @examples
 #' 
-#' 
-#' chevreul_sce <- small_example_dataset
-#' get_cell_metadata(chevreul_sce)
+#' small_example_dataset
+#' get_cell_metadata(small_example_dataset)
 get_cell_metadata <- function(object) {
     colData(object) %>%
         as.data.frame()
@@ -75,11 +73,10 @@ get_cell_metadata <- function(object) {
 #' @export
 #' @examples
 #' 
-#' 
-#' chevreul_sce <- small_example_dataset
-#' new_meta <- data.frame(row.names = colnames(chevreul_sce))
+#' small_example_dataset
+#' new_meta <- data.frame(row.names = colnames(small_example_dataset))
 #' new_meta$example <- "example"
-#' set_cell_metadata(chevreul_sce, new_meta)
+#' set_cell_metadata(small_example_dataset, new_meta)
 set_cell_metadata <- function(object, meta) {
     colData(object) <- DataFrame(meta)
     return(object)
@@ -94,9 +91,8 @@ set_cell_metadata <- function(object, meta) {
 #' @importFrom S4Vectors metadata
 #' @examples
 #' 
-#' 
-#' chevreul_sce <- small_example_dataset
-#' get_object_metadata(chevreul_sce)
+#' data(small_example_dataset)
+#' get_object_metadata(small_example_dataset)
 get_object_metadata <- function(object) {
     metadata(object)
 }
@@ -110,6 +106,7 @@ get_object_metadata <- function(object) {
 #' @export
 #' @examples
 #' 
+#' data(small_example_dataset)
 #' get_variable_features(small_example_dataset)
 get_variable_features <- function(object, experiment = "gene") {
     if (experiment == mainExpName(object)) {
@@ -130,7 +127,7 @@ get_variable_features <- function(object, experiment = "gene") {
 #' @export
 #' @examples
 #' 
-#' 
+#' data(small_example_dataset)
 #' get_features(small_example_dataset)
 get_features <- function(object, experiment = "gene") {
     if (experiment == mainExpName(object)) {
@@ -150,9 +147,8 @@ get_features <- function(object, experiment = "gene") {
 #'
 #' @examples
 #' 
-#' 
-#' chevreul_sce <- small_example_dataset
-#' get_feature_types(chevreul_sce)
+#' data(small_example_dataset)
+#' get_feature_types(small_example_dataset)
 get_feature_types <- function(object) {
     sort(c(mainExpName(object), altExpNames(object)))
 }
@@ -166,9 +162,8 @@ get_feature_types <- function(object) {
 #'
 #' @examples
 #' 
-#' 
-#' chevreul_sce <- small_example_dataset
-#' set_feature_type(chevreul_sce, "transcript")
+#' data(small_example_dataset)
+#' set_feature_type(small_example_dataset, "transcript")
 set_feature_type <- function(object, feature_type) {
     if (feature_type %in% altExpNames(object)) {
         object <- swapAltExp(object, feature_type, saved = mainExpName(object), withColData = TRUE)
@@ -186,10 +181,9 @@ set_feature_type <- function(object, feature_type) {
 #'
 #' @examples
 #' 
-#' 
-#' chevreul_sce <- small_example_dataset
-#' mainExpName(chevreul_sce) <- "gene"
-#' retrieve_experiment(chevreul_sce, experiment = "gene")
+#' data(small_example_dataset)
+#' mainExpName(small_example_dataset) <- "gene"
+#' retrieve_experiment(small_example_dataset, experiment = "gene")
 retrieve_experiment <- function(object, experiment) {
     if (experiment %in% mainExpName(object)) {
         return(object)

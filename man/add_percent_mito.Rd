@@ -21,7 +21,7 @@ Object (based on nCount_RNA)
 }
 \examples{
 
-chevreul_sce <- small_example_dataset
-add_percent_mito(chevreul_sce)
+data(small_example_dataset)
+add_percent_mito(small_example_dataset)
 
 }

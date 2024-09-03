@@ -32,9 +32,8 @@ get_transcripts_from_object <- function(object, gene, organism = "human") {
 #' @export
 #' @examples
 #' 
-#' 
-#' chevreul_sce <- small_example_dataset
-#' record_experiment_data(chevreul_sce)
+#' data(small_example_dataset)
+#' record_experiment_data(small_example_dataset)
 #'
 record_experiment_data <- function(object, experiment_name = "default_experiment", organism = "human") {
     if (!requireNamespace("SingleCellExperiment", quietly = TRUE)) {
@@ -93,6 +92,7 @@ record_experiment_data <- function(object, experiment_name = "default_experiment
 #' @export
 #' @examples
 #' 
+#' data(small_example_dataset)
 #' object_calcn(small_example_dataset)
 object_calcn <- function(object) {
     object <- addPerCellQC(object)
@@ -120,12 +120,11 @@ object_calcn <- function(object) {
 #' @examples
 #'
 #' 
-#' 
-#' chevreul_sce <- small_example_dataset
-#' new_meta <- data.frame(row.names = colnames(chevreul_sce))
+#' data(small_example_dataset)
+#' new_meta <- data.frame(row.names = colnames(small_example_dataset))
 #' new_meta$example <- "example"
 #'
-#' propagate_spreadsheet_changes(new_meta, chevreul_sce)
+#' propagate_spreadsheet_changes(new_meta, small_example_dataset)
 propagate_spreadsheet_changes <- function(meta, object) {
     meta <- meta %>%
         tibble::rownames_to_column("cell") %>%
@@ -330,9 +329,8 @@ make_bigwig_db <- function(new_project = NULL, cache_location = "~/.cache/chevre
 #' @examples
 #' \donttest{
 #' 
-#' 
-#' chevreul_sce <- small_example_dataset
-#' metadata_from_batch(chevreul_sce)
+#' data(small_example_dataset)
+#' metadata_from_batch(small_example_dataset)
 #' }
 #'
 metadata_from_batch <- function(
@@ -364,9 +362,8 @@ metadata_from_batch <- function(
 #' @export
 #' @examples
 #' 
-#' 
-#' chevreul_sce <- small_example_dataset
-#' make_chevreul_clean_names(colnames(get_cell_metadata(chevreul_sce)))
+#' data(small_example_dataset)
+#' make_chevreul_clean_names(colnames(get_cell_metadata(small_example_dataset)))
 make_chevreul_clean_names <- function(myvec) {
     myvec %>%
         set_names(str_to_title(str_replace_all(., "[^[:alnum:][:space:]\\.]", " ")))
@@ -382,9 +379,8 @@ make_chevreul_clean_names <- function(myvec) {
 #' @export
 #' @examples
 #' 
-#' 
-#' chevreul_sce <- small_example_dataset
-#' metadata_from_object(chevreul_sce)
+#' data(small_example_dataset)
+#' metadata_from_object(small_example_dataset)
 #'
 metadata_from_object <- function(object) {
     colnames(colData(object))

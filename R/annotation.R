@@ -75,8 +75,8 @@ transcripts_to_genes <- function(transcripts, organism = "human") {
 #' @export
 #' @examples
 #' 
-#' chevreul_sce <- small_example_dataset
-#' add_percent_mito(chevreul_sce)
+#' data(small_example_dataset)
+#' add_percent_mito(small_example_dataset)
 #'
 add_percent_mito <- function(object, experiment = "gene") {
     is.mito <- grepl("^MT-*", rownames(object))

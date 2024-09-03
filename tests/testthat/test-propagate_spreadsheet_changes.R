@@ -1,7 +1,6 @@
 test_that("Metadata updated", {
-   chevreul_sce <- small_example_dataset
-    new_meta <- data.frame(row.names = colnames(chevreul_sce))
+    new_meta <- data.frame(row.names = colnames(small_example_dataset))
     new_meta$example <- "example"
-    obj <- propagate_spreadsheet_changes(new_meta, chevreul_sce)
+    obj <- propagate_spreadsheet_changes(new_meta, small_example_dataset)
     expect_named(colData(obj), colnames(new_meta))
 })

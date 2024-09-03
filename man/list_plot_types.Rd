@@ -17,7 +17,6 @@ Collate list of variables to be plotted
 }
 \examples{
 
-
-chevreul_sce <- small_example_dataset
-list_plot_types(chevreul_sce)
+data(small_example_dataset)
+list_plot_types(small_example_dataset)
 }

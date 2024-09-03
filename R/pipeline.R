@@ -193,8 +193,8 @@ object_reduce_dimensions <- function(object, experiment = "gene", ...) {
 #' @examples
 #' 
 #' 
-#' chevreul_sce <- small_example_dataset
-#' rename_object(chevreul_sce, "new_name")
+#' data(small_example_dataset)
+#' rename_object(small_example_dataset, "new_name")
 rename_object <- function(object, new_name) {
 	metadata(object)["project.name"] <- new_name
 	return(object)

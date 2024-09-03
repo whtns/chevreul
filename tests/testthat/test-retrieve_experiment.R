@@ -1,6 +1,5 @@
 test_that("Assay retrieved", {
-   chevreul_sce <- small_example_dataset
-   mainExpName(chevreul_sce) <- "gene"
-   retrieve_data <- retrieve_experiment(chevreul_sce, experiment = "gene")
+   mainExpName(small_example_dataset) <- "gene"
+   retrieve_data <- retrieve_experiment(small_example_dataset, experiment = "gene")
     expect_equal(mainExpName(retrieve_data), "gene")
 })

@@ -42,9 +42,8 @@ build_bigwig_db <- function(bam_files, bigwig_db = "~/.cache/chevreul/bw-files.d
 #' @examples
 #' \donttest{
 #' 
-#' 
-#' chevreul_sce <- small_example_dataset
-#' load_bigwigs(chevreul_sce)
+#' data(small_example_dataset)
+#' load_bigwigs(small_example_dataset)
 #' }
 load_bigwigs <- function(object, bigwig_db = "~/.cache/chevreul/bw-files.db") {
     con <- dbConnect(SQLite(), dbname = bigwig_db)

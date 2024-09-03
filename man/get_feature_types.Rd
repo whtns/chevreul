@@ -17,7 +17,6 @@ Get Feature Types
 }
 \examples{
 
-
-chevreul_sce <- small_example_dataset
-get_feature_types(chevreul_sce)
+data(small_example_dataset)
+get_feature_types(small_example_dataset)
 }

@@ -17,8 +17,7 @@ Get metadata from the given object
 }
 \examples{
 
-
-chevreul_sce <- small_example_dataset
-metadata_from_object(chevreul_sce)
+data(small_example_dataset)
+metadata_from_object(small_example_dataset)
 
 }

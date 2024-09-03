@@ -20,7 +20,7 @@ Unite metadata
 \examples{
 
 
-chevreul_sce <- small_example_dataset
-unite_metadata(chevreul_sce, "Mutation_Status")
+data(small_example_dataset)
+unite_metadata(small_example_dataset, "Mutation_Status")
 
 }

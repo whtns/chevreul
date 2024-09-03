@@ -34,7 +34,7 @@ Plots gene or transcript expression overlaid on a given embedding.
 }
 \examples{
 
-
+data(small_example_dataset)
 plot_feature(small_example_dataset, embedding = "UMAP", features = "Gene_0001")
 
 }

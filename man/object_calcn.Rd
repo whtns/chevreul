@@ -17,5 +17,6 @@ Recalculate counts/features per cell for a object
 }
 \examples{
 
+data(small_example_dataset)
 object_calcn(small_example_dataset)
 }

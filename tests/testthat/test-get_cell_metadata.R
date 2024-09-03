@@ -1,5 +1,4 @@
 test_that("Metadata pulled", {
-   chevreul_sce <- small_example_dataset
-    meta <- get_cell_metadata(chevreul_sce)
-    expect_contains(colnames(meta), colnames(colData(chevreul_sce)))
+    meta <- get_cell_metadata(small_example_dataset)
+    expect_contains(colnames(meta), colnames(colData(small_example_dataset)))
 })

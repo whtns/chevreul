@@ -33,8 +33,8 @@ Create a minimal chevreul app using SingleCellExperiment input
 \donttest{
 
 
-chevreul_sce <- small_example_dataset
-minimalChevreulApp(chevreul_sce)
+data(small_example_dataset)
+minimalChevreulApp(small_example_dataset)
 }
 
 }

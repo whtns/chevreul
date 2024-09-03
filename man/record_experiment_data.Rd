@@ -25,8 +25,7 @@ Records miscellaneous data
 }
 \examples{
 
-
-chevreul_sce <- small_example_dataset
-record_experiment_data(chevreul_sce)
+data(small_example_dataset)
+record_experiment_data(small_example_dataset)
 
 }

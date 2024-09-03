@@ -42,6 +42,8 @@ reduction technique used
 }
 \examples{
 
+data(small_example_dataset)
+
 # static mode
 plot_var(small_example_dataset, "Mutation_Status", return_plotly = FALSE)
 

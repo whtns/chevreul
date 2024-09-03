@@ -17,7 +17,6 @@ Get cell metadata from a given object
 }
 \examples{
 
-
-chevreul_sce <- small_example_dataset
-get_cell_metadata(chevreul_sce)
+small_example_dataset
+get_cell_metadata(small_example_dataset)
 }

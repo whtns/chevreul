@@ -19,9 +19,8 @@ Set cell metadata from a given object
 }
 \examples{
 
-
-chevreul_sce <- small_example_dataset
-new_meta <- data.frame(row.names = colnames(chevreul_sce))
+small_example_dataset
+new_meta <- data.frame(row.names = colnames(small_example_dataset))
 new_meta$example <- "example"
-set_cell_metadata(chevreul_sce, new_meta)
+set_cell_metadata(small_example_dataset, new_meta)
 }

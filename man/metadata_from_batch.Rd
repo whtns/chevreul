@@ -26,9 +26,8 @@ Retrieve Metadata from Batch
 \examples{
 \donttest{
 
-
-chevreul_sce <- small_example_dataset
-metadata_from_batch(chevreul_sce)
+data(small_example_dataset)
+metadata_from_batch(small_example_dataset)
 }
 
 }

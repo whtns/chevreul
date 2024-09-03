@@ -13,8 +13,8 @@
 #' \donttest{
 #' 
 #' 
-#' chevreul_sce <- small_example_dataset
-#' minimalChevreulApp(chevreul_sce)
+#' data(small_example_dataset)
+#' minimalChevreulApp(small_example_dataset)
 #' }
 #'
 minimalChevreulApp <- function(single_cell_object = chevreul_sce,

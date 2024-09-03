@@ -34,7 +34,7 @@ Draw a box plot for read count data of a metadata variable
 }
 \examples{
 
-
+data(small_example_dataset)
 small_example_dataset <- object_calcn(small_example_dataset)
 # interactive plotly
 plot_readcount((small_example_dataset), return_plotly = TRUE)

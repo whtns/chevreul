@@ -20,8 +20,7 @@ Load a tibble of bigwig file paths by cell id
 \examples{
 \donttest{
 
-
-chevreul_sce <- small_example_dataset
-load_bigwigs(chevreul_sce)
+data(small_example_dataset)
+load_bigwigs(small_example_dataset)
 }
 }

@@ -50,6 +50,7 @@ available methods are wilcoxon rank-sum test
 }
 \examples{
 
+data(small_example_dataset)
 plot_markers(small_example_dataset, group_by = "gene_snn_res.1")
 
 }

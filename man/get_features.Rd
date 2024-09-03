@@ -19,6 +19,6 @@ Get feature names
 }
 \examples{
 
-
+data(small_example_dataset)
 get_features(small_example_dataset)
 }

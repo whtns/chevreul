@@ -19,5 +19,6 @@ Get variable features
 }
 \examples{
 
+data(small_example_dataset)
 get_variable_features(small_example_dataset)
 }

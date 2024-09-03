@@ -19,7 +19,6 @@ Set Feature Types
 }
 \examples{
 
-
-chevreul_sce <- small_example_dataset
-set_feature_type(chevreul_sce, "transcript")
+data(small_example_dataset)
+set_feature_type(small_example_dataset, "transcript")
 }

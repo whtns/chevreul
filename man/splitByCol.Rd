@@ -19,6 +19,6 @@ Split SingleCellExperiment by colData variable
 }
 \examples{
 
-
+data(small_example_dataset)
 splitByCol(small_example_dataset, "batch")
 }

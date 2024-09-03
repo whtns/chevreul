@@ -8,7 +8,7 @@
 #'
 #' @examples
 #' 
-#' 
+#' data(small_example_dataset)
 #' splitByCol(small_example_dataset, "batch")
 splitByCol <- function(x, f = "batch") {
     f <- colData(x)[[f]]

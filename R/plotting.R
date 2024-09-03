@@ -9,8 +9,8 @@
 #' @examples
 #' 
 #' 
-#' chevreul_sce <- small_example_dataset
-#' unite_metadata(chevreul_sce, "Mutation_Status")
+#' data(small_example_dataset)
+#' unite_metadata(small_example_dataset, "Mutation_Status")
 #'
 unite_metadata <-
     function(object, group_bys) {
@@ -42,6 +42,8 @@ unite_metadata <-
 #' @export
 #'
 #' @examples
+#' 
+#' data(small_example_dataset)
 #' 
 #' # static mode
 #' plot_var(small_example_dataset, "Mutation_Status", return_plotly = FALSE)
@@ -134,7 +136,7 @@ plot_violin <- function(object, plot_var = "batch", plot_vals = NULL, features =
 #' @export
 #' @examples
 #' 
-#' 
+#' data(small_example_dataset)
 #' plot_feature(small_example_dataset, embedding = "UMAP", features = "Gene_0001")
 #'
 plot_feature <- function(object, embedding = c("UMAP", "PCA", "TSNE"), features, dims = c(1, 2), return_plotly = FALSE, pt.size = 1.0) {
@@ -201,6 +203,7 @@ annotate_cell_cycle <- function(object) {
 #'
 #' @examples
 #' 
+#' data(small_example_dataset)
 #' plot_markers(small_example_dataset, group_by = "gene_snn_res.1")
 #'
 plot_markers <- function(object, group_by = "batch", num_markers = 5, selected_values = NULL, return_plotly = FALSE, marker_method = "wilcox", experiment = "gene", hide_technical = NULL, unique_markers = FALSE, p_val_cutoff = 1, ...) {
@@ -292,7 +295,7 @@ plot_markers <- function(object, group_by = "batch", num_markers = 5, selected_v
 #'
 #' @examples
 #' 
-#' 
+#' data(small_example_dataset)
 #' small_example_dataset <- object_calcn(small_example_dataset)
 #' # interactive plotly
 #' plot_readcount((small_example_dataset), return_plotly = TRUE)
