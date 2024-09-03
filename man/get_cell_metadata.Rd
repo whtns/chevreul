@@ -17,6 +17,6 @@ Get cell metadata from a given object
 }
 \examples{
 
-small_example_dataset
+data(small_example_dataset)
 get_cell_metadata(small_example_dataset)
 }

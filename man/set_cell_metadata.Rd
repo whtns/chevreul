@@ -19,7 +19,7 @@ Set cell metadata from a given object
 }
 \examples{
 
-small_example_dataset
+data(small_example_dataset)
 new_meta <- data.frame(row.names = colnames(small_example_dataset))
 new_meta$example <- "example"
 set_cell_metadata(small_example_dataset, new_meta)
