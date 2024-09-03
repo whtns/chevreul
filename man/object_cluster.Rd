@@ -33,6 +33,8 @@ a SingleCellExperiment object with louvain clusters
 Run Louvain Clustering at Multiple Resolutions
 }
 \examples{
+
+
 chevreul_sce <- chevreuldata::human_gene_transcript_sce()
 object_cluster(chevreul_sce)
 }

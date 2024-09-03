@@ -31,6 +31,8 @@ a stacked barplot of transcript counts
 plot the proportion of reads of a given gene map to each transcript
 }
 \examples{
+
+
 chevreul_sce <- chevreuldata::human_gene_transcript_sce()
 data("grch38_tx2gene")
 data("grch38")

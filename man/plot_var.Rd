@@ -41,6 +41,7 @@ variable whose position on the map depends on cell embeddings determined by the
 reduction technique used
 }
 \examples{
+
 chevreul_sce <- chevreuldata::human_gene_transcript_sce()
 # static mode
 plot_var(chevreul_sce, "batch", return_plotly = FALSE)

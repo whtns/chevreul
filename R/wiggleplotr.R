@@ -41,7 +41,9 @@ build_bigwig_db <- function(bam_files, bigwig_db = "~/.cache/chevreul/bw-files.d
 #' @export
 #' @examples
 #' \donttest{
-#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+#' 
+#' 
+#' chevreul_sce <- mockSCE(ncells=200, ngenes=1000)
 #' load_bigwigs(chevreul_sce)
 #' }
 load_bigwigs <- function(object, bigwig_db = "~/.cache/chevreul/bw-files.db") {

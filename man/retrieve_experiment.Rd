@@ -18,6 +18,9 @@ Main or alt experiment in an object
 Retrieve Assay
 }
 \examples{
-chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+
+
+chevreul_sce <- mockSCE(ncells=200, ngenes=1000)
+mainExpName(chevreul_sce) <- "gene"
 retrieve_experiment(chevreul_sce, experiment = "gene")
 }

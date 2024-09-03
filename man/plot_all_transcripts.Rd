@@ -30,6 +30,8 @@ a list of embedding plots colored by a feature of interest
 plot expression all transcripts for an input gene superimposed on an embedding
 }
 \examples{
+
+
 chevreul_sce <- chevreuldata::human_gene_transcript_sce()
 plot_all_transcripts(chevreul_sce, "NRL")
 

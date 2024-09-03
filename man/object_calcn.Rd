@@ -16,6 +16,7 @@ a SingleCellExperiment object with nfeatures and ngenes stored in metadata
 Recalculate counts/features per cell for a object
 }
 \examples{
-chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+
+chevreul_sce <- mockSCE(ncells=200, ngenes=1000)
 object_calcn(chevreul_sce)
 }

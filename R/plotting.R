@@ -1,14 +1,16 @@
 #' Unite metadata
 #'
-#' @param object A object
+#' @param object An object
 #' @param group_bys A feature or variable to combine
 #'
 #' @return an object with Idents formed from concatenation of group_bys
 #' @export
 #'
 #' @examples
-#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
-#' unite_metadata(chevreul_sce, "nFeature_gene")
+#' 
+#' 
+#' chevreul_sce <- mockSCE(ncells=200, ngenes=1000)
+#' unite_metadata(chevreul_sce, "Mutation_Status")
 #'
 unite_metadata <-
     function(object, group_bys) {
@@ -40,6 +42,7 @@ unite_metadata <-
 #' @export
 #'
 #' @examples
+#' 
 #' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
 #' # static mode
 #' plot_var(chevreul_sce, "batch", return_plotly = FALSE)
@@ -107,8 +110,8 @@ plotly_settings <- function(plotly_plot, width = 600, height = 700) {
 #' @export
 #'
 #' @examples
+#' 
 #' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
-#'
 #' plot_violin(chevreul_sce, plot_var = "batch", features = "NRL")
 #'
 plot_violin <- function(object, plot_var = "batch", plot_vals = NULL, features = "NRL", experiment = "gene", ...) {
@@ -138,6 +141,8 @@ plot_violin <- function(object, plot_var = "batch", plot_vals = NULL, features =
 #' @return an embedding colored by a feature of interest
 #' @export
 #' @examples
+#' 
+#' 
 #' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
 #' plot_feature(chevreul_sce, embedding = "UMAP", features = "NRL")
 #'
@@ -204,6 +209,8 @@ annotate_cell_cycle <- function(object) {
 #' @export
 #'
 #' @examples
+#' 
+#' 
 #' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
 #' plot_markers(chevreul_sce, group_by = "gene_snn_res.0.2")
 #'
@@ -295,6 +302,8 @@ plot_markers <- function(object, group_by = "batch", num_markers = 5, selected_v
 #' @export
 #'
 #' @examples
+#' 
+#' 
 #' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
 #' # interactive plotly
 #' plot_readcount((chevreul_sce), return_plotly = TRUE)
@@ -339,9 +348,11 @@ plot_readcount <- function(object, group_by = "nCount_RNA", color.by = "batch", 
 #' @export
 #'
 #' @examples
+#' 
 #' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
 #' top_25_features <- get_variable_features(chevreul_sce)[seq(25)]
 #' make_complex_heatmap(chevreul_sce, features = top_25_features)
+#' 
 make_complex_heatmap <- function(object, features = NULL, group.by = "ident", cells = NULL, assayName = "logcounts", experiment = NULL, group.bar.height = 0.01, column_split = NULL, col_arrangement = "ward.D2", mm_col_dend = 30, ...) {
     cells <- cells %||% colnames(x = object)
     if (is.numeric(x = cells)) {
@@ -428,6 +439,8 @@ make_complex_heatmap <- function(object, features = NULL, group.by = "ident", ce
 #' @export
 #'
 #' @examples
+#' 
+#' 
 #' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
 #' data("grch38_tx2gene")
 #' data("grch38")
@@ -491,6 +504,8 @@ plot_transcript_composition <- function(object, gene_symbol, group.by = "batch",
 #' @export
 #'
 #' @examples
+#' 
+#' 
 #' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
 #' plot_all_transcripts(chevreul_sce, "NRL")
 #'

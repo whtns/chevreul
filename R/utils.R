@@ -10,8 +10,8 @@
 #' @export
 #'
 #' @examples
+#' 
 #' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
-#'
 #' NRL_transcripts <- get_transcripts_from_object(chevreul_sce, "NRL")
 #'
 get_transcripts_from_object <- function(object, gene, organism = "human") {
@@ -31,7 +31,9 @@ get_transcripts_from_object <- function(object, gene, organism = "human") {
 #' @return a SingleCellExperiment object
 #' @export
 #' @examples
-#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+#' 
+#' 
+#' chevreul_sce <- mockSCE(ncells=200, ngenes=1000)
 #' record_experiment_data(chevreul_sce)
 #'
 record_experiment_data <- function(object, experiment_name = "default_experiment", organism = "human") {
@@ -90,12 +92,14 @@ record_experiment_data <- function(object, experiment_name = "default_experiment
 #' @return a SingleCellExperiment object with nfeatures and ngenes stored in metadata
 #' @export
 #' @examples
-#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+#' 
+#' chevreul_sce <- mockSCE(ncells=200, ngenes=1000)
 #' object_calcn(chevreul_sce)
 object_calcn <- function(object) {
     object <- addPerCellQC(object)
-    object[[glue("nFeature_{mainExpName(object)}")]] <- object$detected
-    object[[glue("nCount_{mainExpName(object)}")]] <- object$sum
+    main_exp_name <- mainExpName(object) %||% "main"
+    object[[glue("nFeature_{main_exp_name}")]] <- object$detected
+    object[[glue("nCount_{main_exp_name}")]] <- object$sum
 
     for (alt_exp_name in altExpNames(object)) {
         altExp(object, alt_exp_name) <- addPerCellQC(altExp(object, alt_exp_name))
@@ -116,7 +120,9 @@ object_calcn <- function(object) {
 #' @export
 #' @examples
 #'
-#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+#' 
+#' 
+#' chevreul_sce <- mockSCE(ncells=200, ngenes=1000)
 #' new_meta <- data.frame(row.names = colnames(chevreul_sce))
 #' new_meta$example <- "example"
 #'
@@ -324,7 +330,9 @@ make_bigwig_db <- function(new_project = NULL, cache_location = "~/.cache/chevre
 #' @return a tibble with cell level metadata from a SingleCellExperiment object
 #' @examples
 #' \donttest{
-#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+#' 
+#' 
+#' chevreul_sce <- mockSCE(ncells=200, ngenes=1000)
 #' metadata_from_batch(chevreul_sce)
 #' }
 #'
@@ -356,7 +364,9 @@ metadata_from_batch <- function(
 #' @return a clean vector of object names
 #' @export
 #' @examples
-#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+#' 
+#' 
+#' chevreul_sce <- mockSCE(ncells=200, ngenes=1000)
 #' make_chevreul_clean_names(colnames(get_cell_metadata(chevreul_sce)))
 make_chevreul_clean_names <- function(myvec) {
     myvec %>%
@@ -372,7 +382,9 @@ make_chevreul_clean_names <- function(myvec) {
 #' @return a tibble with metadata from a SingleCellExperiment object
 #' @export
 #' @examples
-#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+#' 
+#' 
+#' chevreul_sce <- mockSCE(ncells=200, ngenes=1000)
 #' metadata_from_object(chevreul_sce)
 #'
 metadata_from_object <- function(object) {

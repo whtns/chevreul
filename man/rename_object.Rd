@@ -18,6 +18,8 @@ a renamed SingleCellExperiment object
 Give a new project name to a SingleCellExperiment object
 }
 \examples{
-chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+
+
+chevreul_sce <- mockSCE(ncells=200, ngenes=1000)
 rename_object(chevreul_sce, "new_name")
 }

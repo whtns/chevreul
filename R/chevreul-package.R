@@ -126,6 +126,7 @@
 #' @importFrom scran quickCluster
 #' @importFrom scuttle addPerCellQCMetrics
 #' @importFrom scuttle logNormCounts
+#' @importFrom scuttle mockSCE
 #' @importFrom shiny incProgress
 #' @importFrom shiny selectInput
 #' @importFrom shiny withProgress

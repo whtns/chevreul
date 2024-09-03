@@ -1,10 +1,10 @@
 test_that("maintains object type", {
-    chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+   chevreul_sce <- scuttle::mockSCE(ncells=200, ngenes=1000)
     expect_type(record_experiment_data(chevreul_sce), typeof(chevreul_sce))
 })
 
 test_that("experiment metadata is a list", {
-    chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+   chevreul_sce <- scuttle::mockSCE(ncells=200, ngenes=1000)
     expect_type(
         get_object_metadata(record_experiment_data(chevreul_sce))[["experiment"]],
         "list"
@@ -12,7 +12,7 @@ test_that("experiment metadata is a list", {
 })
 
 test_that("names are correct", {
-    chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+   chevreul_sce <- scuttle::mockSCE(ncells=200, ngenes=1000)
     expect_named(
         get_object_metadata(record_experiment_data(chevreul_sce))[["experiment"]],
         c(

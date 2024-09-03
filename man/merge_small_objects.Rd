@@ -18,11 +18,13 @@ a SingleCellExperiment object
 Merge Small SingleCellExperiment Objects
 }
 \examples{
-chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+
+chevreul_sce <- mockSCE(ncells=200, ngenes=1000)
+chevreul_sce <- object_preprocess(chevreul_sce)
 merge_small_objects(
     "small_batch1" = chevreul_sce[, seq(1, 40)],
     "small_batch2" = chevreul_sce[, seq(41, 80)],
-    "large_batch" = chevreul_sce[, seq(81, 300)]
+    "large_batch" = chevreul_sce[, seq(81, 200)]
 )
 
 }

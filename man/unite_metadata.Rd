@@ -7,7 +7,7 @@
 unite_metadata(object, group_bys)
 }
 \arguments{
-\item{object}{A object}
+\item{object}{An object}
 
 \item{group_bys}{A feature or variable to combine}
 }
@@ -18,7 +18,9 @@ an object with Idents formed from concatenation of group_bys
 Unite metadata
 }
 \examples{
-chevreul_sce <- chevreuldata::human_gene_transcript_sce()
-unite_metadata(chevreul_sce, "nFeature_gene")
+
+
+chevreul_sce <- mockSCE(ncells=200, ngenes=1000)
+unite_metadata(chevreul_sce, "Mutation_Status")
 
 }

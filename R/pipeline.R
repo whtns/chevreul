@@ -116,6 +116,8 @@ object_pipeline <- function(object, experiment = "gene", resolution = 0.6, reduc
 #' @return a SingleCellExperiment object with louvain clusters
 #' @export
 #' @examples
+#' 
+#' 
 #' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
 #' object_cluster(chevreul_sce)
 object_cluster <- function(object = object, resolution = 0.6, custom_clust = NULL, reduction = "PCA", algorithm = 1, ...) {
@@ -155,7 +157,10 @@ object_cluster <- function(object = object, resolution = 0.6, custom_clust = NUL
 #' @return a SingleCellExperiment object with embeddings
 #' @export
 #' @examples
-#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+#' 
+#' 
+#' chevreul_sce <- mockSCE(ncells=200, ngenes=1000)
+#' chevreul_sce <- object_preprocess(chevreul_sce)
 #' object_reduce_dimensions(chevreul_sce)
 object_reduce_dimensions <- function(object, experiment = "gene", ...) {
 	num_samples <- dim(object)[[2]]
@@ -193,7 +198,9 @@ object_reduce_dimensions <- function(object, experiment = "gene", ...) {
 #' @return a renamed SingleCellExperiment object
 #' @export
 #' @examples
-#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+#' 
+#' 
+#' chevreul_sce <- mockSCE(ncells=200, ngenes=1000)
 #' rename_object(chevreul_sce, "new_name")
 rename_object <- function(object, new_name) {
 	metadata(object)["project.name"] <- new_name

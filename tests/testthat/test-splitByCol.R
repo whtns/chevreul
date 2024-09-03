@@ -1,5 +1,5 @@
 test_that("SCE split", {
-    chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+   chevreul_sce <- scuttle::mockSCE(ncells=200, ngenes=1000)
     expect_contains(
         obj <- splitByCol(chevreul_sce, "batch"),
         list()

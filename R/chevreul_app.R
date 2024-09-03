@@ -14,6 +14,8 @@
 #' @return a dataframe with differential expression information
 #' @export
 #' @examples
+#' 
+#' 
 #' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
 #' run_object_de(chevreul_sce,
 #'     diffex_scheme = "louvain",

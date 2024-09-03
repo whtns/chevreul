@@ -16,6 +16,8 @@ vector of feature types in an object
 Get Feature Types
 }
 \examples{
-chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+
+
+chevreul_sce <- mockSCE(ncells=200, ngenes=1000)
 get_feature_types(chevreul_sce)
 }

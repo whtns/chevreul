@@ -74,7 +74,9 @@ transcripts_to_genes <- function(transcripts, organism = "human") {
 #' cell metadata column containing mitochondrial percentage
 #' @export
 #' @examples
-#' chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+#' 
+#' 
+#' chevreul_sce <- mockSCE(ncells=200, ngenes=1000)
 #' add_percent_mito(chevreul_sce)
 #'
 add_percent_mito <- function(object, experiment = "gene") {

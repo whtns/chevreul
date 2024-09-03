@@ -18,6 +18,7 @@ variable features from a SingleCellExperiment object
 Get variable features
 }
 \examples{
+
 chevreul_sce <- chevreuldata::human_gene_transcript_sce()
 get_variable_features(chevreul_sce)
 }

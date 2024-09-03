@@ -8,6 +8,11 @@
 #' @param features Identify highly variable features
 #' @param legacy_settings Use legacy settings
 #' @param ... extra args passed to scaling functions
+#' @export
+#' @examples
+#' chevreul_sce <- mockSCE(ncells=200, ngenes=1000)
+#' object_preprocess(chevreul_sce)
+#' 
 #'
 #' @return a preprocessed SingleCellExperiment object
 object_preprocess <- function(object, scale = TRUE, normalize = TRUE, features = NULL, legacy_settings = FALSE, ...) {

@@ -16,6 +16,8 @@ a clean vector of object names
 Cleans names of objects provided in a vector form
 }
 \examples{
-chevreul_sce <- chevreuldata::human_gene_transcript_sce()
+
+
+chevreul_sce <- mockSCE(ncells=200, ngenes=1000)
 make_chevreul_clean_names(colnames(get_cell_metadata(chevreul_sce)))
 }
