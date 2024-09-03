@@ -133,16 +133,6 @@ plot_markers(chevreul_sce,
 ```
 
 
-## Plotting all transcripts 
-
-Expression level of all the transcripts present in a given SingleCellExperiment
-object for a gene of interest. specified by the argument 'features'. By default 
-the data is superimposed on UMAP embedding. 
-
-```{r}
-plot_all_transcripts(chevreul_sce, features = "NRL")
-```
-
 
 ## Plotting transcript composition
 
