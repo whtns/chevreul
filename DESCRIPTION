@@ -1,7 +1,7 @@
 Type: Package
 Package: chevreul
 Title: Tools for managing SingleCellExperiment objects as projects.
-Version: 0.99.42
+Version: 0.99.43
 Authors@R: c(
     person("Kevin", "Stachelek", , "kevin.stachelek@gmail.com", role = c("aut", "cre"), comment = c(ORCID = "0000-0003-2085-695X")),
     person("Bhavana", "Bhat", , "bhavanabhat29@gmail.com", role = "aut")
