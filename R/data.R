@@ -6,6 +6,14 @@
 #' @source scuttle::mockSCE
 "small_example_dataset"
 
+#' Tiny example SingleCellExperiment
+#'
+#' subset to only NRL from chevreuldata::human_gene_transcript_sce()
+#'
+#' @format An SCE with only expression of NRL gene and NRL transripts
+#' @source chevreuldata::human_gene_transcript_sce()
+"tiny_sce"
+
 #' Gene Homologs Between Human and Mouse
 #'
 #' Homologs drawn from Biomart
