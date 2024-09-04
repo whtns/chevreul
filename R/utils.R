@@ -140,11 +140,6 @@ propagate_spreadsheet_changes <- function(meta, object) {
 #' @param verbose print messages
 #'
 #' @return a sqlite database with SingleCellExperiment objects
-#' @export
-#' @examples
-#' \donttest{
-#' create_project_db()
-#' }
 create_project_db <- function(cache_location = "~/.cache/chevreul", sqlite_db = "single-cell-projects.db", verbose = TRUE) {
     if (!dir.exists(cache_location)) {
         dir.create(cache_location)
@@ -173,11 +168,6 @@ create_project_db <- function(cache_location = "~/.cache/chevreul", sqlite_db = 
 #' @param verbose print messages
 #'
 #' @return a sqlite database with SingleCellExperiment objects
-#' @export
-#' @examples
-#' \donttest{
-#' update_project_db()
-#' }
 update_project_db <- function(
         projects_dir = NULL,
         cache_location = "~/.cache/chevreul",
@@ -288,10 +278,6 @@ read_project_db <- function(
 #' @param sqlite_db sqlite db containing bw files
 #'
 #' @return a sqlite database of bigwig files for cells in a SingleCellExperiment object
-#' @examples
-#' \donttest{
-#' make_bigwig_db("example_project")
-#' }
 make_bigwig_db <- function(new_project = NULL, cache_location = "~/.cache/chevreul/", sqlite_db = "bw-files.db") {
     new_bigwigfiles <- dir_ls(new_project, glob = "*.bw", recurse = TRUE) %>%
         set_names(path_file(.)) %>%
@@ -319,13 +305,6 @@ make_bigwig_db <- function(new_project = NULL, cache_location = "~/.cache/chevre
 #' @param db_path path to .db file
 #'
 #' @return a tibble with cell level metadata from a SingleCellExperiment object
-#' @examples
-#' \donttest{
-#' 
-#' data(small_example_dataset)
-#' metadata_from_batch(small_example_dataset)
-#' }
-#'
 metadata_from_batch <- function(
         batch, projects_dir = "/dataVolume/storage/single_cell_projects",
         db_path = "single-cell-projects.db") {

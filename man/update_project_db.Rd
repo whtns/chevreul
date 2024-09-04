@@ -26,8 +26,3 @@ a sqlite database with SingleCellExperiment objects
 \description{
 Add new/update existing projects to the database by recursing fully
 }
-\examples{
-\donttest{
-update_project_db()
-}
-}

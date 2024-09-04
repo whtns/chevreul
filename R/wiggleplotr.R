@@ -7,10 +7,6 @@
 #'
 #' @return a path to a bigwig file sqlite database
 #' @export
-#' @examples
-#' \donttest{
-#' build_bigwig_db()
-#' }
 build_bigwig_db <- function(bam_files, bigwig_db = "~/.cache/chevreul/bw-files.db") {
     bam_files <- normalizePath(bam_files)
 
@@ -38,13 +34,6 @@ build_bigwig_db <- function(bam_files, bigwig_db = "~/.cache/chevreul/bw-files.d
 #' @param bigwig_db Sqlite database of bigwig files
 #'
 #' @return a vector of bigwigs file paths
-#' @export
-#' @examples
-#' \donttest{
-#' 
-#' data(small_example_dataset)
-#' load_bigwigs(small_example_dataset)
-#' }
 load_bigwigs <- function(object, bigwig_db = "~/.cache/chevreul/bw-files.db") {
     con <- dbConnect(SQLite(), dbname = bigwig_db)
 
@@ -88,11 +77,6 @@ load_bigwigs <- function(object, bigwig_db = "~/.cache/chevreul/bw-files.db") {
 #' @param ... extra arguments passed to plotCoverageFromEnsembldb
 #'
 #' @return a ggplot with coverage faceted by group_by
-#' @export
-#' @examples
-#' \donttest{
-#' plot_gene_coverage_by_var()
-#' }
 plot_gene_coverage_by_var <- function(
         genes_of_interest = "NRL",
         cell_metadata,

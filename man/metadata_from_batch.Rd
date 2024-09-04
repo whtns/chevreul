@@ -23,11 +23,3 @@ a tibble with cell level metadata from a SingleCellExperiment object
 \description{
 Retrieve Metadata from Batch
 }
-\examples{
-\donttest{
-
-data(small_example_dataset)
-metadata_from_batch(small_example_dataset)
-}
-
-}

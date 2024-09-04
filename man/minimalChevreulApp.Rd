@@ -31,8 +31,6 @@ Create a minimal chevreul app using SingleCellExperiment input
 }
 \examples{
 \donttest{
-
-
 data(small_example_dataset)
 minimalChevreulApp(small_example_dataset)
 }

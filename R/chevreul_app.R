@@ -107,6 +107,7 @@ prep_slider_values <- function(default_val) {
 #' SingleCellExperiment objects
 #' @return a shiny app
 #'
+#' @export
 #' @examples
 #' \donttest{
 #' chevreulApp()

@@ -17,10 +17,3 @@ a vector of bigwigs file paths
 \description{
 Load a tibble of bigwig file paths by cell id
 }
-\examples{
-\donttest{
-
-data(small_example_dataset)
-load_bigwigs(small_example_dataset)
-}
-}

@@ -172,7 +172,6 @@ plot_feature <- function(object, embedding = c("UMAP", "PCA", "TSNE"), features,
 #' @param object A SingleCellExperiment object
 #'
 #' @return a SingleCellExperiment object
-#' @export
 annotate_cell_cycle <- function(object) {
    data(cc.genes.cyclone)
    assignments <- cyclone(object, cc.genes.cyclone, gene.names = rownames(object))
