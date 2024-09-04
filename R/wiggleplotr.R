@@ -7,16 +7,18 @@
 #'
 #' @return a path to a bigwig file sqlite database
 #' @export
-build_bigwig_db <- function(bam_files, bigwig_db = "~/.cache/chevreul/bw-files.db") {
+build_bigwig_db <- function(bam_files, 
+                            bigwig_db = "~/.cache/chevreul/bw-files.db") {
     bam_files <- normalizePath(bam_files)
 
     bigwigfiles <- map_chr(bam_files,
                            ~ bam_to_bigwig(.x,
-                                                      prefix = path_ext_remove(.x),
-                                                      overwrite = TRUE)) %>%
+                                           prefix = path_ext_remove(.x),
+                                           overwrite = TRUE)) %>%
         set_names(path_file) %>%
         enframe("name", "bigWig") %>%
-        mutate(sample_id = str_remove(name, "_Aligned.sortedByCoord.out.bw")) %>%
+        mutate(sample_id = 
+                   str_remove(name, "_Aligned.sortedByCoord.out.bw")) %>%
         identity()
 
     con <- dbConnect(SQLite(), dbname = bigwig_db)
@@ -41,10 +43,12 @@ load_bigwigs <- function(object, bigwig_db = "~/.cache/chevreul/bw-files.db") {
         filter(sample_id %in% colnames(object)) %>%
         identity()
 
-    missing_bigwigs <- colnames(object)[!(colnames(object) %in% bigwigfiles$sample_id)] %>%
+    missing_bigwigs <- colnames(object)[!(colnames(object) %in% 
+                                              bigwigfiles$sample_id)] %>%
         paste(collapse = ", ")
 
-    warning(paste0("Sample coverage files ", missing_bigwigs, "(.bw) do not match samples in object (check file names)"))
+    warning(paste0("Sample coverage files ", missing_bigwigs, 
+                   "(.bw) do not match samples in object (check file names)"))
 
     dbDisconnect(con)
 
@@ -144,13 +148,13 @@ plot_gene_coverage_by_var <- function(
     if (scale_y == "log10") {
         coverage_plot_list$coverage_plot <-
             coverage_plot_list$coverage_plot +
-            scale_y_continuous(trans = pseudo_log_trans(base = 10), breaks = 10^(0:4)) +
+            scale_y_continuous(trans = pseudo_log_trans(base = 10), 
+                               breaks = 10^(0:4)) +
             NULL
     }
 
     if (reverse_x) {
         transformed_x_lim <- ggplot_build(coverage_plot_list$coverage_plot)$layout$panel_params[[1]]$x.range
-        # transformed_x_lim[1] <- transformed_x_lim[1] - diff(transformed_x_lim)*0.2
 
         coverage_plot_list$coverage_plot <-
             coverage_plot_list$coverage_plot +
@@ -161,8 +165,6 @@ plot_gene_coverage_by_var <- function(
             NULL
 
         transformed_x_lim <- ggplot_build(coverage_plot_list$tx_structure)$layout$panel_params[[1]]$x.range
-        # transformed_x_lim[1] <- transformed_x_lim[1] - diff(transformed_x_lim)*0.2
-
         coverage_plot_list$tx_structure <-
             coverage_plot_list$tx_structure +
             scale_x_reverse() +

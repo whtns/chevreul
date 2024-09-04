@@ -5,7 +5,8 @@
 #' @return a SingleCellExperiment object
 #'
 convert_human_object_to_mouse <- function(object, ...) {
-    new_rownames <- convert_symbols_by_species(src_genes = rownames(object), src_species = "human")
+    new_rownames <- convert_symbols_by_species(
+        src_genes = rownames(object), src_species = "human")
 
     object_slots <- c("counts", "data", "scale.data", "meta.features")
 

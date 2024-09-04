@@ -18,7 +18,9 @@ run_object_de <- function(object, cluster1, cluster2, resolution = 0.2,
 
     data_env <- new.env(parent = emptyenv())
     data("grch38", envir = data_env, package = "chevreul")
+    data("grch38_tx2gene", envir = data_env, package = "chevreul")
     grch38 <- data_env[["grch38"]]
+    grch38_tx2gene <- data_env[["grch38_tx2gene"]]
 
     match.arg(tests)
 
@@ -54,14 +56,15 @@ run_object_de <- function(object, cluster1, cluster2, resolution = 0.2,
             de <- de[[1]] %>%
                 as.data.frame() %>%
                 rownames_to_column("enstxp") %>%
-                left_join(chevreul::grch38_tx2gene, by = "enstxp") %>%
-                left_join(chevreul::grch38, by = "ensgene")
+                left_join(grch38_tx2gene, by = "enstxp") %>%
+                left_join(grch38, by = "ensgene")
             if ("summary.logFC" %in% colnames(de)) {
                 de <- mutate(de, avg_log2FC = log(exp(summary.logFC), 2))
             }
             de <- select(de, any_of(de_cols))
         } else if (featureType == "gene") {
-            de_cols <- c("ensgene", "symbol", "p_val" = "p.value", "avg_log2FC",
+            de_cols <- c("ensgene", "symbol", 
+                         "p_val" = "p.value", "avg_log2FC",
                          "pct.1", "pct.2", "p_val_adj" = "FDR")
             de <- de[[1]] %>%
                 as.data.frame() %>%
@@ -192,7 +195,8 @@ chevreulApp <-
             tabItem(
                 tabName = "comparePlots",
                 h2("Compare Plots") %>%
-                    default_helper(type = "markdown", content = "comparePlots"),
+                    default_helper(type = "markdown", 
+                                   content = "comparePlots"),
                 plotDimRedui("plotdimred1"),
                 plotDimRedui("plotdimred2"),
                 plotReadCountui("plotreadcount1"),
@@ -336,7 +340,8 @@ chevreulApp <-
 
         w <- Waiter$new()
 
-        observe_helpers(help_dir = system.file("helpers", package = "chevreul"))
+        observe_helpers(
+            help_dir = system.file("helpers", package = "chevreul"))
         options(warn = -1)
 
         con <- reactive({

@@ -52,7 +52,8 @@ find_all_markers <- function(object,
         cluster_index <- grepl(paste0(experiment, "_snn_res."), meta_cols)
         if (!any(cluster_index)) {
             warning("no clusters found in metadata. runnings object_cluster")
-            object <- object_cluster(object, resolution = seq(0.2, 1, by = 0.2))
+            object <- object_cluster(object, 
+                                     resolution = seq(0.2, 1, by = 0.2))
         }
         clusters <- get_cell_metadata(object)[, cluster_index]
         cluster_levels <- map_int(clusters, ~ length(unique(.x)))

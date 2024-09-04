@@ -9,7 +9,8 @@
 #' @return a shinyhelper object
 #'
 #' @noRd
-default_helper <- function(ui_element, title = "", content = "test", type = "inline", ...) {
+default_helper <- function(ui_element, title = "", 
+                           content = "test", type = "inline", ...) {
     helper(ui_element,
         type = type,
         title = title,

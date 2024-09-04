@@ -10,7 +10,8 @@ reformatMetadataDRui <- function(id) {
         chevreulBox(
             title = "Reformat Metadata",
             checkboxInput(ns("header"), "Header", TRUE),
-            fileInput(ns("metaFile"), "Choose CSV File of metadata with cell names in first column",
+            fileInput(ns("metaFile"), 
+                      "Choose csv of metadata with cell names in first column",
                 accept = c(
                     "text/csv",
                     "text/comma-separated-values,text/plain",
@@ -18,11 +19,15 @@ reformatMetadataDRui <- function(id) {
                 )
             ),
             actionButton(ns("updateMetadata"), "Update Metadata"),
-            radioButtons(ns("updateMethod"), "Update By:", choices = c("table (below)" = "spreadsheet", "uploaded file" = "file"), inline = TRUE),
+            radioButtons(ns("updateMethod"), 
+                         "Update By:", 
+                         choices = c("table (below)" = "spreadsheet", 
+                                     "uploaded file" = "file"), inline = TRUE),
             width = 12,
             dataSelectUI(ns("select1")),
             dataFilterUI(ns("filter1")),
-            hidden(actionButton(ns("sync"), label = NULL, icon = icon("sync"))),
+            hidden(actionButton(ns("sync"), label = NULL, 
+                                icon = icon("sync"))),
             dataOutputUI(ns("output-active")),
             dataOutputUI(ns("output-update"), icon = "file-download"),
             hidden(actionButton(ns("cut"), label = NULL, icon = icon("cut"))),
@@ -103,12 +108,18 @@ reformatMetadataDR <- function(
         if (length(values$rows) == 0 & length(values$columns) == 0) {
             values$data_active <- values$data
         } else {
-            if (length(values$rows) != 0 & length(values$columns) == 0) {
-                values$data_active <- values$data[values$rows, , drop = FALSE]
-            } else if (length(values$rows) == 0 & length(values$columns) != 0) {
-                values$data_active <- values$data[, values$columns, drop = FALSE]
-            } else if (length(values$rows) != 0 & length(values$columns) != 0) {
-                values$data_active <- values$data[values$rows, values$columns, drop = FALSE]
+            if (length(values$rows) != 0 & 
+                length(values$columns) == 0) {
+                values$data_active <- 
+                    values$data[values$rows, , drop = FALSE]
+            } else if (length(values$rows) == 0 & 
+                       length(values$columns) != 0) {
+                values$data_active <- 
+                    values$data[, values$columns, drop = FALSE]
+            } else if (length(values$rows) != 0 & 
+                       length(values$columns) != 0) {
+                values$data_active <- 
+                    values$data[values$rows, values$columns, drop = FALSE]
             }
         }
     })
@@ -120,7 +131,8 @@ reformatMetadataDR <- function(
         col_bind = NULL, col_edit = col_edit, col_options = col_options,
         col_stretch = col_stretch, col_names = col_names,
         col_readonly = col_readonly, col_factor = col_factor,
-        row_bind = NULL, row_edit = row_edit, quiet = quiet, height = viewer_height, width = viewer_width
+        row_bind = NULL, row_edit = row_edit, quiet = quiet, 
+        height = viewer_height, width = viewer_width
     )
     observe({
         values$data_active <- data_update()
@@ -145,19 +157,29 @@ reformatMetadataDR <- function(
         if (length(values$rows) == 0 & length(values$columns) == 0) {
             values$data <- values$data_active
         } else {
-            if (length(values$rows) != 0 & length(values$columns) == 0) {
-                values$data[values$rows, ] <- values$data_active
-            } else if (length(values$rows) == 0 & length(values$columns) != 0) {
-                values$data[, values$columns] <- values$data_active
-            } else if (length(values$rows) != 0 & length(values$columns) != 0) {
-                values$data[values$rows, values$columns] <- values$data_active
+            if (length(values$rows) != 0 & 
+                length(values$columns) == 0) {
+                values$data[values$rows, ] <- 
+                    values$data_active
+            } else if (length(values$rows) == 0 & 
+                       length(values$columns) != 0) {
+                values$data[, values$columns] <- 
+                    values$data_active
+            } else if (length(values$rows) != 0 & 
+                       length(values$columns) != 0) {
+                values$data[values$rows, values$columns] <- 
+                    values$data_active
             }
             if (!is.null(values$data_active)) {
-                if (!all(rownames(values$data_active) == rownames(values$data)[values$rows])) {
-                    rownames(values$data)[values$rows] <- rownames(values$data_active)
+                if (!all(rownames(values$data_active) == 
+                         rownames(values$data)[values$rows])) {
+                    rownames(values$data)[values$rows] <- 
+                        rownames(values$data_active)
                 }
-                if (!all(colnames(values$data_active) == colnames(values$data)[values$columns])) {
-                    colnames(values$data)[values$columns] <- colnames(values$data_active)
+                if (!all(colnames(values$data_active) == 
+                         colnames(values$data)[values$columns])) {
+                    colnames(values$data)[values$columns] <- 
+                        colnames(values$data_active)
                 }
             }
         }
@@ -166,13 +188,15 @@ reformatMetadataDR <- function(
     dataOutputServer("output-active",
         data = reactive({
             values$data_active
-        }), save_as = "metadata.csv", write_fun = write_fun, write_args = write_args,
+        }), save_as = "metadata.csv", write_fun = write_fun, 
+        write_args = write_args,
         hide = hide
     )
     dataOutputServer("output-update",
         data = reactive({
             values$data
-        }), save_as = "metadata.csv", write_fun = write_fun, write_args = write_args,
+        }), save_as = "metadata.csv", write_fun = write_fun, 
+        write_args = write_args,
         hide = hide
     )
 
@@ -205,8 +229,6 @@ reformatMetadataDR <- function(
 
 #' Add new columns to data
 #'
-#' from https://github.com/DillonHammill/DataEditR/blob/850feb2e29a2e94151c84300d1564ba19dcba415/R/helpers.R#L148
-#'
 #' @noRd
 data_bind_cols <- function(data = NULL,
     col_bind = NULL) {
@@ -223,7 +245,8 @@ data_bind_cols <- function(data = NULL,
                         names(col_bind) <- paste0("V", length(col_bind))
                     }
                     # LENGTHS
-                    ind <- which(!unlist(lapply(col_bind, length)) == nrow(data))
+                    ind <- which(!unlist(lapply(col_bind, length)) == 
+                                     nrow(data))
                     if (length(ind) > 0) {
                         for (z in ind) {
                             col_bind[[z]] <- rep(col_bind[[z]], nrow(data))
@@ -256,8 +279,6 @@ data_bind_cols <- function(data = NULL,
 
 #' Add new rows to data
 #'
-#' from https://github.com/DillonHammill/DataEditR/blob/850feb2e29a2e94151c84300d1564ba19dcba415/R/helpers.R#L148
-#'
 #' @noRd
 data_bind_rows <- function(data = NULL,
     row_bind = NULL) {
@@ -271,7 +292,8 @@ data_bind_rows <- function(data = NULL,
                 if (inherits(row_bind, "list")) {
                     # NAMES NOT NECESSARY
                     # LENGTHS
-                    ind <- which(!unlist(lapply(row_bind, length)) == ncol(data))
+                    ind <- which(!unlist(lapply(row_bind, length)) == 
+                                     ncol(data))
                     if (length(ind) > 0) {
                         for (z in ind) {
                             row_bind[[z]] <- rep(row_bind[[z]], ncol(data))
