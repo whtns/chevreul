@@ -36,7 +36,8 @@ splitByCol <- function(x, f = "batch") {
 merge_small_objects <- function(..., k.filter = 50) {
     object_list <- list(...)
 
-    # check if any singlecell objects are too small and if so merge with the first singlecell objects
+    # check if any singlecell objects are too small and if so merge
+    # with the first singlecell objects
     object_dims <- map(object_list, dim) %>%
         map_lgl(~ .x[[2]] < k.filter)
 
@@ -44,7 +45,8 @@ merge_small_objects <- function(..., k.filter = 50) {
 
     object_list <- object_list[!object_dims]
 
-    object_list[[1]] <- reduce(c(small_objects, object_list[[1]]), correctExperiments, PARAM = NoCorrectParam())
+    object_list[[1]] <- reduce(c(small_objects, object_list[[1]]), 
+                               correctExperiments, PARAM = NoCorrectParam())
 
     return(object_list)
 }
@@ -82,11 +84,14 @@ object_integrate <- function(object_list, organism = "human", ...) {
         })
 
         transcriptBatches <- map(object_list, swapAltExp, "transcript")
-        transcriptMerged <- correctExperiments(transcriptBatches, PARAM = NoCorrectParam())
+        transcriptMerged <- correctExperiments(transcriptBatches, 
+                                               PARAM = NoCorrectParam())
         altExp(geneCorrected, "transcript") <- transcriptMerged
     }
 
-    geneCorrected <- record_experiment_data(geneCorrected, experiment_name = "integrated", organism = organism)
+    geneCorrected <- record_experiment_data(geneCorrected, 
+                                            experiment_name = "integrated", 
+                                            organism = organism)
 
     return(geneCorrected)
 }

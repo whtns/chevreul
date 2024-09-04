@@ -26,14 +26,14 @@ unite_metadata <-
 #' Plot Metadata Variables
 #'
 #' Plots static or interactive plot where each point represents a cell metadata
-#' variable whose position on the map depends on cell embeddings determined by the
-#' reduction technique used
+#' variable whose position on the map depends on cell embeddings 
+#' determined by the reduction technique used
 #'
 #' @param object A SingleCellExperiment object
 #' @param embedding The dimensional reduction technique to be used
-#' @param group Name of one or more metadata columns to group (color) cells by.
+#' @param group Name of one or more metadata columns to group (color) cells by
 #' @param dims Dimensions to plot, must be a two-length numeric vector
-#' @param highlight A list of character or numeric vectors of cells to highlight
+#' @param highlight A list of vectors of cells to highlight
 #' @param pt.size Adjust point size on the plot
 #' @param return_plotly Convert plot to interactive web-based graph
 #' @param ... extra parameters passed to ggplot
@@ -51,7 +51,10 @@ unite_metadata <-
 #' # interactive plotly plot
 #' plot_var(small_example_dataset, "Mutation_Status", return_plotly = TRUE)
 #'
-plot_var <- function(object, group = "batch", embedding = "UMAP", dims = c(1, 2), highlight = NULL, pt.size = 1.0, return_plotly = FALSE, ...) {
+plot_var <- function(object, group = "batch", 
+                     embedding = "UMAP", dims = c(1, 2), 
+                     highlight = NULL, pt.size = 1.0, 
+                     return_plotly = FALSE, ...) {
     metadata <- get_cell_metadata(object)
     key <- rownames(metadata)
 
@@ -63,7 +66,8 @@ plot_var <- function(object, group = "batch", embedding = "UMAP", dims = c(1, 2)
 
     dims <- as.numeric(dims)
 
-    d <- plotReducedDim(object = object, dimred = embedding, ncomponents = 2, color_by = group, ...) +
+    d <- plotReducedDim(object = object, dimred = embedding, 
+                        ncomponents = 2, color_by = group, ...) +
         aes(key = key, cellid = key) +
         # theme(legend.text=element_text(size=10)) +
         NULL
@@ -91,7 +95,9 @@ plot_var <- function(object, group = "batch", embedding = "UMAP", dims = c(1, 2)
 plotly_settings <- function(plotly_plot, width = 600, height = 700) {
     plotly_plot %>%
         layout(dragmode = "lasso") %>%
-        config(toImageButtonOptions = list(format = "svg", filename = "myplot", width = width, height = height)) %>%
+        config(toImageButtonOptions = list(format = "svg", 
+                                           filename = "myplot", 
+                                           width = width, height = height)) %>%
         identity()
 }
 
@@ -104,17 +110,21 @@ plotly_settings <- function(plotly_plot, width = 600, height = 700) {
 #' @param plot_var Variable to group (color) cells by
 #' @param plot_vals plot values
 #' @param features Features to plot
-#' @param experiment Name of experiment to use, defaults to the active experiment
+#' @param experiment Name of experiment to use, defaults to active experiment
 #' @param ... extra parameters passed to ggplot2
 #'
 #' @return a violin plot
-plot_violin <- function(object, plot_var = "batch", plot_vals = NULL, features = "NRL", experiment = "gene", ...) {
+plot_violin <- function(object, plot_var = "batch", 
+                        plot_vals = NULL, features = "NRL", 
+                        experiment = "gene", ...) {
     if (is.null(plot_vals)) {
         plot_vals <- unique(get_cell_metadata(object)[[plot_var]])
         plot_vals <- plot_vals[!is.na(plot_vals)]
     }
     object <- object[, get_cell_metadata(object)[[plot_var]] %in% plot_vals]
-    vln_plot <- plotExpression(object, features = features, x = plot_var, color_by = plot_var) + geom_boxplot(width = 0.2) + NULL
+    vln_plot <- plotExpression(
+        object, features = features, x = plot_var, color_by = plot_var) + 
+        geom_boxplot(width = 0.2) + NULL
     print(vln_plot)
 }
 
@@ -137,9 +147,12 @@ plot_violin <- function(object, plot_var = "batch", plot_vals = NULL, features =
 #' @examples
 #' 
 #' data(small_example_dataset)
-#' plot_feature(small_example_dataset, embedding = "UMAP", features = "Gene_0001")
+#' plot_feature(small_example_dataset, embedding = "UMAP", 
+#' features = "Gene_0001")
 #'
-plot_feature <- function(object, embedding = c("UMAP", "PCA", "TSNE"), features, dims = c(1, 2), return_plotly = FALSE, pt.size = 1.0) {
+plot_feature <- function(object, embedding = c("UMAP", "PCA", "TSNE"), 
+                         features, dims = c(1, 2), return_plotly = FALSE,
+                         pt.size = 1.0) {
     embedding <- toupper(embedding)
 
     metadata <- get_cell_metadata(object)
@@ -151,7 +164,8 @@ plot_feature <- function(object, embedding = c("UMAP", "PCA", "TSNE"), features,
 
     dims <- as.numeric(dims)
 
-    fp <- plotReducedDim(object = object, color_by = features, dimred = embedding) +
+    fp <- plotReducedDim(object = object, color_by = features, 
+                         dimred = embedding) +
         aes(key = key, cellid = key, alpha = 0.7)
 
     if (return_plotly == FALSE) {
@@ -173,7 +187,13 @@ plot_feature <- function(object, embedding = c("UMAP", "PCA", "TSNE"), features,
 #'
 #' @return a SingleCellExperiment object
 annotate_cell_cycle <- function(object) {
-   assignments <- cyclone(object, chevreul::cc.genes.cyclone, gene.names = rownames(object))
+    
+    data_env <- new.env(parent = emptyenv())
+    data("cc.genes.cyclone", envir = data_env, package = "chevreul")
+    cc.genes.cyclone <- data_env[["cc.genes.cyclone"]]
+    
+   assignments <- cyclone(object, cc.genes.cyclone, 
+                          gene.names = rownames(object))
     colData(object)[colnames(assignments$scores)] <- assignments$scores
     colData(object)["Phase"] <- assignments$phases
     return(object)
@@ -192,7 +212,7 @@ annotate_cell_cycle <- function(object) {
 #' @param marker_method "wilcox"
 #' @param experiment experiment to plot default gene
 #' @param hide_technical whether to exclude mitochondrial or ribosomal genes
-#' @param unique_markers whether to plot only unique marker genes for each group
+#' @param unique_markers whether to plot only unique marker genes for group
 #' @param p_val_cutoff cutoff for p value display
 #' @param ... extra parameters passed to ggplot2
 #'
@@ -204,9 +224,14 @@ annotate_cell_cycle <- function(object) {
 #' data(small_example_dataset)
 #' plot_markers(small_example_dataset, group_by = "gene_snn_res.1")
 #'
-plot_markers <- function(object, group_by = "batch", num_markers = 5, selected_values = NULL, return_plotly = FALSE, marker_method = "wilcox", experiment = "gene", hide_technical = NULL, unique_markers = FALSE, p_val_cutoff = 1, ...) {
+plot_markers <- function(object, group_by = "batch", num_markers = 5, 
+                         selected_values = NULL, return_plotly = FALSE, 
+                         marker_method = "wilcox", experiment = "gene", 
+                         hide_technical = NULL, unique_markers = FALSE, 
+                         p_val_cutoff = 1, ...) {
     # Idents(object) <- get_cell_metadata(object)[[group_by]]
-    object <- find_all_markers(object, group_by, experiment = experiment, p_val_cutoff = p_val_cutoff)
+    object <- find_all_markers(object, group_by, experiment = experiment, 
+                               p_val_cutoff = p_val_cutoff)
     marker_table <- metadata(object)$markers[[group_by]]
     markers <- marker_table %>%
         enframe_markers() %>%
@@ -231,7 +256,8 @@ plot_markers <- function(object, group_by = "batch", num_markers = 5, selected_v
     if (unique_markers) {
         markers <- markers %>%
             mutate(precedence = row_number()) %>%
-            pivot_longer(-precedence, names_to = "group", values_to = "markers") %>%
+            pivot_longer(-precedence, names_to = "group", 
+                         values_to = "markers") %>%
             arrange(markers, precedence) %>%
             group_by(markers) %>%
             filter(row_number() == 1) %>%
@@ -244,12 +270,14 @@ plot_markers <- function(object, group_by = "batch", num_markers = 5, selected_v
     }
     sliced_markers <- markers %>%
         slice_head(n = num_markers) %>%
-        pivot_longer(everything(), names_to = "group", values_to = "feature") %>%
+        pivot_longer(everything(), names_to = "group", 
+                     values_to = "feature") %>%
         arrange(group) %>%
         distinct(feature, .keep_all = TRUE) %>%
         identity()
     if (!is.null(selected_values)) {
-        object <- object[, get_cell_metadata(object)[[group_by]] %in% selected_values]
+        object <- object[, get_cell_metadata(object)[[group_by]] %in% 
+                             selected_values]
         sliced_markers <- sliced_markers %>%
             filter(group %in% selected_values) %>%
             distinct(feature, .keep_all = TRUE)
@@ -258,8 +286,11 @@ plot_markers <- function(object, group_by = "batch", num_markers = 5, selected_v
     sliced_markers <- pull(sliced_markers, feature)
 
     object[[group_by]] <- forcats::fct_na_value_to_level(object[[group_by]])
-    markerplot <- plotDots(object, features = sliced_markers, group = group_by) +
-        theme(axis.text.x = element_text(size = 10, angle = 45, vjust = 1, hjust = 1), axis.text.y = element_text(size = 10)) +
+    markerplot <- plotDots(object, features = sliced_markers, 
+                           group = group_by) +
+        theme(axis.text.x = element_text(size = 10, angle = 45, 
+                                         vjust = 1, hjust = 1), 
+              axis.text.y = element_text(size = 10)) +
         # scale_y_discrete(position = "left") +
         # scale_x_discrete(limits = sliced_markers) +
         geom_hline(yintercept = vline_coords, linetype = 2) +
@@ -268,8 +299,10 @@ plot_markers <- function(object, group_by = "batch", num_markers = 5, selected_v
         return(markerplot)
     }
     plot_height <- (150 * num_markers)
-    plot_width <- (100 * length(levels(as.factor(get_cell_metadata(object)[[group_by]]))))
-    markerplot <- ggplotly(markerplot, height = plot_height, width = plot_width) %>%
+    plot_width <- (100 * length(levels(
+        as.factor(get_cell_metadata(object)[[group_by]]))))
+    markerplot <- ggplotly(markerplot, height = plot_height, 
+                           width = plot_width) %>%
         plotly_settings() %>%
         toWebGL() %>%
         identity()
@@ -285,8 +318,7 @@ plot_markers <- function(object, group_by = "batch", num_markers = 5, selected_v
 #' @param group_by Metadata variable to plot. Default set to "nCount_RNA"
 #' @param fill_by Variable to color bins by. Default set to "batch"
 #' @param yscale Scale of y axis. Default set to "linear"
-#' @param return_plotly whether to return an interactive plotly plot. Default set to FALSE
-#' @param ... extra args passed to ggplot2
+#' @param return_plotly whether to return an interactive plotly plot. 
 #'
 #' @return a histogram of read counts
 #' @export
@@ -300,12 +332,18 @@ plot_markers <- function(object, group_by = "batch", num_markers = 5, selected_v
 #'
 #' # static plot
 #' plot_readcount((small_example_dataset), return_plotly = FALSE)
-plot_readcount <- function(object, group_by = NULL, fill_by = NULL, yscale = "linear", return_plotly = FALSE, ...) {
+plot_readcount <- function(object, group_by = NULL, fill_by = NULL, 
+                           yscale = "linear", return_plotly = FALSE, ...) {
     group_by <- group_by %||% glue("nCount_{mainExpName(object)}")
     fill_by <- group_by %||% glue("nCount_{mainExpName(object)}")
     
-    object_tbl <- rownames_to_column(get_cell_metadata(object), "SID") %>% select(SID, !!as.symbol(group_by), !!as.symbol(fill_by))
-    rc_plot <- ggplot(object_tbl, aes(x = reorder(SID, -!!as.symbol(group_by)), y = !!as.symbol(group_by), fill = !!as.symbol(fill_by))) +
+    object_tbl <- rownames_to_column(
+        get_cell_metadata(object), "SID") %>% select(SID, 
+                                                     !!as.symbol(group_by), 
+                                                     !!as.symbol(fill_by))
+    rc_plot <- ggplot(object_tbl, aes(x = reorder(SID, -!!as.symbol(group_by)), 
+                                      y = !!as.symbol(group_by), 
+                                      fill = !!as.symbol(fill_by))) +
         geom_bar(position = "identity", stat = "identity") +
         theme(axis.text.x = element_blank()) +
         labs(title = group_by, x = "Sample") +
@@ -328,17 +366,24 @@ plot_readcount <- function(object, group_by = NULL, fill_by = NULL, yscale = "li
 #' @param object A SingleCellExperiment object
 #' @param features Vector of features to plot. Features can come
 #' @param cells Cells to retain
-#' @param group.by  Name of one or more metadata columns to annotate columns by (for example, orig.ident)
+#' @param group.by  Name of one or more metadata columns to annotate columns 
+#' by (for example, orig.ident)
 #' @param assayName "counts" for raw data "scale.data" for log-normalized data
 #' @param experiment experiment to display
 #' @param group.bar.height height for group bars
-#' @param col_arrangement how to arrange columns whether with a dendrogram (Ward.D2, average, etc.) or exclusively by metadata category
+#' @param col_arrangement how to arrange columns whether with a dendrogram 
+#' (Ward.D2, average, etc.) or exclusively by metadata category
 #' @param column_split whether to split columns by metadata value
 #' @param mm_col_dend height of column dendrogram
 #' @param ... additional arguments passed to Heatmap
 #'
 #' @return a complexheatmap
-make_complex_heatmap <- function(object, features = NULL, group.by = "ident", cells = NULL, assayName = "logcounts", experiment = NULL, group.bar.height = 0.01, column_split = NULL, col_arrangement = "ward.D2", mm_col_dend = 30, ...) {
+make_complex_heatmap <- function(object, features = NULL, group.by = "ident", 
+                                 cells = NULL, assayName = "logcounts", 
+                                 experiment = NULL, group.bar.height = 0.01, 
+                                 column_split = NULL, 
+                                 col_arrangement = "ward.D2", 
+                                 mm_col_dend = 30, ...) {
     cells <- cells %||% colnames(x = object)
     if (is.numeric(x = cells)) {
         cells <- colnames(x = object)[cells]
@@ -354,20 +399,30 @@ make_complex_heatmap <- function(object, features = NULL, group.by = "ident", ce
         bad.features <- features[!features %in% possible.features]
         features <- features[features %in% possible.features]
         if (length(x = features) == 0) {
-            stop("No requested features found in the ", assayName, " assay for the ", experiment, " experiment.")
+            stop("No requested features found in the ", assayName, 
+                 " assay for the ", experiment, " experiment.")
         }
-        warning("The following features were omitted as they were not found in the ", assay, " assay for the ", experiment, " experiment: ", paste(bad.features, collapse = ", "))
+        warning(
+            "The following features were omitted as they", 
+            " were not found in the ", assay, " assay for the ", 
+            experiment, " experiment: ", paste(bad.features, collapse = ", "))
     }
-    data <- as.data.frame(x = t(x = as.matrix(x = assay(object, assayName)[features, cells, drop = FALSE])))
+    data <- as.data.frame(x = t(x = as.matrix(
+        x = assay(object, assayName)[features, cells, drop = FALSE])))
 
-    if (any(col_arrangement %in% c("ward.D", "single", "complete", "average", "mcquitty", "median", "centroid", "ward.D2"))) {
+    if (any(col_arrangement %in% c("ward.D", "single", "complete", "average", 
+                                   "mcquitty", "median", "centroid", 
+                                   "ward.D2"))) {
         if ("PCA" %in% reducedDimNames(object)) {
             cluster_columns <- reducedDim(object, "PCA") %>%
                 dist() %>%
                 hclust(col_arrangement)
         } else {
-            message("pca not computed for this dataset; cells will be clustered by displayed features")
-            cluster_columns <- function(m) as.dendrogram(agnes(m), method = col_arrangement)
+            message(
+                "pca not computed for this dataset; 
+                cells will be clustered by displayed features")
+            cluster_columns <- 
+                function(m) as.dendrogram(agnes(m), method = col_arrangement)
         }
     } else {
         cells <- colData(object)[col_arrangement] %>%
@@ -382,7 +437,8 @@ make_complex_heatmap <- function(object, features = NULL, group.by = "ident", ce
     groups.use <- colData(object)[group.by] %>% as.data.frame()
     groups.use <- groups.use %>%
         rownames_to_column("sample_id") %>%
-        mutate(across(where(is.character), ~ str_wrap(str_replace_all(.x, ",", " "), 10))) %>%
+        mutate(across(where(is.character), ~ str_wrap(
+            str_replace_all(.x, ",", " "), 10))) %>%
         mutate(across(where(is.character), as.factor)) %>%
         data.frame(row.names = 1) %>%
         identity()
@@ -390,7 +446,9 @@ make_complex_heatmap <- function(object, features = NULL, group.by = "ident", ce
     ha_cols.factor <- NULL
     if (length(groups.use.factor) > 0) {
         ha_col_names.factor <- lapply(groups.use.factor, levels)
-        ha_cols.factor <- map(ha_col_names.factor, ~ (hue_pal())(length(.x))) %>% map2(ha_col_names.factor, set_names)
+        ha_cols.factor <- map(ha_col_names.factor, 
+                              ~ (hue_pal())(length(.x))) %>% 
+            map2(ha_col_names.factor, set_names)
     }
     groups.use.numeric <- groups.use[map_lgl(groups.use, is.numeric)]
     ha_cols.numeric <- NULL
@@ -400,11 +458,18 @@ make_complex_heatmap <- function(object, features = NULL, group.by = "ident", ce
         }
         ha_col_names.numeric <- names(groups.use.numeric)
         ha_col_hues.numeric <- (hue_pal())(length(ha_col_names.numeric))
-        ha_cols.numeric <- map2(groups.use[ha_col_names.numeric], ha_col_hues.numeric, numeric_col_fun)
+        ha_cols.numeric <- map2(groups.use[ha_col_names.numeric], 
+                                ha_col_hues.numeric, numeric_col_fun)
     }
     ha_cols <- c(ha_cols.factor, ha_cols.numeric)
-    column_ha <- HeatmapAnnotation(df = groups.use, height = unit(group.bar.height, "points"), col = ha_cols)
-    hm <- Heatmap(t(data), name = "log expression", top_annotation = column_ha, cluster_columns = cluster_columns, show_column_names = FALSE, column_dend_height = unit(mm_col_dend, "mm"), column_split = column_split, column_title = NULL, ...)
+    column_ha <- HeatmapAnnotation(df = groups.use, 
+                                   height = unit(group.bar.height, "points"), 
+                                   col = ha_cols)
+    hm <- Heatmap(t(data), name = "log expression", 
+                  top_annotation = column_ha, 
+                  cluster_columns = cluster_columns, show_column_names = FALSE,
+                  column_dend_height = unit(mm_col_dend, "mm"), 
+                  column_split = column_split, column_title = NULL, ...)
     return(hm)
 }
 
@@ -430,7 +495,10 @@ make_complex_heatmap <- function(object, features = NULL, group.by = "ident", ce
 #' data("grch38")
 #' plot_transcript_composition(tiny_sce, "NRL")
 #'
-plot_transcript_composition <- function(object, gene_symbol, group.by = "batch", standardize = FALSE, drop_zero = FALSE) {
+plot_transcript_composition <- function(object, gene_symbol, 
+                                        group.by = "batch", 
+                                        standardize = FALSE, 
+                                        drop_zero = FALSE) {
     
     data_env <- new.env(parent = emptyenv())
     data("grch38", envir = data_env, package = "chevreul")
@@ -448,7 +516,8 @@ plot_transcript_composition <- function(object, gene_symbol, group.by = "batch",
         rownames_to_column("sample_id") %>%
         select(sample_id, group.by = {{ group.by }})
 
-    transcripts <- transcripts[transcripts %in% rownames(altExp(object, "transcript"))]
+    transcripts <- transcripts[transcripts %in% 
+                                   rownames(altExp(object, "transcript"))]
 
     data <- counts(altExp(object, "transcript"))[transcripts, ] %>%
         as.matrix() %>%
@@ -457,20 +526,26 @@ plot_transcript_composition <- function(object, gene_symbol, group.by = "batch",
     data <- data %>%
         as.data.frame() %>%
         rownames_to_column("sample_id") %>%
-        pivot_longer(cols = starts_with("ENST"), names_to = "transcript", values_to = "expression") %>%
+        pivot_longer(cols = starts_with("ENST"), 
+                     names_to = "transcript", values_to = "expression") %>%
         left_join(metadata, by = "sample_id") %>%
-        mutate(group.by = as.factor(group.by), transcript = as.factor(transcript))
+        mutate(group.by = as.factor(group.by), 
+               transcript = as.factor(transcript))
     data <- group_by(data, group.by, transcript)
     if (drop_zero) {
         data <- filter(data, expression != 0)
     }
     data <- summarize(data, expression = mean(expression))
     position <- ifelse(standardize, "fill", "stack")
-    p <- ggplot(data = data, aes(x = group.by, y = expression, fill = transcript)) +
+    p <- ggplot(data = data, aes(x = group.by, 
+                                 y = expression, fill = transcript)) +
         geom_col(position = position) +
         theme_minimal() +
-        theme(axis.title.x = element_blank(), axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1, size = 12)) +
-        labs(title = paste("Mean expression by", group.by, "-", gene_symbol)) +
+        theme(axis.title.x = element_blank(), 
+              axis.text.x = element_text(angle = 45, hjust = 1, 
+                                         vjust = 1, size = 12)) +
+        labs(title = paste("Mean expression by", group.by, "-", 
+                           gene_symbol)) +
         NULL
     return(list(plot = p, data = data))
 }
@@ -478,7 +553,7 @@ plot_transcript_composition <- function(object, gene_symbol, group.by = "batch",
 
 #' Plot All Transcripts
 #'
-#' plot expression all transcripts for an input gene superimposed on an embedding
+#' plot expression all transcripts for an input gene superimposed on embedding
 #'
 #' @param object A object
 #' @param features gene or vector of transcripts
@@ -487,15 +562,18 @@ plot_transcript_composition <- function(object, gene_symbol, group.by = "batch",
 #' @param combine TRUE
 #'
 #' @return a list of embedding plots colored by a feature of interest
-plot_all_transcripts <- function(object, features, embedding = "UMAP", from_gene = TRUE, combine = TRUE) {
+plot_all_transcripts <- function(object, features, 
+                                 embedding = "UMAP", 
+                                 from_gene = TRUE, combine = TRUE) {
     if (from_gene) {
         features <- genes_to_transcripts(features)
     }
     features <- features[features %in% rownames(altExp(object, "transcript"))]
     transcript_cols <- assay(altExp(object, "transcript"))[features, ]
     colData(object)[features] <- t(as.matrix(transcript_cols))
-    # plot_out <- plotReducedDim(altExp(object), features = features, dimred = embedding)
-    plot_out <- map(paste0(features), ~ plot_feature(object, embedding = embedding, features = .x, return_plotly = FALSE)) %>% set_names(features)
+    plot_out <- map(paste0(features), ~plot_feature(
+        object, embedding = embedding, features = .x, 
+        return_plotly = FALSE)) %>% set_names(features)
     if (combine) {
         plot_out <- wrap_plots(plot_out)
     }

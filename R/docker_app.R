@@ -4,7 +4,7 @@
 #' @param appTitle a title for the app
 #' @param organism_type human or mouse
 #' @param futureMb the megabytes available for the future package
-#' @param db_name  path to sqlite database listing bigwig files for cells in the obect object
+#' @param db_name  path to sqlite database listing bigwig files for cells 
 #'
 #' @return a dockerized shiny app
 #' @export
@@ -40,7 +40,8 @@ dockerChevreulApp <- function(
             menuItem("Reformat Metadata",
                 tabName = "reformatMetadata", icon = icon("columns")
             ), menuItem("Plot Data",
-                tabName = "comparePlots", icon = icon("chart-bar"), selected = TRUE
+                tabName = "comparePlots", icon = icon("chart-bar"), 
+                selected = TRUE
             ), menuItem("Heatmap/Violin Plots",
                 tabName = "violinPlots", icon = icon("sort")
             ), menuItem("Coverage Plots",
@@ -73,7 +74,8 @@ dockerChevreulApp <- function(
             tabItem(
                 tabName = "comparePlots",
                 h2("Compare Plots") %>%
-                    default_helper(type = "markdown", content = "comparePlots"),
+                    default_helper(type = "markdown", 
+                                   content = "comparePlots"),
                 plotDimRedui("plotdimred1"),
                 plotDimRedui("plotdimred2"),
                 plotReadCountui("plotreadcount1"),
@@ -109,12 +111,15 @@ dockerChevreulApp <- function(
             tabItem(
                 tabName = "subsetSingleCellExperiment",
                 h2("Subset SingleCellExperiment Input") %>%
-                    default_helper(type = "markdown", content = "subsetSingleCellExperiment"),
+                    default_helper(type = "markdown", 
+                                   content = "subsetSingleCellExperiment"),
                 plotDimRedui("subset"),
                 chevreulBox(
                     title = "Subset Settings",
-                    checkboxInput("legacySettingsSubset", "Use Legacy Settings", value = FALSE),
-                    actionButton("subsetAction", "subset obect by selected cells"),
+                    checkboxInput("legacySettingsSubset", 
+                                  "Use Legacy Settings", value = FALSE),
+                    actionButton("subsetAction", 
+                                 "subset obect by selected cells"),
                     actionButton("subsetCsv", "subset obect by uploaded csv"),
                     fileInput("uploadCsv",
                         "Upload .csv file with cells to include",
@@ -165,7 +170,8 @@ dockerChevreulApp <- function(
                         ),
                         width = 12
                     ) %>%
-                        default_helper(type = "markdown", content = "regressFeatures")
+                        default_helper(type = "markdown", 
+                                       content = "regressFeatures")
                 )
             ), tabItem(
                 tabName = "techInfo",
@@ -184,7 +190,10 @@ dockerChevreulApp <- function(
     server <- function(input, output, session) {
         w <- Waiter$new()
 
-        observe_helpers(help_dir = system.file("helpers", package = "chevreul", lib.loc = "/dataVolume/storage/rpkgs/devel_install/"))
+        observe_helpers(
+            help_dir = system.file(
+                "helpers", package = "chevreul", 
+                lib.loc = "/dataVolume/storage/rpkgs/devel_install/"))
         options(warn = -1)
 
         object <- reactiveVal(NULL)
@@ -208,7 +217,9 @@ dockerChevreulApp <- function(
 
 
         observe({
-            reformatted_object <- callModule(reformatMetadataDR, "reformatMetadataDR", object, featureType)
+            reformatted_object <- callModule(reformatMetadataDR, 
+                                             "reformatMetadataDR", 
+                                             object, featureType)
             object(reformatted_object())
         })
 
@@ -220,19 +231,24 @@ dockerChevreulApp <- function(
         observe({
             req(object())
 
-            callModule(plotDimRed, "plotdimred1", object, plot_types, featureType,
+            callModule(plotDimRed, "plotdimred1", object, plot_types, 
+                       featureType,
                 organism_type = organism_type, reductions
             )
-            callModule(plotDimRed, "plotdimred2", object, plot_types, featureType,
+            callModule(plotDimRed, "plotdimred2", object, plot_types, 
+                       featureType,
                 organism_type = organism_type, reductions
             )
-            callModule(plotDimRed, "diffex", object, plot_types, featureType,
+            callModule(plotDimRed, "diffex", object, plot_types, 
+                       featureType,
                 organism_type = organism_type, reductions
             )
-            callModule(plotDimRed, "subset", object, plot_types, featureType,
+            callModule(plotDimRed, "subset", object, plot_types, 
+                       featureType,
                 organism_type = organism_type, reductions
             )
-            callModule(plotDimRed, "markerScatter", object, plot_types, featureType,
+            callModule(plotDimRed, "markerScatter", object, plot_types, 
+                       featureType,
                 organism_type = organism_type, reductions
             )
         })
@@ -249,7 +265,8 @@ dockerChevreulApp <- function(
             organism_type
         )
         callModule(
-            plotCoverage, "coverageplots", object, plot_types, proj_dir, organism_type, bigwig_db
+            plotCoverage, "coverageplots", object, plot_types, proj_dir, 
+            organism_type, bigwig_db
         )
         callModule(plotClustree, "clustreePlot", object)
         callModule(tableSelected, "tableselected", object)
@@ -274,7 +291,8 @@ dockerChevreulApp <- function(
             removeModal()
         })
 
-        callModule(chevreulMarkers, "findmarkers", object, plot_types, featureType)
+        callModule(chevreulMarkers, "findmarkers", object, plot_types, 
+                   featureType)
 
         callModule(pathwayEnrichment, "pathwayEnrichment", object)
 
@@ -288,7 +306,8 @@ dockerChevreulApp <- function(
                     organism_type
                 )
 
-                callModule(plotDimRed, "alltranscripts2", object, plot_types, featureType,
+                callModule(plotDimRed, "alltranscripts2", object, plot_types, 
+                           featureType,
                     organism_type = organism_type, reductions
                 )
             }
@@ -305,17 +324,22 @@ dockerChevreulApp <- function(
                 {
                     html("subsetMessages", "")
                     message("Beginning")
-                    subset_object <- object()[, colnames(object()) %in% subset_selected_cells()]
+                    subset_object <- 
+                        object()[, colnames(object()) %in% 
+                                     subset_selected_cells()]
                     object(subset_object)
                     if (length(unique(object()$batch)) > 1) {
                         message("reintegrating gene expression")
-                        reintegrated_object <- reintegrate_object(object(),
+                        reintegrated_object <- 
+                            reintegrate_object(object(),
                             resolution = seq(0.2, 1, by = 0.2),
                             organism = metadata(object())[["experiment"]][["organism"]]
                         )
                         object(reintegrated_object)
                     } else {
-                        processed_object <- obect_pipeline(object(), resolution = seq(0.2, 1, by = 0.2))
+                        processed_object <- 
+                            obect_pipeline(object(), 
+                                           resolution = seq(0.2, 1, by = 0.2))
                         object(processed_object)
                     }
                     message("Complete!")
@@ -349,7 +373,9 @@ dockerChevreulApp <- function(
                         )
                         object(reintegrated_object)
                     } else {
-                        processed_object <- obect_pipeline(object(), resolution = seq(0.2, 1, by = 0.2))
+                        processed_object <- 
+                            obect_pipeline(object(), 
+                                           resolution = seq(0.2, 1, by = 0.2))
                         object(processed_object)
                     }
                     message("Complete!")

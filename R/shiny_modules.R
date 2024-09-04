@@ -19,7 +19,8 @@ plotClustree <- function(input, output, session, object) {
 
     output$clustree <- renderPlot({
         req(object())
-        experiment <- ifelse("integrated" %in% get_feature_types(object()), "integrated", "gene")
+        experiment <- ifelse("integrated" %in% get_feature_types(object()), 
+                             "integrated", "gene")
         object <- set_feature_type(object(), experiment)
         clustree::clustree(object(), prefix = paste0(experiment, "_snn_res."))
     })
@@ -38,28 +39,34 @@ plotViolinui <- function(id) {
             title = "Violin Plots",
             uiOutput(ns("vln_group")),
             selectizeInput(ns("customFeature"),
-                "Gene or transcript expression by which to color the plot eg. 'NRL' or 'ENST00000488147'",
+                "Gene or transcript expression by which to color the plot 
+                eg. 'NRL' or 'ENST00000488147'",
                 choices = NULL, multiple = FALSE
             ),
-            radioButtons(ns("slot"), "Data Type", choices = c("transformed" = "data", "raw counts" = "counts")),
+            radioButtons(ns("slot"), "Data Type", choices = 
+                             c("transformed" = "data", 
+                               "raw counts" = "counts")),
             downloadButton(ns("downloadPlot")),
             plotlyOutput(ns("vplot"), height = 750),
             width = 11
         ) %>%
-            default_helper(type = "markdown", content = "violinPlot", size = "l")
+            default_helper(type = "markdown", content = "violinPlot", 
+                           size = "l")
     )
 }
 
 #' Plot Violin Server
 #'
-#' Plots a Violin plot of a single data (gene expression, metrics, etc.) in the server SingleCellExperiment app.
+#' Plots a Violin plot of a single data (gene expression, metrics, etc.) 
+#' in the server SingleCellExperiment app.
 #'
 #' @param object SingleCellExperiment object
 #' @param featureType Gene or Transcript
 #' @param organism_type Organism
 #'
 #' @noRd
-plotViolin <- function(input, output, session, object, featureType, organism_type) {
+plotViolin <- function(input, output, session, object, featureType, 
+                       organism_type) {
     ns <- session$ns
     prefill_feature <- reactive({
         req(featureType())
@@ -98,7 +105,8 @@ plotViolin <- function(input, output, session, object, featureType, organism_typ
         req(input$vlnGroup)
 
         vln_plot <-
-            plot_violin(object(), plot_var = input$vlnGroup, features = input$customFeature, slot = input$slot)
+            plot_violin(object(), plot_var = input$vlnGroup, 
+                        features = input$customFeature, slot = input$slot)
     })
 
     output$downloadPlot <- downloadHandler(
@@ -106,18 +114,22 @@ plotViolin <- function(input, output, session, object, featureType, organism_typ
             paste("violin", ".pdf", sep = "")
         },
         content = function(file) {
-            ggsave(file, vln_plot() + theme_pubr(base_size = 20, x.text.angle = 45), width = 16, height = 12)
+            ggsave(file, vln_plot() + theme_pubr(base_size = 20, 
+                                                 x.text.angle = 45), 
+                   width = 16, height = 12)
         }
     )
 
     output$vplot <- renderPlotly({
         req(object())
         req(input$vlnGroup)
-        exclude_trace_number <- length(unique(get_cell_metadata(object())[[input$vlnGroup]])) * 2
+        exclude_trace_number <- 
+            length(unique(get_cell_metadata(object())[[input$vlnGroup]])) * 2
 
         vln_plot <- ggplotly(vln_plot(), height = 700) %>%
             style(opacity = 0.5) %>%
-            style(hoverinfo = "skip", traces = c(seq_len(exclude_trace_number))) %>%
+            style(hoverinfo = "skip", 
+                  traces = c(seq_len(exclude_trace_number))) %>%
             plotly_settings(width = 1200) %>%
             toWebGL() %>%
             identity()
@@ -136,11 +148,19 @@ plotHeatmapui <- function(id) {
         chevreulBox(
             title = "Heatmap",
             uiOutput(ns("colAnnoVarui")),
-            radioButtons(ns("assayName"), "Data Scaling", choices = c(scaled = "scaledata", unscaled = "logcounts"), selected = "scaledata", inline = TRUE),
-            selectizeInput(ns("dendroSelect"), "Clustering algorithm or metadata for column arrangement", choices = NULL, selected = NULL, multiple = TRUE),
+            radioButtons(ns("assayName"), "Data Scaling", 
+                         choices = c(scaled = "scaledata", 
+                                     unscaled = "logcounts"), 
+                         selected = "scaledata", inline = TRUE),
+            selectizeInput(ns("dendroSelect"), 
+                           "Clustering algorithm or metadata for column 
+                           arrangement", choices = NULL, selected = NULL, 
+                           multiple = TRUE),
             actionButton(ns("actionHeatmap"), "Plot Heatmap"),
             downloadButton(ns("downloadPlot"), "Download Heatmap"),
-            selectizeInput(ns("customFeature"), "Gene or transcript expression by which to color the plot; eg. 'NRL' or 'ENST00000488147'",
+            selectizeInput(ns("customFeature"), "Gene or transcript 
+                           expression by which to color the plot; eg. 
+                           'NRL' or 'ENST00000488147'",
                 choices = NULL, multiple = TRUE
             ),
             plotOutput(ns("heatmap"), height = 750),
@@ -158,11 +178,13 @@ plotHeatmapui <- function(id) {
 #'
 #' @noRd
 #'
-plotHeatmap <- function(input, output, session, object, featureType, organism_type) {
+plotHeatmap <- function(input, output, session, object, featureType, 
+                        organism_type) {
     ns <- session$ns
 
     w <- Waiter$new(ns("heatmap"),
-        html = spin_loaders(id = 1, color = "black", style = "position:relative;margin:auto;"),
+        html = spin_loaders(id = 1, color = "black", 
+                            style = "position:relative;margin:auto;"),
         color = transparent(.5)
     )
 
@@ -174,7 +196,8 @@ plotHeatmap <- function(input, output, session, object, featureType, organism_ty
             experiment <- "gene"
         }
 
-        preset_features <- get_variable_features(object(), experiment = experiment)[seq(50)]
+        preset_features <- 
+            get_variable_features(object(), experiment = experiment)[seq(50)]
 
         updateSelectizeInput(session, "customFeature",
             choices = get_features(object(), experiment = experiment),
@@ -196,9 +219,15 @@ plotHeatmap <- function(input, output, session, object, featureType, organism_ty
     observe({
         req(object())
 
-        hclust_methods <- c("Ward" = "ward.D2", "single", "complete", "average")
+        hclust_methods <- c("Ward" = "ward.D2", "single", 
+                            "complete", "average")
 
-        updateSelectizeInput(session, "dendroSelect", choices = c(hclust_methods, colnames(get_cell_metadata(object()))), selected = "ward.D2")
+        updateSelectizeInput(
+            session, 
+            "dendroSelect", 
+            choices = c(hclust_methods, 
+                        colnames(get_cell_metadata(object()))), 
+            selected = "ward.D2")
     })
 
     heatmap_plot <- eventReactive(input$actionHeatmap, {
@@ -211,7 +240,12 @@ plotHeatmap <- function(input, output, session, object, featureType, organism_ty
             experiment <- "gene"
         }
 
-        hm <- make_complex_heatmap(object(), features = input$customFeature, experiment = experiment, group.by = input$colAnnoVar, assayName = input$assayName, col_arrangement = input$dendroSelect)
+        hm <- make_complex_heatmap(object(), 
+                                   features = input$customFeature, 
+                                   experiment = experiment, 
+                                   group.by = input$colAnnoVar, 
+                                   assayName = input$assayName, 
+                                   col_arrangement = input$dendroSelect)
 
         hm <- draw(hm)
         return(hm)
@@ -227,7 +261,9 @@ plotHeatmap <- function(input, output, session, object, featureType, organism_ty
             paste("heatmap", ".pdf", sep = "")
         },
         content = function(file) {
-            ggsave(file, as.ggplot(heatmap_plot()) + theme_pubr(base_size = 20, x.text.angle = 45), width = 16, height = 12)
+            ggsave(file, as.ggplot(heatmap_plot()) + 
+                       theme_pubr(base_size = 20, x.text.angle = 45), 
+                   width = 16, height = 12)
         }
     )
 }
@@ -241,7 +277,9 @@ integrateProjui <- function(id) {
     tagList(
         chevreulBox(
             title = "Integrate Projects",
-            shinyFilesButton(ns('integratedProjDir'), label='Integrated Project Directory', title='Choose a directory to store integrated datasets', multiple=FALSE),
+            shinyFilesButton(ns('integratedProjDir'), 
+                             label='Integrated Project Directory', 
+                             title='Choose a directory to store integrated datasets', multiple=FALSE),
             actionButton(ns("integrateAction"), "Integrate Selected Projects"),
             # useShinyjs(),
             # runcodeUI(code = "alert('Hello!')", id = "subsetcode"),
@@ -264,7 +302,8 @@ integrateProjui <- function(id) {
 #' @param con a connection
 #'
 #' @noRd
-integrateProj <- function(input, output, session, proj_matrices, object, proj_dir, con) {
+integrateProj <- function(input, output, session, proj_matrices, 
+                          object, proj_dir, con) {
     ns <- session$ns
 
     dataset_volumes <- reactive({
@@ -317,18 +356,24 @@ integrateProj <- function(input, output, session, proj_matrices, object, proj_di
                 html("integrationMessages", "")
                 message("Beginning")
                 message(selectedProjects())
-                batches <- path(selectedProjects(), "output", "singlecellexperiment", "unfiltered_object.rds") %>%
+                batches <- path(selectedProjects(), "output", 
+                                "singlecellexperiment", 
+                                "unfiltered_object.rds") %>%
                     map(readRDS)
 
                 names(batches) <- names(selectedProjects())
                 message(names(batches))
-                mergedObjects(integration_workflow(batches, legacy_settings = input$legacySettings))
+                mergedObjects(
+                    integration_workflow(
+                        batches, legacy_settings = input$legacySettings))
                 # mergedObjects(batches[[1]])
 
                 message("Integration Complete!")
             },
             message = function(m) {
-                html(id = "integrationMessages", html = paste0("Running Integration: ", m$message), add = FALSE)
+                html(id = "integrationMessages", 
+                     html = paste0("Running Integration: ", m$message), 
+                     add = FALSE)
             }
         )
     })
@@ -336,7 +381,8 @@ integrateProj <- function(input, output, session, proj_matrices, object, proj_di
     newProjDir <- reactive({
         req(mergedObjects())
 
-        newProjName <- paste0(map(path_file(selectedProjects()), ~ gsub("_proj", "", .x)), collapse = "_")
+        newProjName <- paste0(map(path_file(selectedProjects()), ~ 
+                                      gsub("_proj", "", .x)), collapse = "_")
         newProjDir <- path(input$integratedProjDir, newProjName)
 
         proj_dir(newProjDir)
@@ -381,18 +427,22 @@ integrateProj <- function(input, output, session, proj_matrices, object, proj_di
 
         if (!is.null(integratedProjectSavePath())) {
             withProgress(
-                message = paste0("Saving Integrated Dataset to ", integratedProjectSavePath()),
+                message = paste0("Saving Integrated Dataset to ", 
+                                 integratedProjectSavePath()),
                 value = 0,
                 {
                     # Sys.sleep(6)
                     incProgress(2 / 10)
-                    save_object(mergedObjects(), proj_dir = integratedProjectSavePath())
-                    writeLines(character(), path(integratedProjectSavePath(), ".here"))
+                    save_object(mergedObjects(), 
+                                proj_dir = integratedProjectSavePath())
+                    writeLines(character(), path(integratedProjectSavePath(), 
+                                                 ".here"))
                     # create_proj_db()
                     dbAppendTable(con, "projects_tbl", data.frame(
                         project_name = path_file(integratedProjectSavePath()),
                         project_path = integratedProjectSavePath(),
-                        project_slug = str_remove(path_file(integratedProjectSavePath()), "_proj$"),
+                        project_slug = str_remove(
+                            path_file(integratedProjectSavePath()), "_proj$"),
                         project_type = "integrated_projects"
                     ))
                     incProgress(8 / 10)
@@ -416,9 +466,16 @@ changeEmbedParamsui <- function(id) {
     negsamprate_vals <- prep_slider_values(5)
 
     tagList(
-        selectizeInput(ns("dims"), label = "Dimensions from PCA", choices = seq(1, 99), multiple = TRUE, selected = seq(30)),
-        sliderInput(ns("minDist"), label = "Minimum Distance", min = minDist_vals$min, max = minDist_vals$max, value = minDist_vals$value, step = minDist_vals$step),
-        sliderInput(ns("negativeSampleRate"), label = "Negative Sample Rate", min = negsamprate_vals$min, max = negsamprate_vals$max, value = negsamprate_vals$value, step = negsamprate_vals$step)
+        selectizeInput(ns("dims"), label = "Dimensions from PCA", 
+                       choices = seq(1, 99), multiple = TRUE, 
+                       selected = seq(30)),
+        sliderInput(ns("minDist"), label = "Minimum Distance", 
+                    min = minDist_vals$min, max = minDist_vals$max, 
+                    value = minDist_vals$value, step = minDist_vals$step),
+        sliderInput(ns("negativeSampleRate"), label = "Negative Sample Rate",
+                    min = negsamprate_vals$min, max = negsamprate_vals$max, 
+                    value = negsamprate_vals$value, 
+                    step = negsamprate_vals$step)
     )
 }
 
@@ -430,7 +487,9 @@ changeEmbedParamsui <- function(id) {
 changeEmbedParams <- function(input, output, session, object) {
     ns <- session$ns
 
-    object <- RunUMAP(object(), dims = as.numeric(input$dims), reduction = "PCA", min.dist = input$minDist, negative.sample.rate = input$negativeSampleRate)
+    object <- RunUMAP(object(), dims = as.numeric(input$dims), 
+                      reduction = "PCA", min.dist = input$minDist, 
+                      negative.sample.rate = input$negativeSampleRate)
 
     return(object)
 }
@@ -444,13 +503,21 @@ plotDimRedui <- function(id) {
         title = "Embedding",
         chevreulDropDownButton(
             ns("dimPlotSettings"),
-            selectizeInput(ns("embedding"), "Embedding", choices = NULL, selected = NULL),
-            sliderInput(ns("dotSize"), "Size of Points in UMAP", min = 0.5, max = 2, step = 0.1, value = 1),
-            selectizeInput(ns("dim1"), "Dimension 1", choices = seq(1, 99), selected = 1),
-            selectizeInput(ns("dim2"), "Dimension 2", choices = seq(1, 99), selected = 2)
+            selectizeInput(ns("embedding"), "Embedding", choices = NULL, 
+                           selected = NULL),
+            sliderInput(ns("dotSize"), "Size of Points in UMAP", min = 0.5, 
+                        max = 2, step = 0.1, value = 1),
+            selectizeInput(ns("dim1"), "Dimension 1", choices = seq(1, 99), 
+                           selected = 1),
+            selectizeInput(ns("dim2"), "Dimension 2", choices = seq(1, 99), 
+                           selected = 2)
         ),
-        selectizeInput(ns("plottype"), "Variable to Plot", choices = NULL, multiple = TRUE),
-        selectizeInput(ns("customFeature"), "Gene or transcript expression by which to color the plot; eg. 'NRL' or 'ENST00000488147'", choices = NULL, multiple = FALSE),
+        selectizeInput(ns("plottype"), "Variable to Plot", choices = NULL, 
+                       multiple = TRUE),
+        selectizeInput(ns("customFeature"), 
+                       "Gene or transcript expression by which to color 
+                       the plot; eg. 'NRL' or 'ENST00000488147'", 
+                       choices = NULL, multiple = FALSE),
         plotlyOutput(ns("dplot"), height = 500),
         width = 6
     )
@@ -472,7 +539,7 @@ plotDimRed <- function(
 
     output$myPanel <- renderUI({
         req()
-        lev <- sort(unique(input$select)) # sorting so that "things" are unambigious
+        lev <- sort(unique(input$select)) 
         cols <- gg_fill_hue(length(lev))
 
         # New IDs "colX1" so that it partly coincide with input$select...
@@ -543,7 +610,8 @@ plotDimRed <- function(
 
             plot_var(cross_plot_object,
                 dims = c(input$dim1, input$dim2),
-                embedding = input$embedding, group = NULL, pt.size = input$dotSize,
+                embedding = input$embedding, group = NULL, 
+                pt.size = input$dotSize,
                 return_plotly = TRUE
             )
         } else {
@@ -568,7 +636,8 @@ plotDimRed <- function(
             } else if (input$plottype %in% plot_types()$category_vars) {
                 plot_var(object(),
                     dims = c(input$dim1, input$dim2),
-                    embedding = input$embedding, group = input$plottype, pt.size = input$dotSize,
+                    embedding = input$embedding, group = input$plottype, 
+                    pt.size = input$dotSize,
                     return_plotly = TRUE
                 )
             }
@@ -598,7 +667,9 @@ tableSelected <- function(input, output, session, object) {
         req(object())
         d <- event_data("plotly_selected")
         if (is.null(d)) {
-            msg <- "Click and drag events (i.e. select/lasso) appear here (double-click to clear)"
+            msg <- 
+                "Click and drag events (i.e. select/lasso) appear here 
+            (double-click to clear)"
             return(d)
         } else {
             # selected_cells <- colnames(object())[as.numeric(d$key)]
@@ -610,12 +681,13 @@ tableSelected <- function(input, output, session, object) {
         req(object())
         req(brush())
         selected_meta <- data.frame(get_cell_metadata(object())[brush(), ])
-
-        # selection = list(mode = 'multiple', selected = c(1, 3, 8), target = 'row'),
         datatable(selected_meta,
             extensions = "Buttons",
-            selection = list(mode = "multiple", selected = seq_len(nrow(selected_meta)), target = "row"),
-            options = list(dom = "Bft", buttons = c("copy", "csv"), scrollX = "100px", scrollY = "800px")
+            selection = list(mode = "multiple", 
+                             selected = seq_len(nrow(selected_meta)), 
+                             target = "row"),
+            options = list(dom = "Bft", buttons = c("copy", "csv"), 
+                           scrollX = "100px", scrollY = "800px")
         )
     })
 
@@ -638,14 +710,17 @@ diffexui <- function(id) {
             title = "Differential Expression Settings",
             radioButtons(ns("diffex_scheme"),
                 "Cells to Compare",
-                choiceNames = c("SingleCellExperiment Cluster", "Custom Selection"), choiceValues = c("louvain", "custom"),
+                choiceNames = 
+                    c("SingleCellExperiment Cluster", "Custom Selection"), 
+                choiceValues = c("louvain", "custom"),
                 selected = "louvain",
                 inline = TRUE
             ),
             conditionalPanel(
                 ns = ns,
                 condition = "input.diffex_scheme == 'louvain'",
-                sliderInput(ns("objectResolution"), "Resolution of clustering algorithm (affects number of clusters)",
+                sliderInput(ns("objectResolution"), 
+                            "Resolution of clustering algorithm (affects number of clusters)",
                     min = 0.2, max = 2, step = 0.2, value = 0.6
                 ),
                 numericInput(ns("cluster1"),
@@ -659,7 +734,8 @@ diffexui <- function(id) {
             conditionalPanel(
                 ns = ns,
                 condition = "input.diffex_scheme == 'custom'",
-                sliderInput(ns("customResolution"), "Resolution of clustering algorithm (affects number of clusters)",
+                sliderInput(ns("customResolution"), "Resolution of clustering 
+                            algorithm (affects number of clusters)",
                     min = 0.2, max = 2, step = 0.2, value = 0.6
                 ),
                 actionButton(
@@ -671,7 +747,8 @@ diffexui <- function(id) {
                 )
             ),
             uiOutput(ns("testChoices")),
-            radioButtons(ns("featureType"), "Features to Compare", choices = c("gene", "transcript")),
+            radioButtons(ns("featureType"), "Features to Compare", 
+                         choices = c("gene", "transcript")),
             actionButton(
                 ns("diffex"),
                 "Run Differential Expression"
@@ -737,7 +814,11 @@ cells_selected <- function(input) {
 #' @param tests tests to use
 #'
 #' @noRd
-diffex <- function(input, output, session, object, featureType, selected_cells, tests = c("t-test" = "t", "wilcoxon rank-sum test" = "wilcox", "Likelihood-ratio test (bimodal)" = "bimod", "MAST" = "MAST")) {
+diffex <- 
+    function(input, output, session, object, featureType, selected_cells, 
+             tests = c("t-test" = "t", "wilcoxon rank-sum test" = "wilcox", 
+                       "Likelihood-ratio test (bimodal)" = "bimod", 
+                       "MAST" = "MAST")) {
     ns <- session$ns
 
     experiment <- reactive({
@@ -761,7 +842,8 @@ diffex <- function(input, output, session, object, featureType, selected_cells, 
         req(object())
         d <- event_data("plotly_selected")
         if (is.null(d)) {
-            msg <- "Click and drag events (i.e. select/lasso) appear here (double-click to clear)"
+            msg <- "Click and drag events (i.e. select/lasso) appear here 
+            (double-click to clear)"
             return(d)
         } else {
             # selected_cells <- colnames(object())[as.numeric(d$key)]
@@ -783,7 +865,8 @@ diffex <- function(input, output, session, object, featureType, selected_cells, 
 
     output$cc1 <- renderDT({
         req(custom_cluster1())
-        selected_meta <- data.frame(get_cell_metadata(object())[custom_cluster1(), ])
+        selected_meta <- 
+            data.frame(get_cell_metadata(object())[custom_cluster1(), ])
         datatable(selected_meta,
             extensions = "Buttons",
             options = list(dom = "Bft", buttons = c(
@@ -794,7 +877,8 @@ diffex <- function(input, output, session, object, featureType, selected_cells, 
     })
     output$cc2 <- renderDT({
         req(custom_cluster2())
-        selected_meta <- data.frame(get_cell_metadata(object())[custom_cluster2(), ])
+        selected_meta <- 
+            data.frame(get_cell_metadata(object())[custom_cluster2(), ])
         datatable(selected_meta,
             extensions = "Buttons",
             options = list(dom = "Bft", buttons = c(
@@ -807,7 +891,9 @@ diffex <- function(input, output, session, object, featureType, selected_cells, 
     de_results <- eventReactive(input$diffex, {
         if (input$diffex_scheme == "louvain") {
             run_object_de(object(), input$cluster1, input$cluster2,
-                resolution = input$objectResolution, diffex_scheme = input$diffex_scheme, input$featureType, tests = input$diffex_method
+                resolution = input$objectResolution, 
+                diffex_scheme = input$diffex_scheme, 
+                input$featureType, tests = input$diffex_method
             )
         } else if (input$diffex_scheme == "custom") {
             # req(custom_cluster1())
@@ -822,7 +908,8 @@ diffex <- function(input, output, session, object, featureType, selected_cells, 
             ))
             run_object_de(object(), cluster1, cluster2,
                 input$customResolution,
-                diffex_scheme = input$diffex_scheme, input$featureType, tests = input$diffex_method
+                diffex_scheme = input$diffex_scheme, input$featureType, 
+                tests = input$diffex_method
             )
         }
     })
@@ -857,15 +944,22 @@ diffex <- function(input, output, session, object, featureType, selected_cells, 
             paste("DE_Volcano_plot", ".pdf", sep = "")
         },
         content = function(file) {
-            ggsave(file, Volcano() + theme_pubr(base_size = 20, x.text.angle = 45), width = 16, height = 12)
+            ggsave(file, Volcano() + 
+                       theme_pubr(base_size = 20, x.text.angle = 45), 
+                   width = 16, height = 12)
         }
     )
 
     cluster_list <- reactive({
         if (input$diffex_scheme == "louvain") {
-            object_meta <- get_cell_metadata(object())[[paste0(DefaultAssay(object()), "_snn_res.", input$objectResolution)]]
-            cluster1_cells <- rownames(object_meta[object_meta == input$cluster1, , drop = FALSE])
-            cluster2_cells <- rownames(object_meta[object_meta == input$cluster2, , drop = FALSE])
+            object_meta <- 
+                get_cell_metadata(object())[[paste0(DefaultAssay(object()), 
+                                                    "_snn_res.", 
+                                                    input$objectResolution)]]
+            cluster1_cells <- rownames(
+                object_meta[object_meta == input$cluster1, , drop = FALSE])
+            cluster2_cells <- rownames(
+                object_meta[object_meta == input$cluster2, , drop = FALSE])
             list(cluster1 = cluster1_cells, cluster2 = cluster2_cells)
         } else if (input$diffex_scheme == "feature") {
             list(cluster1 = custom_cluster1(), cluster2 = custom_cluster2())
@@ -885,15 +979,24 @@ chevreulMarkersui <- function(id) {
         chevreulBox(
             title = "Find Markers",
             uiOutput(ns("dplottype")),
-            sliderInput(ns("resolution2"), label = "Resolution of clustering algorithm (affects number of clusters)", min = 0.2, max = 2, step = 0.2, value = 0.6),
-            numericInput(ns("num_markers"), "Select Number of Markers to Plot for Each Value", value = 5, min = 2, max = 20),
+            sliderInput(ns("resolution2"), 
+                        label = "Resolution of clustering algorithm (affects number of clusters)", 
+                        min = 0.2, max = 2, step = 0.2, value = 0.6),
+            numericInput(ns("num_markers"), 
+                         "Select Number of Markers to Plot for Each Value", 
+                         value = 5, min = 2, max = 20),
             uiOutput(ns("valueSelect")),
-            radioButtons(ns("markerMethod"), "Method of Marker Selection", choices = c("wilcox"), selected = "wilcox", inline = TRUE),
-            sliderInput(ns("pValCutoff"), "P Value cutoff", min = 0.01, max = 1, value = 1),
-            selectizeInput(ns("dotFeature"), "Feature for Marker Plot", choices = NULL),
+            radioButtons(ns("markerMethod"), "Method of Marker Selection", 
+                         choices = c("wilcox"), selected = "wilcox", 
+                         inline = TRUE),
+            sliderInput(ns("pValCutoff"), "P Value cutoff", min = 0.01, 
+                        max = 1, value = 1),
+            selectizeInput(ns("dotFeature"), "Feature for Marker Plot", 
+                           choices = NULL),
             actionButton(ns("plotDots"), "Plot Markers!"),
             downloadButton(ns("downloadMarkerTable"), "Download Markers!"),
-            checkboxInput(ns("uniqueMarkers"), "Make Markers Unique", value = FALSE),
+            checkboxInput(ns("uniqueMarkers"), "Make Markers Unique", 
+                          value = FALSE),
             checkboxInput(ns("hidePseudo"), "Hide Pseudogenes", value = TRUE),
             plotlyOutput(ns("markerplot"), height = 800),
             width = 6
@@ -907,12 +1010,16 @@ chevreulMarkersui <- function(id) {
 #' @param object a SingleCellExperiment object
 #'
 #' @noRd
-chevreulMarkers <- function(input, output, session, object, plot_types, featureType) {
+chevreulMarkers <- function(input, output, session, object, plot_types, 
+                            featureType) {
     ns <- session$ns
 
     observe({
         req(object())
-        updateSelectizeInput(session, "dotFeature", choices = c(mainExpName(object()), altExpNames(object())), selected = "gene", server = TRUE)
+        updateSelectizeInput(session, "dotFeature", 
+                             choices = c(mainExpName(object()), 
+                                         altExpNames(object())), 
+                             selected = "gene", server = TRUE)
     })
 
     output$dplottype <- renderUI({
@@ -950,11 +1057,20 @@ chevreulMarkers <- function(input, output, session, object, plot_types, featureT
 
         choices <- levels(get_cell_metadata(object())[[group_by()]])
 
-        selectizeInput(ns("displayValues"), "Values to display", multiple = TRUE, choices = choices)
+        selectizeInput(ns("displayValues"), "Values to display", 
+                       multiple = TRUE, choices = choices)
     })
 
     marker_plot_return <- eventReactive(input$plotDots, {
-        plot_markers(object(), group_by = group_by(), num_markers = input$num_markers, selected_values = input$displayValues, marker_method = input$markerMethod, experiment = input$dotFeature, featureType = featureType(), hide_pseudo = input$hidePseudo, unique_markers = input$uniqueMarkers, p_val_cutoff = input$pValCutoff, return_plotly = TRUE)
+        plot_markers(object(), group_by = group_by(), 
+                     num_markers = input$num_markers, 
+                     selected_values = input$displayValues, 
+                     marker_method = input$markerMethod, 
+                     experiment = input$dotFeature, 
+                     featureType = featureType(), 
+                     hide_pseudo = input$hidePseudo, 
+                     unique_markers = input$uniqueMarkers, 
+                     p_val_cutoff = input$pValCutoff, return_plotly = TRUE)
     })
 
     output$markerplot <- renderPlotly({
@@ -981,10 +1097,14 @@ plotReadCountui <- function(id) {
         title = "Histogram (Read Counts, etc.)",
         uiOutput(ns("group_byui")),
         uiOutput(ns("colorbyui")),
-        sliderInput(ns("resolution"), "Resolution of clustering algorithm (affects number of clusters)",
+        sliderInput(ns("resolution"), 
+                    "Resolution of clustering algorithm 
+                    (affects number of clusters)",
             min = 0.2, max = 2, step = 0.2, value = 0.6
         ),
-        radioButtons(ns("yScale"), "Y axis transforamtion", choices = c("log", "linear"), selected = "linear", inline = TRUE),
+        radioButtons(ns("yScale"), "Y axis transforamtion", 
+                     choices = c("log", "linear"), selected = "linear", 
+                     inline = TRUE),
         plotlyOutput(ns("rcplot"), height = 500),
         collapsed = TRUE
     )
@@ -1002,14 +1122,16 @@ plotReadCount <- function(input, output, session, object, plot_types) {
     output$colorbyui <- renderUI({
         req(object())
         selectInput(ns("colorby"), "Variable to Color the Plot by",
-            choices = flatten_chr(plot_types()), selected = c("louvain"), multiple = FALSE
+            choices = flatten_chr(plot_types()), selected = c("louvain"), 
+            multiple = FALSE
         )
     })
 
     output$group_byui <- renderUI({
         req(object())
         selectInput(ns("group_by"), "Variable for x-axis",
-            choices = flatten_chr(plot_types()), selected = c("nCount_RNA"), multiple = FALSE
+            choices = flatten_chr(plot_types()), selected = c("nCount_RNA"), 
+            multiple = FALSE
         )
     })
 
@@ -1024,10 +1146,15 @@ plotReadCount <- function(input, output, session, object, plot_types) {
                 experiment <- "gene"
             }
 
-            louvain_resolution <- paste0(experiment, "_snn_res.", input$resolution)
-            plot_readcount(object(), group_by = input$group_by, fill_by = louvain_resolution, yscale = input$yScale, return_plotly = TRUE)
+            louvain_resolution <- paste0(experiment, "_snn_res.", 
+                                         input$resolution)
+            plot_readcount(object(), group_by = input$group_by, 
+                           fill_by = louvain_resolution, 
+                           yscale = input$yScale, return_plotly = TRUE)
         } else if (input$colorby %in% flatten_chr(plot_types())) {
-            plot_readcount(object(), group_by = input$group_by, fill_by = input$colorby, yscale = input$yScale, return_plotly = TRUE)
+            plot_readcount(object(), group_by = input$group_by, 
+                           fill_by = input$colorby, yscale = input$yScale, 
+                           return_plotly = TRUE)
         }
     })
 }
@@ -1102,20 +1229,28 @@ allTranscripts <- function(
 
     observe({
         req(object())
-        updateSelectizeInput(session, "compositionGene", choices = get_features(object(), experiment = "gene"), selected = "NRL", server = TRUE)
-        updateSelectizeInput(session, "embeddingGene", choices = get_features(object(), experiment = "gene"), selected = "NRL", server = TRUE)
+        updateSelectizeInput(session, "compositionGene", 
+                             choices = get_features(object(), 
+                                                    experiment = "gene"), 
+                             selected = "NRL", server = TRUE)
+        updateSelectizeInput(session, "embeddingGene", 
+                             choices = get_features(object(), 
+                                                    experiment = "gene"), 
+                             selected = "NRL", server = TRUE)
 
         formatted_col_names <- colnames(get_cell_metadata(object())) %>%
             make_chevreul_clean_names()
 
-        updateSelectizeInput(session, "groupby", choices = formatted_col_names, selected = "batch", server = TRUE)
+        updateSelectizeInput(session, "groupby", choices = formatted_col_names, 
+                             selected = "batch", server = TRUE)
     })
 
     transcripts <- reactive({
         req(object())
         req(input$embeddingGene)
         if (query_experiment(object(), "transcript")) {
-            get_transcripts_from_object(object(), input$embeddingGene, organism = organism_type())
+            get_transcripts_from_object(object(), input$embeddingGene, 
+                                        organism = organism_type())
         }
     })
 
@@ -1127,7 +1262,11 @@ allTranscripts <- function(
     })
 
     composition_plot <- eventReactive(input$plotComposition, {
-        plot_transcript_composition(object(), gene_symbol = input$compositionGene, group.by = input$groupby, standardize = input$standardizeExpression, drop_zero = input$dropZero)
+        plot_transcript_composition(object(), 
+                                    gene_symbol = input$compositionGene, 
+                                    group.by = input$groupby, 
+                                    standardize = input$standardizeExpression, 
+                                    drop_zero = input$dropZero)
     })
 
     output$compositionPlot <- renderPlotly({
@@ -1152,7 +1291,8 @@ allTranscripts <- function(
     pList <- reactive({
         req(transcripts())
         req(input$embedding)
-        pList <- plot_all_transcripts(object(), transcripts(), input$embedding, from_gene = FALSE, combine = FALSE)
+        pList <- plot_all_transcripts(object(), transcripts(), input$embedding, 
+                                      from_gene = FALSE, combine = FALSE)
     })
 
     output$transcriptPlot <- renderPlotly({
@@ -1183,7 +1323,8 @@ pathwayEnrichmentui <- function(id) {
     chevreulBox(
         title = "Enriched pathways by cluster",
         tagList(
-            actionButton(ns("calcPathwayEnrichment"), "Calculate Pathway Enrichment"),
+            actionButton(ns("calcPathwayEnrichment"), 
+                         "Calculate Pathway Enrichment"),
             uiOutput(ns("enriched_pathways_by_cluster_select_source_UI")),
             uiOutput(ns("enriched_pathways_by_cluster_UI"))
         ),
@@ -1197,18 +1338,11 @@ pathwayEnrichmentui <- function(id) {
 pathwayEnrichment <- function(input, output, session, object, featureType) {
     ns <- session$ns
 
-    ## ----------------------------------------------------------------------------##
-    ## Tab: Enriched pathways
-    ## ----------------------------------------------------------------------------##
-
-    ## ----------------------------------------------------------------------------##
-    ## Clusters.
-    ## ----------------------------------------------------------------------------##
-
     enriched_pathways <- eventReactive(input$calcPathwayEnrichment, {
         req(object())
         if (featureType() == "gene") {
-            enriched_object <- tryCatch(getEnrichedPathways(object()), error = function(e) e)
+            enriched_object <- tryCatch(getEnrichedPathways(object()), 
+                                        error = function(e) e)
             enrichr_available <- !any(is(enriched_object, "error"))
             if (enrichr_available) {
                 object <- enriched_object
@@ -1218,7 +1352,8 @@ pathwayEnrichment <- function(input, output, session, object, featureType) {
         metadata(object())$enriched_pathways
     })
 
-    # UI element: choose source for pathway enrichement results (currently Enrichr or GSVA)
+    # UI element: choose source for pathway enrichement results (currently 
+    # Enrichr or GSVA)
     output$enriched_pathways_by_cluster_select_source_UI <- renderUI({
         req(object())
         if (is.null(enriched_pathways())) {
@@ -1368,9 +1503,6 @@ techInfoui <- function(id) {
 #' @noRd
 techInfo <- function(input, output, session, object) {
     ns <- session$ns
-    ## ----------------------------------------------------------------------------##
-    ## Tab: Analysis info.
-    ## ----------------------------------------------------------------------------##
 
     object_metadata <- reactive({
         req(object())
@@ -1469,18 +1601,26 @@ plotCoverage_UI <- function(id) {
     tagList(
         chevreulBox(
             title = "Plot Coverage",
-            selectizeInput(ns("geneSelect"), "Select a Gene", choices = NULL, selected = "NRL", multiple = FALSE),
-            selectizeInput(ns("varSelect"), "Color by Variable", choices = NULL, multiple = FALSE),
+            selectizeInput(ns("geneSelect"), "Select a Gene", choices = NULL, 
+                           selected = "NRL", multiple = FALSE),
+            selectizeInput(ns("varSelect"), "Color by Variable", 
+                           choices = NULL, multiple = FALSE),
             actionButton(ns("plotCoverage"), "Plot Coverage"),
             downloadButton(ns("downloadPlot"), "Download Coverage Plot"),
             uiOutput(ns("displayvaluesui")),
             br(),
             chevreulDropDownButton(
                 ns("coveragePlotSettings"),
-                checkboxInput(ns("collapseIntrons"), "Collapse Introns", value = TRUE),
-                checkboxInput(ns("meanCoverage"), "Summarize Coverage to Mean", value = TRUE),
-                checkboxInput(ns("summarizeTranscripts"), "Summarize transcript models to gene", value = FALSE),
-                radioButtons(ns("yScale"), "Scale Y Axis", choices = c("absolute", "log10"), selected = "log10"),
+                checkboxInput(ns("collapseIntrons"), "Collapse Introns", 
+                              value = TRUE),
+                checkboxInput(ns("meanCoverage"), 
+                              "Summarize Coverage to Mean", value = TRUE),
+                checkboxInput(ns("summarizeTranscripts"), 
+                              "Summarize transcript models to gene", 
+                              value = FALSE),
+                radioButtons(ns("yScale"), "Scale Y Axis", 
+                             choices = c("absolute", "log10"), 
+                             selected = "log10"),
                 numericInput(ns("start"), "start coordinate", value = NULL),
                 numericInput(ns("end"), "end coordinate", value = NULL)
             ),
@@ -1500,22 +1640,29 @@ plotCoverage_UI <- function(id) {
 #' @param organism_type human or mouse
 #'
 #' @noRd
-plotCoverage <- function(input, output, session, object, plot_types, proj_dir, organism_type = "human", bigwig_db = "~/.cache/chevreul/bw-files.db") {
+plotCoverage <- function(input, output, session, object, plot_types, proj_dir, 
+                         organism_type = "human", 
+                         bigwig_db = "~/.cache/chevreul/bw-files.db") {
     ns <- session$ns
 
     w <- Waiter$new(ns("coveragePlot"),
-        html = spin_loaders(id = 1, color = "black", style = "position:relative;margin:auto;"),
+        html = spin_loaders(id = 1, color = "black", 
+                            style = "position:relative;margin:auto;"),
         color = transparent(.5)
     )
 
     observe({
         req(object())
-        updateSelectizeInput(session, "geneSelect", choices = get_features(object(), experiment = "gene"), server = TRUE)
+        updateSelectizeInput(session, "geneSelect", 
+                             choices = get_features(object(), 
+                                                    experiment = "gene"), 
+                             server = TRUE)
 
         formatted_col_names <- colnames(get_cell_metadata(object())) %>%
             make_chevreul_clean_names()
 
-        updateSelectizeInput(session, "varSelect", choices = formatted_col_names, selected = "batch")
+        updateSelectizeInput(session, "varSelect", 
+                             choices = formatted_col_names, selected = "batch")
     })
 
     displayvalues <- reactive({
@@ -1526,7 +1673,8 @@ plotCoverage <- function(input, output, session, object, plot_types, proj_dir, o
 
     output$displayvaluesui <- renderUI({
         req(input$varSelect)
-        selectizeInput(ns("displayvalues"), "groups to display", choices = displayvalues(), multiple = TRUE)
+        selectizeInput(ns("displayvalues"), "groups to display", 
+                       choices = displayvalues(), multiple = TRUE)
     })
 
     bigwig_tbl <- reactive({
@@ -1562,7 +1710,8 @@ plotCoverage <- function(input, output, session, object, plot_types, proj_dir, o
     output$coverageTable <- renderDT({
         datatable(coverage_return()$table,
             extensions = "Buttons",
-            options = list(dom = "Bft", buttons = c("copy", "csv"), scrollY = "400px")
+            options = list(dom = "Bft", buttons = c("copy", "csv"), 
+                           scrollY = "400px")
         )
     })
 
@@ -1612,7 +1761,8 @@ reformatMetadataDRui <- function(id) {
 #' @param object a SingleCellExperiment object
 #'
 #' @noRd
-reformatMetadataDR <- function(input, output, session, object, featureType = "gene",
+reformatMetadataDR <- function(input, output, session, object, 
+                               featureType = "gene",
     col_bind = NULL,
     col_edit = TRUE,
     col_options = NULL,
@@ -1694,7 +1844,8 @@ reformatMetadataDR <- function(input, output, session, object, featureType = "ge
         col_bind = NULL, col_edit = col_edit, col_options = col_options,
         col_stretch = col_stretch, col_names = col_names,
         col_readonly = col_readonly, col_factor = col_factor,
-        row_bind = NULL, row_edit = row_edit, quiet = quiet, height = viewer_height, width = viewer_width
+        row_bind = NULL, row_edit = row_edit, quiet = quiet, 
+        height = viewer_height, width = viewer_width
     )
     observe({
         values$data_active <- data_update()
@@ -1710,7 +1861,8 @@ reformatMetadataDR <- function(input, output, session, object, featureType = "ge
 
             object(set_cell_metadata(object(), read_csv(inFile$datapath)))
         } else if (input$updateMethod == "spreadsheet") {
-            reformatted_object <- propagate_spreadsheet_changes(values$data_active, object())
+            reformatted_object <- 
+                propagate_spreadsheet_changes(values$data_active, object())
             object(reformatted_object)
         }
     })
@@ -1741,13 +1893,15 @@ reformatMetadataDR <- function(input, output, session, object, featureType = "ge
     dataOutputServer("output-active",
         data = reactive({
             values$data_active
-        }), save_as = "metadata.csv", write_fun = write_fun, write_args = write_args,
+        }), save_as = "metadata.csv", write_fun = write_fun, 
+        write_args = write_args,
         hide = hide
     )
     dataOutputServer("output-update",
         data = reactive({
             values$data
-        }), save_as = "metadata.csv", write_fun = write_fun, write_args = write_args,
+        }), save_as = "metadata.csv", write_fun = write_fun, 
+        write_args = write_args,
         hide = hide
     )
 

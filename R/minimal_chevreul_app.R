@@ -74,7 +74,8 @@ minimalChevreulApp <- function(single_cell_object = chevreul_sce,
             tabItem(
                 tabName = "comparePlots",
                 h2("Compare Plots") %>%
-                    default_helper(type = "markdown", content = "comparePlots"),
+                    default_helper(type = "markdown", 
+                                   content = "comparePlots"),
                 plotDimRedui("plotdimred1"),
                 plotDimRedui("plotdimred2"),
                 plotReadCountui("plotreadcount1"),
@@ -110,7 +111,8 @@ minimalChevreulApp <- function(single_cell_object = chevreul_sce,
             tabItem(
                 tabName = "subsetObject",
                 h2("Subset Object Input") %>%
-                    default_helper(type = "markdown", content = "subsetObject"),
+                    default_helper(type = "markdown", 
+                                   content = "subsetObject"),
                 plotDimRedui("subset"),
                 chevreulBox(
                     title = "Subset Settings",
@@ -189,9 +191,11 @@ minimalChevreulApp <- function(single_cell_object = chevreul_sce,
         w <- Waiter$new()
 
         observe_helpers(help_dir =
-                          system.file("helpers", package = "chevreul",
-                                      lib.loc =
-                                        "/dataVolume/storage/rpkgs/devel_install/"))
+                          system.file(
+                              "helpers", 
+                              package = "chevreul",
+                              lib.loc =
+                                  "/dataVolume/storage/rpkgs/devel_install/"))
         options(warn = -1)
 
         object <- reactiveVal(NULL)
@@ -215,7 +219,9 @@ minimalChevreulApp <- function(single_cell_object = chevreul_sce,
 
 
         observe({
-            reformatted_object <- callModule(reformatMetadataDR, "reformatMetadataDR", object, featureType)
+            reformatted_object <- callModule(reformatMetadataDR, 
+                                             "reformatMetadataDR", 
+                                             object, featureType)
             object(reformatted_object())
         })
 
@@ -227,10 +233,12 @@ minimalChevreulApp <- function(single_cell_object = chevreul_sce,
         observe({
             req(object())
 
-            callModule(plotDimRed, "plotdimred1", object, plot_types, featureType,
+            callModule(plotDimRed, "plotdimred1", object, plot_types, 
+                       featureType,
                 organism_type = organism_type, reductions
             )
-            callModule(plotDimRed, "plotdimred2", object, plot_types, featureType,
+            callModule(plotDimRed, "plotdimred2", object, plot_types, 
+                       featureType,
                 organism_type = organism_type, reductions
             )
             callModule(plotDimRed, "diffex", object, plot_types, featureType,
@@ -239,7 +247,8 @@ minimalChevreulApp <- function(single_cell_object = chevreul_sce,
             callModule(plotDimRed, "subset", object, plot_types, featureType,
                 organism_type = organism_type, reductions
             )
-            callModule(plotDimRed, "markerScatter", object, plot_types, featureType,
+            callModule(plotDimRed, "markerScatter", object, plot_types, 
+                       featureType,
                 organism_type = organism_type, reductions
             )
         })
@@ -256,7 +265,8 @@ minimalChevreulApp <- function(single_cell_object = chevreul_sce,
             organism_type
         )
         callModule(
-            plotCoverage, "coverageplots", object, plot_types, proj_dir, organism_type
+            plotCoverage, "coverageplots", object, plot_types, proj_dir, 
+            organism_type
         )
         callModule(plotClustree, "clustreePlot", object)
         callModule(tableSelected, "tableselected", object)
@@ -281,25 +291,10 @@ minimalChevreulApp <- function(single_cell_object = chevreul_sce,
             removeModal()
         })
 
-        callModule(chevreulMarkers, "findmarkers", object, plot_types, featureType)
+        callModule(chevreulMarkers, "findmarkers", object, plot_types, 
+                   featureType)
 
         callModule(pathwayEnrichment, "pathwayEnrichment", object)
-
-        # # plot all transcripts
-        # observe({
-        #   # req(featureType())
-        #   req(object())
-        #   if (query_experiment(object(), "transcript")) {
-        #     callModule(
-        #       allTranscripts, "alltranscripts1", object, featureType,
-        #       organism_type
-        #     )
-        #
-        #     callModule(plotDimRed, "alltranscripts2", object, plot_types, featureType,
-        #                organism_type = organism_type, reductions
-        #     )
-        #   }
-        # })
 
         # plot all transcripts
         observe({
@@ -310,7 +305,8 @@ minimalChevreulApp <- function(single_cell_object = chevreul_sce,
                 organism_type
             )
 
-            callModule(plotDimRed, "alltranscripts2", object, plot_types, featureType,
+            callModule(plotDimRed, "alltranscripts2", object, plot_types, 
+                       featureType,
                 organism_type = organism_type, reductions
             )
         })
@@ -326,7 +322,9 @@ minimalChevreulApp <- function(single_cell_object = chevreul_sce,
                 {
                     html("subsetMessages", "")
                     message("Beginning")
-                    subset_object <- object()[, colnames(object()) %in% subset_selected_cells()]
+                    subset_object <- 
+                        object()[, colnames(object()) %in% 
+                                     subset_selected_cells()]
                     object(subset_object)
                     if (length(unique(object()$batch)) > 1) {
                         message("reintegrating gene expression")
@@ -336,7 +334,9 @@ minimalChevreulApp <- function(single_cell_object = chevreul_sce,
                         )
                         object(reintegrated_object)
                     } else {
-                        processed_object <- object_pipeline(object(), resolution = seq(0.2, 1, by = 0.2))
+                        processed_object <- 
+                            object_pipeline(object(), 
+                                            resolution = seq(0.2, 1, by = 0.2))
                         object(processed_object)
                     }
                     message("Complete!")
@@ -370,7 +370,9 @@ minimalChevreulApp <- function(single_cell_object = chevreul_sce,
                         )
                         object(reintegrated_object)
                     } else {
-                        processed_object <- object_pipeline(object(), resolution = seq(0.2, 1, by = 0.2))
+                        processed_object <- 
+                            bject_pipeline(object(), 
+                                           resolution = seq(0.2, 1, by = 0.2))
                         object(processed_object)
                     }
                     message("Complete!")

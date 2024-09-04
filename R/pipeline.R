@@ -114,22 +114,30 @@ object_pipeline <- function(object, experiment = "gene", resolution = 0.6, reduc
 #' @param ... extra args passed to single cell packages
 #'
 #' @return a SingleCellExperiment object with louvain clusters
-object_cluster <- function(object = object, resolution = 0.6, custom_clust = NULL, reduction = "PCA", algorithm = 1, ...) {
+object_cluster <- function(object = object, resolution = 0.6, 
+                           ustom_clust = NULL, reduction = "PCA", 
+                           algorithm = 1, ...) {
     message(glue("[{format(Sys.time(), '%H:%M:%S')}] Clustering Cells..."))
     if (length(resolution) > 1) {
         for (i in resolution) {
             message(glue("clustering at {i} resolution"))
-            cluster_labels <- clusterCells(object,
-                                                                         use.dimred = reduction,
-                                                                         BLUSPARAM = NNGraphParam(cluster.fun = "louvain", cluster.args = list(resolution = i))
+            cluster_labels <- 
+                clusterCells(object,
+                             use.dimred = reduction,
+                             BLUSPARAM = NNGraphParam(cluster.fun = "louvain", 
+                                                      cluster.args = 
+                                                          list(resolution = i))
             )
             colData(object)[[glue("gene_snn_res.{i}")]] <- cluster_labels
         }
     } else if (length(resolution) == 1) {
         message(glue("clustering at {resolution} resolution"))
         cluster_labels <- clusterCells(object,
-                                                                     use.dimred = reduction,
-                                                                     BLUSPARAM = NNGraphParam(cluster.fun = "louvain", cluster.args = list(resolution = resolution))
+                                       use.dimred = reduction,
+                                       BLUSPARAM = NNGraphParam(
+                                           cluster.fun = "louvain", 
+                                           cluster.args = 
+                                               list(resolution = resolution))
         )
         
         
@@ -142,7 +150,8 @@ object_cluster <- function(object = object, resolution = 0.6, custom_clust = NUL
 #' Dimensional Reduction
 #'
 #' Run PCA, TSNE and UMAP on a singlecell objects
-#' perplexity should not be bigger than 3 * perplexity < nrow(X) - 1, see details for interpretation
+#' perplexity should not be bigger than 3 * perplexity < nrow(X) - 1, 
+#' see details for interpretation
 #'
 #' @param object A SingleCellExperiment object
 #' @param experiment Experiment of interest to be processed
@@ -157,21 +166,26 @@ object_reduce_dimensions <- function(object, experiment = "gene", ...) {
         npcs <- 50
     }
     if ("gene" == experiment) {
-        object <- runPCA(x = object, subset_row = getTopHVGs(stats = object), ncomponents = npcs, ...)
+        object <- runPCA(x = object, subset_row = getTopHVGs(stats = object), 
+                         ncomponents = npcs, ...)
     } else {
-        object <- runPCA(x = object, altexp = experiment, subset_row = getTopHVGs(stats = object), ncomponents = npcs, ...)
+        object <- runPCA(x = object, altexp = experiment, 
+                         subset_row = getTopHVGs(stats = object), 
+                         ncomponents = npcs, ...)
     }
     
     if ((ncol(object) - 1) > 3 * 30) {
         if ("gene" == experiment) {
             object <- runTSNE(x = object, dimred = "PCA", n_dimred = seq(30))
         } else {
-            object <- runTSNE(x = object, altexp = experiment, dimred = "PCA", n_dimred = seq(30))
+            object <- runTSNE(x = object, altexp = experiment, dimred = "PCA", 
+                              n_dimred = seq(30))
         }
         if ("gene" == experiment) {
             object <- runUMAP(x = object, dimred = "PCA", n_dimred = seq(30))
         } else {
-            object <- runUMAP(x = object, altexp = experiment, dimred = "PCA", n_dimred = seq(30))
+            object <- runUMAP(x = object, altexp = experiment, dimred = "PCA", 
+                              n_dimred = seq(30))
         }
     }
     return(object)

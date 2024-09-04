@@ -14,7 +14,8 @@ get_transcripts_from_object(object, gene, organism = "human")
 \item{organism}{Organism}
 }
 \value{
-transcripts constituting a gene of interest in a SingleCellExperiment object
+transcripts constituting a
+gene of interest in a SingleCellExperiment object
 }
 \description{
 Get transcript ids in objects for one or more gene of interest

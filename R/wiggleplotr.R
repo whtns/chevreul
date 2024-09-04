@@ -154,7 +154,8 @@ plot_gene_coverage_by_var <- function(
     }
 
     if (reverse_x) {
-        transformed_x_lim <- ggplot_build(coverage_plot_list$coverage_plot)$layout$panel_params[[1]]$x.range
+        transformed_x_lim <- ggplot_build(
+            coverage_plot_list$coverage_plot)$layout$panel_params[[1]]$x.range
 
         coverage_plot_list$coverage_plot <-
             coverage_plot_list$coverage_plot +
@@ -164,7 +165,8 @@ plot_gene_coverage_by_var <- function(
             ) +
             NULL
 
-        transformed_x_lim <- ggplot_build(coverage_plot_list$tx_structure)$layout$panel_params[[1]]$x.range
+        transformed_x_lim <- ggplot_build(
+            coverage_plot_list$tx_structure)$layout$panel_params[[1]]$x.range
         coverage_plot_list$tx_structure <-
             coverage_plot_list$tx_structure +
             scale_x_reverse() +
@@ -175,7 +177,8 @@ plot_gene_coverage_by_var <- function(
             NULL
     }
 
-    x_lim <- ggplot_build(coverage_plot_list$coverage_plot)$layout$panel_params[[1]]$x.range
+    x_lim <- ggplot_build(
+        coverage_plot_list$coverage_plot)$layout$panel_params[[1]]$x.range
 
     base_coverage <- coverage_plot_list$coverage_plot$data %>%
         filter(!is.na(coverage)) %>%
@@ -184,7 +187,8 @@ plot_gene_coverage_by_var <- function(
         mutate(sum = sum / diff(x_lim)) %>%
         identity()
 
-    coverage_plot <- wrap_plots(coverage_plot_list, heights = heights, ncol = 1)
+    coverage_plot <- 
+        wrap_plots(coverage_plot_list, heights = heights, ncol = 1)
 
     return(list(plot = coverage_plot, table = base_coverage))
 }

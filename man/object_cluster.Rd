@@ -7,7 +7,7 @@
 object_cluster(
   object = object,
   resolution = 0.6,
-  custom_clust = NULL,
+  ustom_clust = NULL,
   reduction = "PCA",
   algorithm = 1,
   ...
@@ -18,13 +18,13 @@ object_cluster(
 
 \item{resolution}{Clustering resolution}
 
-\item{custom_clust}{custom cluster}
-
 \item{reduction}{Set dimensional reduction object}
 
 \item{algorithm}{1}
 
 \item{...}{extra args passed to single cell packages}
+
+\item{custom_clust}{custom cluster}
 }
 \value{
 a SingleCellExperiment object with louvain clusters

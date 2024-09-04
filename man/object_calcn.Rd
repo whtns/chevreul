@@ -10,7 +10,8 @@ object_calcn(object)
 \item{object}{A SingleCellExperiment object}
 }
 \value{
-a SingleCellExperiment object with nfeatures and ngenes stored in metadata
+a SingleCellExperiment object with nfeatures and
+ngenes stored in metadata
 }
 \description{
 Recalculate counts/features per cell for a object

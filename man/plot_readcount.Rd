@@ -22,9 +22,7 @@ plot_readcount(
 
 \item{yscale}{Scale of y axis. Default set to "linear"}
 
-\item{return_plotly}{whether to return an interactive plotly plot. Default set to FALSE}
-
-\item{...}{extra args passed to ggplot2}
+\item{return_plotly}{whether to return an interactive plotly plot.}
 }
 \value{
 a histogram of read counts

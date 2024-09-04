@@ -21,7 +21,7 @@ dockerChevreulApp(
 
 \item{futureMb}{the megabytes available for the future package}
 
-\item{db_name}{path to sqlite database listing bigwig files for cells in the obect object}
+\item{db_name}{path to sqlite database listing bigwig files for cells}
 }
 \value{
 a dockerized shiny app

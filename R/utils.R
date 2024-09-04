@@ -6,11 +6,13 @@
 #' @param gene Gene of interest
 #' @param organism Organism
 #'
-#' @return transcripts constituting a gene of interest in a SingleCellExperiment object
+#' @return transcripts constituting a 
+#' gene of interest in a SingleCellExperiment object
 get_transcripts_from_object <- function(object, gene, organism = "human") {
     transcripts <- genes_to_transcripts(gene, organism)
 
-    transcripts <- transcripts[transcripts %in% get_features(object, "transcript")]
+    transcripts <- transcripts[transcripts %in% get_features(object, 
+                                                             "transcript")]
 }
 
 
@@ -28,18 +30,23 @@ get_transcripts_from_object <- function(object, gene, organism = "human") {
 #' data(small_example_dataset)
 #' record_experiment_data(small_example_dataset)
 #'
-record_experiment_data <- function(object, experiment_name = "default_experiment", organism = "human") {
+record_experiment_data <- function(object, 
+                                   experiment_name = "default_experiment", 
+                                   organism = "human") {
     if (!requireNamespace("SingleCellExperiment", quietly = TRUE)) {
-        stop("Package 'object' needed for this function to work. Please install it.",
+        stop("Package 'SingleCellExperiment' needed for this function to work. 
+             Please install it.",
             call. = FALSE
         )
     }
 
     organism <- metadata(object)[["experiment"]][["organism"]] %||% organism
 
-    experiment_name <- metadata(object)[["experiment"]][["experiment_name"]] %||% experiment_name
+    experiment_name <- 
+        metadata(object)[["experiment"]][["experiment_name"]] %||% experiment_name
 
-    message(glue("[{format(Sys.time(), '%H:%M:%S')} Logging Technical Details..."))
+    message(glue("[{format(Sys.time(), '%H:%M:%S')} 
+                 Logging Technical Details..."))
     experiment <- list(
         experiment_name = experiment_name,
         organism = organism
@@ -81,7 +88,8 @@ record_experiment_data <- function(object, experiment_name = "default_experiment
 #'
 #' @param object A SingleCellExperiment object
 #'
-#' @return a SingleCellExperiment object with nfeatures and ngenes stored in metadata
+#' @return a SingleCellExperiment object with nfeatures and 
+#' ngenes stored in metadata
 #' @export
 #' @examples
 #' 
@@ -94,9 +102,12 @@ object_calcn <- function(object) {
     object[[glue("nCount_{main_exp_name}")]] <- object$sum
 
     for (alt_exp_name in altExpNames(object)) {
-        altExp(object, alt_exp_name) <- addPerCellQC(altExp(object, alt_exp_name))
-        altExp(object, alt_exp_name)[[glue("nFeature_{alt_exp_name}")]] <- altExp(object, alt_exp_name)[["detected"]]
-        altExp(object, alt_exp_name)[[glue("nCount_{alt_exp_name}")]] <- altExp(object, alt_exp_name)[["sum"]]
+        altExp(object, alt_exp_name) <- addPerCellQC(altExp(object, 
+                                                            alt_exp_name))
+        altExp(object, alt_exp_name)[[glue("nFeature_{alt_exp_name}")]] <- 
+            altExp(object, alt_exp_name)[["detected"]]
+        altExp(object, alt_exp_name)[[glue("nCount_{alt_exp_name}")]] <- 
+            altExp(object, alt_exp_name)[["sum"]]
     }
 
     return(object)
@@ -140,17 +151,25 @@ propagate_spreadsheet_changes <- function(meta, object) {
 #' @param verbose print messages
 #'
 #' @return a sqlite database with SingleCellExperiment objects
-create_project_db <- function(cache_location = "~/.cache/chevreul", sqlite_db = "single-cell-projects.db", verbose = TRUE) {
+create_project_db <- function(cache_location = "~/.cache/chevreul", 
+                              sqlite_db = "single-cell-projects.db", 
+                              verbose = TRUE) {
     if (!dir.exists(cache_location)) {
         dir.create(cache_location)
     }
     con <- dbConnect(SQLite(), path(cache_location, sqlite_db))
-    projects_tbl <- tibble(project_name = character(), project_path = character(), project_slug = character(), project_type = character(), )
-    message(glue("building table of chevreul projects at {path(cache_location, sqlite_db)}"))
+    projects_tbl <- tibble(project_name = character(), 
+                           project_path = character(), 
+                           project_slug = character(), 
+                           project_type = character(), )
+    message(glue(
+        "building table of chevreul projects at {path(cache_location, 
+        sqlite_db)}"))
     tryCatch({
         dbWriteTable(con, "projects_tbl", projects_tbl)
     }, warning = function(w) {
-        message(sprintf("Warning in %s: %s", deparse(w[["call"]]), w[["message"]]))
+        message(sprintf("Warning in %s: %s", deparse(w[["call"]]), 
+                        w[["message"]]))
     }, error = function(e) {
         message("projects db already exists!")
     }, finally = {
@@ -180,7 +199,8 @@ update_project_db <- function(
     con <- dbConnect(SQLite(), path(cache_location, sqlite_db))
 
     projects_tbl <-
-        dir_ls(projects_dir, glob = "*.here", recurse = TRUE, fail = FALSE, all = TRUE) %>%
+        dir_ls(projects_dir, glob = "*.here", recurse = TRUE, 
+               fail = FALSE, all = TRUE) %>%
         path_dir(.) %>%
         set_names(path_file(.)) %>%
         enframe("project_name", "project_path") %>%
@@ -277,12 +297,16 @@ read_project_db <- function(
 #' @param cache_location Path to cache "~/.cache/chevreul"
 #' @param sqlite_db sqlite db containing bw files
 #'
-#' @return a sqlite database of bigwig files for cells in a SingleCellExperiment object
-make_bigwig_db <- function(new_project = NULL, cache_location = "~/.cache/chevreul/", sqlite_db = "bw-files.db") {
+#' @return a sqlite database of bigwig files for cells 
+#' in a SingleCellExperiment object
+make_bigwig_db <- function(new_project = NULL, 
+                           cache_location = "~/.cache/chevreul/", 
+                           sqlite_db = "bw-files.db") {
     new_bigwigfiles <- dir_ls(new_project, glob = "*.bw", recurse = TRUE) %>%
         set_names(path_file(.)) %>%
         enframe("name", "bigWig") %>%
-        mutate(sample_id = str_remove(name, "_Aligned.sortedByCoord.out.*bw$")) %>%
+        mutate(sample_id = 
+                   str_remove(name, "_Aligned.sortedByCoord.out.*bw$")) %>%
         filter(!str_detect(name, "integrated")) %>%
         distinct(sample_id, .keep_all = TRUE) %>%
         identity()
@@ -335,10 +359,13 @@ metadata_from_batch <- function(
 #' @examples
 #' 
 #' data(small_example_dataset)
-#' make_chevreul_clean_names(colnames(get_cell_metadata(small_example_dataset)))
+#' make_chevreul_clean_names(colnames(
+#' get_cell_metadata(small_example_dataset)))
 make_chevreul_clean_names <- function(myvec) {
     myvec %>%
-        set_names(str_to_title(str_replace_all(., "[^[:alnum:][:space:]\\.]", " ")))
+        set_names(str_to_title(str_replace_all(., 
+                                               "[^[:alnum:][:space:]\\.]",
+                                               " ")))
 }
 
 #' Get metadata from object

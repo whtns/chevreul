@@ -22,7 +22,7 @@ plot_violin(
 
 \item{features}{Features to plot}
 
-\item{experiment}{Name of experiment to use, defaults to the active experiment}
+\item{experiment}{Name of experiment to use, defaults to active experiment}
 
 \item{...}{extra parameters passed to ggplot2}
 }

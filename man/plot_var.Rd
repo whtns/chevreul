@@ -18,13 +18,13 @@ plot_var(
 \arguments{
 \item{object}{A SingleCellExperiment object}
 
-\item{group}{Name of one or more metadata columns to group (color) cells by.}
+\item{group}{Name of one or more metadata columns to group (color) cells by}
 
 \item{embedding}{The dimensional reduction technique to be used}
 
 \item{dims}{Dimensions to plot, must be a two-length numeric vector}
 
-\item{highlight}{A list of character or numeric vectors of cells to highlight}
+\item{highlight}{A list of vectors of cells to highlight}
 
 \item{pt.size}{Adjust point size on the plot}
 
@@ -37,8 +37,8 @@ a ggplot
 }
 \description{
 Plots static or interactive plot where each point represents a cell metadata
-variable whose position on the map depends on cell embeddings determined by the
-reduction technique used
+variable whose position on the map depends on cell embeddings
+determined by the reduction technique used
 }
 \examples{
 

@@ -18,5 +18,6 @@ a SingleCellExperiment object with embeddings
 }
 \description{
 Run PCA, TSNE and UMAP on a singlecell objects
-perplexity should not be bigger than 3 * perplexity < nrow(X) - 1, see details for interpretation
+perplexity should not be bigger than 3 * perplexity < nrow(X) - 1,
+see details for interpretation
 }

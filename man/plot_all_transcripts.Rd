@@ -27,5 +27,5 @@ plot_all_transcripts(
 a list of embedding plots colored by a feature of interest
 }
 \description{
-plot expression all transcripts for an input gene superimposed on an embedding
+plot expression all transcripts for an input gene superimposed on embedding
 }

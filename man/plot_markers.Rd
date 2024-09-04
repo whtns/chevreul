@@ -35,7 +35,7 @@ plot_markers(
 
 \item{hide_technical}{whether to exclude mitochondrial or ribosomal genes}
 
-\item{unique_markers}{whether to plot only unique marker genes for each group}
+\item{unique_markers}{whether to plot only unique marker genes for group}
 
 \item{p_val_cutoff}{cutoff for p value display}
 

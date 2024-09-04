@@ -23,7 +23,8 @@ make_complex_heatmap(
 
 \item{features}{Vector of features to plot. Features can come}
 
-\item{group.by}{Name of one or more metadata columns to annotate columns by (for example, orig.ident)}
+\item{group.by}{Name of one or more metadata columns to annotate columns
+by (for example, orig.ident)}
 
 \item{cells}{Cells to retain}
 
@@ -35,7 +36,8 @@ make_complex_heatmap(
 
 \item{column_split}{whether to split columns by metadata value}
 
-\item{col_arrangement}{how to arrange columns whether with a dendrogram (Ward.D2, average, etc.) or exclusively by metadata category}
+\item{col_arrangement}{how to arrange columns whether with a dendrogram
+(Ward.D2, average, etc.) or exclusively by metadata category}
 
 \item{mm_col_dend}{height of column dendrogram}
 
