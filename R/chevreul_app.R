@@ -16,9 +16,9 @@ run_object_de <- function(object, cluster1, cluster2, resolution = 0.2,
                           diffex_scheme = "louvain", featureType = "gene",
                           tests = c("t", "wilcox", "bimod")) {
 
-	data_env <- new.env(parent = emptyenv())
-	data("grch38", envir = data_env, package = "chevreul")
-	grch38 <- data_env[["grch38"]]
+    data_env <- new.env(parent = emptyenv())
+    data("grch38", envir = data_env, package = "chevreul")
+    grch38 <- data_env[["grch38"]]
 
     match.arg(tests)
 
@@ -240,7 +240,8 @@ chevreulApp <-
                 plotDimRedui("subset"),
                 chevreulBox(
                     title = "Subset Settings",
-                    checkboxInput("legacySettingsSubset", "Use Legacy Settings",
+                    checkboxInput("legacySettingsSubset", 
+                                  "Use Legacy Settings",
                                   value = FALSE),
                     actionButton("subsetAction",
                                  "subset object by selected cells"),
@@ -565,19 +566,19 @@ chevreulApp <-
 
         callModule(pathwayEnrichment, "pathwayEnrichment", object, featureType)
 
-        subset_selected_cells <- callModule(
+        cell_subset <- callModule(
             tableSelected, "subset",
             object
         )
         observeEvent(input$subsetAction, {
-            req(subset_selected_cells())
+            req(cell_subset())
             withCallingHandlers(
                 {
                     html("subsetMessages", "")
                     message("Beginning")
 
                     subset_object <-
-                      object()[, colnames(object()) %in% subset_selected_cells()]
+                      object()[, colnames(object()) %in% cell_subset()]
                     object(subset_object)
                     if (length(unique(object()[["batch"]])) > 1) {
                         message("reintegrating gene expression")

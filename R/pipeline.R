@@ -115,28 +115,28 @@ object_pipeline <- function(object, experiment = "gene", resolution = 0.6, reduc
 #'
 #' @return a SingleCellExperiment object with louvain clusters
 object_cluster <- function(object = object, resolution = 0.6, custom_clust = NULL, reduction = "PCA", algorithm = 1, ...) {
-	message(glue("[{format(Sys.time(), '%H:%M:%S')}] Clustering Cells..."))
-	if (length(resolution) > 1) {
-		for (i in resolution) {
-			message(glue("clustering at {i} resolution"))
-			cluster_labels <- clusterCells(object,
-																		 use.dimred = reduction,
-																		 BLUSPARAM = NNGraphParam(cluster.fun = "louvain", cluster.args = list(resolution = i))
-			)
-			colData(object)[[glue("gene_snn_res.{i}")]] <- cluster_labels
-		}
-	} else if (length(resolution) == 1) {
-		message(glue("clustering at {resolution} resolution"))
-		cluster_labels <- clusterCells(object,
-																	 use.dimred = reduction,
-																	 BLUSPARAM = NNGraphParam(cluster.fun = "louvain", cluster.args = list(resolution = resolution))
-		)
-		
-		
-		colData(object)[[glue("gene_snn_res.{resolution}")]] <- cluster_labels
-	}
-	
-	return(object)
+    message(glue("[{format(Sys.time(), '%H:%M:%S')}] Clustering Cells..."))
+    if (length(resolution) > 1) {
+        for (i in resolution) {
+            message(glue("clustering at {i} resolution"))
+            cluster_labels <- clusterCells(object,
+                                                                         use.dimred = reduction,
+                                                                         BLUSPARAM = NNGraphParam(cluster.fun = "louvain", cluster.args = list(resolution = i))
+            )
+            colData(object)[[glue("gene_snn_res.{i}")]] <- cluster_labels
+        }
+    } else if (length(resolution) == 1) {
+        message(glue("clustering at {resolution} resolution"))
+        cluster_labels <- clusterCells(object,
+                                                                     use.dimred = reduction,
+                                                                     BLUSPARAM = NNGraphParam(cluster.fun = "louvain", cluster.args = list(resolution = resolution))
+        )
+        
+        
+        colData(object)[[glue("gene_snn_res.{resolution}")]] <- cluster_labels
+    }
+    
+    return(object)
 }
 
 #' Dimensional Reduction
@@ -150,31 +150,31 @@ object_cluster <- function(object = object, resolution = 0.6, custom_clust = NUL
 #'
 #' @return a SingleCellExperiment object with embeddings
 object_reduce_dimensions <- function(object, experiment = "gene", ...) {
-	num_samples <- dim(object)[[2]]
-	if (num_samples < 50) {
-		npcs <- num_samples - 1
-	} else {
-		npcs <- 50
-	}
-	if ("gene" == experiment) {
-		object <- runPCA(x = object, subset_row = getTopHVGs(stats = object), ncomponents = npcs, ...)
-	} else {
-		object <- runPCA(x = object, altexp = experiment, subset_row = getTopHVGs(stats = object), ncomponents = npcs, ...)
-	}
-	
-	if ((ncol(object) - 1) > 3 * 30) {
-		if ("gene" == experiment) {
-			object <- runTSNE(x = object, dimred = "PCA", n_dimred = seq(30))
-		} else {
-			object <- runTSNE(x = object, altexp = experiment, dimred = "PCA", n_dimred = seq(30))
-		}
-		if ("gene" == experiment) {
-			object <- runUMAP(x = object, dimred = "PCA", n_dimred = seq(30))
-		} else {
-			object <- runUMAP(x = object, altexp = experiment, dimred = "PCA", n_dimred = seq(30))
-		}
-	}
-	return(object)
+    num_samples <- dim(object)[[2]]
+    if (num_samples < 50) {
+        npcs <- num_samples - 1
+    } else {
+        npcs <- 50
+    }
+    if ("gene" == experiment) {
+        object <- runPCA(x = object, subset_row = getTopHVGs(stats = object), ncomponents = npcs, ...)
+    } else {
+        object <- runPCA(x = object, altexp = experiment, subset_row = getTopHVGs(stats = object), ncomponents = npcs, ...)
+    }
+    
+    if ((ncol(object) - 1) > 3 * 30) {
+        if ("gene" == experiment) {
+            object <- runTSNE(x = object, dimred = "PCA", n_dimred = seq(30))
+        } else {
+            object <- runTSNE(x = object, altexp = experiment, dimred = "PCA", n_dimred = seq(30))
+        }
+        if ("gene" == experiment) {
+            object <- runUMAP(x = object, dimred = "PCA", n_dimred = seq(30))
+        } else {
+            object <- runUMAP(x = object, altexp = experiment, dimred = "PCA", n_dimred = seq(30))
+        }
+    }
+    return(object)
 }
 
 #' Give a new project name to a SingleCellExperiment object
@@ -190,6 +190,6 @@ object_reduce_dimensions <- function(object, experiment = "gene", ...) {
 #' data(small_example_dataset)
 #' rename_object(small_example_dataset, "new_name")
 rename_object <- function(object, new_name) {
-	metadata(object)["project.name"] <- new_name
-	return(object)
+    metadata(object)["project.name"] <- new_name
+    return(object)
 }

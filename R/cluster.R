@@ -9,7 +9,8 @@
 #' @param legacy_settings Use legacy settings
 #' @param ... extra args passed to scaling functions
 #' @return a preprocessed SingleCellExperiment object
-object_preprocess <- function(object, scale = TRUE, normalize = TRUE, features = NULL, legacy_settings = FALSE, ...) {
+object_preprocess <- function(object, scale = TRUE, normalize = TRUE, 
+                              features = NULL, legacy_settings = FALSE, ...) {
     clusters <- quickCluster(object)
     object <- computeSumFactors(object, clusters = clusters)
     # summary(sizeFactors(object))
@@ -42,10 +43,13 @@ object_preprocess <- function(object, scale = TRUE, normalize = TRUE, features =
 #'
 #' @return a SingleCellExperiment object containing marker genes
 #'
-find_all_markers <- function(object, group_by = NULL, experiment = "gene", ...) {
+find_all_markers <- function(object, 
+                             group_by = NULL, experiment = "gene", ...) {
     if (is.null(group_by)) {
-        resolutions <- colnames(get_cell_metadata(object))[grepl(paste0(experiment, "_snn_res."), colnames(get_cell_metadata(object)))]
-        cluster_index <- grepl(paste0(experiment, "_snn_res."), colnames(get_cell_metadata(object)))
+        meta_cols <- colnames(get_cell_metadata(object))
+        resolutions <- meta_cols[grepl(paste0(experiment, "_snn_res."), 
+                                       meta_cols)]
+        cluster_index <- grepl(paste0(experiment, "_snn_res."), meta_cols)
         if (!any(cluster_index)) {
             warning("no clusters found in metadata. runnings object_cluster")
             object <- object_cluster(object, resolution = seq(0.2, 1, by = 0.2))
@@ -56,9 +60,11 @@ find_all_markers <- function(object, group_by = NULL, experiment = "gene", ...) 
         clusters <- select(clusters, one_of(names(cluster_levels)))
         group_by <- names(clusters)
     }
-    new_markers <- map(group_by, ~ stash_marker_features(object, .x, experiment = experiment, ...))
+    new_markers <- map(group_by, ~ stash_marker_features(
+        object, .x, experiment = experiment, ...))
     names(new_markers) <- group_by
-    old_markers <- metadata(object)$markers[!names(metadata(object)[["markers"]]) %in% names(new_markers)]
+    old_markers <- metadata(object)$markers[!names(
+        metadata(object)[["markers"]]) %in% names(new_markers)]
     metadata(object)[["markers"]] <- c(old_markers, new_markers)
     return(object)
 }
@@ -89,11 +95,13 @@ enframe_markers <- function(marker_table) {
 #'
 #' @return a SingleCellExperiment object with marker genes
 #'
-stash_marker_features <- function(object, group_by, experiment = "gene", top_n = 200, p_val_cutoff = 0.5) {
+stash_marker_features <- function(object, group_by, experiment = "gene", 
+                                  top_n = 200, p_val_cutoff = 0.5) {
     message("stashing markers for ", group_by)
     markers <- list()
     markers <-
-        findMarkers(object, test.type = "t", groups = colData(object)[[group_by]]) %>%
+        findMarkers(object, test.type = "t", 
+                    groups = colData(object)[[group_by]]) %>%
         map(as.data.frame) %>%
         map(rownames_to_column, "feature") %>%
         bind_rows(.id = "group") %>%
@@ -101,7 +109,8 @@ stash_marker_features <- function(object, group_by, experiment = "gene", top_n =
         filter(FDR < p_val_cutoff) %>%
         top_n(n = top_n, wt = summary.logFC) %>%
         arrange(group, desc(summary.logFC)) %>%
-        select(Gene.Name = feature, Average.Log.Fold.Change = summary.logFC, Adjusted.pvalue = FDR, Cluster = group) %>%
+        select(Gene.Name = feature, Average.Log.Fold.Change = summary.logFC, 
+               Adjusted.pvalue = FDR, Cluster = group) %>%
         identity()
     return(markers)
 }

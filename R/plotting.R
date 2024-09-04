@@ -301,9 +301,9 @@ plot_markers <- function(object, group_by = "batch", num_markers = 5, selected_v
 #' # static plot
 #' plot_readcount((small_example_dataset), return_plotly = FALSE)
 plot_readcount <- function(object, group_by = NULL, fill_by = NULL, yscale = "linear", return_plotly = FALSE, ...) {
-	group_by <- group_by %||% glue("nCount_{mainExpName(object)}")
-	fill_by <- group_by %||% glue("nCount_{mainExpName(object)}")
-	
+    group_by <- group_by %||% glue("nCount_{mainExpName(object)}")
+    fill_by <- group_by %||% glue("nCount_{mainExpName(object)}")
+    
     object_tbl <- rownames_to_column(get_cell_metadata(object), "SID") %>% select(SID, !!as.symbol(group_by), !!as.symbol(fill_by))
     rc_plot <- ggplot(object_tbl, aes(x = reorder(SID, -!!as.symbol(group_by)), y = !!as.symbol(group_by), fill = !!as.symbol(fill_by))) +
         geom_bar(position = "identity", stat = "identity") +

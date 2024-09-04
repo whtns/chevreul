@@ -40,7 +40,7 @@ genes_to_transcripts <- function(symbols, organism = "human") {
 #' @examples
 #'
 #' NRL_transcripts_hs <-
-#' c("ENST00000359842", "ENST00000470566", "ENST00000465764", "ENST00000619224")
+#' c("ENST00000359842", "ENST00000470566", "ENST00000465764")
 #'
 #'  data("grch38_tx2gene")
 #'  data("grch38")
