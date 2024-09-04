@@ -35,7 +35,6 @@ plot the proportion of reads of a given gene map to each transcript
 data(tiny_sce)
 data("grch38_tx2gene")
 data("grch38")
-plot_transcript_composition(tiny_sce, "NRL"
-)
+plot_transcript_composition(tiny_sce, "NRL")
 
 }

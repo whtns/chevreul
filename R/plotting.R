@@ -429,8 +429,7 @@ make_complex_heatmap <- function(object, features = NULL, group.by = "ident", ce
 #' data(tiny_sce)
 #' data("grch38_tx2gene")
 #' data("grch38")
-#' plot_transcript_composition(tiny_sce, "NRL"
-#' )
+#' plot_transcript_composition(tiny_sce, "NRL")
 #'
 plot_transcript_composition <- function(object, gene_symbol, group.by = "batch", standardize = FALSE, drop_zero = FALSE) {
   data("grch38")
