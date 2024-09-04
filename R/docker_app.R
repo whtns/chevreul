@@ -21,7 +21,7 @@ dockerChevreulApp <- function(
         futureMb = 13000,
         db_name = "single-cell-projects.db") {
 
-  db_path = file.path(rappdirs::user_cache_dir(appname="chevreul"), db_name)
+  db_path <- file.path(rappdirs::user_cache_dir(appname="chevreul"), db_name)
 
     plan(strategy = "multicore", workers = 6)
     future_size <- futureMb * 1024^2

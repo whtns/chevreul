@@ -173,8 +173,7 @@ plot_feature <- function(object, embedding = c("UMAP", "PCA", "TSNE"), features,
 #'
 #' @return a SingleCellExperiment object
 annotate_cell_cycle <- function(object) {
-   data(cc.genes.cyclone)
-   assignments <- cyclone(object, cc.genes.cyclone, gene.names = rownames(object))
+   assignments <- cyclone(object, chevreul::cc.genes.cyclone, gene.names = rownames(object))
     colData(object)[colnames(assignments$scores)] <- assignments$scores
     colData(object)["Phase"] <- assignments$phases
     return(object)
@@ -432,12 +431,9 @@ make_complex_heatmap <- function(object, features = NULL, group.by = "ident", ce
 #' plot_transcript_composition(tiny_sce, "NRL")
 #'
 plot_transcript_composition <- function(object, gene_symbol, group.by = "batch", standardize = FALSE, drop_zero = FALSE) {
-  data("grch38")
-  data("grch38_tx2gene")
-
-    transcripts <- grch38 %>%
+    transcripts <- chevreul::grch38 %>%
         filter(symbol == gene_symbol) %>%
-        left_join(grch38_tx2gene, by = "ensgene") %>%
+        left_join(chevreul::grch38_tx2gene, by = "ensgene") %>%
         pull(enstxp)
     metadata <- get_cell_metadata(object)
     metadata$sample_id <- NULL

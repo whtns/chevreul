@@ -75,9 +75,7 @@ load_object_path <- function(proj_dir = getwd(), prefix = "unfiltered") {
         return(object_path)
     }
 
-    stop("'", object_path, "' does not exist",
-        paste0(" in current working directory ('", getwd(), "')"),
-        ".",
+    stop(object_path, " does not exist in current working directory ", getwd(), ".",
         call. = FALSE
     )
 }
