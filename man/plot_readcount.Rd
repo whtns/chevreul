@@ -9,8 +9,7 @@ plot_readcount(
   group_by = NULL,
   fill_by = NULL,
   yscale = "linear",
-  return_plotly = FALSE,
-  ...
+  return_plotly = FALSE
 )
 }
 \arguments{
@@ -22,7 +21,7 @@ plot_readcount(
 
 \item{yscale}{Scale of y axis. Default set to "linear"}
 
-\item{return_plotly}{whether to return an interactive plotly plot.}
+\item{return_plotly}{whether to return an interactive plotly plot}
 }
 \value{
 a histogram of read counts

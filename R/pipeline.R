@@ -115,7 +115,7 @@ object_pipeline <- function(object, experiment = "gene", resolution = 0.6, reduc
 #'
 #' @return a SingleCellExperiment object with louvain clusters
 object_cluster <- function(object = object, resolution = 0.6, 
-                           ustom_clust = NULL, reduction = "PCA", 
+                           custom_clust = NULL, reduction = "PCA", 
                            algorithm = 1, ...) {
     message(glue("[{format(Sys.time(), '%H:%M:%S')}] Clustering Cells..."))
     if (length(resolution) > 1) {

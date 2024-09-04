@@ -1640,7 +1640,7 @@ plotCoverage_UI <- function(id) {
 #' @param organism_type human or mouse
 #'
 #' @noRd
-plotCoverage <- function(input, output, session, object, plot_types, proj_dir, 
+plotCoverage <- function(input, output, session, object, plot_types, proj_dir,
                          organism_type = "human", 
                          bigwig_db = "~/.cache/chevreul/bw-files.db") {
     ns <- session$ns
@@ -1734,7 +1734,9 @@ reformatMetadataDRui <- function(id) {
         chevreulBox(
             title = "Reformat Metadata",
             checkboxInput(ns("header"), "Header", TRUE),
-            fileInput(ns("metaFile"), "Choose CSV File of metadata with cell names in first column",
+            fileInput(
+                ns("metaFile"), 
+                "Choose CSV File of metadata with cell names in first column",
                 accept = c(
                     "text/csv",
                     "text/comma-separated-values,text/plain",
@@ -1742,7 +1744,9 @@ reformatMetadataDRui <- function(id) {
                 )
             ),
             actionButton(ns("updateMetadata"), "Update Metadata"),
-            radioButtons(ns("updateMethod"), "Update By:", choices = c("table (below)" = "spreadsheet", "uploaded file" = "file"), inline = TRUE),
+            radioButtons(
+                ns("updateMethod"), "Update By:", 
+                         choices = c("table (below)" = "spreadsheet", "uploaded file" = "file"), inline = TRUE),
             width = 12,
             dataSelectUI(ns("select1")),
             dataFilterUI(ns("filter1")),
@@ -1828,11 +1832,14 @@ reformatMetadataDR <- function(input, output, session, object,
             values$data_active <- values$data
         } else {
             if (length(values$rows) != 0 & length(values$columns) == 0) {
-                values$data_active <- values$data[values$rows, , drop = FALSE]
+                values$data_active <- 
+                    values$data[values$rows, , drop = FALSE]
             } else if (length(values$rows) == 0 & length(values$columns) != 0) {
-                values$data_active <- values$data[, values$columns, drop = FALSE]
+                values$data_active <- 
+                    values$data[, values$columns, drop = FALSE]
             } else if (length(values$rows) != 0 & length(values$columns) != 0) {
-                values$data_active <- values$data[values$rows, values$columns, drop = FALSE]
+                values$data_active <- 
+                    values$data[values$rows, values$columns, drop = FALSE]
             }
         }
     })
@@ -1873,18 +1880,23 @@ reformatMetadataDR <- function(input, output, session, object,
             values$data <- values$data_active
         } else {
             if (length(values$rows) != 0 & length(values$columns) == 0) {
-                values$data[values$rows, ] <- values$data_active
+                values$data[values$rows, ] <- 
+                    values$data_active
             } else if (length(values$rows) == 0 & length(values$columns) != 0) {
-                values$data[, values$columns] <- values$data_active
+                values$data[, values$columns] <- 
+                    values$data_active
             } else if (length(values$rows) != 0 & length(values$columns) != 0) {
-                values$data[values$rows, values$columns] <- values$data_active
+                values$data[values$rows, values$columns] <- 
+                    values$data_active
             }
             if (!is.null(values$data_active)) {
                 if (!all(rownames(values$data_active) == rownames(values$data)[values$rows])) {
-                    rownames(values$data)[values$rows] <- rownames(values$data_active)
+                    rownames(values$data)[values$rows] <- 
+                        rownames(values$data_active)
                 }
                 if (!all(colnames(values$data_active) == colnames(values$data)[values$columns])) {
-                    colnames(values$data)[values$columns] <- colnames(values$data_active)
+                    colnames(values$data)[values$columns] <- 
+                        colnames(values$data_active)
                 }
             }
         }

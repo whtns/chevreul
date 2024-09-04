@@ -318,7 +318,7 @@ plot_markers <- function(object, group_by = "batch", num_markers = 5,
 #' @param group_by Metadata variable to plot. Default set to "nCount_RNA"
 #' @param fill_by Variable to color bins by. Default set to "batch"
 #' @param yscale Scale of y axis. Default set to "linear"
-#' @param return_plotly whether to return an interactive plotly plot. 
+#' @param return_plotly whether to return an interactive plotly plot
 #'
 #' @return a histogram of read counts
 #' @export
@@ -333,7 +333,7 @@ plot_markers <- function(object, group_by = "batch", num_markers = 5,
 #' # static plot
 #' plot_readcount((small_example_dataset), return_plotly = FALSE)
 plot_readcount <- function(object, group_by = NULL, fill_by = NULL, 
-                           yscale = "linear", return_plotly = FALSE, ...) {
+                           yscale = "linear", return_plotly = FALSE) {
     group_by <- group_by %||% glue("nCount_{mainExpName(object)}")
     fill_by <- group_by %||% glue("nCount_{mainExpName(object)}")
     

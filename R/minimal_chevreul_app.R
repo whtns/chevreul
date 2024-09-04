@@ -371,7 +371,7 @@ minimalChevreulApp <- function(single_cell_object = chevreul_sce,
                         object(reintegrated_object)
                     } else {
                         processed_object <- 
-                            bject_pipeline(object(), 
+                            object_pipeline(object(), 
                                            resolution = seq(0.2, 1, by = 0.2))
                         object(processed_object)
                     }
