@@ -3,7 +3,6 @@
 export("%>%")
 export(add_percent_mito)
 export(build_bigwig_db)
-export(chevreulApp)
 export(dockerChevreulApp)
 export(genes_to_transcripts)
 export(get_cell_metadata)

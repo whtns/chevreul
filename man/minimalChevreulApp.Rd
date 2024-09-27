@@ -5,7 +5,7 @@
 \title{Create a minimal chevreul app using SingleCellExperiment input}
 \usage{
 minimalChevreulApp(
-  single_cell_object = chevreul_sce,
+  single_cell_object = NULL,
   appTitle = NULL,
   organism_type = "human",
   futureMb = 13000,
@@ -30,9 +30,7 @@ a minimal chevreul app
 Create a minimal chevreul app using SingleCellExperiment input
 }
 \examples{
-\donttest{
-data(small_example_dataset)
-minimalChevreulApp(small_example_dataset)
-}
+data("tiny_sce")
+minimalChevreulApp(tiny_sce)
 
 }

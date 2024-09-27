@@ -29,9 +29,3 @@ a dockerized shiny app
 \description{
 Create a obect app on a shinyproxy docker instance
 }
-\examples{
-\donttest{
-dockerChevreulApp(chevreul_sce)
-}
-
-}

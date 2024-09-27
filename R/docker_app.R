@@ -8,12 +8,6 @@
 #'
 #' @return a dockerized shiny app
 #' @export
-#'
-#' @examples
-#' \donttest{
-#' dockerChevreulApp(chevreul_sce)
-#' }
-#'
 dockerChevreulApp <- function(
         object = NULL,
         appTitle = NULL,

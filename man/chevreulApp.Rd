@@ -30,9 +30,3 @@ a shiny app
 \description{
 Create a shiny app for a project on disk
 }
-\examples{
-\donttest{
-chevreulApp()
-}
-
-}

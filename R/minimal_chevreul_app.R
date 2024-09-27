@@ -10,12 +10,10 @@
 #' @export
 #'
 #' @examples
-#' \donttest{
-#' data(small_example_dataset)
-#' minimalChevreulApp(small_example_dataset)
-#' }
+#' data("tiny_sce")
+#' minimalChevreulApp(tiny_sce)
 #'
-minimalChevreulApp <- function(single_cell_object = chevreul_sce,
+minimalChevreulApp <- function(single_cell_object = NULL,
                           appTitle = NULL,
                           organism_type = "human",
                           futureMb = 13000,
@@ -200,6 +198,7 @@ minimalChevreulApp <- function(single_cell_object = chevreul_sce,
 
         object <- reactiveVal(NULL)
         observe({
+            req(!is.null(single_cell_object))
             object(single_cell_object)
         })
 
@@ -208,7 +207,7 @@ minimalChevreulApp <- function(single_cell_object = chevreul_sce,
         })
 
         plot_types <- reactive({
-            req(object())
+            req(!is.null(object()))
             list_plot_types(object())
         })
 
@@ -226,12 +225,12 @@ minimalChevreulApp <- function(single_cell_object = chevreul_sce,
         })
 
         reductions <- reactive({
-            req(object())
+            req(!is.null(object()))
             reducedDimNames(object())
         })
 
         observe({
-            req(object())
+            req(!is.null(object()))
 
             callModule(plotDimRed, "plotdimred1", object, plot_types, 
                        featureType,
@@ -299,7 +298,7 @@ minimalChevreulApp <- function(single_cell_object = chevreul_sce,
         # plot all transcripts
         observe({
             req(featureType())
-            req(object())
+            req(!is.null(object()))
             callModule(
                 allTranscripts, "alltranscripts1", object, featureType,
                 organism_type
@@ -387,7 +386,7 @@ minimalChevreulApp <- function(single_cell_object = chevreul_sce,
         })
 
         observeEvent(input$regressAction, {
-            req(object())
+            req(!is.null(object()))
             showModal(modalDialog(
                 title = "Regressing out cell cycle effects",
                 "This process may take a minute or two!"
