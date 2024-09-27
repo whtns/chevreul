@@ -71,7 +71,7 @@ minimalChevreulApp <- function(single_cell_object = NULL,
         tabItems(
             tabItem(
                 tabName = "comparePlots",
-                h2("Compare Plots") %>%
+                h2("Compare Plots") |>
                     default_helper(type = "markdown", 
                                    content = "comparePlots"),
                 plotDimRedui("plotdimred1"),
@@ -108,7 +108,7 @@ minimalChevreulApp <- function(single_cell_object = NULL,
             ),
             tabItem(
                 tabName = "subsetObject",
-                h2("Subset Object Input") %>%
+                h2("Subset Object Input") |>
                     default_helper(type = "markdown", 
                                    content = "subsetObject"),
                 plotDimRedui("subset"),
@@ -145,7 +145,7 @@ minimalChevreulApp <- function(single_cell_object = NULL,
             ),
             tabItem(
                 tabName = "diffex",
-                h2("Differential Expression") %>%
+                h2("Differential Expression") |>
                     default_helper(type = "markdown", content = "diffex"),
                 plotDimRedui("diffex"),
                 diffexui("diffex")
@@ -167,7 +167,7 @@ minimalChevreulApp <- function(single_cell_object = NULL,
                             "Regress Objects By Genes"
                         ),
                         width = 12
-                    ) %>%
+                    ) |>
                         default_helper(type = "markdown",
                                        content = "regressFeatures")
                 )

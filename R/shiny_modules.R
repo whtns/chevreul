@@ -49,7 +49,7 @@ plotViolinui <- function(id) {
             downloadButton(ns("downloadPlot")),
             plotlyOutput(ns("vplot"), height = 750),
             width = 11
-        ) %>%
+        ) |>
             default_helper(type = "markdown", content = "violinPlot", 
                            size = "l")
     )
@@ -126,12 +126,12 @@ plotViolin <- function(input, output, session, object, featureType,
         exclude_trace_number <- 
             length(unique(get_cell_metadata(object())[[input$vlnGroup]])) * 2
 
-        vln_plot <- ggplotly(vln_plot(), height = 700) %>%
-            style(opacity = 0.5) %>%
+        vln_plot <- ggplotly(vln_plot(), height = 700) |>
+            style(opacity = 0.5) |>
             style(hoverinfo = "skip", 
-                  traces = c(seq_len(exclude_trace_number))) %>%
-            plotly_settings(width = 1200) %>%
-            toWebGL() %>%
+                  traces = c(seq_len(exclude_trace_number))) |>
+            plotly_settings(width = 1200) |>
+            toWebGL() |>
             identity()
     })
 }
@@ -165,7 +165,7 @@ plotHeatmapui <- function(id) {
             ),
             plotOutput(ns("heatmap"), height = 750),
             width = 12
-        ) %>%
+        ) |>
             default_helper(type = "markdown", content = "heatMap")
     )
 }
@@ -208,7 +208,7 @@ plotHeatmap <- function(input, output, session, object, featureType,
     output$colAnnoVarui <- renderUI({
         req(object())
 
-        formatted_col_names <- colnames(get_cell_metadata(object())) %>%
+        formatted_col_names <- colnames(get_cell_metadata(object())) |>
             make_chevreul_clean_names()
 
         selectizeInput(ns("colAnnoVar"), "Column Annotation(s)",
@@ -289,7 +289,7 @@ integrateProjui <- function(id) {
             shinySaveButton(ns("saveIntegratedProject"), "Save Integrated Project", "Save project as..."),
             DTOutput(ns("myDatatable")),
             width = 12
-        ) %>%
+        ) |>
             default_helper(type = "markdown", content = "integrateProjects")
     )
 }
@@ -327,8 +327,8 @@ integrateProj <- function(input, output, session, proj_matrices,
     })
 
     clean_proj_matrix <- reactive({
-        clean_proj_matrix <- proj_matrix() %>%
-            select(-project_path) %>%
+        clean_proj_matrix <- proj_matrix() |>
+            select(-project_path) |>
             identity()
     })
 
@@ -342,8 +342,8 @@ integrateProj <- function(input, output, session, proj_matrices,
     })
 
     selectedProjects <- reactive({
-        selectedProjects <- slice(proj_matrix(), selectedRows()) %>%
-            pull(project_path) %>%
+        selectedProjects <- slice(proj_matrix(), selectedRows()) |>
+            pull(project_path) |>
             identity()
     })
 
@@ -358,7 +358,7 @@ integrateProj <- function(input, output, session, proj_matrices,
                 message(selectedProjects())
                 batches <- path(selectedProjects(), "output", 
                                 "singlecellexperiment", 
-                                "unfiltered_object.rds") %>%
+                                "unfiltered_object.rds") |>
                     map(readRDS)
 
                 names(batches) <- names(selectedProjects())
@@ -923,9 +923,9 @@ diffex <-
 
 
     Volcano <- reactive({
-        de_results()[[input$diffex_method]] %>%
-            distinct(symbol, .keep_all = TRUE) %>%
-            column_to_rownames("symbol") %>%
+        de_results()[[input$diffex_method]] |>
+            distinct(symbol, .keep_all = TRUE) |>
+            column_to_rownames("symbol") |>
             EnhancedVolcano(
                 lab = rownames(.),
                 x = "avg_log2FC",
@@ -1001,7 +1001,7 @@ chevreulMarkersui <- function(id) {
             plotlyOutput(ns("markerplot"), height = 800),
             width = 6
         )
-    ) %>%
+    ) |>
         default_helper(type = "markdown", content = "findMarkers")
 }
 
@@ -1238,7 +1238,7 @@ allTranscripts <- function(
                                                     experiment = "gene"), 
                              selected = "NRL", server = TRUE)
 
-        formatted_col_names <- colnames(get_cell_metadata(object())) %>%
+        formatted_col_names <- colnames(get_cell_metadata(object())) |>
             make_chevreul_clean_names()
 
         updateSelectizeInput(session, "groupby", choices = formatted_col_names, 
@@ -1270,11 +1270,11 @@ allTranscripts <- function(
     })
 
     output$compositionPlot <- renderPlotly({
-        composition_plot()$plot %>%
-            ggplotly(height = 400) %>%
-            plotly_settings() %>%
-            toWebGL() %>%
-            # partial_bundle() %>%
+        composition_plot()$plot |>
+            ggplotly(height = 400) |>
+            plotly_settings() |>
+            toWebGL() |>
+            # partial_bundle() |>
             identity()
     })
 
@@ -1297,9 +1297,9 @@ allTranscripts <- function(
 
     output$transcriptPlot <- renderPlotly({
         req(pList())
-        pList()[[input$transcriptSelect]] %>%
-            ggplotly(height = 400) %>%
-            plotly_settings() %>%
+        pList()[[input$transcriptSelect]] |>
+            ggplotly(height = 400) |>
+            plotly_settings() |>
             toWebGL()
     })
 
@@ -1402,7 +1402,7 @@ pathwayEnrichment <- function(input, output, session, object, featureType) {
         req(object())
         req(input$enriched_pathways_by_cluster_select_source)
         if (input$enriched_pathways_by_cluster_select_source == "enrichr") {
-            choices <- levels(enriched_pathways()$enrichr$by_cluster$cluster) %>%
+            choices <- levels(enriched_pathways()$enrichr$by_cluster$cluster) |>
                 intersect(., unique(enriched_pathways()$enrichr$by_cluster$cluster))
         }
         selectInput(
@@ -1418,9 +1418,9 @@ pathwayEnrichment <- function(input, output, session, object, featureType) {
             input$enriched_pathways_by_cluster_select_source,
             input$enriched_pathways_by_cluster_select_cluster
         )
-        choices <- enriched_pathways()$enrichr$by_cluster %>%
-            filter(cluster == input$enriched_pathways_by_cluster_select_cluster) %>%
-            pull(db) %>%
+        choices <- enriched_pathways()$enrichr$by_cluster |>
+            filter(cluster == input$enriched_pathways_by_cluster_select_cluster) |>
+            pull(db) |>
             intersect(., levels(.))
         selectInput(
             ns("enriched_pathways_by_cluster_select_db"),
@@ -1658,7 +1658,7 @@ plotCoverage <- function(input, output, session, object, plot_types, proj_dir,
                                                     experiment = "gene"), 
                              server = TRUE)
 
-        formatted_col_names <- colnames(get_cell_metadata(object())) %>%
+        formatted_col_names <- colnames(get_cell_metadata(object())) |>
             make_chevreul_clean_names()
 
         updateSelectizeInput(session, "varSelect", 
@@ -1755,7 +1755,7 @@ reformatMetadataDRui <- function(id) {
             dataOutputUI(ns("output-update"), icon = "file-download"),
             hidden(actionButton(ns("cut"), label = NULL, icon = icon("cut"))),
             dataEditUI(ns("edit1"))
-        ) %>%
+        ) |>
             default_helper(type = "markdown", content = "reformatMetadata")
     )
 }
@@ -1808,9 +1808,9 @@ reformatMetadataDR <- function(input, output, session, object,
         values$rows <- NULL
         values$columns <- NULL
 
-        values$data <- table_out() %>%
-            data_bind_rows(row_bind = row_bind) %>%
-            data_bind_cols(col_bind = col_bind) %>%
+        values$data <- table_out() |>
+            data_bind_rows(row_bind = row_bind) |>
+            data_bind_cols(col_bind = col_bind) |>
             identity()
     })
 

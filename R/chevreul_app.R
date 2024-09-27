@@ -53,10 +53,10 @@ run_object_de <- function(object, cluster1, cluster2, resolution = 0.2,
         if (featureType == "transcript") {
             de_cols <- c("enstxp", "ensgene", "symbol", "p_val" = "p.value",
                          "avg_log2FC", "pct.1", "pct.2", "p_val_adj" = "FDR")
-            de <- de[[1]] %>%
-                as.data.frame() %>%
-                rownames_to_column("enstxp") %>%
-                left_join(grch38_tx2gene, by = "enstxp") %>%
+            de <- de[[1]] |>
+                as.data.frame() |>
+                rownames_to_column("enstxp") |>
+                left_join(grch38_tx2gene, by = "enstxp") |>
                 left_join(grch38, by = "ensgene")
             if ("summary.logFC" %in% colnames(de)) {
                 de <- mutate(de, avg_log2FC = log(exp(summary.logFC), 2))
@@ -66,9 +66,9 @@ run_object_de <- function(object, cluster1, cluster2, resolution = 0.2,
             de_cols <- c("ensgene", "symbol", 
                          "p_val" = "p.value", "avg_log2FC",
                          "pct.1", "pct.2", "p_val_adj" = "FDR")
-            de <- de[[1]] %>%
-                as.data.frame() %>%
-                rownames_to_column("symbol") %>%
+            de <- de[[1]] |>
+                as.data.frame() |>
+                rownames_to_column("symbol") |>
                 left_join(grch38, by = "symbol")
             if ("summary.logFC" %in% colnames(de)) {
                 de <- mutate(de, avg_log2FC = log(exp(summary.logFC), 2))
@@ -129,7 +129,7 @@ chevreulApp <-
     header <- dashboardHeader(title = appTitle)
     sidebar <- dashboardSidebar(
         uiOutput("projInput"),
-        actionButton("loadProject", "Load Selected Project") %>%
+        actionButton("loadProject", "Load Selected Project") |>
             default_helper(type = "markdown", content = "overview"),
         textOutput("appTitle"),
         bookmarkButton(),
@@ -187,7 +187,7 @@ chevreulApp <-
         tabItems(
             tabItem(
                 tabName = "comparePlots",
-                h2("Compare Plots") %>%
+                h2("Compare Plots") |>
                     default_helper(type = "markdown", 
                                    content = "comparePlots"),
                 plotDimRedui("plotdimred1"),
@@ -231,7 +231,7 @@ chevreulApp <-
             ),
             tabItem(
                 tabName = "subsetSingleCellExperiment",
-                h2("Subset SingleCellExperiment Input") %>%
+                h2("Subset SingleCellExperiment Input") |>
                     default_helper(type = "markdown",
                                    content = "subsetSingleCellExperiment"),
                 plotDimRedui("subset"),
@@ -269,7 +269,7 @@ chevreulApp <-
             ),
             tabItem(
                 tabName = "diffex",
-                h2("Differential Expression") %>%
+                h2("Differential Expression") |>
                     default_helper(type = "markdown", content = "diffex"),
                 plotDimRedui("diffex"),
                 diffexui("diffex")
@@ -291,7 +291,7 @@ chevreulApp <-
                             "Regress SingleCellExperiment Objects By Genes"
                         ),
                         width = 12
-                    ) %>%
+                    ) |>
                         default_helper(type = "markdown",
                                        content = "regressFeatures")
                 )
@@ -346,13 +346,13 @@ chevreulApp <-
 
         projList <- reactivePoll(4000, session, checkFunc = function() {
             if (file.exists(db_path)) {
-                dbReadTable(con(), "projects_tbl") %>%
+                dbReadTable(con(), "projects_tbl") |>
                     deframe()
             } else {
                 ""
             }
         }, valueFunc = function() {
-            dbReadTable(con(), "projects_tbl") %>%
+            dbReadTable(con(), "projects_tbl") |>
                 deframe()
         })
 

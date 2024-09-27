@@ -31,28 +31,28 @@ convert_symbols_by_species <- function(src_genes, src_species) {
     if (src_species == "human") {
         dest_species <- "mouse"
 
-        dest_symbols <- src_genes %>%
-            enframe("gene_index", "HGNC.symbol") %>%
-            left_join(human_to_mouse_homologs, by = "HGNC.symbol") %>%
-            distinct(HGNC.symbol, .keep_all = TRUE) %>%
+        dest_symbols <- src_genes |>
+            enframe("gene_index", "HGNC.symbol") |>
+            left_join(human_to_mouse_homologs, by = "HGNC.symbol") |>
+            distinct(HGNC.symbol, .keep_all = TRUE) |>
             mutate(MGI.symbol = case_when(
                 is.na(MGI.symbol) ~ str_to_sentence(HGNC.symbol),
                 TRUE ~ MGI.symbol
-            )) %>%
-            select(-gene_index) %>%
+            )) |>
+            select(-gene_index) |>
             identity()
     } else if (src_species == "mouse") {
         dest_species <- "human"
 
-        dest_symbols <- src_genes %>%
-            enframe("gene_index", "MGI.symbol") %>%
-            left_join(human_to_mouse_homologs, by = "MGI.symbol") %>%
-            distinct(MGI.symbol, .keep_all = TRUE) %>%
+        dest_symbols <- src_genes |>
+            enframe("gene_index", "MGI.symbol") |>
+            left_join(human_to_mouse_homologs, by = "MGI.symbol") |>
+            distinct(MGI.symbol, .keep_all = TRUE) |>
             mutate(HGNC.symbol = case_when(
                 is.na(HGNC.symbol) ~ str_to_upper(MGI.symbol),
                 TRUE ~ HGNC.symbol
-            )) %>%
-            select(-gene_index) %>%
+            )) |>
+            select(-gene_index) |>
             identity()
     }
 

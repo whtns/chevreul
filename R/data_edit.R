@@ -32,7 +32,7 @@ reformatMetadataDRui <- function(id) {
             dataOutputUI(ns("output-update"), icon = "file-download"),
             hidden(actionButton(ns("cut"), label = NULL, icon = icon("cut"))),
             dataEditUI(ns("edit1"))
-        ) %>%
+        ) |>
             default_helper(type = "markdown", content = "reformatMetadata")
     )
 }
@@ -85,9 +85,9 @@ reformatMetadataDR <- function(
         values$rows <- NULL
         values$columns <- NULL
 
-        values$data <- table_out() %>%
-            data_bind_rows(row_bind = row_bind) %>%
-            data_bind_cols(col_bind = col_bind) %>%
+        values$data <- table_out() |>
+            data_bind_rows(row_bind = row_bind) |>
+            data_bind_cols(col_bind = col_bind) |>
             identity()
     })
 

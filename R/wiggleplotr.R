@@ -14,11 +14,11 @@ build_bigwig_db <- function(bam_files,
     bigwigfiles <- map_chr(bam_files,
                            ~ bam_to_bigwig(.x,
                                            prefix = path_ext_remove(.x),
-                                           overwrite = TRUE)) %>%
-        set_names(path_file) %>%
-        enframe("name", "bigWig") %>%
+                                           overwrite = TRUE)) |>
+        set_names(path_file) |>
+        enframe("name", "bigWig") |>
         mutate(sample_id = 
-                   str_remove(name, "_Aligned.sortedByCoord.out.bw")) %>%
+                   str_remove(name, "_Aligned.sortedByCoord.out.bw")) |>
         identity()
 
     con <- dbConnect(SQLite(), dbname = bigwig_db)
@@ -39,12 +39,12 @@ build_bigwig_db <- function(bam_files,
 load_bigwigs <- function(object, bigwig_db = "~/.cache/chevreul/bw-files.db") {
     con <- dbConnect(SQLite(), dbname = bigwig_db)
 
-    bigwigfiles <- dbReadTable(con, "bigwigfiles") %>%
-        filter(sample_id %in% colnames(object)) %>%
+    bigwigfiles <- dbReadTable(con, "bigwigfiles") |>
+        filter(sample_id %in% colnames(object)) |>
         identity()
 
     missing_bigwigs <- colnames(object)[!(colnames(object) %in% 
-                                              bigwigfiles$sample_id)] %>%
+                                              bigwigfiles$sample_id)] |>
         paste(collapse = ", ")
 
     warning(paste0("Sample coverage files ", missing_bigwigs, 
@@ -53,7 +53,7 @@ load_bigwigs <- function(object, bigwig_db = "~/.cache/chevreul/bw-files.db") {
     dbDisconnect(con)
 
     bigwigfiles <-
-        bigwigfiles %>%
+        bigwigfiles |>
         filter(sample_id %in% colnames(object))
 
     return(bigwigfiles)
@@ -106,24 +106,24 @@ plot_gene_coverage_by_var <- function(
 
 
     new_track_data <-
-        cell_metadata %>%
-        rownames_to_column("sample_id") %>%
+        cell_metadata |>
+        rownames_to_column("sample_id") |>
         select(sample_id,
             condition = {{ group_by }},
             track_id = {{ group_by }},
             colour_group = {{ group_by }},
             everything()
-        ) %>%
-        mutate(scaling_factor = 1) %>% # rescale(nCount_RNA)
+        ) |>
+        mutate(scaling_factor = 1) |> # rescale(nCount_RNA)
         mutate(condition = as.factor(condition),
-               colour_group = as.factor(colour_group)) %>%
-        left_join(bigwig_tbl, by = "sample_id") %>%
-        filter(!is.na(bigWig)) %>%
+               colour_group = as.factor(colour_group)) |>
+        left_join(bigwig_tbl, by = "sample_id") |>
+        filter(!is.na(bigWig)) |>
         identity()
 
     if (!is.null(values_of_interest)) {
         new_track_data <-
-            new_track_data %>%
+            new_track_data |>
             filter(condition %in% values_of_interest)
     }
 
@@ -180,11 +180,11 @@ plot_gene_coverage_by_var <- function(
     x_lim <- ggplot_build(
         coverage_plot_list$coverage_plot)$layout$panel_params[[1]]$x.range
 
-    base_coverage <- coverage_plot_list$coverage_plot$data %>%
-        filter(!is.na(coverage)) %>%
-        group_by(sample_id, colour_group) %>%
-        summarize(sum = signif(sum(coverage), 4)) %>%
-        mutate(sum = sum / diff(x_lim)) %>%
+    base_coverage <- coverage_plot_list$coverage_plot$data |>
+        filter(!is.na(coverage)) |>
+        group_by(sample_id, colour_group) |>
+        summarize(sum = signif(sum(coverage), 4)) |>
+        mutate(sum = sum / diff(x_lim)) |>
         identity()
 
     coverage_plot <- 

@@ -15,9 +15,9 @@
 unite_metadata <-
     function(object, group_bys) {
         newcolname <- paste(group_bys, collapse = "_by_")
-        newdata <- colData(object)[group_bys] %>%
-            as.data.frame() %>%
-            unite(!!newcolname, any_of(group_bys)) %>%
+        newdata <- colData(object)[group_bys] |>
+            as.data.frame() |>
+            unite(!!newcolname, any_of(group_bys)) |>
             deframe()
 
         return(object)
@@ -76,9 +76,9 @@ plot_var <- function(object, group = "batch",
         return(d)
     }
 
-    plotly_plot <- ggplotly(d, tooltip = "cellid", height = 500) %>%
-        plotly_settings() %>%
-        toWebGL() %>%
+    plotly_plot <- ggplotly(d, tooltip = "cellid", height = 500) |>
+        plotly_settings() |>
+        toWebGL() |>
         identity()
 }
 
@@ -93,11 +93,11 @@ plot_var <- function(object, group = "batch",
 #'
 #' @noRd
 plotly_settings <- function(plotly_plot, width = 600, height = 700) {
-    plotly_plot %>%
-        layout(dragmode = "lasso") %>%
+    plotly_plot |>
+        layout(dragmode = "lasso") |>
         config(toImageButtonOptions = list(format = "svg", 
                                            filename = "myplot", 
-                                           width = width, height = height)) %>%
+                                           width = width, height = height)) |>
         identity()
 }
 
@@ -172,10 +172,10 @@ plot_feature <- function(object, embedding = c("UMAP", "PCA", "TSNE"),
         return(fp)
     }
 
-    plotly_plot <- ggplotly(fp, tooltip = "cellid", height = 500) %>%
-        plotly_settings() %>%
-        toWebGL() %>%
-        # partial_bundle() %>%
+    plotly_plot <- ggplotly(fp, tooltip = "cellid", height = 500) |>
+        plotly_settings() |>
+        toWebGL() |>
+        # partial_bundle() |>
         identity()
 }
 
@@ -233,8 +233,8 @@ plot_markers <- function(object, group_by = "batch", num_markers = 5,
     object <- find_all_markers(object, group_by, experiment = experiment, 
                                p_val_cutoff = p_val_cutoff)
     marker_table <- metadata(object)$markers[[group_by]]
-    markers <- marker_table %>%
-        enframe_markers() %>%
+    markers <- marker_table |>
+        enframe_markers() |>
         mutate(across(everything(), .fns = as.character))
     if (!is.null(hide_technical)) {
         markers <- map(markers, c)
@@ -251,35 +251,35 @@ plot_markers <- function(object, group_by = "batch", num_markers = 5,
             markers <- map(markers, ~ .x[!str_detect(.x, "^RPL")])
         }
         min_length <- min(map_int(markers, length))
-        markers <- map(markers, head, min_length) %>% bind_cols()
+        markers <- map(markers, head, min_length) |> bind_cols()
     }
     if (unique_markers) {
-        markers <- markers %>%
-            mutate(precedence = row_number()) %>%
+        markers <- markers |>
+            mutate(precedence = row_number()) |>
             pivot_longer(-precedence, names_to = "group", 
-                         values_to = "markers") %>%
-            arrange(markers, precedence) %>%
-            group_by(markers) %>%
-            filter(row_number() == 1) %>%
-            arrange(group, precedence) %>%
-            drop_na() %>%
-            group_by(group) %>%
-            mutate(precedence = row_number()) %>%
-            pivot_wider(names_from = "group", values_from = "markers") %>%
+                         values_to = "markers") |>
+            arrange(markers, precedence) |>
+            group_by(markers) |>
+            filter(row_number() == 1) |>
+            arrange(group, precedence) |>
+            drop_na() |>
+            group_by(group) |>
+            mutate(precedence = row_number()) |>
+            pivot_wider(names_from = "group", values_from = "markers") |>
             select(-precedence)
     }
-    sliced_markers <- markers %>%
-        slice_head(n = num_markers) %>%
+    sliced_markers <- markers |>
+        slice_head(n = num_markers) |>
         pivot_longer(everything(), names_to = "group", 
-                     values_to = "feature") %>%
-        arrange(group) %>%
-        distinct(feature, .keep_all = TRUE) %>%
+                     values_to = "feature") |>
+        arrange(group) |>
+        distinct(feature, .keep_all = TRUE) |>
         identity()
     if (!is.null(selected_values)) {
         object <- object[, get_cell_metadata(object)[[group_by]] %in% 
                              selected_values]
-        sliced_markers <- sliced_markers %>%
-            filter(group %in% selected_values) %>%
+        sliced_markers <- sliced_markers |>
+            filter(group %in% selected_values) |>
             distinct(feature, .keep_all = TRUE)
     }
     vline_coords <- head(cumsum(table(sliced_markers$group)) + 0.5, -1)
@@ -302,9 +302,9 @@ plot_markers <- function(object, group_by = "batch", num_markers = 5,
     plot_width <- (100 * length(levels(
         as.factor(get_cell_metadata(object)[[group_by]]))))
     markerplot <- ggplotly(markerplot, height = plot_height, 
-                           width = plot_width) %>%
-        plotly_settings() %>%
-        toWebGL() %>%
+                           width = plot_width) |>
+        plotly_settings() |>
+        toWebGL() |>
         identity()
     return(list(plot = markerplot, markers = marker_table))
 }
@@ -338,7 +338,7 @@ plot_readcount <- function(object, group_by = NULL, fill_by = NULL,
     fill_by <- group_by %||% glue("nCount_{mainExpName(object)}")
     
     object_tbl <- rownames_to_column(
-        get_cell_metadata(object), "SID") %>% select(SID, 
+        get_cell_metadata(object), "SID") |> select(SID, 
                                                      !!as.symbol(group_by), 
                                                      !!as.symbol(fill_by))
     rc_plot <- ggplot(object_tbl, aes(x = reorder(SID, -!!as.symbol(group_by)), 
@@ -354,9 +354,9 @@ plot_readcount <- function(object, group_by = NULL, fill_by = NULL,
     if (return_plotly == FALSE) {
         return(rc_plot)
     }
-    rc_plot <- ggplotly(rc_plot, tooltip = "cellid", height = 500) %>%
-        plotly_settings() %>%
-        toWebGL() %>%
+    rc_plot <- ggplotly(rc_plot, tooltip = "cellid", height = 500) |>
+        plotly_settings() |>
+        toWebGL() |>
         identity()
 }
 
@@ -414,8 +414,8 @@ make_complex_heatmap <- function(object, features = NULL, group.by = "ident",
                                    "mcquitty", "median", "centroid", 
                                    "ward.D2"))) {
         if ("PCA" %in% reducedDimNames(object)) {
-            cluster_columns <- reducedDim(object, "PCA") %>%
-                dist() %>%
+            cluster_columns <- reducedDim(object, "PCA") |>
+                dist() |>
                 hclust(col_arrangement)
         } else {
             message(
@@ -425,29 +425,29 @@ make_complex_heatmap <- function(object, features = NULL, group.by = "ident",
                 function(m) as.dendrogram(agnes(m), method = col_arrangement)
         }
     } else {
-        cells <- colData(object)[col_arrangement] %>%
-            as.data.frame() %>%
-            arrange(across(all_of(col_arrangement))) %>%
+        cells <- colData(object)[col_arrangement] |>
+            as.data.frame() |>
+            arrange(across(all_of(col_arrangement))) |>
             rownames()
         data <- data[cells, ]
         group.by <- base::union(group.by, col_arrangement)
         cluster_columns <- FALSE
     }
     group.by <- group.by %||% "ident"
-    groups.use <- colData(object)[group.by] %>% as.data.frame()
-    groups.use <- groups.use %>%
-        rownames_to_column("sample_id") %>%
+    groups.use <- colData(object)[group.by] |> as.data.frame()
+    groups.use <- groups.use |>
+        rownames_to_column("sample_id") |>
         mutate(across(where(is.character), ~ str_wrap(
-            str_replace_all(.x, ",", " "), 10))) %>%
-        mutate(across(where(is.character), as.factor)) %>%
-        data.frame(row.names = 1) %>%
+            str_replace_all(.x, ",", " "), 10))) |>
+        mutate(across(where(is.character), as.factor)) |>
+        data.frame(row.names = 1) |>
         identity()
     groups.use.factor <- groups.use[map_lgl(groups.use, is.factor)]
     ha_cols.factor <- NULL
     if (length(groups.use.factor) > 0) {
         ha_col_names.factor <- lapply(groups.use.factor, levels)
         ha_cols.factor <- map(ha_col_names.factor, 
-                              ~ (hue_pal())(length(.x))) %>% 
+                              ~ (hue_pal())(length(.x))) |> 
             map2(ha_col_names.factor, set_names)
     }
     groups.use.numeric <- groups.use[map_lgl(groups.use, is.numeric)]
@@ -506,29 +506,29 @@ plot_transcript_composition <- function(object, gene_symbol,
     grch38 <- data_env[["grch38"]]
     grch38_tx2gene <- data_env[["grch38_tx2gene"]]
     
-    transcripts <- grch38 %>%
-        filter(symbol == gene_symbol) %>%
-        left_join(grch38_tx2gene, by = "ensgene") %>%
+    transcripts <- grch38 |>
+        filter(symbol == gene_symbol) |>
+        left_join(grch38_tx2gene, by = "ensgene") |>
         pull(enstxp)
     metadata <- get_cell_metadata(object)
     metadata$sample_id <- NULL
-    metadata <- metadata %>%
-        rownames_to_column("sample_id") %>%
+    metadata <- metadata |>
+        rownames_to_column("sample_id") |>
         select(sample_id, group.by = {{ group.by }})
 
     transcripts <- transcripts[transcripts %in% 
                                    rownames(altExp(object, "transcript"))]
 
-    data <- counts(altExp(object, "transcript"))[transcripts, ] %>%
-        as.matrix() %>%
+    data <- counts(altExp(object, "transcript"))[transcripts, ] |>
+        as.matrix() |>
         t()
 
-    data <- data %>%
-        as.data.frame() %>%
-        rownames_to_column("sample_id") %>%
+    data <- data |>
+        as.data.frame() |>
+        rownames_to_column("sample_id") |>
         pivot_longer(cols = starts_with("ENST"), 
-                     names_to = "transcript", values_to = "expression") %>%
-        left_join(metadata, by = "sample_id") %>%
+                     names_to = "transcript", values_to = "expression") |>
+        left_join(metadata, by = "sample_id") |>
         mutate(group.by = as.factor(group.by), 
                transcript = as.factor(transcript))
     data <- group_by(data, group.by, transcript)
@@ -573,7 +573,7 @@ plot_all_transcripts <- function(object, features,
     colData(object)[features] <- t(as.matrix(transcript_cols))
     plot_out <- map(paste0(features), ~plot_feature(
         object, embedding = embedding, features = .x, 
-        return_plotly = FALSE)) %>% set_names(features)
+        return_plotly = FALSE)) |> set_names(features)
     if (combine) {
         plot_out <- wrap_plots(plot_out)
     }

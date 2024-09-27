@@ -77,10 +77,10 @@ find_all_markers <- function(object,
 #'
 #' @return a table of marker genes
 enframe_markers <- function(marker_table) {
-    marker_table %>%
-        select(Gene.Name, Cluster) %>%
-        mutate(rn = row_number()) %>%
-        pivot_wider(names_from = Cluster, values_from = Gene.Name) %>%
+    marker_table |>
+        select(Gene.Name, Cluster) |>
+        mutate(rn = row_number()) |>
+        pivot_wider(names_from = Cluster, values_from = Gene.Name) |>
         select(-rn)
 }
 
@@ -102,16 +102,16 @@ stash_marker_features <- function(object, group_by, experiment = "gene",
     markers <- list()
     markers <-
         findMarkers(object, test.type = "t", 
-                    groups = colData(object)[[group_by]]) %>%
-        map(as.data.frame) %>%
-        map(rownames_to_column, "feature") %>%
-        bind_rows(.id = "group") %>%
-        group_by(group) %>%
-        filter(FDR < p_val_cutoff) %>%
-        top_n(n = top_n, wt = summary.logFC) %>%
-        arrange(group, desc(summary.logFC)) %>%
+                    groups = colData(object)[[group_by]]) |>
+        map(as.data.frame) |>
+        map(rownames_to_column, "feature") |>
+        bind_rows(.id = "group") |>
+        group_by(group) |>
+        filter(FDR < p_val_cutoff) |>
+        top_n(n = top_n, wt = summary.logFC) |>
+        arrange(group, desc(summary.logFC)) |>
         select(Gene.Name = feature, Average.Log.Fold.Change = summary.logFC, 
-               Adjusted.pvalue = FDR, Cluster = group) %>%
+               Adjusted.pvalue = FDR, Cluster = group) |>
         identity()
     return(markers)
 }

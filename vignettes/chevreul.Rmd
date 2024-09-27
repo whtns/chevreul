@@ -125,11 +125,11 @@ We start with a count matrix containing expression count data and a table of cor
 ```{r, eval=TRUE}
 # Object count matrix
 human_count <- counts(chevreul_sce)
-human_count[1:5, 1:5] %>% as.matrix() %>% knitr::kable(format = "pipe")
+human_count[1:5, 1:5] |> as.matrix() |> knitr::kable(format = "pipe")
 
 # Object metadata
-human_meta <- colData(chevreul_sce) %>% as.data.frame()
-human_meta[1:5, 1:5] %>% as.matrix() %>% knitr::kable(format = "pipe")
+human_meta <- colData(chevreul_sce) |> as.data.frame()
+human_meta[1:5, 1:5] |> as.matrix() |> knitr::kable(format = "pipe")
 ```
 
 Then using these 2 datasets, we create a SingleCellExperiment object as shown below.

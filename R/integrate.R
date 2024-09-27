@@ -38,7 +38,7 @@ merge_small_objects <- function(..., k.filter = 50) {
 
     # check if any singlecell objects are too small and if so merge
     # with the first singlecell objects
-    object_dims <- map(object_list, dim) %>%
+    object_dims <- map(object_list, dim) |>
         map_lgl(~ .x[[2]] < k.filter)
 
     small_objects <- object_list[object_dims]

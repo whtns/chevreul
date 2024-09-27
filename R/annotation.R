@@ -55,10 +55,10 @@ transcripts_to_genes <- function(transcripts, organism = "human") {
         transcript_table <- grcm38_tx2gene
     }
 
-    tibble(enstxp = transcripts) %>%
-        left_join(transcript_table, by = "enstxp") %>%
-        left_join(gene_table, by = "ensgene") %>%
-        pull("symbol") %>%
+    tibble(enstxp = transcripts) |>
+        left_join(transcript_table, by = "enstxp") |>
+        left_join(gene_table, by = "ensgene") |>
+        pull("symbol") |>
         identity()
 }
 

@@ -15,27 +15,27 @@ list_plot_types <- function(object) {
         num_levels = unlist(map(colData(object), ~ length(unique(.x))))
     )
 
-    meta_types <- meta_types %>%
-        filter(!grepl("_snn_res", vars)) %>%
+    meta_types <- meta_types |>
+        filter(!grepl("_snn_res", vars)) |>
         mutate(meta_type = case_when(
             var_type %in% c("int", "dbl") ~ "continuous",
             var_type %in% c("chr", "fct", "ord", "lgl") ~ "category"
-        )) %>%
-        mutate(meta_type = ifelse(meta_type == "continuous" & num_levels < 30, "category", meta_type)) %>%
-        filter(num_levels > 1) %>%
+        )) |>
+        mutate(meta_type = ifelse(meta_type == "continuous" & num_levels < 30, "category", meta_type)) |>
+        filter(num_levels > 1) |>
         identity()
 
-    continuous_vars <- meta_types %>%
-        filter(meta_type == "continuous") %>%
+    continuous_vars <- meta_types |>
+        filter(meta_type == "continuous") |>
         pull(vars)
 
-    continuous_vars <- c("feature", continuous_vars) %>%
+    continuous_vars <- c("feature", continuous_vars) |>
         set_names(str_to_title(str_replace_all(., "[[:punct:]]", " ")))
 
 
-    category_vars <- meta_types %>%
-        filter(meta_type == "category") %>%
-        pull(vars) %>%
+    category_vars <- meta_types |>
+        filter(meta_type == "category") |>
+        pull(vars) |>
         set_names(str_to_title(str_replace_all(., "[^[:alnum:][:space:]\\.]", " ")))
 
     plot_types <- list(category_vars = category_vars, continuous_vars = continuous_vars)
@@ -58,7 +58,7 @@ list_plot_types <- function(object) {
 #' data(small_example_dataset)
 #' get_cell_metadata(small_example_dataset)
 get_cell_metadata <- function(object) {
-    colData(object) %>%
+    colData(object) |>
         as.data.frame()
 }
 

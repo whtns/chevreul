@@ -61,13 +61,13 @@ get_data <- function(recipe) {
 }
 
 tidy_data <- function(df, recipe, tx = FALSE) {
-    df <- df %>%
-        as_tibble %>%
-        distinct %>%
-        rename(!!!syms(recipe$attributes)) %>%
+    df <- df |>
+        as_tibble |>
+        distinct |>
+        rename(!!!syms(recipe$attributes)) |>
         arrange(!!sym("ensgene"))
     if (!tx) {
-        df <- df %>% mutate(description = sub("\ \\[.+\\]", "", description, perl = TRUE))
+        df <- df |> mutate(description = sub("\ \\[.+\\]", "", description, perl = TRUE))
     }
     return(df)
 }
@@ -80,7 +80,7 @@ save_data <- function(..., name) {
 ```
 
 ```{r load_recipes}
-recipe.files <- file.path("data-raw", "recipes") %>%
+recipe.files <- file.path("data-raw", "recipes") |>
     dir(full.names = TRUE)
 names(recipe.files) <- sub(".yml", "", basename(recipe.files))
 recipes <- lapply(recipe.files, yaml.load_file)
@@ -126,8 +126,8 @@ Map(document_annotable, recipes, names(recipes), type = "tx2gene")
 ```
 
 ```{r ensembl_version}
-ensembl_version <- listMarts() %>%
-    filter(biomart == "ENSEMBL_MART_ENSEMBL") %>%
+ensembl_version <- listMarts() |>
+    filter(biomart == "ENSEMBL_MART_ENSEMBL") |>
     pull(version)
 save_data(ensembl_version, name = "ensembl_version")
 ```

@@ -67,7 +67,7 @@ dockerChevreulApp <- function(
         tabItems(
             tabItem(
                 tabName = "comparePlots",
-                h2("Compare Plots") %>%
+                h2("Compare Plots") |>
                     default_helper(type = "markdown", 
                                    content = "comparePlots"),
                 plotDimRedui("plotdimred1"),
@@ -104,7 +104,7 @@ dockerChevreulApp <- function(
             ),
             tabItem(
                 tabName = "subsetSingleCellExperiment",
-                h2("Subset SingleCellExperiment Input") %>%
+                h2("Subset SingleCellExperiment Input") |>
                     default_helper(type = "markdown", 
                                    content = "subsetSingleCellExperiment"),
                 plotDimRedui("subset"),
@@ -141,7 +141,7 @@ dockerChevreulApp <- function(
             ),
             tabItem(
                 tabName = "diffex",
-                h2("Differential Expression") %>%
+                h2("Differential Expression") |>
                     default_helper(type = "markdown", content = "diffex"),
                 plotDimRedui("diffex"),
                 diffexui("diffex")
@@ -163,7 +163,7 @@ dockerChevreulApp <- function(
                             "Regress SingleCellExperiment Objects By Genes"
                         ),
                         width = 12
-                    ) %>%
+                    ) |>
                         default_helper(type = "markdown", 
                                        content = "regressFeatures")
                 )
