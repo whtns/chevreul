@@ -482,8 +482,7 @@ chevreulApp <-
             )
         })
 
-        integrationResults <- callModule(
-            integrateProj, "integrateproj",
+        integrationResults <- integrateProj( "integrateproj",
             proj_matrices, object, proj_dir, con()
         )
         newprojList <- reactive({
@@ -506,7 +505,7 @@ chevreulApp <-
         })
 
         observe({
-            reformatted_object <- callModule(reformatMetadataDR,
+            reformatted_object <- reformatMetadataDR(
                                              "reformatMetadataDR", object,
                                              featureType)
             object(reformatted_object())
@@ -520,52 +519,47 @@ chevreulApp <-
         observe({
             req(object())
 
-            callModule(plotDimRed, "plotdimred1", object, plot_types,
+            plotDimRed( "plotdimred1", object, plot_types,
                        featureType,
                 organism_type = organism_type, reductions
             )
-            callModule(plotDimRed, "plotdimred2", object, plot_types,
+            plotDimRed( "plotdimred2", object, plot_types,
                        featureType,
                 organism_type = organism_type, reductions
             )
-            callModule(plotDimRed, "diffex", object, plot_types, featureType,
+            plotDimRed( "diffex", object, plot_types, featureType,
                 organism_type = organism_type, reductions
             )
-            callModule(plotDimRed, "subset", object, plot_types, featureType,
+            plotDimRed( "subset", object, plot_types, featureType,
                 organism_type = organism_type, reductions
             )
-            callModule(plotDimRed, "markerScatter", object, plot_types,
+            plotDimRed( "markerScatter", object, plot_types,
                        featureType,
                 organism_type = organism_type, reductions
             )
         })
 
-        callModule(plotReadCount, "plotreadcount1", object, plot_types)
-        callModule(plotReadCount, "plotreadcount2", object, plot_types)
-        callModule(
-            plotViolin, "violinPlot", object, featureType,
+        plotReadCount( "plotreadcount1", object, plot_types)
+        plotReadCount( "plotreadcount2", object, plot_types)
+        plotViolin( "violinPlot", object, featureType,
             organism_type
         )
-        callModule(
-            plotHeatmap, "heatMap", object, featureType,
+        plotHeatmap( "heatMap", object, featureType,
             organism_type
         )
 
-        callModule(
-            plotCoverage, "coverageplots", object, plot_types, proj_dir,
+        plotCoverage( "coverageplots", object, plot_types, proj_dir,
             organism_type
         )
-        callModule(plotClustree, "clustreePlot", object)
-        callModule(tableSelected, "tableselected", object)
-        diffex_selected_cells <- callModule(
-            tableSelected, "diffex",
+        plotClustree( "clustreePlot", object)
+        tableSelected( "tableselected", object)
+        diffex_selected_cells <- tableSelected( "diffex",
             object
         )
 
-        callModule(pathwayEnrichment, "pathwayEnrichment", object, featureType)
+        pathwayEnrichment( "pathwayEnrichment", object, featureType)
 
-        cell_subset <- callModule(
-            tableSelected, "subset",
+        cell_subset <- tableSelected( "subset",
             object
         )
         observeEvent(input$subsetAction, {
@@ -648,28 +642,25 @@ chevreulApp <-
                 title = "Recalculating Embedding",
                 "This process may take a minute or two!"
             ))
-            object <- callModule(
-                changeEmbedParams, "changeembed",
+            object <- changeEmbedParams( "changeembed",
                 object
             )
             removeModal()
         })
-        callModule(chevreulMarkers, "findmarkers", object, plot_types,
+        chevreulMarkers( "findmarkers", object, plot_types,
                    featureType)
-        diffex_results <- callModule(
-            diffex, "diffex", object, featureType,
+        diffex_results <- diffex( "diffex", object, featureType,
             diffex_selected_cells
         )
 
         observe({
             req(featureType())
             req(object())
-            callModule(
-                allTranscripts, "alltranscripts1", object, featureType,
+            allTranscripts( "alltranscripts1", object, featureType,
                 organism_type
             )
 
-            callModule(plotDimRed, "alltranscripts2", object, plot_types,
+            plotDimRed( "alltranscripts2", object, plot_types,
                        featureType,
                 organism_type = organism_type, reductions
             )
@@ -696,7 +687,7 @@ chevreulApp <-
             message(proj_name)
         })
 
-        callModule(techInfo, "techInfo", object)
+        techInfo( "techInfo", object)
 
         sessionId <- as.integer(runif(1, 1, 100000))
         output$sessionId <- renderText(paste0("Session id: ", sessionId))

@@ -218,7 +218,7 @@ minimalChevreulApp <- function(single_cell_object = NULL,
 
 
         observe({
-            reformatted_object <- callModule(reformatMetadataDR, 
+            reformatted_object <- reformatMetadataDR( 
                                              "reformatMetadataDR", 
                                              object, featureType)
             object(reformatted_object())
@@ -232,49 +232,44 @@ minimalChevreulApp <- function(single_cell_object = NULL,
         observe({
             req(!is.null(object()))
 
-            callModule(plotDimRed, "plotdimred1", object, plot_types, 
+            plotDimRed( "plotdimred1", object, plot_types, 
                        featureType,
                 organism_type = organism_type, reductions
             )
-            callModule(plotDimRed, "plotdimred2", object, plot_types, 
+            plotDimRed( "plotdimred2", object, plot_types, 
                        featureType,
                 organism_type = organism_type, reductions
             )
-            callModule(plotDimRed, "diffex", object, plot_types, featureType,
+            plotDimRed( "diffex", object, plot_types, featureType,
                 organism_type = organism_type, reductions
             )
-            callModule(plotDimRed, "subset", object, plot_types, featureType,
+            plotDimRed( "subset", object, plot_types, featureType,
                 organism_type = organism_type, reductions
             )
-            callModule(plotDimRed, "markerScatter", object, plot_types, 
+            plotDimRed( "markerScatter", object, plot_types, 
                        featureType,
                 organism_type = organism_type, reductions
             )
         })
 
-        callModule(plotReadCount, "plotreadcount1", object, plot_types)
-        callModule(plotReadCount, "plotreadcount2", object, plot_types)
+        plotReadCount( "plotreadcount1", object, plot_types)
+        plotReadCount( "plotreadcount2", object, plot_types)
 
-        callModule(
-            plotViolin, "violinPlot", object, featureType,
+        plotViolin( "violinPlot", object, featureType,
             organism_type
         )
-        callModule(
-            plotHeatmap, "heatMap", object, featureType,
+        plotHeatmap( "heatMap", object, featureType,
             organism_type
         )
-        callModule(
-            plotCoverage, "coverageplots", object, plot_types, proj_dir, 
+        plotCoverage( "coverageplots", object, plot_types, proj_dir, 
             organism_type
         )
-        callModule(plotClustree, "clustreePlot", object)
-        callModule(tableSelected, "tableselected", object)
-        diffex_selected_cells <- callModule(
-            tableSelected, "diffex",
+        plotClustree( "clustreePlot", object)
+        tableSelected( "tableselected", object)
+        diffex_selected_cells <- tableSelected( "diffex",
             object
         )
-        subset_selected_cells <- callModule(
-            tableSelected, "subset",
+        subset_selected_cells <- tableSelected( "subset",
             object
         )
 
@@ -283,35 +278,32 @@ minimalChevreulApp <- function(single_cell_object = NULL,
                 title = "Recalculating Embedding",
                 "This process may take a minute or two!"
             ))
-            object <- callModule(
-                changeEmbedParams, "changeembed",
+            object <- changeEmbedParams( "changeembed",
                 object
             )
             removeModal()
         })
 
-        callModule(chevreulMarkers, "findmarkers", object, plot_types, 
+        chevreulMarkers( "findmarkers", object, plot_types, 
                    featureType)
 
-        callModule(pathwayEnrichment, "pathwayEnrichment", object)
+        pathwayEnrichment( "pathwayEnrichment", object)
 
         # plot all transcripts
         observe({
             req(featureType())
             req(!is.null(object()))
-            callModule(
-                allTranscripts, "alltranscripts1", object, featureType,
+            allTranscripts( "alltranscripts1", object, featureType,
                 organism_type
             )
 
-            callModule(plotDimRed, "alltranscripts2", object, plot_types, 
+            plotDimRed( "alltranscripts2", object, plot_types, 
                        featureType,
                 organism_type = organism_type, reductions
             )
         })
 
-        diffex_results <- callModule(
-            diffex, "diffex", object, featureType,
+        diffex_results <- diffex( "diffex", object, featureType,
             diffex_selected_cells
         )
         observeEvent(input$subsetAction, {
@@ -396,7 +388,7 @@ minimalChevreulApp <- function(single_cell_object = NULL,
             removeModal()
         })
 
-        callModule(techInfo, "techInfo", object)
+        techInfo( "techInfo", object)
     }
     shinyApp(ui, server, enableBookmarking = "server")
 }

@@ -5,12 +5,12 @@
 #' @return UI to reformat the metadata of a SingleCellExperiment object
 #' @noRd
 reformatMetadataDRui <- function(id) {
-    ns <- NS(id)
+    
     tagList(
         chevreulBox(
             title = "Reformat Metadata",
-            checkboxInput(ns("header"), "Header", TRUE),
-            fileInput(ns("metaFile"), 
+            checkboxInput("header", "Header", TRUE),
+            fileInput("metaFile", 
                       "Choose csv of metadata with cell names in first column",
                 accept = c(
                     "text/csv",
@@ -18,21 +18,20 @@ reformatMetadataDRui <- function(id) {
                     ".csv"
                 )
             ),
-            actionButton(ns("updateMetadata"), "Update Metadata"),
-            radioButtons(ns("updateMethod"), 
+            actionButton("updateMetadata", "Update Metadata"),
+            radioButtons("updateMethod", 
                          "Update By:", 
                          choices = c("table (below)" = "spreadsheet", 
                                      "uploaded file" = "file"), inline = TRUE),
             width = 12,
             dataSelectUI(ns("select1")),
             dataFilterUI(ns("filter1")),
-            hidden(actionButton(ns("sync"), label = NULL, 
+            hidden(actionButton("sync", label = NULL, 
                                 icon = icon("sync"))),
             dataOutputUI(ns("output-active")),
             dataOutputUI(ns("output-update"), icon = "file-download"),
-            hidden(actionButton(ns("cut"), label = NULL, icon = icon("cut"))),
-            dataEditUI(ns("edit1"))
-        ) |>
+            hidden(actionButton("cut", label = NULL, icon = icon("cut"))),
+            dataEditUI("edit1")        ) |>
             default_helper(type = "markdown", content = "reformatMetadata")
     )
 }

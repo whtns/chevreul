@@ -42,7 +42,10 @@ object_preprocess <- function(object, scale = TRUE, normalize = TRUE,
 #' @param ... extra args passed to stash_marker_features
 #'
 #' @return a SingleCellExperiment object containing marker genes
-#'
+#' @export 
+#' @examples
+#' find_all_markers(small_example_dataset, "Mutation_Status")
+#' 
 find_all_markers <- function(object, 
                              group_by = NULL, experiment = "gene", ...) {
     if (is.null(group_by)) {
